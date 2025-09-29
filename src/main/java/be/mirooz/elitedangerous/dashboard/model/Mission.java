@@ -97,6 +97,10 @@ public class Mission {
     public int getTargetCount() { return targetCount; }
     public void setTargetCount(int targetCount) { this.targetCount = targetCount; }
 
+    public int getTargetCountLeft(){
+        return targetCount-currentCount;
+    }
+
     public int getCurrentCount() { return currentCount; }
     public void setCurrentCount(int currentCount) { this.currentCount = currentCount; }
 

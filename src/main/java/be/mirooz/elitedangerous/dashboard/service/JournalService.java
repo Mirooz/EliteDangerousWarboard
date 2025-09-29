@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -78,59 +79,7 @@ public class JournalService {
             return false;
         }
     }
-    
-    /**
-     * Parse un fichier Journal pour extraire les missions
-     */
-    private List<Mission> parseJournalFile(File journalFile) {
-        List<Mission> missions = new ArrayList<>();
-        Map<String, Mission> missionMap = new HashMap<>();
-        
-        try {
-            List<String> lines = Files.readAllLines(journalFile.toPath());
-            
-            for (String line : lines) {
-                try {
-                    JsonNode jsonNode = objectMapper.readTree(line);
-                    String event = jsonNode.get("event").asText();
-                    
-                    switch (event) {
-                        case "MissionAccepted":
-                            handleMissionAccepted(jsonNode, missionMap);
-                            break;
-                        case "MissionCompleted":
-                            handleMissionCompleted(jsonNode, missionMap);
-                            break;
-                        case "MissionAbandoned":
-                            handleMissionAbandoned(jsonNode, missionMap);
-                            break;
-                        case "MissionRedirected":
-                            handleMissionRedirected(jsonNode, missionMap);
-                            break;
-                        case "Bounty":
-                            handleBounty(jsonNode, missionMap);
-                            break;
-                        case "FactionKillBond":
-                            handleFactionKillBond(jsonNode, missionMap);
-                            break;
-                        case "MissionProgress":
-                            handleMissionProgress(jsonNode, missionMap);
-                            break;
-                    }
-                } catch (Exception e) {
-                    // Ignorer les lignes malformées
-                }
-            }
-            
-            missions.addAll(missionMap.values());
-            
-        } catch (IOException e) {
-            System.err.println("Erreur lors de la lecture du fichier " + journalFile.getName() + ": " + e.getMessage());
-        }
-        
-        return missions;
-    }
-    
+
     /**
      * Parse tous les fichiers Journal et met à jour les missions existantes
      */
@@ -168,10 +117,10 @@ public class JournalService {
                                     handleMissionRedirected(jsonNode, fileMissionMap);
                                     break;
                                 case "Bounty":
-                                    handleBounty(jsonNode, fileMissionMap);
+                                    handleBounty(jsonNode, fileMissionMap,globalMissionMap);
                                     break;
                                 case "FactionKillBond":
-                                    handleFactionKillBond(jsonNode, fileMissionMap);
+                                    handleFactionKillBond(jsonNode, fileMissionMap, globalMissionMap);
                                     break;
                                 case "MissionProgress":
                                     handleMissionProgress(jsonNode, fileMissionMap);
@@ -181,18 +130,24 @@ public class JournalService {
                             // Ignorer les lignes malformées
                         }
                     }
-                    
+
                     // Fusionner les missions de ce fichier avec le map global
                     for (Map.Entry<String, Mission> entry : fileMissionMap.entrySet()) {
                         String missionId = entry.getKey();
                         Mission newMission = entry.getValue();
-                        
+
                         if (globalMissionMap.containsKey(missionId)) {
-                            // Mettre à jour la mission existante
+                            // Mettre à jour la mission existante avec toutes les informations
                             Mission existingMission = globalMissionMap.get(missionId);
                             existingMission.setStatus(newMission.getStatus());
                             existingMission.setCurrentCount(newMission.getCurrentCount());
-                            // Garder les informations originales (faction, target, etc.)
+                            existingMission.setTargetCount(newMission.getTargetCount());
+                            existingMission.setTargetFaction(newMission.getTargetFaction());
+                            existingMission.setTargetSystem(newMission.getTargetSystem());
+                            existingMission.setAcceptedTime(newMission.getAcceptedTime());
+                            existingMission.setExpiry(newMission.getExpiry());
+                            existingMission.setReward(newMission.getReward());
+                            // Mettre à jour toutes les autres propriétés importantes
                         } else {
                             // Ajouter la nouvelle mission
                             globalMissionMap.put(missionId, newMission);
@@ -358,44 +313,90 @@ public class JournalService {
     /**
      * Traite l'événement Bounty (kill de pirate)
      */
-    private void handleBounty(JsonNode jsonNode, Map<String, Mission> missionMap) {
+    private void handleBounty(JsonNode jsonNode, Map<String, Mission> missionMap, Map<String, Mission> globalMissionMap) {
         try {
             String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
             int reward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
             
-            // Incrémenter le compteur de kills pour toutes les missions de massacre actives
-            for (Mission mission : missionMap.values()) {
-                if (mission.getStatus() == MissionStatus.ACTIVE && 
-                    mission.getType() == MissionType.MASSACRE &&
-                    mission.getTargetFaction() != null &&
-                    victimFaction.contains(mission.getTargetFaction())) {
-                    mission.setCurrentCount(mission.getCurrentCount() + 1);
-                }
-            }
+            System.out.println("Bounty event - VictimFaction: " + victimFaction + ", Reward: " + reward);
+            
+            // Trouver toutes les missions actives de massacre pour cette faction cible
+            if (updateKillsCount(missionMap,globalMissionMap, victimFaction)) return; // Aucune mission éligible
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Bounty: " + e.getMessage());
+            e.printStackTrace();
         }
     }
-    
+
+    private static boolean updateKillsCount(Map<String, Mission> missionMap, Map<String, Mission> globalMissionMap, String victimFaction) {
+        List<Mission> eligibleMissions = Stream
+                .concat(missionMap.values().stream(), globalMissionMap.values().stream())
+                .filter(mission -> mission.getStatus() == MissionStatus.ACTIVE)
+                .filter(mission -> mission.getType() == MissionType.MASSACRE)
+                .filter(mission -> mission.getTargetFaction() != null)
+                .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
+                .filter(mission -> mission.getTargetCountLeft() >0)
+                .toList();
+
+        System.out.println("Missions éligibles trouvées: " + eligibleMissions.size());
+
+        if (eligibleMissions.isEmpty()) {
+            return true;
+        }
+
+        // Grouper par faction source et trier par date d'acceptation (plus ancienne en premier)
+        Map<String, List<Mission>> missionsBySourceFaction = eligibleMissions.stream()
+                .collect(Collectors.groupingBy(Mission::getFaction));
+
+        // Pour chaque faction source, prendre la mission la plus ancienne
+        for (Map.Entry<String, List<Mission>> entry : missionsBySourceFaction.entrySet()) {
+            String sourceFaction = entry.getKey();
+            List<Mission> factionMissions = entry.getValue();
+
+            // Trier par date d'acceptation (plus ancienne en premier)
+            factionMissions.sort((m1, m2) -> {
+                if (m1.getAcceptedTime() == null && m2.getAcceptedTime() == null) return 0;
+                if (m1.getAcceptedTime() == null) return 1;
+                if (m2.getAcceptedTime() == null) return -1;
+                return m1.getAcceptedTime().compareTo(m2.getAcceptedTime());
+            });
+
+            // Prendre la mission la plus ancienne
+            Mission oldestMission = factionMissions.get(0);
+
+            // Incrémenter le compteur
+            int oldCount = oldestMission.getCurrentCount();
+            int newCount = oldCount + 1;
+            oldestMission.setCurrentCount(newCount);
+
+            System.out.println("Mission " + oldestMission.getId() + " (" + sourceFaction + ") : " +
+                             oldCount + " -> " + newCount + "/" + oldestMission.getTargetCount());
+
+            // Si la mission atteint le nombre de kills requis, la marquer comme en attente
+            if (newCount >= oldestMission.getTargetCount()) {
+                System.out.println("Mission " + oldestMission.getId() + " en attente de completion");
+                // La mission reste ACTIVE mais sera affichée en bleu (en attente)
+                // Le statut reste ACTIVE pour éviter les conflits avec MissionCompleted
+            }
+        }
+        return false;
+    }
+
     /**
      * Traite l'événement FactionKillBond (kill de faction)
      */
-    private void handleFactionKillBond(JsonNode jsonNode, Map<String, Mission> missionMap) {
+    private void handleFactionKillBond(JsonNode jsonNode, Map<String, Mission> missionMap, Map<String, Mission> globalMssionMap) {
         try {
             String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
             int reward = jsonNode.has("Reward") ? jsonNode.get("Reward").asInt() : 0;
             
-            // Incrémenter le compteur de kills pour toutes les missions de massacre actives
-            for (Mission mission : missionMap.values()) {
-                if (mission.getStatus() == MissionStatus.ACTIVE && 
-                    mission.getType() == MissionType.MASSACRE &&
-                    mission.getTargetFaction() != null &&
-                    victimFaction.contains(mission.getTargetFaction())) {
-                    mission.setCurrentCount(mission.getCurrentCount() + 1);
-                }
-            }
+            System.out.println("FactionKillBond event - VictimFaction: " + victimFaction + ", Reward: " + reward);
+            
+            // Utiliser la même logique que handleBounty
+            if (updateKillsCount(missionMap,globalMssionMap, victimFaction)) return; // Aucune mission éligible
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de FactionKillBond: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

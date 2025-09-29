@@ -13,7 +13,7 @@
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                <children>
                   <Label styleClass="filter-label" text="Filtre:" />
-                  <Button fx:id="activeFilterButton" mnemonicParsing="false" onAction="#filterActiveMissions" styleClass="filter-button active" text="ACTIVES" />
+                  <Button fx:id="activeFilterButton" mnemonicParsing="false" onAction="#filterActiveMissions" styleClass="filter-button" text="ACTIVES" />
                   <Button fx:id="completedFilterButton" mnemonicParsing="false" onAction="#filterCompletedMissions" styleClass="filter-button" text="COMPLÉTÉES" />
                   <Button fx:id="abandonedFilterButton" mnemonicParsing="false" onAction="#filterAbandonedMissions" styleClass="filter-button" text="ABANDONNÉES" />
                   <Button fx:id="allFilterButton" mnemonicParsing="false" onAction="#filterAllMissions" styleClass="filter-button" text="TOUTES" />

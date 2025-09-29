@@ -105,6 +105,13 @@ public class MissionListController implements Initializable {
     private VBox createMassacreMissionCard(Mission mission) {
         VBox card = new VBox();
         card.getStyleClass().add("mission-card");
+        
+        // Ajouter une classe CSS spéciale si la mission est active et complète
+        if (mission.getStatus() == MissionStatus.ACTIVE && 
+            mission.getCurrentCount() >= mission.getTargetCount()) {
+            card.getStyleClass().add("mission-card-complete");
+        }
+        
         card.setSpacing(5);
         card.setPadding(new Insets(10));
         
@@ -161,6 +168,12 @@ public class MissionListController implements Initializable {
         
         Label killsLabel = new Label(killsText);
         killsLabel.getStyleClass().add("massacre-kills");
+        
+        // Si la mission est en attente (kills atteints mais pas encore complétée), style bleu
+        if (mission.getStatus() == MissionStatus.ACTIVE && 
+            mission.getCurrentCount() >= mission.getTargetCount()) {
+            killsLabel.getStyleClass().add("massacre-kills-waiting");
+        }
         killsLabel.setPrefWidth(50);
         killsLabel.setMinWidth(50);
         killsLabel.setMaxWidth(50);

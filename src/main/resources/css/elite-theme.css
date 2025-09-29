@@ -181,6 +181,16 @@
     -fx-background-color: -fx-elite-gray;
 }
 
+/* Carte de mission complète (active avec kills terminés) */
+.mission-card-complete {
+    -fx-border-color: -fx-elite-blue !important;
+}
+
+.mission-card-complete:hover {
+    -fx-border-color: -fx-elite-cyan !important;
+    -fx-background-color: -fx-elite-gray;
+}
+
 .mission-title {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -321,6 +331,11 @@
 .massacre-kills {
     -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+}
+
+.massacre-kills-waiting {
+    -fx-text-fill: -fx-elite-blue !important;
     -fx-font-weight: bold;
 }
 

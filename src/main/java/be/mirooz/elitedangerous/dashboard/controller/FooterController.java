@@ -110,7 +110,7 @@ public class FooterController implements Initializable {
 
                 groupedKills
                         .computeIfAbsent(targetFaction, k -> new HashMap<>())
-                        .merge(sourceFaction, mission.getTargetCount(), Integer::sum);
+                        .merge(sourceFaction, mission.getTargetCountLeft(), Integer::sum);
             }
         }
 
