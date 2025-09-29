@@ -1,4 +1,4 @@
-package com.elitedangerous.dashboard;
+package be.mirooz.elitedangerous.dashboard;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

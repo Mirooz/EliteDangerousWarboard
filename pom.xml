@@ -67,7 +67,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.elitedangerous.dashboard.EliteDashboardApp</mainClass>
+                    <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
                 </configuration>
             </plugin>
             
@@ -79,17 +79,7 @@
                     <execution>
                         <id>summary</id>
                         <configuration>
-                            <mainClass>com.elitedangerous.dashboard.EliteMissionSummaryApp</mainClass>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>dashboard</id>
-                        <configuration>
-                            <mainClass>com.elitedangerous.dashboard.EliteDashboardApp</mainClass>
-                            <modulepath>
-                                <modulepath>C:\Users\ewen_\Downloads\openjfx-21.0.2_windows-x64_bin-sdk\javafx-sdk-21.0.2\lib</modulepath>
-                            </modulepath>
-                            <addModules>javafx.controls,javafx.fxml</addModules>
+                            <mainClass>be.mirooz.elitedangerous.dashboard.EliteMissionSummaryApp</mainClass>
                         </configuration>
                     </execution>
                 </executions>

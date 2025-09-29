@@ -1,4 +1,4 @@
-package com.elitedangerous.dashboard.model;
+package be.mirooz.elitedangerous.dashboard.model;
 
 /**
  * Statuts possibles d'une mission

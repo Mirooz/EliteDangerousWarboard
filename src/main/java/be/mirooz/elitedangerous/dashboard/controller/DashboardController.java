@@ -1,9 +1,9 @@
-package com.elitedangerous.dashboard.controller;
+package be.mirooz.elitedangerous.dashboard.controller;
 
-import com.elitedangerous.dashboard.model.Mission;
-import com.elitedangerous.dashboard.model.MissionStatus;
-import com.elitedangerous.dashboard.model.MissionType;
-import com.elitedangerous.dashboard.service.MissionService;
+import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.service.MissionService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;

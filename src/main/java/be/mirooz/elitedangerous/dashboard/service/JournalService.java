@@ -1,8 +1,8 @@
-package com.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.service;
 
-import com.elitedangerous.dashboard.model.Mission;
-import com.elitedangerous.dashboard.model.MissionStatus;
-import com.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.MissionType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

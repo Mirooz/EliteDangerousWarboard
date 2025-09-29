@@ -1,12 +1,11 @@
-package com.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.service;
 
-import com.elitedangerous.dashboard.model.Mission;
-import com.elitedangerous.dashboard.model.MissionStatus;
-import com.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.MissionType;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
