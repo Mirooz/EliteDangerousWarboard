@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="footer-panel" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mirooz.elitedangerous.dashboard.controller.FooterController">
+   <children>
+      <Label styleClass="footer-text" text="Commander: [NOM DU COMMANDANT]" />
+      <Region HBox.hgrow="ALWAYS" />
+      <VBox fx:id="factionStats" alignment="CENTER_RIGHT" spacing="5.0" styleClass="faction-stats">
+         <!-- En-tête -->
+         <HBox alignment="CENTER" spacing="40.0" styleClass="faction-header">
+            <Label text="Target Faction" styleClass="faction-col-header" prefWidth="150"/>
+            <Label text="Source Faction" styleClass="faction-col-header" prefWidth="150"/>
+            <Label text="Kills" styleClass="faction-col-header" prefWidth="50"/>
+         </HBox>
+         <!-- Ici le contrôleur Java ajoutera dynamiquement les lignes -->
+      </VBox>
+
+      <Label styleClass="footer-text" text="Système: Sol" />
+      <Label styleClass="footer-text" text="|" />
+      <Label styleClass="footer-text" text="Station: Abraham Lincoln" />
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+   </padding>
+</HBox>
