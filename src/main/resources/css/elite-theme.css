@@ -393,3 +393,62 @@
     -fx-text-fill: -fx-elite-success;
     -fx-font-weight: bold;
 }
+.faction-header {
+    -fx-font-weight: bold;
+    -fx-border-color: #555;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 2 0 4 0;
+}
+
+.faction-header {
+    -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 2 0 4 0;
+    -fx-background-color: -fx-elite-darker;
+}
+
+/* Colonnes */
+.faction-col {
+    -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-padding: 2 10 2 10;
+}
+
+/* Lignes */
+.faction-row {
+    -fx-background-color: transparent;
+}
+
+.faction-row:hover {
+    -fx-background-color: rgba(255, 156, 0, 0.1);
+}
+/* En-tête */
+.faction-col-header {
+    -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-padding: 2 6 2 6;
+}
+
+/* Alignements spécifiques */
+.faction-col-header.target,
+.faction-col.target {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.faction-col-header.source,
+.faction-col.source {
+    -fx-alignment: CENTER; /* centré */
+}
+
+.faction-col-header.kills,
+.faction-col.kills {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-alignment: CENTER_RIGHT;
+}
