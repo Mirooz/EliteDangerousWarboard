@@ -6,7 +6,16 @@
 
 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="footer-panel" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mirooz.elitedangerous.dashboard.controller.FooterController">
    <children>
-      <Label styleClass="footer-text" text="Commander: [NOM DU COMMANDANT]" />
+      <VBox alignment="CENTER_LEFT" spacing="2.0">
+         <Label fx:id="commanderLabel" styleClass="footer-text" text="Commander: [NOM DU COMMANDANT]" />
+         <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label fx:id="systemLabel" styleClass="footer-text" text="Système: [NON IDENTIFIÉ]" />
+            <Label styleClass="footer-text" text="|" />
+            <Label fx:id="stationLabel" styleClass="footer-text" text="Station: [NON IDENTIFIÉE]" />
+            <Label styleClass="footer-text" text="|" />
+            <Label fx:id="shipLabel" styleClass="footer-text" text="Vaisseau: [NON IDENTIFIÉ]" />
+         </HBox>
+      </VBox>
       <Region HBox.hgrow="ALWAYS" />
       <VBox fx:id="factionStats" alignment="CENTER_RIGHT" spacing="5.0" styleClass="faction-stats">
          <!-- En-tête -->
@@ -17,10 +26,6 @@
          </HBox>
          <!-- Ici le contrôleur Java ajoutera dynamiquement les lignes -->
       </VBox>
-
-      <Label styleClass="footer-text" text="Système: Sol" />
-      <Label styleClass="footer-text" text="|" />
-      <Label styleClass="footer-text" text="Station: Abraham Lincoln" />
    </children>
    <padding>
       <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />

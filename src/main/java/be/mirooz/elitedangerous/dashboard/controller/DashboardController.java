@@ -72,6 +72,17 @@ public class DashboardController implements Initializable {
         allMissions = missionService.getActiveMissions();
         headerController.setAllMissions(allMissions);
         missionListController.setAllMissions(allMissions);
+        
+        // Mettre à jour le nom du commandant dans le footer
+        String commanderName = missionService.getCommanderName();
+        footerController.updateCommanderName(commanderName);
+        
+        // Mettre à jour les informations du vaisseau dans le footer
+        String currentSystem = missionService.getCurrentSystem();
+        String currentStation = missionService.getCurrentStation();
+        String currentShip = missionService.getCurrentShip();
+        footerController.updateShipInfo(currentSystem, currentStation, currentShip);
+        
         applyCurrentFilter();
     }
     

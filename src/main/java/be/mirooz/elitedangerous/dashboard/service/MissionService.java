@@ -13,6 +13,8 @@ import java.util.List;
  */
 public class MissionService {
     
+    private JournalService journalService;
+    
     /**
      * Récupère la liste des missions actives
      * @return Liste des missions actives
@@ -20,7 +22,9 @@ public class MissionService {
     public List<Mission> getActiveMissions() {
         // Essayer de lire les données réelles des journaux
         try {
-            JournalService journalService = new JournalService();
+            if (journalService == null) {
+                journalService = new JournalService();
+            }
             List<Mission> realMissions = journalService.getMissionsFromLastWeek();
             
             // Si on a des missions réelles, les utiliser
@@ -33,6 +37,50 @@ public class MissionService {
         
         // Sinon, retourner des données de test
         return generateTestMissions();
+    }
+    
+    /**
+     * Récupère le nom du commandant
+     * @return Nom du commandant ou null si non identifié
+     */
+    public String getCommanderName() {
+        if (journalService == null) {
+            journalService = new JournalService();
+        }
+        return journalService.getCommanderName();
+    }
+    
+    /**
+     * Récupère le système actuel
+     * @return Nom du système ou null si non identifié
+     */
+    public String getCurrentSystem() {
+        if (journalService == null) {
+            journalService = new JournalService();
+        }
+        return journalService.getCurrentSystem();
+    }
+    
+    /**
+     * Récupère la station actuelle
+     * @return Nom de la station ou null si non identifiée
+     */
+    public String getCurrentStation() {
+        if (journalService == null) {
+            journalService = new JournalService();
+        }
+        return journalService.getCurrentStation();
+    }
+    
+    /**
+     * Récupère le vaisseau actuel
+     * @return Nom du vaisseau ou null si non identifié
+     */
+    public String getCurrentShip() {
+        if (journalService == null) {
+            journalService = new JournalService();
+        }
+        return journalService.getCurrentShip();
     }
     
     /**
