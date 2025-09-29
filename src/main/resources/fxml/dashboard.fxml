@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.elitedangerous.dashboard.controller.DashboardController">
+   <top>
+      <VBox styleClass="header-panel">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="title-bar">
+               <children>
+                  <Label styleClass="app-title" text="ELITE DANGEROUS" />
+                  <Label styleClass="app-subtitle" text="DASHBOARD DES MISSIONS" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Label fx:id="statusLabel" styleClass="status-label" text="SYSTÈME EN LIGNE" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+               </padding>
+            </HBox>
+            <Separator styleClass="header-separator" />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <VBox spacing="20.0" styleClass="main-content">
+         <children>
+            <!-- Statistiques des missions -->
+            <HBox alignment="CENTER_LEFT" spacing="30.0" styleClass="stats-panel">
+               <children>
+                  <VBox alignment="CENTER" spacing="5.0">
+                     <children>
+                        <Label styleClass="stat-number" text="12" />
+                        <Label styleClass="stat-label" text="MISSIONS ACTIVES" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0">
+                     <children>
+                        <Label styleClass="stat-number" text="2,450,000" />
+                        <Label styleClass="stat-label" text="CRÉDITS EN RÉCOMPENSES" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="5.0">
+                     <children>
+                        <Label styleClass="stat-number" text="8" />
+                        <Label styleClass="stat-label" text="FACTIONS" />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#refreshMissions" styleClass="elite-button" text="ACTUALISER" />
+               </children>
+               <padding>
+                  <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+               </padding>
+            </HBox>
+            
+            <!-- Liste des missions -->
+            <VBox spacing="10.0" styleClass="missions-container">
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="20.0">
+                     <children>
+                        <Label styleClass="section-title" text="MISSIONS DE MASSACRE" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label styleClass="filter-label" text="Filtre:" />
+                              <Button fx:id="activeFilterButton" mnemonicParsing="false" onAction="#filterActiveMissions" styleClass="filter-button active" text="ACTIVES" />
+                              <Button fx:id="completedFilterButton" mnemonicParsing="false" onAction="#filterCompletedMissions" styleClass="filter-button" text="COMPLÉTÉES" />
+                              <Button fx:id="abandonedFilterButton" mnemonicParsing="false" onAction="#filterAbandonedMissions" styleClass="filter-button" text="ABANDONNÉES" />
+                              <Button fx:id="allFilterButton" mnemonicParsing="false" onAction="#filterAllMissions" styleClass="filter-button" text="TOUTES" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </HBox>
+                  <ScrollPane fitToWidth="true" styleClass="missions-scroll">
+                     <content>
+                        <VBox fx:id="missionsList" spacing="8.0" styleClass="missions-list">
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+               </children>
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="footer-panel">
+         <children>
+            <Label styleClass="footer-text" text="Commander: [NOM DU COMMANDANT]" />
+            <Region HBox.hgrow="ALWAYS" />
+            <VBox fx:id="factionStats" alignment="CENTER_RIGHT" spacing="2.0" styleClass="faction-stats">
+               <children>
+                  <Label styleClass="footer-text" text="RÉSUMÉ PAR FACTION CIBLE" />
+                  <HBox alignment="CENTER_RIGHT" spacing="15.0">
+                     <children>
+                        <Label fx:id="allianceStats" styleClass="faction-stat" text="Aucune mission active" />
+                        <Label fx:id="empireStats" styleClass="faction-stat" text="" />
+                        <Label fx:id="federationStats" styleClass="faction-stat" text="" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <Label styleClass="footer-text" text="Système: Sol" />
+            <Label styleClass="footer-text" text="|" />
+            <Label styleClass="footer-text" text="Station: Abraham Lincoln" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+   </bottom>
+</BorderPane>

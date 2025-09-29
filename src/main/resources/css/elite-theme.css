@@ -1,0 +1,395 @@
+/* Thème Elite Dangerous - Couleurs et styles */
+
+/* Variables de couleurs Elite Dangerous */
+.root {
+    -fx-elite-orange: #FF6B00;
+    -fx-elite-blue: #00B4FF;
+    -fx-elite-cyan: #00FFFF;
+    -fx-elite-dark: #0A0A0A;
+    -fx-elite-darker: #050505;
+    -fx-elite-gray: #1A1A1A;
+    -fx-elite-light-gray: #2A2A2A;
+    -fx-elite-text: #E0E0E0;
+    -fx-elite-text-dim: #A0A0A0;
+    -fx-elite-success: #00FF00;
+    -fx-elite-warning: #FFAA00;
+    -fx-elite-danger: #FF0000;
+}
+
+/* Police de caractères */
+@font-face {
+    font-family: 'Elite Dangerous';
+    src: url('/fonts/elite-dangerous.ttf');
+}
+
+/* Styles généraux */
+.root {
+    -fx-background-color: -fx-elite-dark;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 12px;
+}
+
+/* En-tête */
+.header-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 2 0;
+}
+
+.title-bar {
+    -fx-background-color: -fx-elite-darker;
+}
+
+.app-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.app-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-weight: bold;
+}
+
+.header-separator {
+    -fx-background-color: -fx-elite-orange;
+}
+
+/* Contenu principal */
+.main-content {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 20;
+}
+
+/* Panneau de statistiques */
+.stats-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.stat-number {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.stat-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-weight: bold;
+}
+
+/* Boutons Elite Dangerous */
+.elite-button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.elite-button:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.elite-button:pressed {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+/* Conteneur des missions */
+.missions-container {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.missions-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.missions-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.missions-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.missions-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.missions-list {
+    -fx-background-color: transparent;
+}
+
+/* Carte de mission */
+.mission-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 15;
+}
+
+.mission-card:hover {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-background-color: -fx-elite-gray;
+}
+
+.mission-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.mission-type {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+}
+
+.mission-faction {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+}
+
+.mission-details {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.mission-reward {
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-weight: bold;
+}
+
+.mission-status {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 6 2 6;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.mission-status.active {
+    -fx-background-color: -fx-elite-success;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.mission-status.completed {
+    -fx-background-color: -fx-elite-blue;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.mission-status.failed {
+    -fx-background-color: -fx-elite-danger;
+    -fx-text-fill: -fx-elite-text;
+}
+
+/* Barre de progression */
+.progress-bar {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+}
+
+.progress-bar .bar {
+    -fx-background-color: -fx-elite-orange;
+}
+
+/* Pied de page */
+.footer-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2 0 0 0;
+}
+
+.footer-text {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-weight: bold;
+}
+
+/* Effets de lueur */
+.glow-effect {
+    -fx-effect: dropshadow(gaussian, -fx-elite-orange, 10, 0.5, 0, 0);
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { -fx-opacity: 1.0; }
+    50% { -fx-opacity: 0.7; }
+    100% { -fx-opacity: 1.0; }
+}
+
+.pulse {
+    -fx-animation: pulse 2s infinite;
+}
+
+/* Styles pour les tableaux */
+.table-view {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+}
+
+.table-view .column-header {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: -fx-elite-text;
+    -fx-border-color: -fx-elite-gray;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+/* Tooltips */
+.tooltip {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-text;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-font-size: 11px;
+}
+
+/* Styles pour les missions de massacre */
+.massacre-faction {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.massacre-target {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+}
+
+.massacre-kills {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+}
+
+.massacre-progress {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+}
+
+.massacre-progress .bar {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.massacre-reward {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-weight: bold;
+}
+
+/* Styles pour les statistiques de faction */
+.faction-stats {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5 10 5 10;
+}
+
+.faction-stat {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+    -fx-line-spacing: 2px;
+    -fx-wrap-text: true;
+}
+
+/* Styles pour les filtres */
+.filter-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+}
+
+.filter-button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 10px;
+    -fx-padding: 4 8 4 8;
+    -fx-background-radius: 2;
+    -fx-border-radius: 2;
+}
+
+.filter-button:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.filter-button.active {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-border-color: -fx-elite-cyan;
+}
+
+/* Styles pour les informations temporelles */
+.mission-time {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.mission-time-urgent {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-weight: bold;
+}
+
+.mission-time-completed {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-weight: bold;
+}
