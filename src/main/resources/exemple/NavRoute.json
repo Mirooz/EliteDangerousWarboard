@@ -1,0 +1,6 @@
+{ "timestamp":"2025-09-28T23:16:19Z", "event":"NavRoute", "Route":[ 
+{ "StarSystem":"LP 806-8", "SystemAddress":2869977818561, "StarPos":[-3.90625,18.00000,56.50000], "StarClass":"M" }, 
+{ "StarSystem":"Wolf 573", "SystemAddress":1487946123627, "StarPos":[-6.25000,31.59375,35.31250], "StarClass":"G" }, 
+{ "StarSystem":"Ross 52", "SystemAddress":2869709383081, "StarPos":[-8.43750,29.15625,13.31250], "StarClass":"M" }, 
+{ "StarSystem":"Wyrd", "SystemAddress":5031654888146, "StarPos":[-11.62500,31.53125,-3.93750], "StarClass":"K" }
+ ] }
