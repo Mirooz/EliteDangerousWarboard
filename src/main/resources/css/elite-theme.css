@@ -91,6 +91,19 @@
     -fx-font-weight: bold;
 }
 
+/* Couleurs pour les statistiques selon le filtre */
+.stat-active {
+    -fx-text-fill: -fx-elite-orange !important;
+}
+
+.stat-completed {
+    -fx-text-fill: -fx-elite-blue !important;
+}
+
+.stat-failed {
+    -fx-text-fill: -fx-elite-danger !important;
+}
+
 /* Boutons Elite Dangerous */
 .elite-button {
     -fx-background-color: -fx-elite-gray;

@@ -64,6 +64,27 @@ public class DashboardController implements Initializable {
     @FXML
     private Button allFilterButton;
     
+    @FXML
+    private Label missionCountLabel;
+    
+    @FXML
+    private Label missionCountTextLabel;
+    
+    @FXML
+    private Label creditsLabel;
+    
+    @FXML
+    private Label creditsTextLabel;
+    
+    @FXML
+    private VBox thirdStatBox;
+    
+    @FXML
+    private Label thirdStatLabel;
+    
+    @FXML
+    private Label thirdStatTextLabel;
+    
     private MissionService missionService;
     private List<Mission> allMissions = new ArrayList<>();
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
@@ -108,6 +129,9 @@ public class DashboardController implements Initializable {
                 .filter(mission -> mission.getType() == MissionType.MASSACRE && mission.getStatus() == MissionStatus.ACTIVE)
                 .collect(java.util.stream.Collectors.toList());
         updateFactionStats(activeMissions);
+        
+        // Mettre à jour les statistiques du dashboard
+        updateDashboardStats(filteredMissions);
         
         // Mettre à jour l'apparence des boutons de filtre
         updateFilterButtons();
@@ -227,15 +251,17 @@ public class DashboardController implements Initializable {
         
         // Ligne compacte avec les informations essentielles
         HBox mainRow = new HBox();
-        mainRow.setSpacing(20);
+        mainRow.setSpacing(15);
         mainRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
-        // Faction
+        // Faction - largeur fixe pour alignement
         Label factionLabel = new Label(mission.getFaction());
         factionLabel.getStyleClass().add("massacre-faction");
-        factionLabel.setPrefWidth(200);
+        factionLabel.setPrefWidth(180);
+        factionLabel.setMinWidth(180);
+        factionLabel.setMaxWidth(180);
         
-        // Clan cible et système
+        // Clan cible et système - largeur fixe pour alignement
         String targetInfo = "";
         if (mission.getTargetFaction() != null) {
             targetInfo = mission.getTargetFaction();
@@ -250,11 +276,16 @@ public class DashboardController implements Initializable {
         Label targetLabel = new Label(targetInfo);
         targetLabel.getStyleClass().add("massacre-target");
         targetLabel.setPrefWidth(200);
+        targetLabel.setMinWidth(200);
+        targetLabel.setMaxWidth(200);
         
-        // Progression des kills
+        // Progression des kills - conteneur avec largeur fixe
         HBox killsSection = new HBox();
-        killsSection.setSpacing(10);
+        killsSection.setSpacing(8);
         killsSection.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        killsSection.setPrefWidth(120);
+        killsSection.setMinWidth(120);
+        killsSection.setMaxWidth(120);
         
         // Afficher x/y pour les missions actives, y/y pour les missions complétées
         String killsText;
@@ -271,23 +302,32 @@ public class DashboardController implements Initializable {
         
         Label killsLabel = new Label(killsText);
         killsLabel.getStyleClass().add("massacre-kills");
+        killsLabel.setPrefWidth(50);
+        killsLabel.setMinWidth(50);
+        killsLabel.setMaxWidth(50);
         
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress((double) mission.getCurrentCount() / mission.getTargetCount());
         progressBar.getStyleClass().add("massacre-progress");
-        progressBar.setPrefWidth(100);
+        progressBar.setPrefWidth(60);
+        progressBar.setMinWidth(60);
+        progressBar.setMaxWidth(60);
         
         killsSection.getChildren().addAll(killsLabel, progressBar);
         
-        // Récompense
+        // Récompense - largeur fixe pour alignement
         Label rewardLabel = new Label(String.format("%,d Cr", mission.getReward()));
         rewardLabel.getStyleClass().add("massacre-reward");
-        rewardLabel.setPrefWidth(120);
+        rewardLabel.setPrefWidth(140);
+        rewardLabel.setMinWidth(140);
+        rewardLabel.setMaxWidth(140);
         
-        // Temps d'acceptation et temps restant
+        // Temps d'acceptation et temps restant - largeur fixe pour alignement
         VBox timeSection = new VBox();
         timeSection.setSpacing(2);
         timeSection.setPrefWidth(150);
+        timeSection.setMinWidth(150);
+        timeSection.setMaxWidth(150);
         
         if (mission.getAcceptedTime() != null) {
             Label acceptedLabel = new Label("Accepté: " + mission.getAcceptedTime().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")));
@@ -422,7 +462,129 @@ public class DashboardController implements Initializable {
         }
 
         return results;
-    }    @FXML
+    }
+    
+    private void updateDashboardStats(List<Mission> missions) {
+        if (missions == null || missions.isEmpty()) {
+            missionCountLabel.setText("0");
+            creditsLabel.setText("0");
+            thirdStatBox.setVisible(false);
+            return;
+        }
+        
+        // Compter les missions
+        int missionCount = missions.size();
+        missionCountLabel.setText(String.valueOf(missionCount));
+        
+        // Calculer les crédits selon le filtre
+        long totalCredits = 0;
+        String creditsText = "CRÉDITS";
+        String thirdStatText = "";
+        int thirdStatValue = 0;
+        
+        if (currentFilter == MissionStatus.ACTIVE) {
+            // Vue active : crédits espérés
+            totalCredits = missions.stream().mapToLong(Mission::getReward).sum();
+            creditsText = "CRÉDITS ESPÉRÉS";
+            missionCountTextLabel.setText("MISSIONS ACTIVES");
+            
+            // Troisième stat : factions uniques
+            thirdStatValue = (int) missions.stream().map(Mission::getFaction).distinct().count();
+            thirdStatText = "FACTIONS";
+            thirdStatBox.setVisible(true);
+            
+        } else if (currentFilter == MissionStatus.COMPLETED) {
+            // Vue complétée : crédits gagnés
+            totalCredits = missions.stream().mapToLong(Mission::getReward).sum();
+            creditsText = "CRÉDITS GAGNÉS";
+            missionCountTextLabel.setText("MISSIONS COMPLÉTÉES");
+            
+            // Troisième stat : total des kills
+            thirdStatValue = missions.stream().mapToInt(Mission::getTargetCount).sum();
+            thirdStatText = "KILLS TOTAL";
+            thirdStatBox.setVisible(true);
+            
+        } else if (currentFilter == MissionStatus.FAILED) {
+            // Vue abandonnée : crédits perdus
+            totalCredits = missions.stream().mapToLong(Mission::getReward).sum();
+            creditsText = "CRÉDITS PERDUS";
+            missionCountTextLabel.setText("MISSIONS ABANDONNÉES");
+            
+            // Troisième stat : factions uniques
+            thirdStatValue = (int) missions.stream().map(Mission::getFaction).distinct().count();
+            thirdStatText = "FACTIONS";
+            thirdStatBox.setVisible(true);
+            
+        } else {
+            // Vue toutes : afficher les 3 stats séparément
+            long activeCredits = allMissions.stream()
+                    .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.ACTIVE)
+                    .mapToLong(Mission::getReward).sum();
+            
+            long completedCredits = allMissions.stream()
+                    .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.COMPLETED)
+                    .mapToLong(Mission::getReward).sum();
+            
+            long failedCredits = allMissions.stream()
+                    .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.FAILED)
+                    .mapToLong(Mission::getReward).sum();
+            
+            // Première colonne : missions actives
+            int activeCount = (int) allMissions.stream()
+                    .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.ACTIVE)
+                    .count();
+            missionCountLabel.setText(String.valueOf(activeCount));
+            missionCountTextLabel.setText("MISSIONS ACTIVES");
+            
+            // Deuxième colonne : crédits gagnés
+            creditsLabel.setText(String.format("%,d", completedCredits));
+            creditsTextLabel.setText("CRÉDITS GAGNÉS");
+            
+            // Troisième colonne : crédits perdus
+            thirdStatLabel.setText(String.format("%,d", failedCredits));
+            thirdStatTextLabel.setText("CRÉDITS PERDUS");
+            thirdStatBox.setVisible(true);
+        }
+        
+        // Mettre à jour les labels seulement si ce n'est pas la vue "toutes"
+        if (currentFilter != null) {
+            creditsLabel.setText(String.format("%,d", totalCredits));
+            creditsTextLabel.setText(creditsText);
+            thirdStatLabel.setText(String.valueOf(thirdStatValue));
+            thirdStatTextLabel.setText(thirdStatText);
+        }
+        
+        // Appliquer les couleurs selon le filtre
+        updateStatColors();
+    }
+    
+    private void updateStatColors() {
+        // Réinitialiser les couleurs
+        missionCountLabel.getStyleClass().removeAll("stat-active", "stat-completed", "stat-failed");
+        creditsLabel.getStyleClass().removeAll("stat-active", "stat-completed", "stat-failed");
+        thirdStatLabel.getStyleClass().removeAll("stat-active", "stat-completed", "stat-failed");
+        
+        if (currentFilter == MissionStatus.ACTIVE) {
+            missionCountLabel.getStyleClass().add("stat-active");
+            creditsLabel.getStyleClass().add("stat-active");
+            thirdStatLabel.getStyleClass().add("stat-active");
+        } else if (currentFilter == MissionStatus.COMPLETED) {
+            missionCountLabel.getStyleClass().add("stat-completed");
+            creditsLabel.getStyleClass().add("stat-completed");
+            thirdStatLabel.getStyleClass().add("stat-completed");
+        } else if (currentFilter == MissionStatus.FAILED) {
+            missionCountLabel.getStyleClass().add("stat-failed");
+            creditsLabel.getStyleClass().add("stat-failed");
+            thirdStatLabel.getStyleClass().add("stat-failed");
+        } else {
+            // Vue "toutes" : couleurs spécifiques pour chaque colonne
+            missionCountLabel.getStyleClass().add("stat-active");    // Missions actives en orange
+            creditsLabel.getStyleClass().add("stat-completed");      // Crédits gagnés en bleu
+            thirdStatLabel.getStyleClass().add("stat-failed");       // Crédits perdus en rouge
+        }
+    }
+    
+    @FXML
     private void filterActiveMissions() {
         currentFilter = MissionStatus.ACTIVE;
         applyCurrentFilter();

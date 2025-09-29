@@ -32,20 +32,20 @@
                <children>
                   <VBox alignment="CENTER" spacing="5.0">
                      <children>
-                        <Label styleClass="stat-number" text="12" />
-                        <Label styleClass="stat-label" text="MISSIONS ACTIVES" />
+                        <Label fx:id="missionCountLabel" styleClass="stat-number" text="0" />
+                        <Label fx:id="missionCountTextLabel" styleClass="stat-label" text="MISSIONS" />
                      </children>
                   </VBox>
                   <VBox alignment="CENTER" spacing="5.0">
                      <children>
-                        <Label styleClass="stat-number" text="2,450,000" />
-                        <Label styleClass="stat-label" text="CRÉDITS EN RÉCOMPENSES" />
+                        <Label fx:id="creditsLabel" styleClass="stat-number" text="0" />
+                        <Label fx:id="creditsTextLabel" styleClass="stat-label" text="CRÉDITS" />
                      </children>
                   </VBox>
-                  <VBox alignment="CENTER" spacing="5.0">
+                  <VBox alignment="CENTER" spacing="5.0" fx:id="thirdStatBox">
                      <children>
-                        <Label styleClass="stat-number" text="8" />
-                        <Label styleClass="stat-label" text="FACTIONS" />
+                        <Label fx:id="thirdStatLabel" styleClass="stat-number" text="0" />
+                        <Label fx:id="thirdStatTextLabel" styleClass="stat-label" text="STAT" />
                      </children>
                   </VBox>
                   <Region HBox.hgrow="ALWAYS" />
