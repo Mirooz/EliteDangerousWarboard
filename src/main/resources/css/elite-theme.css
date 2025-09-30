@@ -224,7 +224,7 @@
 }
 
 .mission-reward {
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
     -fx-text-fill: -fx-elite-success;
     -fx-font-weight: bold;
 }
@@ -359,7 +359,7 @@
 }
 
 .massacre-reward {
-    -fx-font-size: 12px;
+    -fx-font-size: 16px;
     -fx-text-fill: -fx-elite-success;
     -fx-font-weight: bold;
 }
@@ -439,21 +439,21 @@
 
 .faction-header {
     -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
-    -fx-font-size: 11px;
+    -fx-font-size: 15px;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 2 0 4 0;
+    -fx-padding: 4 0 6 0;
     -fx-background-color: -fx-elite-darker;
 }
 
 /* Colonnes */
 .faction-col {
     -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
-    -fx-font-size: 11px;
+    -fx-font-size: 14px;
     -fx-text-fill: -fx-elite-text;
-    -fx-padding: 2 10 2 10;
+    -fx-padding: 4 12 4 12;
 }
 
 /* Lignes */
@@ -467,10 +467,10 @@
 /* En-tête */
 .faction-col-header {
     -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
-    -fx-font-size: 12px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
-    -fx-padding: 2 6 2 6;
+    -fx-padding: 4 8 4 8;
 }
 
 /* Alignements spécifiques */
@@ -525,11 +525,11 @@
     -fx-background-color: -fx-elite-darker;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
-    -fx-font-size: 12px;
+    -fx-font-size: 16px;
     -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 0 1 0 0;
-    -fx-padding: 2 6 2 6;
+    -fx-padding: 4 8 4 8;
 }
 
 .destroyed-ships-table .column-header .label {
@@ -543,8 +543,8 @@
 .destroyed-ships-table .table-cell {
     -fx-text-fill: -fx-elite-text;
     -fx-border-color: -fx-elite-gray;
-    -fx-font-size: 10px;
-    -fx-padding: 3 4 3 4;
+    -fx-font-size: 14px;
+    -fx-padding: 5 6 5 6;
     -fx-wrap-text: false;
 }
 
@@ -572,29 +572,35 @@
 .destroyed-ships-table .table-cell.ship-name {
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
+    -fx-font-size: 15px;
 }
 
 .destroyed-ships-table .table-cell.pilot-name {
     -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 14px;
 }
 
 .destroyed-ships-table .table-cell.faction {
     -fx-text-fill: -fx-elite-text;
     -fx-font-weight: bold;
+    -fx-font-size: 14px;
 }
 
 .destroyed-ships-table .table-cell.ship-type {
     -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 14px;
 }
 
 .destroyed-ships-table .table-cell.bounty {
     -fx-text-fill: -fx-elite-success;
     -fx-font-weight: bold;
+    -fx-font-size: 15px;
 }
 
 .destroyed-ships-table .table-cell.time {
     -fx-text-fill: -fx-elite-text-dim;
     -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 13px;
 }
 
 /* Styles pour les scrollbars du tableau des vaisseaux détruits */
