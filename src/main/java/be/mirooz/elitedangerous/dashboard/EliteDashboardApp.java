@@ -7,6 +7,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Application principale du dashboard Elite Dangerous
@@ -17,7 +18,9 @@ public class EliteDashboardApp extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(EliteDashboardApp.class.getResource("/fxml/dashboard.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
-        
+        // Icône de l'application
+        Image icon = new Image(getClass().getResourceAsStream("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png"));
+        stage.getIcons().add(icon);
         // Configuration du style Elite Dangerous
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
         
@@ -26,14 +29,7 @@ public class EliteDashboardApp extends Application {
         stage.setResizable(true);
         stage.setMinWidth(1000);
         stage.setMinHeight(600);
-        
-        // Icône de l'application
-        try {
-            stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/elite-icon.png")));
-        } catch (Exception e) {
-            // Icône optionnelle, on continue sans
-        }
-        
+        stage.setMaximized(true);
         stage.show();
     }
 
