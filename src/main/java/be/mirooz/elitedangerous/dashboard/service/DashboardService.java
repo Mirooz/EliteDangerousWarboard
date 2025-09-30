@@ -6,10 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.MissionType;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Service pour gérer les missions Elite Dangerous
@@ -27,21 +24,13 @@ public class DashboardService {
      * Récupère la liste des missions actives
      * @return Liste des missions actives
      */
-    public List<Mission> getActiveMissions() {
+    public void InitActiveMissions() {
         // Essayer de lire les données réelles des journaux
         try {
-            List<Mission> realMissions = journalService.getMissionsFromLastWeek();
-            
-            // Si on a des missions réelles, les utiliser
-            if (!realMissions.isEmpty()) {
-                return realMissions;
-            }
+            journalService.getMissionsFromLastWeek();
         } catch (Exception e) {
             System.err.println("Impossible de lire les journaux, utilisation des données de test: " + e.getMessage());
         }
-        
-        // Sinon, retourner des données de test
-        return new ArrayList<>();
     }
 
     /**
@@ -297,28 +286,5 @@ public class DashboardService {
         missions.add(mission8);
         
         return missions;
-    }
-    
-    /**
-     * Récupère une mission par son ID
-     * @param missionId ID de la mission
-     * @return Mission correspondante ou null
-     */
-    public Mission getMissionById(String missionId) {
-        return getActiveMissions().stream()
-                .filter(mission -> mission.getId().equals(missionId))
-                .findFirst()
-                .orElse(null);
-    }
-    
-    /**
-     * Met à jour le statut d'une mission
-     * @param missionId ID de la mission
-     * @param status Nouveau statut
-     * @return true si la mise à jour a réussi
-     */
-    public boolean updateMissionStatus(String missionId, MissionStatus status) {
-        // Dans une vraie application, cela ferait appel à l'API
-        return true;
     }
 }

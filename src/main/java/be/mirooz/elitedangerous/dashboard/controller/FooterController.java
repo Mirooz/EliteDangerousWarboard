@@ -1,10 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionType;
-import be.mirooz.elitedangerous.dashboard.model.SourceFactionStats;
-import be.mirooz.elitedangerous.dashboard.model.TargetFactionStats;
+import be.mirooz.elitedangerous.dashboard.model.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -18,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Contrôleur pour le pied de page du dashboard
@@ -43,6 +40,8 @@ public class FooterController implements Initializable {
     
     @FXML
     private Label shipLabel;
+
+    private final MissionsList missionsList = MissionsList.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -91,7 +90,11 @@ public class FooterController implements Initializable {
         }
     }
     
-    public void updateFactionStats(List<Mission> massacreMissions) {
+    public void updateFactionStats() {
+        // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
+        List<Mission> massacreMissions = missionsList.getGlobalMissionMap().values().stream()
+                .filter(mission -> mission.getType() == MissionType.MASSACRE && mission.getStatus() == MissionStatus.ACTIVE)
+                .collect(Collectors.toList());
         List<TargetFactionStats> stats = computeFactionStats(massacreMissions);
 
         // Supprimer toutes les lignes après l'en-tête

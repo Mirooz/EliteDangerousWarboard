@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.handlers.files.JournalFileTracker;
+import be.mirooz.elitedangerous.dashboard.ui.UIRefreshManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.input.Tailer;
@@ -11,6 +12,7 @@ import java.io.File;
 public class JournalTailService {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private Tailer tailer;
+    private final UIRefreshManager uiRefreshManager = UIRefreshManager.getInstance();
 
     public void startTailing(File journalFile) {
         JournalFileTracker.getInstance().setCurrentFile(journalFile);
@@ -21,6 +23,9 @@ public class JournalTailService {
                 try {
                     JsonNode jsonNode = objectMapper.readTree(line);
                     JournalEventDispatcher.getInstance().dispatch(jsonNode);
+                    javafx.application.Platform.runLater(() -> {
+                        uiRefreshManager.refresh();
+                    });
                 } catch (Exception e) {
                     System.err.println("[Tailer] Ligne ignorée: " + e.getMessage());
                 }

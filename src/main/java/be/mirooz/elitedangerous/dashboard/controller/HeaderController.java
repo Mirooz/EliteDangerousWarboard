@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -12,6 +13,7 @@ import javafx.scene.layout.VBox;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Contrôleur pour l'en-tête du dashboard
@@ -46,7 +48,8 @@ public class HeaderController implements Initializable {
     private Label statusLabel;
     
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
-    private List<Mission> allMissions;
+    private MissionsList missionsList = MissionsList.getInstance();
+
     private Runnable refreshCallback;
 
     @Override
@@ -57,10 +60,7 @@ public class HeaderController implements Initializable {
     public void setRefreshCallback(Runnable callback) {
         this.refreshCallback = callback;
     }
-    
-    public void setAllMissions(List<Mission> missions) {
-        this.allMissions = missions;
-    }
+
     
     public void setCurrentFilter(MissionStatus filter) {
         this.currentFilter = filter;
@@ -73,7 +73,14 @@ public class HeaderController implements Initializable {
         }
     }
     
-    public void updateStats(List<Mission> filteredMissions) {
+    public void updateStats() {
+        // Filtrer les missions selon le filtre actuel
+        List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream()
+                .filter(mission -> mission.getType() == MissionType.MASSACRE)
+                .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
+                .sorted((m1, m2) -> m1.getFaction().compareTo(m2.getFaction()))
+                .collect(Collectors.toList());
+
         if (filteredMissions == null || filteredMissions.isEmpty()) {
             missionCountLabel.setText("0");
             creditsLabel.setText("0");
@@ -126,20 +133,20 @@ public class HeaderController implements Initializable {
             
         } else {
             // Vue toutes : afficher les 3 stats séparément
-            long activeCredits = allMissions.stream()
+            long activeCredits = missionsList.getGlobalMissionMap().values().stream()
                     .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.ACTIVE)
                     .mapToLong(Mission::getReward).sum();
             
-            long completedCredits = allMissions.stream()
+            long completedCredits = missionsList.getGlobalMissionMap().values().stream()
                     .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.COMPLETED)
                     .mapToLong(Mission::getReward).sum();
             
-            long failedCredits = allMissions.stream()
+            long failedCredits = missionsList.getGlobalMissionMap().values().stream()
                     .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.FAILED)
                     .mapToLong(Mission::getReward).sum();
             
             // Première colonne : missions actives
-            int activeCount = (int) allMissions.stream()
+            int activeCount = (int) missionsList.getGlobalMissionMap().values().stream()
                     .filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.ACTIVE)
                     .count();
             missionCountLabel.setText(String.valueOf(activeCount));

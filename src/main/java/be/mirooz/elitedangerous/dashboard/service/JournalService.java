@@ -74,7 +74,6 @@ public class JournalService {
             
             // Le premier fichier est le plus récent (trié par date décroissante)
             File latestJournal = journalFiles.get(0);
-            
             List<String> lines = Files.readAllLines(latestJournal.toPath());
             for (String line : lines) {
                 try {
@@ -230,12 +229,15 @@ public class JournalService {
         }
         
         LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
-        
+
         try (Stream<Path> paths = Files.list(journalDir)) {
-            paths.filter(path -> path.getFileName().toString().startsWith(JOURNAL_PREFIX))
-                 .filter(path -> isFileFromLastWeek(path, oneWeekAgo))
-                 .sorted((p1, p2) -> p2.getFileName().toString().compareTo(p1.getFileName().toString()))
-                 .forEach(path -> journalFiles.add(path.toFile()));
+            paths.filter(path -> {
+                        String filename = path.getFileName().toString();
+                        return filename.startsWith(JOURNAL_PREFIX) && filename.endsWith(".log");
+                    })
+                    .filter(path -> isFileFromLastWeek(path, oneWeekAgo))
+                    .sorted((p1, p2) -> p2.getFileName().toString().compareTo(p1.getFileName().toString()))
+                    .forEach(path -> journalFiles.add(path.toFile()));
         }
         
         return journalFiles;

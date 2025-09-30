@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -44,7 +45,8 @@ public class MissionListController implements Initializable {
     private Button allFilterButton;
     
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
-    private List<Mission> allMissions = new ArrayList<>();
+    private MissionsList allMissionsList = MissionsList.getInstance();
+
     private Consumer<MissionStatus> filterChangeCallback;
 
     @Override
@@ -56,20 +58,17 @@ public class MissionListController implements Initializable {
         this.filterChangeCallback = callback;
     }
     
-    public void setAllMissions(List<Mission> missions) {
-        this.allMissions = missions;
-    }
+
     
     public void setCurrentFilter(MissionStatus filter) {
         this.currentFilter = filter;
         updateFilterButtons();
     }
     
-    public void applyFilter(MissionStatus filter) {
-        this.currentFilter = filter;
+    public void applyFilter() {
         missionsList.getChildren().clear();
         
-        List<Mission> filteredMissions = allMissions.stream()
+        List<Mission> filteredMissions = allMissionsList.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
                 .sorted((m1, m2) -> m1.getFaction().compareTo(m2.getFaction()))
