@@ -42,6 +42,15 @@ public class HeaderController implements Initializable {
     private Label thirdStatTextLabel;
     
     @FXML
+    private VBox pendingCreditsBox;
+    
+    @FXML
+    private Label pendingCreditsLabel;
+    
+    @FXML
+    private Label pendingCreditsTextLabel;
+    
+    @FXML
     private Button refreshButton;
     
     @FXML
@@ -85,6 +94,7 @@ public class HeaderController implements Initializable {
             missionCountLabel.setText("0");
             creditsLabel.setText("0");
             thirdStatBox.setVisible(false);
+            pendingCreditsBox.setVisible(false);
             return;
         }
         
@@ -99,15 +109,40 @@ public class HeaderController implements Initializable {
         int thirdStatValue = 0;
         
         if (currentFilter == MissionStatus.ACTIVE) {
-            // Vue active : crédits espérés
-            totalCredits = filteredMissions.stream().mapToLong(Mission::getReward).sum();
-            creditsText = "CRÉDITS ESPÉRÉS";
+            // Vue active : réorganiser l'ordre des stats
+            // 1. Missions actives
             missionCountTextLabel.setText("MISSIONS ACTIVES");
             
-            // Troisième stat : factions uniques
+            // 2. Factions uniques
             thirdStatValue = (int) filteredMissions.stream().map(Mission::getFaction).distinct().count();
             thirdStatText = "FACTIONS";
             thirdStatBox.setVisible(true);
+            
+            // 3. Crédits espérés avec crédits déjà possibles en bleu
+            totalCredits = filteredMissions.stream().mapToLong(Mission::getReward).sum();
+            
+            // Calculer les crédits déjà possibles (missions actives complétées)
+            long completedCredits = filteredMissions.stream()
+                    .filter(mission -> mission.getCurrentCount() >= mission.getTargetCount())
+                    .mapToLong(Mission::getReward)
+                    .sum();
+            
+            creditsText = "CRÉDITS ESPÉRÉS";
+            creditsLabel.setText(String.format("%,d", totalCredits));
+            creditsLabel.setStyle("-fx-text-fill: #FF6B00;"); // Orange pour le total
+            creditsTextLabel.setText("CRÉDITS ESPÉRÉS");
+            creditsTextLabel.setStyle("-fx-text-fill: #CCCCCC;"); // Couleur par défaut
+            
+            // Afficher les crédits en attente dans un label séparé
+            if (completedCredits > 0) {
+                pendingCreditsBox.setVisible(true);
+                pendingCreditsLabel.setText(String.format("%,d", completedCredits));
+                pendingCreditsLabel.setStyle("-fx-text-fill: #00BFFF;"); // Bleu pour les crédits en attente
+                pendingCreditsTextLabel.setText("CRÉDITS EN ATTENTE");
+                pendingCreditsTextLabel.setStyle("-fx-text-fill: #00BFFF;"); // Bleu pour le texte
+            } else {
+                pendingCreditsBox.setVisible(false);
+            }
             
         } else if (currentFilter == MissionStatus.COMPLETED) {
             // Vue complétée : crédits gagnés
@@ -119,6 +154,7 @@ public class HeaderController implements Initializable {
             thirdStatValue = filteredMissions.stream().mapToInt(Mission::getTargetCount).sum();
             thirdStatText = "KILLS TOTAL";
             thirdStatBox.setVisible(true);
+            pendingCreditsBox.setVisible(false);
             
         } else if (currentFilter == MissionStatus.FAILED) {
             // Vue abandonnée : crédits perdus
@@ -130,6 +166,7 @@ public class HeaderController implements Initializable {
             thirdStatValue = (int) filteredMissions.stream().map(Mission::getFaction).distinct().count();
             thirdStatText = "FACTIONS";
             thirdStatBox.setVisible(true);
+            pendingCreditsBox.setVisible(false);
             
         } else {
             // Vue toutes : afficher les 3 stats séparément
@@ -164,10 +201,18 @@ public class HeaderController implements Initializable {
         
         // Mettre à jour les labels seulement si ce n'est pas la vue "toutes"
         if (currentFilter != null) {
-            creditsLabel.setText(String.format("%,d", totalCredits));
-            creditsTextLabel.setText(creditsText);
+            // Pour la vue ACTIVE, les crédits sont déjà mis à jour avec les couleurs
+            if (currentFilter != MissionStatus.ACTIVE) {
+                creditsLabel.setText(String.format("%,d", totalCredits));
+                creditsTextLabel.setText(creditsText);
+            }
             thirdStatLabel.setText(String.valueOf(thirdStatValue));
             thirdStatTextLabel.setText(thirdStatText);
+        }
+        
+        // Masquer les crédits en attente pour les autres vues
+        if (currentFilter != MissionStatus.ACTIVE) {
+            pendingCreditsBox.setVisible(false);
         }
         
         // Appliquer les couleurs selon le filtre

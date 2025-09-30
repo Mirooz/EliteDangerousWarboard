@@ -105,6 +105,12 @@ public class FooterController implements Initializable {
         String lastTargetFaction = null;
 
         for (TargetFactionStats stat : stats) {
+            // Trouver le plus haut score pour cette faction cible
+            int maxKills = stat.getSources().stream()
+                    .mapToInt(SourceFactionStats::getKills)
+                    .max()
+                    .orElse(0);
+            
             for (SourceFactionStats src : stat.getSources()) {
                 HBox row = new HBox(0);
                 row.setAlignment(Pos.CENTER_LEFT);
@@ -121,8 +127,21 @@ public class FooterController implements Initializable {
                 sourceLabel.setPrefWidth(COL_WIDTH_SOURCE);
                 sourceLabel.getStyleClass().add("faction-col");
 
-                Label killsLabel = new Label(String.valueOf(src.getKills()));
+                // Affichage conditionnel des kills
+                Label killsLabel;
+                if (src.getKills() == maxKills) {
+                    // Plus haut score : en gras
+                    killsLabel = new Label(String.valueOf(src.getKills()));
+                    killsLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #FF6B00;");
+                } else {
+                    // Autres scores : avec écart en vert
+                    int difference = maxKills - src.getKills();
+                    killsLabel = new Label(src.getKills() + " (-" + difference + ")");
+                    killsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00;"); // vert pour l'écart
+                }
+                
                 killsLabel.setPrefWidth(COL_WIDTH_KILLS);
+                killsLabel.setAlignment(Pos.CENTER_RIGHT);
                 killsLabel.getStyleClass().addAll("faction-col", "kills");
 
                 row.getChildren().addAll(targetLabel, sourceLabel, killsLabel);
@@ -130,28 +149,6 @@ public class FooterController implements Initializable {
 
                 lastTargetFaction = stat.getTargetFaction();
             }
-
-            // Ligne total
-            HBox totalRow = new HBox(0);
-            totalRow.setAlignment(Pos.CENTER_LEFT);
-            totalRow.getStyleClass().add("faction-total");
-
-            Label totalLabel = new Label(""); // pas de répétition
-            totalLabel.setPrefWidth(COL_WIDTH_TARGET);
-            Label textLabel = new Label("➡ Total");
-            textLabel.setPrefWidth(COL_WIDTH_SOURCE);
-            textLabel.setAlignment(Pos.CENTER);
-            textLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #FF6B00;"); // orange Elite
-            textLabel.getStyleClass().add("faction-col");
-
-            Label totalKills = new Label(String.valueOf(stat.getTotalKills()));
-            totalKills.setPrefWidth(COL_WIDTH_KILLS);
-            totalKills.setAlignment(Pos.CENTER_RIGHT);
-            totalKills.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #FF6B00;"); // orange Elite
-            totalKills.getStyleClass().addAll("faction-col", "kills");
-
-            totalRow.getChildren().addAll(totalLabel, textLabel, totalKills);
-            factionStats.getChildren().add(totalRow);
 
             lastTargetFaction = null;
         }
