@@ -221,6 +221,7 @@ public class JournalService {
      */
     private List<File> getJournalFilesFromLastWeek() throws IOException {
         List<File> journalFiles = new ArrayList<>();
+        System.out.println("Journal path : "  + JOURNAL_PATH);
         Path journalDir = Paths.get(JOURNAL_PATH);
         
         if (!Files.exists(journalDir)) {

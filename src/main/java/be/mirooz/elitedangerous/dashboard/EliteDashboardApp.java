@@ -19,7 +19,7 @@ public class EliteDashboardApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(EliteDashboardApp.class.getResource("/fxml/dashboard.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
         // Icône de l'application
-        Image icon = new Image(getClass().getResourceAsStream("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png"));
+        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png")));
         stage.getIcons().add(icon);
         // Configuration du style Elite Dangerous
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());

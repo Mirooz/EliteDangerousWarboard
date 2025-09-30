@@ -72,38 +72,24 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
-                <configuration>
-                    <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
-                    <options>
-                        <option>-Dfile.encoding=UTF-8</option>
-<!--                        <option>-Djournal.folder=target/classes/exemple</option>-->
-                        <option>-Djournal.folder=C:/Users/ewgallet/IdeaProjects/elite-dashboard/src/main/resources/exemple</option>
-                    </options>
-                </configuration>
-            </plugin>
-            
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
+                <configuration>
+                    <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>journal.folder</key>
+                            <value>C:\Users\ewen_\Saved Games\Frontier Developments\Elite Dangerous</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
                 <goals>
                     <goal>
                         java
                     </goal>
                 </goals>
-                <executions>
-                    <execution>
-                        <id>summary</id>
-                        <configuration>
-                            <mainClass>be.mirooz.elitedangerous.dashboard.EliteMissionSummaryApp</mainClass>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
