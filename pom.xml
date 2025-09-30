@@ -59,6 +59,7 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
@@ -69,6 +70,7 @@
                 <configuration>
                     <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
                     <options>
+                        <option>-Dfile.encoding=UTF-8</option>
                     <option>-Djournal.folder=target/classes/exemple</option>
                     </options>
                 </configuration>

@@ -62,4 +62,8 @@
 { "timestamp":"2025-09-28T23:45:28Z", "event":"ReceiveText", "From":"$npc_name_decorate:#name=Rui Long \"Drake\" CHEN;", "From_Localised":"Rui Long \"Drake\" CHEN", "Message":"$Commuter_AuthorityScan05;", "Message_Localised":"Vous avez une raison officielle d'analyser mon vaisseau ?", "Channel":"npc" }
 { "timestamp":"2025-09-28T23:48:28Z", "event":"Music", "MusicTrack":"Exploration" }
 { "timestamp":"2025-09-28T23:48:30Z", "event":"Music", "MusicTrack":"MainMenu" }
+
+{ "timestamp":"2025-09-28T23:48:40Z", "event":"Bounty", "Rewards":[ { "Faction":"Eagle Corporation Industries", "Reward":299114 } ], "PilotName":"$npc_name_decorate:#name=Szabo Zsolt;", "PilotName_Localised":"Szabo Zsolt", "Target":"federation_dropship_mkii", "Target_Localised":"Federal Assault Ship", "TotalReward":299114, "VictimFaction":"Ross 529 Crew" }
+
+
 { "timestamp":"2025-09-28T23:49:37Z", "event":"Shutdown" }
