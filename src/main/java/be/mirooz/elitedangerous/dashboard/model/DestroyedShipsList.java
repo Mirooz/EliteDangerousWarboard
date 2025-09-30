@@ -54,6 +54,8 @@ public class DestroyedShipsList {
     public void clearBounty(){
         totalBountyEarned=0;
         shipsSinceLastReset=0;
+        // Vider la liste des vaisseaux détruits lors de l'encaissement des bounties
+        destroyedShips.clear();
     }
     public void clearRewards(){
         this.bountyPerFaction = new HashMap<>();
