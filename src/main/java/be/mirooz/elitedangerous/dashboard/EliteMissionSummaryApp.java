@@ -6,12 +6,12 @@ import be.mirooz.elitedangerous.dashboard.service.JournalService;
  * Application pour afficher le résumé des missions Elite Dangerous
  */
 public class EliteMissionSummaryApp {
-    
+    static String journalFolder = System.getProperty("journal.folder");
     public static void main(String[] args) {
         JournalService journalService = new JournalService();
         
         System.out.println("=== RÉSUMÉ DES MISSIONS ELITE DANGEROUS ===");
-        System.out.println("Lecture des journaux depuis: C:\\Users\\ewen_\\Saved Games\\Frontier Developments\\Elite Dangerous");
+        System.out.println("Lecture des journaux depuis: " + journalFolder);
         System.out.println();
         
         try {

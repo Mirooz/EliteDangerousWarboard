@@ -36,7 +36,7 @@ public class MissionService {
         }
         
         // Sinon, retourner des données de test
-        return generateTestMissions();
+        return new ArrayList<>();
     }
     
     /**

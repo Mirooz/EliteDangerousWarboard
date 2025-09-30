@@ -23,7 +23,7 @@ import java.util.stream.Stream;
  */
 public class JournalService {
     
-    private static final String JOURNAL_PATH = "C:\\Users\\ewen_\\Saved Games\\Frontier Developments\\Elite Dangerous";
+    private static final String JOURNAL_PATH = System.getProperty("journal.folder");
     private static final String JOURNAL_PREFIX = "Journal.";
     private static final String SHIPYARD_FILE = "Shipyard.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
