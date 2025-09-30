@@ -448,6 +448,13 @@
     -fx-background-color: -fx-elite-darker;
 }
 
+/* Icône Wing */
+.wing-icon {
+    -fx-font-size: 16px;
+    -fx-text-fill: -fx-elite-blue;
+    -fx-font-weight: bold;
+}
+
 /* Colonnes */
 .faction-col {
     -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;

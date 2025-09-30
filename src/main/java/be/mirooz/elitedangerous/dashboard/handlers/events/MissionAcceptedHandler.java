@@ -64,6 +64,11 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             mission.setType(MissionType.fromName(missionName));
             mission.setAcceptedTime(parseTimestamp(timestamp));
             mission.setExpiry(expiryTime);
+            
+            // Détecter si c'est une mission de wing
+            boolean isWing = missionName != null && missionName.contains("Wing_name");
+            mission.setWing(isWing);
+            
             missionList.getGlobalMissionMap().put(missionId, mission);
 
         } catch (Exception e) {

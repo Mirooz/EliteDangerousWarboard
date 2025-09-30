@@ -27,6 +27,7 @@ public class Mission {
     private int targetCount;
     private int currentCount;
     private LocalDateTime acceptedTime;
+    private boolean wing;
 
     public Mission() {}
 
@@ -109,6 +110,9 @@ public class Mission {
 
     public LocalDateTime getAcceptedTime() { return acceptedTime; }
     public void setAcceptedTime(LocalDateTime acceptedTime) { this.acceptedTime = acceptedTime; }
+
+    public boolean isWing() { return wing; }
+    public void setWing(boolean wing) { this.wing = wing; }
 
     @Override
     public String toString() {

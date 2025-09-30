@@ -11,6 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -192,6 +193,21 @@ public class MissionListController implements Initializable {
         
         killsSection.getChildren().addAll(killsLabel, progressBar);
         
+        // Icône Wing - largeur fixe pour alignement
+        Label wingLabel = new Label();
+        wingLabel.setPrefWidth(30);
+        wingLabel.setMinWidth(30);
+        wingLabel.setMaxWidth(30);
+        wingLabel.setAlignment(Pos.CENTER);
+        
+        if (mission.isWing()) {
+            wingLabel.setText("✈"); // Icône d'avion pour wing
+            wingLabel.getStyleClass().add("wing-icon");
+            wingLabel.setTooltip(new Tooltip("Mission de Wing"));
+        } else {
+            wingLabel.setText(""); // Vide pour les missions normales
+        }
+        
         // Récompense - largeur fixe pour alignement
         Label rewardLabel = new Label(String.format("%,d Cr", mission.getReward()));
         rewardLabel.getStyleClass().add("massacre-reward");
@@ -236,7 +252,7 @@ public class MissionListController implements Initializable {
             }
         }
         
-        mainRow.getChildren().addAll(factionLabel, targetLabel, killsSection, rewardLabel, timeSection);
+        mainRow.getChildren().addAll(factionLabel, targetLabel, killsSection, wingLabel, rewardLabel, timeSection);
         
         card.getChildren().add(mainRow);
         
