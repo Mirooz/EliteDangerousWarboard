@@ -27,7 +27,7 @@ public class MissionService {
 
     public void updateTargetRewards(JsonNode jsonNode) {
         LocalDateTime timestamp = DateUtil.parseTimestamp(jsonNode.has("timestamp") ? jsonNode.get("timestamp").asText() : null);
-        String shipName = jsonNode.has("Target_Localised") ? jsonNode.get("Target_Localised").asText() : "";
+        String shipName = jsonNode.has("Target_Localised") ? jsonNode.get("Target_Localised").asText() : jsonNode.has("Target")? jsonNode.get("Target").asText():"";
         String pilotName = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
         int totalReward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
         String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";

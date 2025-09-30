@@ -13,6 +13,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
@@ -70,20 +72,32 @@ public class DestroyedShipsController implements Initializable {
         // S'enregistrer pour les mises à jour UI
         uiRefreshManager.registerDestroyedShipsController(this);
     }
-
+    private static final DecimalFormat DF;
+    static {
+        var sym = new DecimalFormatSymbols();
+        sym.setGroupingSeparator('.');
+        DF = new DecimalFormat("#,##0", sym);
+    }
     private void initializeTable() {
         destroyedShipsData = FXCollections.observableArrayList();
         destroyedShipsTable.setItems(destroyedShipsData);
 
         // Configuration des colonnes
         shipNameColumn.setCellValueFactory(new PropertyValueFactory<>("shipName"));
-        pilotNameColumn.setCellValueFactory(new PropertyValueFactory<>("pilotName"));
-        bountyColumn.setCellValueFactory(new PropertyValueFactory<>("totalBountyReward"));
+        pilotNameColumn.setCellValueFactory(new PropertyValueFactory<>("pilotName")); bountyColumn.setCellValueFactory(new PropertyValueFactory<>("totalBountyReward"));
+
+        bountyColumn.setCellFactory(col -> new TableCell<DestroyedShip, Integer>() {
+            @Override
+            protected void updateItem(Integer value, boolean empty) {
+                super.updateItem(value, empty);
+                setText(empty || value == null ? null : DF.format(value) + " Cr");
+            }
+        });
         timeColumn.setCellValueFactory(cellData -> {
             DestroyedShip ship = cellData.getValue();
             if (ship.getDestroyedTime() != null) {
                 return new javafx.beans.property.SimpleStringProperty(
-                    ship.getDestroyedTime().format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm:ss"))
+                    ship.getDestroyedTime().format(DateTimeFormatter.ofPattern("HH:mm"))
                 );
             }
             return new javafx.beans.property.SimpleStringProperty("N/A");
@@ -96,10 +110,10 @@ public class DestroyedShipsController implements Initializable {
         timeColumn.setStyle("-fx-alignment: CENTER;");
 
         // Configuration de la largeur des colonnes pour s'adapter à la largeur du tableau
-        timeColumn.setPrefWidth(140);
+        timeColumn.setPrefWidth(60);
         shipNameColumn.setPrefWidth(120);
         pilotNameColumn.setPrefWidth(100);
-        bountyColumn.setPrefWidth(80);
+        bountyColumn.setPrefWidth(100);
         
         // Ajuster automatiquement les colonnes pour éviter le défilement horizontal
         destroyedShipsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
