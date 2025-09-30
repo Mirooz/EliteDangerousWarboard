@@ -292,7 +292,18 @@ public class JournalService {
                     System.err.println("Erreur lors de la lecture du fichier " + journalFile.getName() + ": " + e.getMessage());
                 }
             }
-            
+
+            if (!journalFiles.isEmpty()) {
+                File latestJournal = journalFiles.get(journalFiles.size()-1);
+
+                // Lancer le tail sur le dernier fichier
+                JournalTailService tailService = new JournalTailService();
+                tailService.startTailing(latestJournal);
+
+                // Lancer un watcher pour basculer si un nouveau fichier apparaît
+                new Thread(new JournalWatcherService(JOURNAL_PATH, tailService)).start();
+            }
+
         } catch (Exception e) {
             System.err.println("Erreur lors de la lecture des journaux: " + e.getMessage());
         }

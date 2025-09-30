@@ -34,7 +34,12 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.20.0</version>
+        </dependency>
         <!-- JSON Processing -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -71,7 +76,8 @@
                     <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
                     <options>
                         <option>-Dfile.encoding=UTF-8</option>
-                    <option>-Djournal.folder=target/classes/exemple</option>
+<!--                        <option>-Djournal.folder=target/classes/exemple</option>-->
+                        <option>-Djournal.folder=C:/Users/ewgallet/IdeaProjects/elite-dashboard/src/main/resources/exemple</option>
                     </options>
                 </configuration>
             </plugin>
