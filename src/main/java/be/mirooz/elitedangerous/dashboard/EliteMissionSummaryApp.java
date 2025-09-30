@@ -8,7 +8,7 @@ import be.mirooz.elitedangerous.dashboard.service.JournalService;
 public class EliteMissionSummaryApp {
     static String journalFolder = System.getProperty("journal.folder");
     public static void main(String[] args) {
-        JournalService journalService = new JournalService();
+        JournalService journalService = JournalService.getInstance();
         
         System.out.println("=== RÉSUMÉ DES MISSIONS ELITE DANGEROUS ===");
         System.out.println("Lecture des journaux depuis: " + journalFolder);

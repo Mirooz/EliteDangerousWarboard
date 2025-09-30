@@ -1,49 +1,33 @@
 package be.mirooz.elitedangerous.dashboard.model;
 
-/**
- * Types de missions disponibles dans Elite Dangerous
- */
+import java.util.Arrays;
+import java.util.List;
+
 public enum MissionType {
-    ASSASSINATION("Assassinat"),
-    BOUNTY_HUNTING("Chasse aux primes"),
-    COURIER("Transport de courrier"),
-    DELIVERY("Livraison"),
-    MINING("Mining"),
-    PASSENGER("Transport de passagers"),
-    SALVAGE("Récupération"),
-    SCAN("Scan"),
-    SMUGGLING("Contrebande"),
-    TRADING("Commerce"),
-    EXPLORATION("Exploration"),
-    COMBAT("Combat"),
-    RESCUE("Sauvetage"),
-    DATA("Données"),
-    MASSACRE("Massacre"),
-    PIRATE_MASSACRE("Massacre de pirates"),
-    SETTLEMENT_RAID("Raid de colonie"),
-    SETTLEMENT_DEFENCE("Défense de colonie"),
-    SETTLEMENT_REACTIVATE("Réactivation de colonie"),
-    SETTLEMENT_SALVAGE("Récupération de colonie"),
-    SETTLEMENT_SCAN("Scan de colonie"),
-    SETTLEMENT_ASSAULT("Assaut de colonie"),
-    SETTLEMENT_ASSAULT_GOLIATH("Assaut Goliath de colonie"),
-    SETTLEMENT_ASSAULT_RAID("Raid d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_DEFENCE("Défense d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_REACTIVATE("Réactivation d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_SALVAGE("Récupération d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_SCAN("Scan d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_ASSAULT("Assaut d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_ASSAULT_GOLIATH("Assaut Goliath d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_ASSAULT_RAID("Raid d'assaut d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_ASSAULT_DEFENCE("Défense d'assaut d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_ASSAULT_REACTIVATE("Réactivation d'assaut d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_ASSAULT_SALVAGE("Récupération d'assaut d'assaut de colonie"),
-    SETTLEMENT_ASSAULT_ASSAULT_SCAN("Scan d'assaut d'assaut de colonie");
+    ASSASSINATION("Assassinat", List.of("assassination", "assassinat")),
+    BOUNTY_HUNTING("Chasse aux primes", List.of("bounty", "prime")),
+    COURIER("Transport de courrier", List.of("courier", "courrier")),
+    DELIVERY("Livraison", List.of("delivery", "livraison")),
+    MINING("Mining", List.of("mining")),
+    PASSENGER("Transport de passagers", List.of("passenger", "passager")),
+    SALVAGE("Récupération", List.of("salvage", "récupération")),
+    SCAN("Scan", List.of("scan")),
+    SMUGGLING("Contrebande", List.of("smuggling", "contrebande")),
+    TRADING("Commerce", List.of("trading", "commerce")),
+    EXPLORATION("Exploration", List.of("exploration")),
+    MASSACRE("Massacre", List.of("massacre", "kill")),
+    COMBAT("Combat", List.of()), // fallback
+    RESCUE("Sauvetage", List.of("rescue", "sauvetage")),
+    DATA("Données", List.of("data", "données"));
+
+    // (⚠ tu peux ajouter tes SETTLEMENT_* si besoin avec leurs mots-clés)
 
     private final String displayName;
+    private final List<String> keywords;
 
-    MissionType(String displayName) {
+    MissionType(String displayName, List<String> keywords) {
         this.displayName = displayName;
+        this.keywords = keywords;
     }
 
     public String getDisplayName() {
@@ -53,5 +37,20 @@ public enum MissionType {
     @Override
     public String toString() {
         return displayName;
+    }
+
+    /**
+     * Détermine le type de mission à partir du nom
+     */
+    public static MissionType fromName(String missionName) {
+        if (missionName == null) {
+            return COMBAT;
+        }
+        String lowerName = missionName.toLowerCase();
+
+        return Arrays.stream(values())
+                .filter(type -> type.keywords.stream().anyMatch(lowerName::contains))
+                .findFirst()
+                .orElse(COMBAT);
     }
 }

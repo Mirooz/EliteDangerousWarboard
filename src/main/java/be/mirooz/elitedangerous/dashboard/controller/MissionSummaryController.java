@@ -19,7 +19,7 @@ public class MissionSummaryController extends Application {
     
     @Override
     public void start(Stage primaryStage) {
-        journalService = new JournalService();
+        journalService = JournalService.getInstance();
         
         VBox root = new VBox();
         root.setSpacing(10);

@@ -2,7 +2,6 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,10 +33,15 @@ public class JournalService {
     private String currentShip = null;
 
     private final Map<String,Mission> globalMissionList;
+    private final JournalEventDispatcher dispatcher;
 
-    public JournalService() {
+
+    private JournalService() {
+        this.dispatcher = JournalEventDispatcher.getInstance();
         this.globalMissionList = MissionsList.getInstance().getGlobalMissionMap();
     }
+    private static final JournalService INSTANCE = new JournalService();
+    public static JournalService getInstance() { return INSTANCE; }
 
     /**
      * Récupère toutes les missions des 7 derniers jours
@@ -279,31 +283,7 @@ public class JournalService {
                     for (String line : lines) {
                         try {
                             JsonNode jsonNode = objectMapper.readTree(line);
-                            String event = jsonNode.get("event").asText();
-                            
-                            switch (event) {
-                                case "MissionAccepted":
-                                    handleMissionAccepted(jsonNode);
-                                    break;
-                                case "MissionCompleted":
-                                    handleMissionCompleted(jsonNode);
-                                    break;
-                                case "MissionAbandoned":
-                                    handleMissionAbandoned(jsonNode);
-                                    break;
-                                case "MissionRedirected":
-                                    handleMissionRedirected(jsonNode);
-                                    break;
-                                case "Bounty":
-                                    handleBounty(jsonNode);
-                                    break;
-                                case "FactionKillBond":
-                                    handleFactionKillBond(jsonNode);
-                                    break;
-                                case "MissionProgress":
-                                    handleMissionProgress(jsonNode);
-                                    break;
-                            }
+                            dispatcher.dispatch(jsonNode);
                         } catch (Exception e) {
                             // Ignorer les lignes malformées
                         }
@@ -319,278 +299,6 @@ public class JournalService {
         
         return new ArrayList<>(globalMissionList.values());
     }
-    
-    /**
-     * Traite l'événement MissionAccepted
-     */
-    private void handleMissionAccepted(JsonNode jsonNode) {
-        try {
-            String missionId = jsonNode.get("MissionID").asText();
-            String missionName = jsonNode.get("Name").asText();
-            String faction = jsonNode.get("Faction").asText();
-            String targetFaction = jsonNode.has("TargetFaction") ? jsonNode.get("TargetFaction").asText() : null;
-            String targetSystem = jsonNode.has("TargetSystem") ? jsonNode.get("TargetSystem").asText() : null;
-            
-            // Essayer différents champs pour le nombre de kills requis
-            int targetCount = 0;
-            if (jsonNode.has("TargetCount")) {
-                targetCount = jsonNode.get("TargetCount").asInt();
-            } else if (jsonNode.has("KillCount")) {
-                targetCount = jsonNode.get("KillCount").asInt();
-            } else if (jsonNode.has("Count")) {
-                targetCount = jsonNode.get("Count").asInt();
-            } else if (jsonNode.has("Amount")) {
-                targetCount = jsonNode.get("Amount").asInt();
-            }
-            int reward = jsonNode.has("Reward") ? jsonNode.get("Reward").asInt() : 0;
-            String timestamp = jsonNode.get("timestamp").asText();
-            
-            // Récupérer la date d'expiration depuis le journal
-            LocalDateTime expiryTime = null;
-            if (jsonNode.has("Expiry")) {
-                expiryTime = parseTimestamp(jsonNode.get("Expiry").asText());
-            } else if (jsonNode.has("Deadline")) {
-                expiryTime = parseTimestamp(jsonNode.get("Deadline").asText());
-            } else {
-                // Fallback: 7 jours par défaut
-                expiryTime = parseTimestamp(timestamp).plusDays(7);
-            }
-            
-            Mission mission = new Mission();
-            mission.setId(missionId);
-            mission.setName(missionName);
-            mission.setFaction(faction);
-            mission.setTargetFaction(targetFaction);
-            mission.setTargetSystem(targetSystem);
-            mission.setTargetCount(targetCount);
-            mission.setCurrentCount(0);
-            mission.setReward(reward);
-            mission.setStatus(MissionStatus.ACTIVE);
-            mission.setType(determineMissionType(missionName));
-            mission.setAcceptedTime(parseTimestamp(timestamp));
-            mission.setExpiry(expiryTime);
-            
-            globalMissionList.put(missionId, mission);
-            
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de MissionAccepted: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Traite l'événement MissionCompleted
-     */
-    private void handleMissionCompleted(JsonNode jsonNode) {
-        try {
-            String missionId = jsonNode.get("MissionID").asText();
-            Mission mission = globalMissionList.get(missionId);
-            if (mission != null) {
-                mission.setStatus(MissionStatus.COMPLETED);
-                // Pour les missions complétées, mettre le compteur au maximum
-                // Si targetCount est 0, essayer de le récupérer depuis l'événement
-                if (mission.getTargetCount() == 0 && jsonNode.has("KillCount")) {
-                    mission.setTargetCount(jsonNode.get("KillCount").asInt());
-                }
-                mission.setCurrentCount(mission.getTargetCount());
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de MissionCompleted: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Traite l'événement MissionAbandoned
-     */
-    private void handleMissionAbandoned(JsonNode jsonNode) {
-        try {
-            String missionId = jsonNode.get("MissionID").asText();
-            Mission mission = globalMissionList.get(missionId);
-            if (mission != null) {
-                mission.setStatus(MissionStatus.FAILED);
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de MissionAbandoned: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Traite l'événement MissionRedirected
-     */
-    private void handleMissionRedirected(JsonNode jsonNode) {
-        try {
-            String missionId = jsonNode.get("MissionID").asText();
-            Mission mission = globalMissionList.get(missionId);
-            if (mission != null) {
-                // Mettre à jour la destination si nécessaire
-                if (jsonNode.has("NewDestinationStation")) {
-                    mission.setDestination(jsonNode.get("NewDestinationStation").asText());
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de MissionRedirected: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Traite l'événement Bounty (kill de pirate)
-     */
-    private void handleBounty(JsonNode jsonNode) {
-        try {
-            String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
-            int reward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
-            
-            System.out.println("Bounty event - VictimFaction: " + victimFaction + ", Reward: " + reward);
-            
-            // Trouver toutes les missions actives de massacre pour cette faction cible
-            if (updateKillsCount(victimFaction)) return; // Aucune mission éligible
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de Bounty: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private boolean updateKillsCount(String victimFaction) {
-        List<Mission> eligibleMissions = globalMissionList.values().stream()
-                .filter(mission -> mission.getStatus() == MissionStatus.ACTIVE)
-                .filter(mission -> mission.getType() == MissionType.MASSACRE)
-                .filter(mission -> mission.getTargetFaction() != null)
-                .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
-                .filter(mission -> mission.getTargetCountLeft() >0)
-                .toList();
-
-        System.out.println("Missions éligibles trouvées: " + eligibleMissions.size());
-
-        if (eligibleMissions.isEmpty()) {
-            return true;
-        }
-
-        // Grouper par faction source et trier par date d'acceptation (plus ancienne en premier)
-        Map<String, List<Mission>> missionsBySourceFaction = eligibleMissions.stream()
-                .collect(Collectors.groupingBy(Mission::getFaction));
-
-        // Pour chaque faction source, prendre la mission la plus ancienne
-        for (Map.Entry<String, List<Mission>> entry : missionsBySourceFaction.entrySet()) {
-            String sourceFaction = entry.getKey();
-            List<Mission> factionMissions = entry.getValue();
-
-            // Trier par date d'acceptation (plus ancienne en premier)
-            factionMissions.sort((m1, m2) -> {
-                if (m1.getAcceptedTime() == null && m2.getAcceptedTime() == null) return 0;
-                if (m1.getAcceptedTime() == null) return 1;
-                if (m2.getAcceptedTime() == null) return -1;
-                return m1.getAcceptedTime().compareTo(m2.getAcceptedTime());
-            });
-
-            // Prendre la mission la plus ancienne
-            Mission oldestMission = factionMissions.get(0);
-
-            // Incrémenter le compteur
-            int oldCount = oldestMission.getCurrentCount();
-            int newCount = oldCount + 1;
-            oldestMission.setCurrentCount(newCount);
-
-            System.out.println("Mission " + oldestMission.getId() + " (" + sourceFaction + ") : " +
-                             oldCount + " -> " + newCount + "/" + oldestMission.getTargetCount());
-
-            // Si la mission atteint le nombre de kills requis, la marquer comme en attente
-            if (newCount >= oldestMission.getTargetCount()) {
-                System.out.println("Mission " + oldestMission.getId() + " en attente de completion");
-                // La mission reste ACTIVE mais sera affichée en bleu (en attente)
-                // Le statut reste ACTIVE pour éviter les conflits avec MissionCompleted
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Traite l'événement FactionKillBond (kill de faction)
-     */
-    private void handleFactionKillBond(JsonNode jsonNode) {
-        try {
-            String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
-            int reward = jsonNode.has("Reward") ? jsonNode.get("Reward").asInt() : 0;
-            
-            System.out.println("FactionKillBond event - VictimFaction: " + victimFaction + ", Reward: " + reward);
-            
-            // Utiliser la même logique que handleBounty
-            if (updateKillsCount( victimFaction)) return; // Aucune mission éligible
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de FactionKillBond: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-    
-    /**
-     * Traite l'événement MissionProgress (progression de mission)
-     */
-    private void handleMissionProgress(JsonNode jsonNode) {
-        try {
-            String missionId = jsonNode.get("MissionID").asText();
-            Mission mission = globalMissionList.get(missionId);
-            if (mission != null && mission.getStatus() == MissionStatus.ACTIVE) {
-                // Mettre à jour la progression si disponible
-                if (jsonNode.has("Progress")) {
-                    int progress = jsonNode.get("Progress").asInt();
-                    mission.setCurrentCount(Math.min(progress, mission.getTargetCount()));
-                }
-                // Essayer de récupérer le nombre total requis si pas encore défini
-                if (mission.getTargetCount() == 0 && jsonNode.has("KillCount")) {
-                    mission.setTargetCount(jsonNode.get("KillCount").asInt());
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de MissionProgress: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Détermine le type de mission basé sur le nom
-     */
-    private MissionType determineMissionType(String missionName) {
-        String name = missionName.toLowerCase();
-        
-        if (name.contains("massacre") || name.contains("kill")) {
-            return MissionType.MASSACRE;
-        } else if (name.contains("assassination") || name.contains("assassinat")) {
-            return MissionType.ASSASSINATION;
-        } else if (name.contains("delivery") || name.contains("livraison")) {
-            return MissionType.DELIVERY;
-        } else if (name.contains("courier") || name.contains("courrier")) {
-            return MissionType.COURIER;
-        } else if (name.contains("passenger") || name.contains("passager")) {
-            return MissionType.PASSENGER;
-        } else if (name.contains("bounty") || name.contains("prime")) {
-            return MissionType.BOUNTY_HUNTING;
-        } else if (name.contains("exploration") || name.contains("exploration")) {
-            return MissionType.EXPLORATION;
-        } else if (name.contains("salvage") || name.contains("récupération")) {
-            return MissionType.SALVAGE;
-        } else if (name.contains("scan")) {
-            return MissionType.SCAN;
-        } else if (name.contains("mining")) {
-            return MissionType.MINING;
-        } else if (name.contains("smuggling") || name.contains("contrebande")) {
-            return MissionType.SMUGGLING;
-        } else if (name.contains("trading") || name.contains("commerce")) {
-            return MissionType.TRADING;
-        } else {
-            return MissionType.COMBAT; // Par défaut
-        }
-    }
-    
-    /**
-     * Parse un timestamp Elite Dangerous
-     */
-    private LocalDateTime parseTimestamp(String timestamp) {
-        try {
-            // Format: 2025-09-19T12:12:54Z
-            return LocalDateTime.parse(timestamp.replace("Z", ""), 
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-        } catch (Exception e) {
-            return LocalDateTime.now();
-        }
-    }
-    
     /**
      * Génère un résumé des missions
      */

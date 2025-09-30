@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.MissionType;
-import be.mirooz.elitedangerous.dashboard.service.MissionService;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -29,13 +29,13 @@ public class DashboardController implements Initializable {
     private MissionListController missionListController;
     private FooterController footerController;
     
-    private MissionService missionService;
+    private DashboardService dashboardService;
     private List<Mission> allMissions = new ArrayList<>();
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        missionService = new MissionService();
+        dashboardService = DashboardService.getInstance();
         loadComponents();
         loadMissions();
     }
@@ -69,18 +69,18 @@ public class DashboardController implements Initializable {
     }
     
     private void loadMissions() {
-        allMissions = missionService.getActiveMissions();
+        allMissions = dashboardService.getActiveMissions();
         headerController.setAllMissions(allMissions);
         missionListController.setAllMissions(allMissions);
         
         // Mettre à jour le nom du commandant dans le footer
-        String commanderName = missionService.getCommanderName();
+        String commanderName = dashboardService.getCommanderName();
         footerController.updateCommanderName(commanderName);
         
         // Mettre à jour les informations du vaisseau dans le footer
-        String currentSystem = missionService.getCurrentSystem();
-        String currentStation = missionService.getCurrentStation();
-        String currentShip = missionService.getCurrentShip();
+        String currentSystem = dashboardService.getCurrentSystem();
+        String currentStation = dashboardService.getCurrentStation();
+        String currentShip = dashboardService.getCurrentShip();
         footerController.updateShipInfo(currentSystem, currentStation, currentShip);
         
         applyCurrentFilter();
