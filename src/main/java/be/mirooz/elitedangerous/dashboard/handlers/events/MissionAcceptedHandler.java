@@ -66,7 +66,7 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             mission.setExpiry(expiryTime);
             
             // Détecter si c'est une mission de wing
-            boolean isWing = missionName != null && missionName.contains("Wing_name");
+            boolean isWing = missionName != null && missionName.contains("Wing");
             mission.setWing(isWing);
             
             missionList.getGlobalMissionMap().put(missionId, mission);
