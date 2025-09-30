@@ -626,3 +626,35 @@
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
 }
+
+/* Styles pour les statistiques de bounty par faction */
+.faction-bounty-stats {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 5 10 5 10;
+    -fx-max-width: 400;
+}
+
+.faction-bounty-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-alignment: CENTER;
+}
+
+.faction-bounty-name {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+    -fx-min-width: 120;
+}
+
+.faction-bounty-amount {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-weight: bold;
+}

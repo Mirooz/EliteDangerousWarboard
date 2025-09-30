@@ -26,7 +26,8 @@ public class JournalEventDispatcher {
                 new MissionRedirectedHandler(),
                 new BountyHandler(),
                 new FactionKillBondHandler(),
-                new MissionProgressHandler()
+                new MissionProgressHandler(),
+                new RedeemVoucherHandler()
         );
 
         handlerList.forEach(h -> handlers.put(h.getEventType(), h));

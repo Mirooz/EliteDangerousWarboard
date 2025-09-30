@@ -17,10 +17,13 @@ public class DestroyedShipsList {
     private Map<String,Integer> bountyPerFaction = new HashMap<>();
     @Getter
     private int totalBountyEarned;
+    @Getter
+    private int shipsSinceLastReset;
 
     private DestroyedShipsList() {
         this.destroyedShips = new ArrayList<>();
         this.totalBountyEarned = 0;
+        this.shipsSinceLastReset = 0;
     }
 
     public static synchronized DestroyedShipsList getInstance() {
@@ -33,6 +36,7 @@ public class DestroyedShipsList {
     public void addDestroyedShip(DestroyedShip ship) {
         destroyedShips.add(0,ship);
         totalBountyEarned += ship.getTotalBountyReward();
+        shipsSinceLastReset++;
         for (Reward reward : ship.getRewards()) {
             bountyPerFaction.merge(
                     reward.factionName(),
@@ -49,6 +53,7 @@ public class DestroyedShipsList {
     }
     public void clearBounty(){
         totalBountyEarned=0;
+        shipsSinceLastReset=0;
     }
     public void clearRewards(){
         this.bountyPerFaction = new HashMap<>();
@@ -79,5 +84,9 @@ public class DestroyedShipsList {
                 .filter(ship -> faction.equals(ship.getFaction()))
                 .mapToInt(DestroyedShip::getTotalBountyReward)
                 .sum();
+    }
+
+    public Map<String, Integer> getBountyPerFaction() {
+        return new HashMap<>(bountyPerFaction);
     }
 }
