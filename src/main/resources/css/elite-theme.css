@@ -162,6 +162,15 @@
     -fx-background-color: -fx-elite-orange;
 }
 
+.missions-scroll .scroll-bar:horizontal {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.missions-scroll .scroll-bar:horizontal .thumb {
+    -fx-background-color: -fx-elite-orange;
+}
+
 .missions-list {
     -fx-background-color: transparent;
 }
@@ -479,4 +488,135 @@
 .faction-col.kills {
     -fx-text-fill: -fx-elite-orange;
     -fx-alignment: CENTER_RIGHT;
+}
+
+/* Styles pour le panneau des vaisseaux détruits */
+.destroyed-ships-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 5;
+    -fx-pref-width: 450;
+    -fx-max-width: 450;
+    -fx-min-width: 450;
+}
+
+.panel-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 3 5 3 5;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+}
+
+.destroyed-ships-table {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-pref-width: 440;
+    -fx-max-width: 440;
+    -fx-min-width: 440;
+}
+
+.destroyed-ships-table .column-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 2 6 2 6;
+}
+
+.destroyed-ships-table .column-header .label {
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.destroyed-ships-table .column-header:last-child {
+    -fx-border-width: 0;
+}
+
+.destroyed-ships-table .table-cell {
+    -fx-text-fill: -fx-elite-text;
+    -fx-border-color: -fx-elite-gray;
+    -fx-font-size: 10px;
+    -fx-padding: 3 4 3 4;
+    -fx-wrap-text: false;
+}
+
+.destroyed-ships-table .table-row-cell {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-gray;
+    -fx-border-width: 0 0 1 0;
+}
+
+.destroyed-ships-table .table-row-cell:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.destroyed-ships-table .table-row-cell:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.destroyed-ships-table .table-row-cell:selected .table-cell {
+    -fx-text-fill: -fx-elite-dark;
+}
+
+/* Styles pour les colonnes spécifiques */
+.destroyed-ships-table .table-cell.ship-name {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+}
+
+.destroyed-ships-table .table-cell.pilot-name {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.destroyed-ships-table .table-cell.faction {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+}
+
+.destroyed-ships-table .table-cell.ship-type {
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.destroyed-ships-table .table-cell.bounty {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-weight: bold;
+}
+
+.destroyed-ships-table .table-cell.time {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+/* Styles pour les scrollbars du tableau des vaisseaux détruits */
+.destroyed-ships-table .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.destroyed-ships-table .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.destroyed-ships-table .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* Supprimer le carré blanc dans le coin du tableau */
+.destroyed-ships-table .corner {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
 }

@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.ui;
 
+import be.mirooz.elitedangerous.dashboard.controller.DestroyedShipsController;
 import be.mirooz.elitedangerous.dashboard.controller.FooterController;
 import be.mirooz.elitedangerous.dashboard.controller.HeaderController;
 import be.mirooz.elitedangerous.dashboard.controller.MissionListController;
@@ -10,6 +11,7 @@ public class UIRefreshManager {
     private HeaderController headerController;
     private MissionListController missionListController;
     private FooterController footerController;
+    private DestroyedShipsController destroyedShipsController;
 
 
     private UIRefreshManager() {}
@@ -24,10 +26,15 @@ public class UIRefreshManager {
         this.footerController = footer;
     }
 
+    public void registerDestroyedShipsController(DestroyedShipsController destroyedShipsController) {
+        this.destroyedShipsController = destroyedShipsController;
+    }
+
 
     public void refresh() {
         if (missionListController != null) missionListController.applyFilter();
         if (headerController != null) headerController.updateStats();
         if (footerController != null) footerController.updateFactionStats();
+        if (destroyedShipsController != null) destroyedShipsController.refresh();
     }
 }

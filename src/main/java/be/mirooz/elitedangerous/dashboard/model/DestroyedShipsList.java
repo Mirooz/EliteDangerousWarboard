@@ -1,0 +1,83 @@
+package be.mirooz.elitedangerous.dashboard.model;
+
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * Liste des vaisseaux détruits - Singleton pour gérer l'état global
+ */
+public class DestroyedShipsList {
+    private static DestroyedShipsList instance;
+    private final List<DestroyedShip> destroyedShips;
+    private Map<String,Integer> bountyPerFaction = new HashMap<>();
+    @Getter
+    private int totalBountyEarned;
+
+    private DestroyedShipsList() {
+        this.destroyedShips = new ArrayList<>();
+        this.totalBountyEarned = 0;
+    }
+
+    public static synchronized DestroyedShipsList getInstance() {
+        if (instance == null) {
+            instance = new DestroyedShipsList();
+        }
+        return instance;
+    }
+
+    public void addDestroyedShip(DestroyedShip ship) {
+        destroyedShips.add(0,ship);
+        totalBountyEarned += ship.getTotalBountyReward();
+        for (Reward reward : ship.getRewards()) {
+            bountyPerFaction.merge(
+                    reward.factionName(),
+                    reward.reward(),
+                    Integer::sum
+            );
+        }
+    }
+
+    public void clearDestroyedShips() {
+        destroyedShips.clear();
+        clearBounty();
+        clearRewards();
+    }
+    public void clearBounty(){
+        totalBountyEarned=0;
+    }
+    public void clearRewards(){
+        this.bountyPerFaction = new HashMap<>();
+    }
+
+    public List<DestroyedShip> getDestroyedShips() {
+        return new ArrayList<>(destroyedShips);
+    }
+
+    public List<DestroyedShip> getDestroyedShipsByFaction(String faction) {
+        return destroyedShips.stream()
+                .filter(ship -> faction.equals(ship.getFaction()))
+                .collect(Collectors.toList());
+    }
+
+    public int getDestroyedShipsCount() {
+        return destroyedShips.size();
+    }
+
+    public int getDestroyedShipsCountByFaction(String faction) {
+        return (int) destroyedShips.stream()
+                .filter(ship -> faction.equals(ship.getFaction()))
+                .count();
+    }
+
+    public int getBountyEarnedByFaction(String faction) {
+        return destroyedShips.stream()
+                .filter(ship -> faction.equals(ship.getFaction()))
+                .mapToInt(DestroyedShip::getTotalBountyReward)
+                .sum();
+    }
+}

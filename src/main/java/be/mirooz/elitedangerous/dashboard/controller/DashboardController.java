@@ -25,6 +25,7 @@ public class DashboardController implements Initializable {
     private HeaderController headerController;
     private MissionListController missionListController;
     private FooterController footerController;
+    private DestroyedShipsController destroyedShipsController;
     private UIRefreshManager uiRefreshManager = UIRefreshManager.getInstance();
     
     private DashboardService dashboardService;
@@ -44,12 +45,15 @@ public class DashboardController implements Initializable {
             createHeaderPanel();
             // Charger la liste des missions
             createMissionPanel();
+            // Charger le panneau des vaisseaux détruits
+            createDestroyedShipsPanel();
             // Charger le footer
             createFooterPanel();
             uiRefreshManager.registerControllers(
                     headerController,
                     missionListController,
                     footerController);
+            uiRefreshManager.registerDestroyedShipsController(destroyedShipsController);
             
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement des composants: " + e.getMessage());
@@ -70,6 +74,13 @@ public class DashboardController implements Initializable {
         missionListController = missionListLoader.getController();
         missionListController.setFilterChangeCallback(this::onFilterChange);
         mainPane.setCenter(missionList);
+    }
+
+    private void createDestroyedShipsPanel() throws IOException {
+        FXMLLoader destroyedShipsLoader = new FXMLLoader(getClass().getResource("/fxml/destroyed-ships.fxml"));
+        VBox destroyedShipsPanel = destroyedShipsLoader.load();
+        destroyedShipsController = destroyedShipsLoader.getController();
+        mainPane.setLeft(destroyedShipsPanel);
     }
 
     private void createHeaderPanel() throws IOException {

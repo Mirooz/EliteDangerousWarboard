@@ -1,37 +1,79 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.*;
+import be.mirooz.elitedangerous.dashboard.util.DateUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.Collection;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MissionService {
 
-    private MissionService(){
+    private final MissionsList missionsList;
+    private final DestroyedShipsList destroyedShipsList;
+    private MissionService() {
+        this.missionsList = MissionsList.getInstance();
+        this.destroyedShipsList = DestroyedShipsList.getInstance();
     }
-    private static final MissionService INSTANCE = new MissionService();
-    public static MissionService getInstance() { return INSTANCE; }
 
-    public boolean updateKillsCount(Collection<Mission> missions, String victimFaction) {
-        if (missions.isEmpty()){
-            return false;
+    private static final MissionService INSTANCE = new MissionService();
+
+    public static MissionService getInstance() {
+        return INSTANCE;
+    }
+
+    public void updateTargetRewards(JsonNode jsonNode) {
+        LocalDateTime timestamp = DateUtil.parseTimestamp(jsonNode.has("timestamp") ? jsonNode.get("timestamp").asText() : null);
+        String shipName = jsonNode.has("Target_Localised") ? jsonNode.get("Target_Localised").asText() : "";
+        String pilotName = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
+        int totalReward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
+        String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
+        List<Reward> rewards = new ArrayList<>();
+        if (jsonNode.has("Rewards") && jsonNode.get("Rewards").isArray()) {
+            for (JsonNode rewardNode : jsonNode.get("Rewards")) {
+                String faction = rewardNode.has("Faction") ? rewardNode.get("Faction").asText() : null;
+                int reward = rewardNode.has("Reward") ? rewardNode.get("Reward").asInt() : 0;
+                rewards.add(new Reward(faction, reward));
+            }
         }
-        List<Mission> eligibleMissions = missions.stream()
+        if (totalReward > 0) {
+            DestroyedShip destroyedShip = DestroyedShip
+                    .builder()
+                    .destroyedTime(timestamp)
+                    .shipName(shipName)
+                    .pilotName(pilotName)
+                    .bountyFaction(victimFaction)
+                    .totalBountyReward(totalReward)
+                    .rewards(rewards)
+                    .build();
+            destroyedShipsList.addDestroyedShip(destroyedShip);
+        }
+    }
+
+    public void updateKillsCount(JsonNode jsonNode) {
+
+        String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
+        int totalReward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
+        System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward);
+
+        if (missionsList.getGlobalMissionMap().values().isEmpty()) {
+            return;
+        }
+        List<Mission> eligibleMissions = missionsList.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.getStatus() == MissionStatus.ACTIVE)
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> mission.getTargetFaction() != null)
                 .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
-                .filter(mission -> mission.getTargetCountLeft() >0)
+                .filter(mission -> mission.getTargetCountLeft() > 0)
                 .toList();
 
         System.out.println("Missions éligibles trouvées: " + eligibleMissions.size());
 
         if (eligibleMissions.isEmpty()) {
-            return true;
+            return;
         }
 
         // Grouper par faction source et trier par date d'acceptation (plus ancienne en premier)
@@ -69,7 +111,6 @@ public class MissionService {
                 // Le statut reste ACTIVE pour éviter les conflits avec MissionCompleted
             }
         }
-        return false;
     }
 
 }

@@ -1,15 +1,24 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events;
 
-import be.mirooz.elitedangerous.dashboard.service.DashboardService;
+import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
+import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
+import be.mirooz.elitedangerous.dashboard.model.Reward;
 import be.mirooz.elitedangerous.dashboard.service.MissionService;
+import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class BountyHandler implements JournalEventHandler {
     private final MissionService missionService;
+    private final DestroyedShipsList destroyedShipsList;
 
     public BountyHandler() {
         this.missionService = MissionService.getInstance();
-
+        this.destroyedShipsList = DestroyedShipsList.getInstance();
     }
 
     @Override
@@ -20,12 +29,10 @@ public class BountyHandler implements JournalEventHandler {
     @Override
     public void handle(JsonNode jsonNode) {
         try {
-            String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
-            int reward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
-
-            System.out.println("Bounty event - VictimFaction: " + victimFaction + ", Reward: " + reward);
+            System.out.println("Bounty event");
             // Trouver toutes les missions actives de massacre pour cette faction cible
-            if (missionService.updateKillsCount(missionList.getGlobalMissionMap().values(),victimFaction)) return; // Aucune mission éligible
+            missionService.updateKillsCount(jsonNode);
+            missionService.updateTargetRewards(jsonNode);
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Bounty: " + e.getMessage());
             e.printStackTrace();
