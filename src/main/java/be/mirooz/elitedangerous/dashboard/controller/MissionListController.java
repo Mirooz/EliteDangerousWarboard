@@ -71,7 +71,13 @@ public class MissionListController implements Initializable {
         List<Mission> filteredMissions = allMissionsList.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
-                .sorted((m1, m2) -> m1.getFaction().compareTo(m2.getFaction()))
+                .sorted((m1, m2) -> {
+                    // Trier par date d'acceptation (plus ancienne en premier)
+                    if (m1.getAcceptedTime() == null && m2.getAcceptedTime() == null) return 0;
+                    if (m1.getAcceptedTime() == null) return 1; // Les missions sans date vont à la fin
+                    if (m2.getAcceptedTime() == null) return -1;
+                    return m1.getAcceptedTime().compareTo(m2.getAcceptedTime());
+                })
                 .toList();
         
         for (Mission mission : filteredMissions) {
