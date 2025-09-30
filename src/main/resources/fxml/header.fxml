@@ -47,7 +47,6 @@
                </children>
             </VBox>
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#refreshMissions" styleClass="elite-button" text="ACTUALISER" />
          </children>
          <padding>
             <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />

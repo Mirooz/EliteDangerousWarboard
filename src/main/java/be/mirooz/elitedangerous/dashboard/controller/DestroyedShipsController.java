@@ -55,8 +55,6 @@ public class DestroyedShipsController implements Initializable {
     @FXML
     private TableColumn<DestroyedShip, String> timeColumn;
 
-    @FXML
-    private Button clearButton;
 
     @FXML
     private VBox factionBountyStats;
@@ -129,7 +127,7 @@ public class DestroyedShipsController implements Initializable {
     }
 
     private void initializeButtons() {
-        clearButton.setOnAction(event -> clearDestroyedShips());
+        // Plus de boutons à initialiser
     }
 
     public void refresh() {
@@ -186,19 +184,6 @@ public class DestroyedShipsController implements Initializable {
         }
     }
 
-    private void clearDestroyedShips() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation");
-        alert.setHeaderText("Effacer les vaisseaux détruits");
-        alert.setContentText("Êtes-vous sûr de vouloir effacer tous les vaisseaux détruits de la liste ?");
-
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                destroyedShipsList.clearDestroyedShips();
-                refresh();
-            }
-        });
-    }
 
     public void addDestroyedShip(DestroyedShip ship) {
         Platform.runLater(() -> {

@@ -87,7 +87,6 @@ public class DashboardController implements Initializable {
         FXMLLoader headerLoader = new FXMLLoader(getClass().getResource("/fxml/header.fxml"));
         VBox header = headerLoader.load();
         headerController = headerLoader.getController();
-        headerController.setRefreshCallback(this::refreshMissions);
         mainPane.setTop(header);
     }
 
@@ -105,11 +104,6 @@ public class DashboardController implements Initializable {
         uiRefreshManager.refresh();
     }
     
-    private void refreshMissions() {
-        headerController.setStatusText("ACTUALISATION...");
-        loadMissions();
-        headerController.setStatusText("SYSTÈME EN LIGNE");
-    }
     
     private void onFilterChange(MissionStatus filter) {
         currentFilter = filter;

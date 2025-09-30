@@ -14,10 +14,6 @@
       <Separator styleClass="header-separator"/>
    </VBox>
    
-   <!-- Bouton d'effacement -->
-   <HBox alignment="CENTER_RIGHT">
-      <Button text="EFFACER" fx:id="clearButton" styleClass="elite-button"/>
-   </HBox>
    
    <!-- Table des vaisseaux détruits -->
    <TableView fx:id="destroyedShipsTable" styleClass="destroyed-ships-table" 

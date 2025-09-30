@@ -6,7 +6,6 @@ import be.mirooz.elitedangerous.dashboard.model.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
@@ -50,8 +49,6 @@ public class HeaderController implements Initializable {
     @FXML
     private Label pendingCreditsTextLabel;
     
-    @FXML
-    private Button refreshButton;
     
     @FXML
     private Label statusLabel;
@@ -59,27 +56,13 @@ public class HeaderController implements Initializable {
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
     private MissionsList missionsList = MissionsList.getInstance();
 
-    private Runnable refreshCallback;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialisation si nécessaire
     }
     
-    public void setRefreshCallback(Runnable callback) {
-        this.refreshCallback = callback;
-    }
-
-    
     public void setCurrentFilter(MissionStatus filter) {
         this.currentFilter = filter;
-    }
-    
-    @FXML
-    private void refreshMissions() {
-        if (refreshCallback != null) {
-            refreshCallback.run();
-        }
     }
     
     public void updateStats() {
