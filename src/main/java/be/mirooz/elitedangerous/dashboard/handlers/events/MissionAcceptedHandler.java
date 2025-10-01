@@ -2,8 +2,8 @@ package be.mirooz.elitedangerous.dashboard.handlers.events;
 
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
@@ -72,7 +72,8 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             // Détecter si c'est une mission de wing
             boolean isWing = missionName != null && missionName.contains("Wing");
             mission.setWing(isWing);
-            
+
+            System.out.println("Mission accepted : " + mission);
             missionList.getGlobalMissionMap().put(missionId, mission);
 
         } catch (Exception e) {

@@ -1,8 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 
 import java.time.LocalDateTime;

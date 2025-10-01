@@ -1,6 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.*;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -70,7 +72,6 @@ public class MissionService {
                 .filter(mission -> mission.getTargetCountLeft() > 0)
                 .toList();
 
-        System.out.println("Missions éligibles trouvées: " + eligibleMissions.size());
 
         if (eligibleMissions.isEmpty()) {
             return;
@@ -103,12 +104,8 @@ public class MissionService {
 
             System.out.println("Mission " + oldestMission.getId() + " (" + sourceFaction + ") : " +
                     oldCount + " -> " + newCount + "/" + oldestMission.getTargetCount());
-
-            // Si la mission atteint le nombre de kills requis, la marquer comme en attente
             if (newCount >= oldestMission.getTargetCount()) {
                 System.out.println("Mission " + oldestMission.getId() + " en attente de completion");
-                // La mission reste ACTIVE mais sera affichée en bleu (en attente)
-                // Le statut reste ACTIVE pour éviter les conflits avec MissionCompleted
             }
         }
     }

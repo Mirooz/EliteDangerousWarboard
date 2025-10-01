@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model;
+package be.mirooz.elitedangerous.dashboard.model.enums;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +15,8 @@ public enum MissionType {
     SMUGGLING("Contrebande", List.of("smuggling", "contrebande")),
     TRADING("Commerce", List.of("trading", "commerce")),
     EXPLORATION("Exploration", List.of("exploration")),
+    CONFLIT("Conflict",List.of("conflit","civilwar")),
+    ALTRUISM("Altruism",List.of("altruism")),
     MASSACRE("Massacre", List.of("massacre", "kill")),
     COMBAT("Combat", List.of()), // fallback
     RESCUE("Sauvetage", List.of("rescue", "sauvetage")),

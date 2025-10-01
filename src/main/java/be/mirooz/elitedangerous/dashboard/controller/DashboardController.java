@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.ui.UIRefreshManager;

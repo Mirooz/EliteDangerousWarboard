@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class MissionCompletedHandler implements JournalEventHandler {

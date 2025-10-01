@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model;
 
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
