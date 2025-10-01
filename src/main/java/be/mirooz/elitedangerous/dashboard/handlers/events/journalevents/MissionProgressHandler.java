@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.handlers.events;
+package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;

@@ -1,23 +1,22 @@
-package be.mirooz.elitedangerous.dashboard.handlers.events;
+package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class ShutDownHandler implements JournalEventHandler {
+public class UndockedHandler implements JournalEventHandler {
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
 
     @Override
     public String getEventType() {
-        return "Shutdown";
+        return "Undocked";
     }
 
     @Override
     public void handle(JsonNode jsonNode) {
         try {
-            commanderStatus.setOnline(false);
-            System.out.println("Commandant " + commanderStatus.getCommanderNameString() + " is offline");
-
+            commanderStatus.setCurrentStationName("-");
+            System.out.println("Undocked");
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());
         }

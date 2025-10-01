@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service.journal;
 
-import be.mirooz.elitedangerous.dashboard.handlers.events.CommanderHandler;
+import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.CommanderHandler;
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;

@@ -1,13 +1,13 @@
-package be.mirooz.elitedangerous.dashboard.handlers.events;
+package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class MissionFailedHandler implements JournalEventHandler {
+public class MissionExpiredHandler implements JournalEventHandler {
     @Override
     public String getEventType() {
-        return "MissionFailed";
+        return "MissionExpired";
     }
 
     @Override
@@ -16,7 +16,7 @@ public class MissionFailedHandler implements JournalEventHandler {
             String missionId = jsonNode.get("MissionID").asText();
             Mission mission = missionList.getGlobalMissionMap().get(missionId);
             if (mission != null) {
-                System.out.println("Mission failed : " + missionId + " Type : " + mission.getType().getDisplayName());
+                System.out.println("Mission expired : " + missionId + " Type : " + mission.getType().getDisplayName());
                 mission.setStatus(MissionStatus.FAILED);
             }
         } catch (Exception e) {

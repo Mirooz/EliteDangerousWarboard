@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.handlers.events;
+package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
@@ -24,12 +24,11 @@ public class MissionRedirectedHandler implements JournalEventHandler {
             Mission mission = missionList.getGlobalMissionMap().get(missionId);
             // Vérifier si c'est une mission de massacre et qu'elle st bien complétée
             if (notConsideredAsCompleted(mission)) {
-
-                mission.setCurrentCount(mission.getTargetCount());
-                mission.setStatus(MissionStatus.COMPLETED);
                 System.out.println("[Error count] Mission de massacre " + mission.getId() + " kill = " + mission.getCurrentCount() + "/" + mission.getTargetCount());
+                mission.setCurrentCount(mission.getTargetCount());
+               // mission.setStatus(MissionStatus.COMPLETED);
 
-                //simuleBounty(jsonNode.get("timestamp").asText(), mission);
+               // simuleBounty(jsonNode.get("timestamp").asText(), mission);
             }
             else if (mission.getType() == MissionType.MASSACRE){
                 System.out.println("Mission " + missionId + " Redirected ");

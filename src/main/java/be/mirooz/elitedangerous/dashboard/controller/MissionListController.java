@@ -141,7 +141,6 @@ public class MissionListController implements Initializable {
     
     public void applyFilter() {
         missionsList.getChildren().clear();
-        
         List<Mission> filteredMissions = allMissionsList.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)

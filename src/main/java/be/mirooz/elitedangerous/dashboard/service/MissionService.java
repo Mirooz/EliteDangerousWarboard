@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 public class MissionService {
 
+    private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final MissionsList missionsList;
     private final DestroyedShipsList destroyedShipsList;
     private MissionService() {
@@ -59,7 +60,15 @@ public class MissionService {
 
         String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
         int totalReward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
-        System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward);
+        List<Reward> rewards = new ArrayList<>();
+        if (jsonNode.has("Rewards") && jsonNode.get("Rewards").isArray()) {
+            for (JsonNode rewardNode : jsonNode.get("Rewards")) {
+                String faction = rewardNode.has("Faction") ? rewardNode.get("Faction").asText() : null;
+                int reward = rewardNode.has("Reward") ? rewardNode.get("Reward").asInt() : 0;
+                rewards.add(new Reward(faction, reward));
+            }
+        }
+        System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward + ", Wanted : " + +rewards.size() +  rewards);
 
         if (missionsList.getGlobalMissionMap().values().isEmpty()) {
             return;
@@ -69,6 +78,7 @@ public class MissionService {
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> mission.getTargetFaction() != null)
                 .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
+                .filter(mission -> commanderStatus.getCurrentStarSystemString().equals(mission.getDestinationSystem()))
                 .filter(mission -> mission.getTargetCountLeft() > 0)
                 .toList();
 
@@ -107,7 +117,9 @@ public class MissionService {
             if (newCount >= oldestMission.getTargetCount()) {
                 System.out.println("Mission " + oldestMission.getId() + " en attente de completion");
             }
+
         }
+
     }
 
 }

@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.handlers.events;
+package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,8 +18,6 @@ public class RedeemVoucherHandler implements JournalEventHandler {
     @Override
     public void handle(JsonNode jsonNode) {
         try {
-            System.out.println("RedeemVoucher event");
-            
             // Vérifier que c'est un encaissement de bounty
             if (jsonNode.has("Type") && "bounty".equals(jsonNode.get("Type").asText())) {
                 // Reset total des statistiques de bounty
