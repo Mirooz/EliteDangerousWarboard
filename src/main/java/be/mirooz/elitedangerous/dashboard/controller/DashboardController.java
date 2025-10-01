@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
@@ -31,12 +32,25 @@ public class DashboardController implements Initializable {
     private DashboardService dashboardService;
     private MissionsList allMissionsList = MissionsList.getInstance();
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
+    
+    // Conteneur pour les popups
+    private StackPane popupContainer;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         dashboardService = DashboardService.getInstance();
+        
         loadComponents();
         loadMissions();
+        
+        // Créer le conteneur pour les popups APRÈS les autres composants
+        popupContainer = new StackPane();
+        mainPane.getChildren().add(popupContainer);
+        
+        // Passer le conteneur au contrôleur des missions
+        if (missionListController != null) {
+            missionListController.setPopupContainer(popupContainer);
+        }
     }
     
     private void loadComponents() {
@@ -93,14 +107,6 @@ public class DashboardController implements Initializable {
     private void loadMissions() {
         dashboardService.InitActiveMissions();
         // Mettre à jour le nom du commandant dans le footer
-        String commanderName = dashboardService.getCommanderName();
-        footerController.updateCommanderName(commanderName);
-        
-        // Mettre à jour les informations du vaisseau dans le footer
-        String currentSystem = dashboardService.getCurrentSystem();
-        String currentStation = dashboardService.getCurrentStation();
-        String currentShip = dashboardService.getCurrentShip();
-        footerController.updateShipInfo(currentSystem, currentStation, currentShip);
         uiRefreshManager.refresh();
     }
     

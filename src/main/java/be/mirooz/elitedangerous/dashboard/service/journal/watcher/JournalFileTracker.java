@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.handlers.files;
+package be.mirooz.elitedangerous.dashboard.service.journal.watcher;
 
 import java.io.File;
 

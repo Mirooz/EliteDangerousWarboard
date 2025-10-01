@@ -16,8 +16,9 @@ public class Mission {
     private MissionType type;
     private MissionStatus status;
     private String faction;
-    private String destination;
-    private String origin;
+    private String destinationSystem;
+    private String originSystem;
+    private String originStation;
     private int reward;
     private int influence;
     private int reputation;
@@ -26,7 +27,6 @@ public class Mission {
     private String commodity;
     private int commodityCount;
     private String targetFaction;
-    private String targetSystem;
     private int targetCount;
     private int currentCount;
     private LocalDateTime acceptedTime;

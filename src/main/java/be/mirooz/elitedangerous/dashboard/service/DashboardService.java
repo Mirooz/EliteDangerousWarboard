@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.MissionType;
+import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,38 +35,6 @@ public class DashboardService {
     }
 
     /**
-     * Récupère le nom du commandant
-     * @return Nom du commandant ou null si non identifié
-     */
-    public String getCommanderName() {
-        return journalService.getCommanderName();
-    }
-    
-    /**
-     * Récupère le système actuel
-     * @return Nom du système ou null si non identifié
-     */
-    public String getCurrentSystem() {
-        return journalService.getCurrentSystem();
-    }
-    
-    /**
-     * Récupère la station actuelle
-     * @return Nom de la station ou null si non identifiée
-     */
-    public String getCurrentStation() {
-        return journalService.getCurrentStation();
-    }
-    
-    /**
-     * Récupère le vaisseau actuel
-     * @return Nom du vaisseau ou null si non identifié
-     */
-    public String getCurrentShip() {
-        return journalService.getCurrentShip();
-    }
-    
-    /**
      * Génère des missions de test pour la démonstration
      * @return Liste de missions de test
      */
@@ -80,8 +49,8 @@ public class DashboardService {
         mission1.setType(MissionType.COURIER);
         mission1.setStatus(MissionStatus.ACTIVE);
         mission1.setFaction("Fédération Galactique");
-        mission1.setOrigin("Sol - Abraham Lincoln");
-        mission1.setDestination("Proxima Centauri - New Horizons");
+        mission1.setOriginSystem("Sol - Abraham Lincoln");
+        mission1.setDestinationSystem("Proxima Centauri - New Horizons");
         mission1.setReward(125000);
         mission1.setInfluence(2);
         mission1.setReputation(1);
@@ -96,8 +65,8 @@ public class DashboardService {
         mission2.setType(MissionType.ASSASSINATION);
         mission2.setStatus(MissionStatus.ACTIVE);
         mission2.setFaction("Alliance des Systèmes Indépendants");
-        mission2.setOrigin("Lave - Lave Station");
-        mission2.setDestination("Lave - Zone de ressources");
+        mission2.setOriginSystem("Lave - Lave Station");
+        mission2.setDestinationSystem("Lave - Zone de ressources");
         mission2.setReward(450000);
         mission2.setInfluence(3);
         mission2.setReputation(2);
@@ -114,8 +83,8 @@ public class DashboardService {
         mission3.setType(MissionType.DELIVERY);
         mission3.setStatus(MissionStatus.ACTIVE);
         mission3.setFaction("Empire Galactique");
-        mission3.setOrigin("Shinrarta Dezhra - Jameson Memorial");
-        mission3.setDestination("Eravate - Cleve Hub");
+        mission3.setOriginSystem("Shinrarta Dezhra - Jameson Memorial");
+        mission3.setDestinationSystem("Eravate - Cleve Hub");
         mission3.setReward(320000);
         mission3.setInfluence(2);
         mission3.setReputation(1);
@@ -132,8 +101,8 @@ public class DashboardService {
         mission4.setType(MissionType.PASSENGER);
         mission4.setStatus(MissionStatus.ACTIVE);
         mission4.setFaction("Fédération Galactique");
-        mission4.setOrigin("Sol - Abraham Lincoln");
-        mission4.setDestination("Rhea - Rhea Station");
+        mission4.setOriginSystem("Sol - Abraham Lincoln");
+        mission4.setDestinationSystem("Rhea - Rhea Station");
         mission4.setReward(180000);
         mission4.setInfluence(1);
         mission4.setReputation(1);
@@ -148,8 +117,8 @@ public class DashboardService {
         mission5.setType(MissionType.MASSACRE);
         mission5.setStatus(MissionStatus.ACTIVE);
         mission5.setFaction("Alliance des Systèmes Indépendants");
-        mission5.setOrigin("Eravate - Cleve Hub");
-        mission5.setDestination("Eravate - Zone de ressources");
+        mission5.setOriginSystem("Eravate - Cleve Hub");
+        mission5.setDestinationSystem("Eravate - Zone de ressources");
         mission5.setReward(750000);
         mission5.setInfluence(4);
         mission5.setReputation(3);
@@ -167,8 +136,8 @@ public class DashboardService {
         mission9.setType(MissionType.MASSACRE);
         mission9.setStatus(MissionStatus.ACTIVE);
         mission9.setFaction("Fédération Galactique");
-        mission9.setOrigin("Sol - Abraham Lincoln");
-        mission9.setDestination("Sol - Zone de ressources");
+        mission9.setOriginSystem("Sol - Abraham Lincoln");
+        mission9.setDestinationSystem("Sol - Zone de ressources");
         mission9.setReward(950000);
         mission9.setInfluence(5);
         mission9.setReputation(4);
@@ -186,8 +155,8 @@ public class DashboardService {
         mission10.setType(MissionType.MASSACRE);
         mission10.setStatus(MissionStatus.ACTIVE);
         mission10.setFaction("Empire Galactique");
-        mission10.setOrigin("Achenar - Capitol");
-        mission10.setDestination("Achenar - Zone de ressources");
+        mission10.setOriginSystem("Achenar - Capitol");
+        mission10.setDestinationSystem("Achenar - Zone de ressources");
         mission10.setReward(1200000);
         mission10.setInfluence(6);
         mission10.setReputation(5);
@@ -205,8 +174,8 @@ public class DashboardService {
         mission11.setType(MissionType.MASSACRE);
         mission11.setStatus(MissionStatus.ACTIVE);
         mission11.setFaction("Alliance des Systèmes Indépendants");
-        mission11.setOrigin("Alioth - Irkutsk");
-        mission11.setDestination("Alioth - Zone de ressources");
+        mission11.setOriginSystem("Alioth - Irkutsk");
+        mission11.setDestinationSystem("Alioth - Zone de ressources");
         mission11.setReward(850000);
         mission11.setInfluence(4);
         mission11.setReputation(3);
@@ -224,8 +193,8 @@ public class DashboardService {
         mission12.setType(MissionType.MASSACRE);
         mission12.setStatus(MissionStatus.ACTIVE);
         mission12.setFaction("Fédération Galactique");
-        mission12.setOrigin("Eravate - Cleve Hub");
-        mission12.setDestination("Eravate - Zone de ressources");
+        mission12.setOriginSystem("Eravate - Cleve Hub");
+        mission12.setDestinationSystem("Eravate - Zone de ressources");
         mission12.setReward(1500000);
         mission12.setInfluence(7);
         mission12.setReputation(6);
@@ -243,8 +212,8 @@ public class DashboardService {
         mission6.setType(MissionType.EXPLORATION);
         mission6.setStatus(MissionStatus.ACTIVE);
         mission6.setFaction("Fédération Galactique");
-        mission6.setOrigin("Sol - Abraham Lincoln");
-        mission6.setDestination("NGC 7822 - Systèmes inexplorés");
+        mission6.setOriginSystem("Sol - Abraham Lincoln");
+        mission6.setDestinationSystem("NGC 7822 - Systèmes inexplorés");
         mission6.setReward(280000);
         mission6.setInfluence(2);
         mission6.setReputation(2);
@@ -259,8 +228,8 @@ public class DashboardService {
         mission7.setType(MissionType.SALVAGE);
         mission7.setStatus(MissionStatus.ACTIVE);
         mission7.setFaction("Empire Galactique");
-        mission7.setOrigin("HIP 20277 - Fabian City");
-        mission7.setDestination("HIP 20277 - Sites d'épaves");
+        mission7.setOriginSystem("HIP 20277 - Fabian City");
+        mission7.setDestinationSystem("HIP 20277 - Sites d'épaves");
         mission7.setReward(195000);
         mission7.setInfluence(2);
         mission7.setReputation(1);
@@ -277,8 +246,8 @@ public class DashboardService {
         mission8.setType(MissionType.SCAN);
         mission8.setStatus(MissionStatus.ACTIVE);
         mission8.setFaction("Alliance des Systèmes Indépendants");
-        mission8.setOrigin("Eravate - Cleve Hub");
-        mission8.setDestination("Eravate - A 1");
+        mission8.setOriginSystem("Eravate - Cleve Hub");
+        mission8.setDestinationSystem("Eravate - A 1");
         mission8.setReward(95000);
         mission8.setInfluence(1);
         mission8.setReputation(1);

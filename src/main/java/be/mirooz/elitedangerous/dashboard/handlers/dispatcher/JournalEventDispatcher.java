@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.handlers.dispatcher;
 
 import be.mirooz.elitedangerous.dashboard.handlers.events.*;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,7 +27,13 @@ public class JournalEventDispatcher {
                 new BountyHandler(),
                 new FactionKillBondHandler(),
                 new MissionProgressHandler(),
-                new RedeemVoucherHandler()
+                new RedeemVoucherHandler(),
+                new DockedHandler(),
+                new UndockedHandler(),
+                new CommanderHandler(),
+                new LoadGameHandler(),
+                new ShutDownHandler(),
+                new FSDJumpHandler()
         );
 
         handlerList.forEach(h -> handlers.put(h.getEventType(), h));

@@ -93,7 +93,7 @@ public class DestroyedShipsController implements Initializable {
             @Override
             protected void updateItem(Integer value, boolean empty) {
                 super.updateItem(value, empty);
-                setText(empty || value == null ? null : DF.format(value) + " Cr");
+                setText(empty || value == null ? null : DF.format(value));
             }
         });
         timeColumn.setCellValueFactory(cellData -> {
@@ -109,14 +109,26 @@ public class DestroyedShipsController implements Initializable {
         // Configuration du style des colonnes
         shipNameColumn.setStyle("-fx-alignment: CENTER-LEFT;");
         pilotNameColumn.setStyle("-fx-alignment: CENTER-LEFT;");
-        bountyColumn.setStyle("-fx-alignment: CENTER;");
+        bountyColumn.setStyle("-fx-alignment: CENTER-LEFT;");
         timeColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Désactiver le tri sur toutes les colonnes
+        shipNameColumn.setSortable(false);
+        pilotNameColumn.setSortable(false);
+        bountyColumn.setSortable(false);
+        timeColumn.setSortable(false);
+        
+        // Désactiver le redimensionnement des colonnes
+        shipNameColumn.setResizable(false);
+        pilotNameColumn.setResizable(false);
+        bountyColumn.setResizable(false);
+        timeColumn.setResizable(false);
 
         // Configuration de la largeur des colonnes pour s'adapter à la largeur du tableau
-        timeColumn.setPrefWidth(60);
-        shipNameColumn.setPrefWidth(120);
-        pilotNameColumn.setPrefWidth(100);
-        bountyColumn.setPrefWidth(100);
+        timeColumn.setPrefWidth(90);
+        shipNameColumn.setPrefWidth(130);
+        pilotNameColumn.setPrefWidth(110);
+        bountyColumn.setPrefWidth(110);
         
         // Ajuster automatiquement les colonnes pour éviter le défilement horizontal
         destroyedShipsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);

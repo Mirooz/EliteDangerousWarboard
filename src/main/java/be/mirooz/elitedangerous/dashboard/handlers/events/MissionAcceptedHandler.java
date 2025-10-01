@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events;
 
+import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.MissionType;
@@ -12,6 +13,7 @@ import static be.mirooz.elitedangerous.dashboard.util.DateUtil.parseTimestamp;
 
 public class MissionAcceptedHandler implements JournalEventHandler {
 
+    private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     @Override
     public String getEventType() {
         return "MissionAccepted";
@@ -24,7 +26,7 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             String missionName = jsonNode.get("Name").asText();
             String faction = jsonNode.get("Faction").asText();
             String targetFaction = jsonNode.has("TargetFaction") ? jsonNode.get("TargetFaction").asText() : null;
-            String targetSystem = jsonNode.has("TargetSystem") ? jsonNode.get("TargetSystem").asText() : null;
+            String destinationSystem = jsonNode.has("DestinationSystem") ? jsonNode.get("DestinationSystem").asText() : null;
 
             // Essayer différents champs pour le nombre de kills requis
             int targetCount = 0;
@@ -56,7 +58,9 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             mission.setName(missionName);
             mission.setFaction(faction);
             mission.setTargetFaction(targetFaction);
-            mission.setTargetSystem(targetSystem);
+            mission.setDestinationSystem(destinationSystem);
+            mission.setOriginStation(commanderStatus.getCurrentStationNameString());
+            mission.setOriginSystem(commanderStatus.getCurrentStarSystemString());
             mission.setTargetCount(targetCount);
             mission.setCurrentCount(0);
             mission.setReward(reward);

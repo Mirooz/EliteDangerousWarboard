@@ -12,16 +12,20 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.animation.SequentialTransition;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
@@ -49,10 +53,79 @@ public class MissionListController implements Initializable {
     private MissionsList allMissionsList = MissionsList.getInstance();
 
     private Consumer<MissionStatus> filterChangeCallback;
+    
+    // Conteneur pour les popups
+    private StackPane popupContainer;
+    
+    // Méthode pour créer un tooltip avec délai
+    private Tooltip createDelayedTooltip(String text) {
+        Tooltip tooltip = new Tooltip(text);
+        tooltip.setShowDelay(Duration.millis(300)); // 0.3 seconde de délai
+        tooltip.setHideDelay(Duration.millis(100));
+        return tooltip;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialisation si nécessaire
+    }
+    
+    public void setPopupContainer(StackPane container) {
+        this.popupContainer = container;
+    }
+    
+    private void showSystemCopiedPopup(String message, javafx.scene.input.MouseEvent event) {
+        if (popupContainer == null) return;
+        
+        // Créer le popup
+        VBox popup = new VBox();
+        popup.getStyleClass().add("system-copied-popup");
+        popup.setAlignment(Pos.CENTER);
+        popup.setSpacing(3);
+        popup.setPadding(new Insets(8, 16, 8, 16));
+        
+        Label messageLabel = new Label(message);
+        messageLabel.getStyleClass().add("popup-title");
+        
+        popup.getChildren().add(messageLabel);
+        
+        // Taille compacte
+        popup.setMinSize(120, 40);
+        popup.setPrefSize(120, 40);
+        popup.setMaxSize(120, 40);
+        
+        // Positionner le popup avec le coin gauche en bas à droite de la souris
+        double mouseX = event.getSceneX();
+        double mouseY = event.getSceneY();
+        popup.setTranslateX(mouseX + 5); // 5px à droite de la souris
+        popup.setTranslateY(mouseY - 40); // 40px au-dessus de la souris (hauteur du popup)
+        
+        // Ajouter au conteneur
+        popupContainer.getChildren().add(popup);
+        
+        // Animation d'apparition et disparition
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), popup);
+        fadeIn.setFromValue(0.0);
+        fadeIn.setToValue(1.0);
+        
+        PauseTransition pause = new PauseTransition(Duration.millis(1000));
+        
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), popup);
+        fadeOut.setFromValue(1.0);
+        fadeOut.setToValue(0.0);
+        
+        SequentialTransition sequence = new SequentialTransition(fadeIn, pause, fadeOut);
+        sequence.setOnFinished(e -> popupContainer.getChildren().remove(popup));
+        sequence.play();
+    }
+    
+    private void copySystemToClipboard(String systemName, javafx.scene.input.MouseEvent event) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(systemName);
+        clipboard.setContent(content);
+        
+        showSystemCopiedPopup("Système copié", event);
     }
     
     public void setFilterChangeCallback(Consumer<MissionStatus> callback) {
@@ -133,13 +206,20 @@ public class MissionListController implements Initializable {
         factionLabel.setMinWidth(180);
         factionLabel.setMaxWidth(180);
         
+        // Ajouter tooltip et clic pour copier le système d'origine
+        if (mission.getOriginSystem() != null && !mission.getOriginSystem().isEmpty()) {
+            factionLabel.setTooltip(createDelayedTooltip(mission.getOriginSystem() +" | " + mission.getOriginStation()));
+            factionLabel.getStyleClass().add("clickable-system-source");
+            factionLabel.setOnMouseClicked(e -> copySystemToClipboard(mission.getOriginSystem(), e));
+        } else {
+            // Debug: afficher un tooltip même si pas de système d'origine
+            factionLabel.setTooltip(createDelayedTooltip("Système d'origine: Non défini"));
+        }
+        
         // Clan cible et système - largeur fixe pour alignement
         String targetInfo = "";
         if (mission.getTargetFaction() != null) {
             targetInfo = mission.getTargetFaction();
-        }
-        if (mission.getTargetSystem() != null) {
-            targetInfo += (targetInfo.isEmpty() ? "" : " - ") + mission.getTargetSystem();
         }
         if (targetInfo.isEmpty()) {
             targetInfo = "Pirates";
@@ -150,6 +230,13 @@ public class MissionListController implements Initializable {
         targetLabel.setPrefWidth(200);
         targetLabel.setMinWidth(200);
         targetLabel.setMaxWidth(200);
+
+         if (mission.getDestinationSystem() != null && !mission.getDestinationSystem().isEmpty()) {
+             // Fallback: utiliser destinationSystem si targetSystem n'est pas défini
+             targetLabel.setTooltip(createDelayedTooltip(mission.getDestinationSystem()));
+             targetLabel.getStyleClass().add("clickable-system-target");
+             targetLabel.setOnMouseClicked(e -> copySystemToClipboard(mission.getDestinationSystem(), e));
+         }
         
         // Progression des kills - conteneur avec largeur fixe
         HBox killsSection = new HBox();
@@ -203,7 +290,7 @@ public class MissionListController implements Initializable {
         if (mission.isWing()) {
             wingLabel.setText("✈"); // Icône d'avion pour wing
             wingLabel.getStyleClass().add("wing-icon");
-            wingLabel.setTooltip(new Tooltip("Mission de Wing"));
+            wingLabel.setTooltip(createDelayedTooltip("Mission de Wing"));
         } else {
             wingLabel.setText(""); // Vide pour les missions normales
         }

@@ -1,9 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionType;
-import be.mirooz.elitedangerous.dashboard.model.MissionsList;
+import be.mirooz.elitedangerous.dashboard.model.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -55,10 +52,21 @@ public class HeaderController implements Initializable {
     
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
     private MissionsList missionsList = MissionsList.getInstance();
+    private CommanderStatus commanderStatus = CommanderStatus.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialisation si nécessaire
+        statusLabel.textProperty().bind(
+                javafx.beans.binding.Bindings.when(commanderStatus.getIsOnline())
+                                .then("SYSTÈME EN LIGNE")
+                                        .otherwise("SYSTÈME HORS LIGNE"));
+        
+        // Binding conditionnel pour la couleur du statut
+        statusLabel.styleProperty().bind(
+            javafx.beans.binding.Bindings.when(commanderStatus.getIsOnline())
+                .then("-fx-text-fill: #00ff00;") // Vert si en ligne
+                .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
+        );
     }
     
     public void setCurrentFilter(MissionStatus filter) {
@@ -110,10 +118,10 @@ public class HeaderController implements Initializable {
                     .mapToLong(Mission::getReward)
                     .sum();
             
-            creditsText = "CRÉDITS ESPÉRÉS";
+            creditsText = "CRÉDITS EN ATTENTE";
             creditsLabel.setText(String.format("%,d", totalCredits));
             creditsLabel.setStyle("-fx-text-fill: #FF6B00;"); // Orange pour le total
-            creditsTextLabel.setText("CRÉDITS ESPÉRÉS");
+            creditsTextLabel.setText("CRÉDITS EN ATTENTE");
             creditsTextLabel.setStyle("-fx-text-fill: #CCCCCC;"); // Couleur par défaut
             
             // Afficher les crédits en attente dans un label séparé

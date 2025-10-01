@@ -1,6 +1,5 @@
-package be.mirooz.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.service.journal.watcher;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 

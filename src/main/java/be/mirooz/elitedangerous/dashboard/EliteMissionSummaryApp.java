@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard;
 
-import be.mirooz.elitedangerous.dashboard.service.JournalService;
+import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 
 /**
  * Application pour afficher le résumé des missions Elite Dangerous

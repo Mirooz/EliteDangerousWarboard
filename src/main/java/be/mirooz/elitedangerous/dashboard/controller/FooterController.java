@@ -41,55 +41,18 @@ public class FooterController implements Initializable {
     @FXML
     private Label shipLabel;
 
+    private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
+
     private final MissionsList missionsList = MissionsList.getInstance();
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        // Initialisation si nécessaire
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        stationLabel.textProperty().bind(commanderStatus.getCurrentStationName());
+        systemLabel.textProperty().bind(commanderStatus.getCurrentStarSystem());
+        commanderLabel.textProperty().bind(commanderStatus.getCommanderName());
     }
     
-    /**
-     * Met à jour le nom du commandant dans le footer
-     */
-    public void updateCommanderName(String commanderName) {
-        if (commanderLabel != null) {
-            if (commanderName != null && !commanderName.isEmpty()) {
-                commanderLabel.setText("Commander: " + commanderName);
-            } else {
-                commanderLabel.setText("Commander: [NON IDENTIFIÉ]");
-            }
-        }
-    }
-    
-    /**
-     * Met à jour les informations du vaisseau dans le footer
-     */
-    public void updateShipInfo(String system, String station, String ship) {
-        if (systemLabel != null) {
-            if (system != null && !system.isEmpty()) {
-                systemLabel.setText("Système: " + system);
-            } else {
-                systemLabel.setText("Système: [NON IDENTIFIÉ]");
-            }
-        }
-        
-        if (stationLabel != null) {
-            if (station != null && !station.isEmpty()) {
-                stationLabel.setText("Station: " + station);
-            } else {
-                stationLabel.setText("Station: [NON IDENTIFIÉE]");
-            }
-        }
-        
-        if (shipLabel != null) {
-            if (ship != null && !ship.isEmpty()) {
-                shipLabel.setText("Vaisseau: " + ship);
-            } else {
-                shipLabel.setText("Vaisseau: [NON IDENTIFIÉ]");
-            }
-        }
-    }
-    
+
     public void updateFactionStats() {
         // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
         List<Mission> massacreMissions = missionsList.getGlobalMissionMap().values().stream()
@@ -185,4 +148,6 @@ public class FooterController implements Initializable {
 
         return results;
     }
+
+
 }

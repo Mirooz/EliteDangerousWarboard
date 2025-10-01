@@ -7,13 +7,22 @@
 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="footer-panel" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mirooz.elitedangerous.dashboard.controller.FooterController">
    <children>
       <VBox alignment="CENTER_LEFT" spacing="2.0">
-         <Label fx:id="commanderLabel" styleClass="footer-text" text="Commander: [NOM DU COMMANDANT]" />
+         <!-- Labels d'en-tête -->
          <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label fx:id="systemLabel" styleClass="footer-text" text="Système: [NON IDENTIFIÉ]" />
+            <Label styleClass="footer-text" text="COMMANDANT" prefWidth="100" />
             <Label styleClass="footer-text" text="|" />
-            <Label fx:id="stationLabel" styleClass="footer-text" text="Station: [NON IDENTIFIÉE]" />
+            <Label styleClass="footer-text" text="SYSTÈME" prefWidth="120" />
             <Label styleClass="footer-text" text="|" />
-            <Label fx:id="shipLabel" styleClass="footer-text" text="Vaisseau: [NON IDENTIFIÉ]" />
+            <Label styleClass="footer-text" text="STATION" prefWidth="120" />
+         </HBox>
+         
+         <!-- Valeurs -->
+         <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label fx:id="commanderLabel" styleClass="footer-value" text="[NOM DU COMMANDANT]" prefWidth="100" />
+            <Label styleClass="footer-text" text="|" />
+            <Label fx:id="systemLabel" styleClass="footer-value" text="[NON IDENTIFIÉ]" prefWidth="120" />
+            <Label styleClass="footer-text" text="|" />
+            <Label fx:id="stationLabel" styleClass="footer-value" text="[NON IDENTIFIÉE]" prefWidth="120" />
          </HBox>
       </VBox>
       <Region HBox.hgrow="ALWAYS" />

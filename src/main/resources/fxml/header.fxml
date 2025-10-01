@@ -36,13 +36,13 @@
             </VBox>
             <VBox alignment="CENTER" spacing="5.0">
                <children>
-                  <Label fx:id="creditsLabel" styleClass="stat-number" text="0" />
+                  <Label fx:id="creditsLabel" styleClass="stat-number-big" text="0" />
                   <Label fx:id="creditsTextLabel" styleClass="stat-label" text="CRÉDITS" />
                </children>
             </VBox>
             <VBox alignment="CENTER" spacing="5.0" fx:id="pendingCreditsBox">
                <children>
-                  <Label fx:id="pendingCreditsLabel" styleClass="stat-number" text="0" />
+                  <Label fx:id="pendingCreditsLabel" styleClass="stat-number-big" text="0" />
                   <Label fx:id="pendingCreditsTextLabel" styleClass="stat-label" text="CRÉDITS EN ATTENTE" />
                </children>
             </VBox>

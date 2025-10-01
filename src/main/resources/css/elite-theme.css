@@ -79,12 +79,16 @@
 }
 
 .stat-number {
+    -fx-font-size: 24px;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+.stat-number-big {
     -fx-font-size: 28px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
 }
-
 .stat-label {
     -fx-font-size: 10px;
     -fx-text-fill: -fx-elite-text-dim;
@@ -273,6 +277,18 @@
 .footer-text {
     -fx-font-size: 11px;
     -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-weight: bold;
+}
+
+.footer-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+}
+
+.footer-value {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
 }
 
@@ -663,5 +679,49 @@
 .faction-bounty-amount {
     -fx-font-size: 11px;
     -fx-text-fill: -fx-elite-success;
+    -fx-font-weight: bold;
+}
+
+/* Styles pour les systèmes cliquables */
+.clickable-system-target {
+    -fx-cursor: hand;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.clickable-system-target:hover {
+    -fx-text-fill: -fx-elite-blue;
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-background-radius: 3px;
+}
+
+.clickable-system-source {
+    -fx-cursor: hand;
+    -fx-text-fill: -fx-elite-orange;
+}
+.clickable-system-source:hover {
+    -fx-text-fill: -fx-elite-blue;
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-background-radius: 3px;
+}
+/* Styles pour le popup de système copié */
+.system-copied-popup {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 8, 0, 0, 1);
+}
+
+.popup-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Arial", sans-serif;
+}
+
+.popup-system {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-cyan;
     -fx-font-weight: bold;
 }

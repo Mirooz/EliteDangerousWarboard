@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.service.JournalService;
+import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
