@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -80,16 +81,8 @@ public class HeaderController implements Initializable {
         List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
-                .sorted((m1, m2) -> m1.getFaction().compareTo(m2.getFaction()))
-                .collect(Collectors.toList());
-
-        if (filteredMissions == null || filteredMissions.isEmpty()) {
-            missionCountLabel.setText("0");
-            creditsLabel.setText("0");
-            thirdStatBox.setVisible(false);
-            pendingCreditsBox.setVisible(false);
-            return;
-        }
+                .sorted(Comparator.comparing(Mission::getFaction))
+                .toList();
         
         // Compter les missions
         int missionCount = filteredMissions.size();
@@ -100,7 +93,6 @@ public class HeaderController implements Initializable {
         String creditsText = "CRÉDITS";
         String thirdStatText = "";
         int thirdStatValue = 0;
-        
         if (currentFilter == MissionStatus.ACTIVE) {
             // Vue active : réorganiser l'ordre des stats
             // 1. Missions actives
