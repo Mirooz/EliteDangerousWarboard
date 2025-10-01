@@ -4,11 +4,17 @@ import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -42,6 +48,10 @@ public class FooterController implements Initializable {
     
     @FXML
     private Label shipLabel;
+    
+    @FXML
+    private Button massacreSearchButton;
+    
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
 
@@ -151,5 +161,40 @@ public class FooterController implements Initializable {
         return results;
     }
 
+    @FXML
+    private void openMassacreSearchDialog() {
+        try {
+            // Charger le FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/massacre-search-dialog.fxml"));
+            StackPane dialogContent = loader.load();
+            MassacreSearchDialogController controller = loader.getController();
+
+            // Créer la scène
+            Scene scene = new Scene(dialogContent, 1000, 700);
+            scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
+
+            // Créer la fenêtre
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Recherche de Systèmes Massacre");
+            dialogStage.setScene(scene);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.setResizable(false);
+            
+            // Cacher la barre de titre
+            dialogStage.initStyle(javafx.stage.StageStyle.UNDECORATED);
+            
+            // Centrer la fenêtre sur l'écran actuel (celui de la fenêtre principale)
+            Stage primaryStage = (Stage) massacreSearchButton.getScene().getWindow();
+            dialogStage.initOwner(primaryStage);
+            dialogStage.centerOnScreen();
+
+            // Afficher la fenêtre
+            dialogStage.showAndWait();
+
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'ouverture de la fenêtre de recherche: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
 }

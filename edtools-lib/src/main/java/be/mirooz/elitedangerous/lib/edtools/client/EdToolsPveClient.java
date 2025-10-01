@@ -71,13 +71,12 @@ public class EdToolsPveClient {
             String all  = tds.get(7).text().trim();
             String ind  = tds.get(8).text().trim();
 
-            // Target/Sources: premier lien "cpb_x" est le target
-            Element targetLink = tds.get(9).selectFirst("a[id^=cpb_]");
-            String targetSystem = (targetLink != null ? targetLink.text() : tds.get(9).text()).trim();
-
+            String cellText = tds.get(9).text().trim();
+            String targetSystem = cellText.replaceAll("/.*", "").trim();
+            String targetCount = cellText.replaceAll(".*\\[\\s*(\\d+)\\s*\\].*", "$1");
             String resRings = tds.get(10).text().trim();
 
-            rows.add(new MassacreSystem(distance, sourceSystem, lPad, mPad, pPad, fed, imp, all, ind, targetSystem, resRings));
+            rows.add(new MassacreSystem(distance, sourceSystem, lPad, mPad, pPad, fed, imp, all, ind, targetSystem,targetCount, resRings));
         }
         return rows;
     }

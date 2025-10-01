@@ -16,12 +16,6 @@
     -fx-elite-danger: #FF0000;
 }
 
-/* Police de caractères */
-@font-face {
-    font-family: 'Elite Dangerous';
-    src: url('/fonts/elite-dangerous.ttf');
-}
-
 /* Styles généraux */
 .root {
     -fx-background-color: -fx-elite-dark;
@@ -144,8 +138,9 @@
 .section-title {
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-text-fill: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-cyan;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-alignment: CENTER;
 }
 
 .missions-scroll {
@@ -724,4 +719,383 @@
     -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-weight: bold;
+}
+
+/* Styles pour la fenêtre de dialogue de recherche massacre - Style Elite Dangerous */
+.dialog-content {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 20, 0, 0, 5);
+}
+
+.dialog-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 15;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 2 0;
+}
+
+.dialog-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.dialog-subtitle {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.dialog-separator {
+    -fx-background-color: -fx-elite-orange;
+    -fx-pref-height: 1;
+}
+
+.config-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 10;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+}
+
+
+
+.config-grid {
+    -fx-background-color: transparent;
+}
+
+.config-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.config-value {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 5 10;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.config-spinner {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+.config-spinner:focused {
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.config-spinner .text-field {
+    -fx-text-fill: -fx-elite-text;
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: transparent;
+    -fx-font-size: 12px;
+}
+
+.config-unit {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+}
+
+.config-field {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-padding: 5;
+}
+
+.config-field:focused {
+    -fx-border-color: -fx-elite-cyan;
+}
+
+
+
+.results-container {
+    -fx-background-color: transparent;
+    -fx-padding: 10;
+}
+
+.massacre-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 0;
+    -fx-min-height: 60;
+    -fx-max-height: 60;
+    -fx-pref-height: 60;
+}
+
+.massacre-card:hover {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-background-color: -fx-elite-gray;
+}
+
+.massacre-card-header {
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.massacre-card-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-min-width: 120;
+    -fx-pref-width: 120;
+    -fx-max-width: 120;
+}
+
+.massacre-card-subtitle {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-min-width: 120;
+    -fx-pref-width: 120;
+    -fx-max-width: 120;
+}
+
+.massacre-card-distance {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-min-width: 80;
+    -fx-pref-width: 80;
+    -fx-max-width: 80;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.massacre-card-details {
+    -fx-spacing: 4;
+}
+
+.massacre-card-row {
+    -fx-spacing: 8;
+}
+
+.massacre-card-label {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 10px;
+    -fx-min-width: 60;
+}
+
+.massacre-card-value {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.massacre-card-pads {
+    -fx-spacing: 5;
+}
+
+.massacre-card-pad {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-padding: 1 4 1 4;
+    -fx-border-radius: 2;
+    -fx-min-width: 20;
+    -fx-pref-width: 20;
+    -fx-max-width: 20;
+    -fx-alignment: CENTER;
+}
+
+.massacre-card-factions {
+    -fx-spacing: 5;
+}
+
+.massacre-card-faction {
+    -fx-background-color: -fx-elite-blue;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 6 2 6;
+    -fx-border-radius: 3;
+    -fx-spacing: 1;
+    -fx-min-height: 48;
+    -fx-max-height: 48;
+    -fx-pref-height: 48;
+    -fx-min-width: 60;
+    -fx-pref-width: 60;
+    -fx-max-width: 60;
+    -fx-alignment: CENTER;
+}
+
+.massacre-card-faction-icon {
+    -fx-fit-width: 16;
+    -fx-fit-height: 16;
+    -fx-preserve-ratio: true;
+}
+
+.massacre-card-faction-number {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-min-width: 80;
+    -fx-pref-width: 80;
+    -fx-max-width: 80;
+}
+
+/* En-tête des factions */
+.faction-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-padding: 10 15 10 15;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.faction-header-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.faction-header-name {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+
+.results-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 15;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+}
+
+.massacre-results-table {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.massacre-results-table .column-header {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 5;
+}
+
+.table-column {
+    -fx-alignment: CENTER;
+}
+
+.massacre-results-table .table-cell {
+    -fx-text-fill: -fx-elite-text;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 4;
+    -fx-font-size: 11px;
+}
+
+.massacre-results-table .table-row-cell {
+    -fx-background-color: -fx-elite-darker;
+}
+
+.massacre-results-table .table-row-cell:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.massacre-results-table .table-row-cell:hover {
+    -fx-background-color: -fx-elite-light-gray;
+}
+
+.action-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 15;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2 0 0 0;
+}
+
+.elite-button-secondary {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 10 20;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.elite-button-secondary:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+/* Styles pour les onglets */
+.main-tab-pane {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+}
+
+.main-tab-pane .tab-header-area {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+}
+
+.main-tab-pane .tab-header-background {
+    -fx-background-color: -fx-elite-darker;
+}
+
+.main-tab-pane .tab {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1 1 0 1;
+    -fx-border-radius: 4 4 0 0;
+    -fx-background-radius: 4 4 0 0;
+    -fx-padding: 8 15;
+}
+
+.main-tab-pane .tab:selected {
+    -fx-background-color: -fx-elite-dark;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.main-tab-pane .tab .tab-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.main-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.main-tab-pane .tab-content-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.massacre-search-content {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 20;
 }

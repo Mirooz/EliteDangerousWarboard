@@ -19,7 +19,9 @@ public class EliteDashboardApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(EliteDashboardApp.class.getResource("/fxml/dashboard.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
         // Icône de l'application
-        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png")));
+        Image icon = new Image(Objects.requireNonNull(
+                getClass().getResource("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png")
+        ).toExternalForm());
         stage.getIcons().add(icon);
         // Configuration du style Elite Dangerous
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
@@ -31,6 +33,11 @@ public class EliteDashboardApp extends Application {
         stage.setMinHeight(600);
         stage.setMaximized(true);
         stage.show();
+        stage.setOnCloseRequest(event -> {
+            System.out.println("Fermeture demandée, arrêt de l’application...");
+            javafx.application.Platform.exit();
+            System.exit(0);
+        });
     }
 
     public static void main(String[] args) {

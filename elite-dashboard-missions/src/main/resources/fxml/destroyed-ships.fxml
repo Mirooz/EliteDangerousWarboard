@@ -10,10 +10,9 @@
    
    <!-- En-tête du panneau -->
    <VBox styleClass="panel-header">
-      <Label text="VAISSEAUX DÉTRUITS" styleClass="section-title"/>
-      <Separator styleClass="header-separator"/>
+      <Label text="VAISSEAUX DÉTRUITS" styleClass="section-title" textAlignment="CENTER"/>
    </VBox>
-   
+
    
    <!-- Table des vaisseaux détruits -->
    <TableView fx:id="destroyedShipsTable" styleClass="destroyed-ships-table" 

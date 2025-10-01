@@ -97,12 +97,13 @@ public class MissionListController implements Initializable {
         // Positionner le popup avec le coin gauche en bas à droite de la souris
         double mouseX = event.getSceneX();
         double mouseY = event.getSceneY();
-        popup.setTranslateX(mouseX + 5); // 5px à droite de la souris
-        popup.setTranslateY(mouseY - 40); // 40px au-dessus de la souris (hauteur du popup)
+        popup.setTranslateX(mouseX ); // 5px à droite de la souris
+        popup.setTranslateY(mouseY); // 40px au-dessus de la souris (hauteur du popup)
         
         // Ajouter au conteneur
         popupContainer.getChildren().add(popup);
-        
+
+        StackPane.setAlignment(popup, Pos.TOP_LEFT);
         // Animation d'apparition et disparition
         FadeTransition fadeIn = new FadeTransition(Duration.millis(200), popup);
         fadeIn.setFromValue(0.0);

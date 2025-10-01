@@ -117,4 +117,5 @@ public class DashboardController implements Initializable {
         missionListController.setCurrentFilter(filter);
         uiRefreshManager.refresh();
     }
+    
 }

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController">
+    
+    <VBox spacing="20.0" styleClass="dialog-content">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+
+    <!-- En-tête avec titre -->
+    <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="dialog-header">
+        <VBox spacing="2.0">
+            <Label text="RECHERCHE DE SYSTÈMES MASSACRE" styleClass="dialog-title"/>
+            <Label text="PLANIFICATEUR DE MISSIONS ELITE DANGEROUS" styleClass="dialog-subtitle"/>
+        </VBox>
+    </HBox>
+
+    <!-- Séparateur -->
+    <Separator styleClass="dialog-separator"/>
+
+    <!-- Panneau de configuration compact -->
+    <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="config-panel">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="SYSTÈME:" styleClass="config-label"/>
+            <TextField fx:id="referenceSystemField" styleClass="config-field" prefWidth="150"
+                       promptText="Système de référence"/>
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="DISTANCE MAX:" styleClass="config-label"/>
+            <Spinner fx:id="maxDistanceSpinner" editable="true" initialValue="70" min="30" max="250" prefWidth="80"
+                     styleClass="config-spinner"/>
+            <Label text="AL" styleClass="config-unit"/>
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="SOURCES MIN:" styleClass="config-label"/>
+            <Spinner fx:id="minSourcesSpinner" editable="true" initialValue="1" min="1" max="5" prefWidth="50"
+                     styleClass="config-spinner"/>
+            <Label text="SOURCES" styleClass="config-unit"/>
+        </HBox>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button fx:id="searchButton" mnemonicParsing="false" onAction="#searchMassacreSystems" styleClass="elite-button"
+                text="RECHERCHER"/>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="faction-header">
+        <Label text="SYSTÈME" styleClass="faction-header-label" prefWidth="140">
+            <HBox.margin>
+                <Insets left="10"/>
+            </HBox.margin>
+        </Label>
+        <Label text="DISTANCE" styleClass="faction-header-label" prefWidth="70"/>
+        <Label text="PADS" styleClass="faction-header-label" prefWidth="60"/>
+        <HBox alignment="CENTER" spacing="40.0">
+            <VBox alignment="CENTER" spacing="5.0">
+                <ImageView fx:id="fedHeaderIcon" fitHeight="35.0" fitWidth="35.0" pickOnBounds="true"
+                           preserveRatio="true"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5.0">
+                <ImageView fx:id="impHeaderIcon" fitHeight="35.0" fitWidth="35.0" pickOnBounds="true"
+                           preserveRatio="true"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5.0">
+                <ImageView fx:id="allHeaderIcon" fitHeight="35.0" fitWidth="35.0" pickOnBounds="true"
+                           preserveRatio="true"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5.0">
+                <ImageView fx:id="indHeaderIcon" fitHeight="35.0" fitWidth="35.0" pickOnBounds="true"
+                           preserveRatio="true"/>
+            </VBox>
+        </HBox>
+        <Label text="RES" styleClass="faction-header-label" translateX="30"/>
+    </HBox>
+
+    <ScrollPane fx:id="resultsScrollPane" fitToWidth="true" styleClass="missions-scroll" VBox.vgrow="ALWAYS">
+        <VBox fx:id="resultsContainer" spacing="10.0" styleClass="results-container"/>
+    </ScrollPane>
+
+    <!-- Panneau des boutons d'action -->
+    <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="action-panel">
+        <Button fx:id="closeButton" mnemonicParsing="false" onAction="#closeDialog" styleClass="elite-button-secondary"
+                text="FERMER"/>
+    </HBox>
+    </VBox>
+    
+    <!-- Conteneur pour les popups - au-dessus de tout -->
+    <StackPane fx:id="popupContainer" mouseTransparent="true"/>
+    
+</StackPane>

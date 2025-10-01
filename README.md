@@ -4,7 +4,7 @@
 
 Le Elite Dangerous Dashboard est une application JavaFX conçue pour améliorer l'expérience de jeu Elite Dangerous en fournissant une vue d'ensemble en temps réel de la progression des missions, des vaisseaux détruits et des statistiques de bounty. Elle traite les événements de journal générés par le jeu pour afficher les informations pertinentes dans une interface propre et intuitive.
 
-![img.png](elite-dashboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fimg.png)
+![exempledashboard.png](elite-dashboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fexempledashboard.png)
 ## Fonctionnalités
 
 ### 🎯 Suivi des missions en temps réel
