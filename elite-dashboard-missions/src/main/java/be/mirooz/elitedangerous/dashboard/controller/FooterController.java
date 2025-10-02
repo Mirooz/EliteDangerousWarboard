@@ -51,7 +51,8 @@ public class FooterController implements Initializable {
     
     @FXML
     private Button massacreSearchButton;
-    
+
+
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
 
@@ -168,7 +169,6 @@ public class FooterController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/massacre-search-dialog.fxml"));
             StackPane dialogContent = loader.load();
             MassacreSearchDialogController controller = loader.getController();
-
             // Créer la scène
             Scene scene = new Scene(dialogContent, 1000, 700);
             scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());

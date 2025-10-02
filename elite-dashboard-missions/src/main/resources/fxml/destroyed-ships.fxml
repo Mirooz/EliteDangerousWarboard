@@ -9,7 +9,7 @@
       styleClass="destroyed-ships-panel" spacing="10.0">
    
    <!-- En-tête du panneau -->
-   <VBox styleClass="panel-header">
+   <VBox styleClass="panel-header" alignment="CENTER">
       <Label text="VAISSEAUX DÉTRUITS" styleClass="section-title" textAlignment="CENTER"/>
    </VBox>
 

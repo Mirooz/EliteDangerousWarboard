@@ -1,9 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.ui.UIRefreshManager;
+import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -22,7 +22,11 @@ public class DashboardController implements Initializable {
 
     @FXML
     private BorderPane mainPane;
-    
+
+    @FXML
+    private StackPane popupContainer;
+
+    private PopupManager popupManager = PopupManager.getInstance();
     private HeaderController headerController;
     private MissionListController missionListController;
     private FooterController footerController;
@@ -30,11 +34,7 @@ public class DashboardController implements Initializable {
     private UIRefreshManager uiRefreshManager = UIRefreshManager.getInstance();
     
     private DashboardService dashboardService;
-    private MissionsList allMissionsList = MissionsList.getInstance();
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
-    
-    // Conteneur pour les popups
-    private StackPane popupContainer;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -42,19 +42,12 @@ public class DashboardController implements Initializable {
         
         loadComponents();
         loadMissions();
-        
-        // Créer le conteneur pour les popups APRÈS les autres composants
-        popupContainer = new StackPane();
-        mainPane.getChildren().add(popupContainer);
-        
-        // Passer le conteneur au contrôleur des missions
-        if (missionListController != null) {
-            missionListController.setPopupContainer(popupContainer);
-        }
+
     }
     
     private void loadComponents() {
         try {
+            popupManager.setContainer(this.popupContainer);
             // Charger le header
             createHeaderPanel();
             // Charger la liste des missions
@@ -86,7 +79,7 @@ public class DashboardController implements Initializable {
         FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/mission-list.fxml"));
         VBox missionList = missionListLoader.load();
         missionListController = missionListLoader.getController();
-        missionListController.setFilterChangeCallback(this::onFilterChange);
+         missionListController.setFilterChangeCallback(this::onFilterChange);
         mainPane.setCenter(missionList);
     }
 

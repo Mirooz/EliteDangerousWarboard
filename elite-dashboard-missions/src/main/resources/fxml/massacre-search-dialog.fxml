@@ -16,8 +16,8 @@
     <!-- En-tête avec titre -->
     <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="dialog-header">
         <VBox spacing="2.0">
-            <Label text="RECHERCHE DE SYSTÈMES MASSACRE" styleClass="dialog-title"/>
-            <Label text="PLANIFICATEUR DE MISSIONS ELITE DANGEROUS" styleClass="dialog-subtitle"/>
+            <Label text="RECHERCHE DE SYSTÈMES POUR MISSIONS DE MASSACRE" styleClass="dialog-title"/>
+            <Label text="Ces systèmes sont propices à la génération de missions de massacre" styleClass="dialog-subtitle"/>
         </VBox>
     </HBox>
 
@@ -91,7 +91,7 @@
                 text="FERMER"/>
     </HBox>
     </VBox>
-    
+
     <!-- Conteneur pour les popups - au-dessus de tout -->
     <StackPane fx:id="popupContainer" mouseTransparent="true"/>
     

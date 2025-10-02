@@ -2,13 +2,12 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
+import be.mirooz.elitedangerous.dashboard.ui.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
+import be.mirooz.elitedangerous.dashboard.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
-import javafx.animation.FadeTransition;
-import javafx.animation.PauseTransition;
-import javafx.animation.SequentialTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -65,8 +64,11 @@ public class MassacreSearchDialogController implements Initializable {
     private ImageView indHeaderIcon;
 
     @FXML
+
     private StackPane popupContainer;
 
+    private final PopupManager popupManager = PopupManager.getInstance();
+    private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
 
@@ -137,68 +139,11 @@ public class MassacreSearchDialogController implements Initializable {
         return mediumPad;
     }
 
-    private Tooltip createDelayedTooltip(String text) {
-        Tooltip tooltip = new Tooltip(text);
-        tooltip.setShowDelay(Duration.millis(300)); // 0.3 seconde de délai
-        tooltip.setHideDelay(Duration.millis(100));
-        return tooltip;
+
+    private void onClickSystem(String systemName, javafx.scene.input.MouseEvent event) {
+        copyClipboardManager.copyToClipboard(systemName);
+        popupManager.showPopup("Système copié",event.getSceneX(),event.getSceneY(),this.popupContainer);
     }
-    private void copySystemToClipboard(String systemName, javafx.scene.input.MouseEvent event) {
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-        content.putString(systemName);
-        clipboard.setContent(content);
-
-        showSystemCopiedPopup("Système copié", event);
-    }
-    private void showSystemCopiedPopup(String message, javafx.scene.input.MouseEvent event) {
-        if (popupContainer == null) return;
-
-        // Créer le popup
-        VBox popup = new VBox();
-        popup.getStyleClass().add("system-copied-popup");
-        popup.setAlignment(Pos.CENTER);
-        popup.setSpacing(3);
-        popup.setPadding(new Insets(8, 16, 8, 16));
-
-        Label messageLabel = new Label(message);
-        messageLabel.getStyleClass().add("popup-title");
-
-        popup.getChildren().add(messageLabel);
-
-        // Taille compacte
-        popup.setMinSize(120, 40);
-        popup.setPrefSize(120, 40);
-        popup.setMaxSize(120, 40);
-
-        // Positionner le popup avec le coin gauche en bas à droite de la souris
-        double mouseX = event.getSceneX();
-        double mouseY = event.getSceneY();
-        popup.setTranslateX(mouseX);
-        popup.setTranslateY(mouseY);
-        
-        // Désactiver l'alignement par défaut du StackPane
-        StackPane.setAlignment(popup, Pos.TOP_LEFT);
-
-        // Ajouter au conteneur
-        popupContainer.getChildren().add(popup);
-
-        // Animation d'apparition et disparition
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), popup);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-
-        PauseTransition pause = new PauseTransition(Duration.millis(1000));
-
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), popup);
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
-
-        SequentialTransition sequence = new SequentialTransition(fadeIn, pause, fadeOut);
-        sequence.setOnFinished(e -> popupContainer.getChildren().remove(popup));
-        sequence.play();
-    }
-
     private VBox createMassacreCard(MassacreSystem system) {
         VBox card = new VBox();
         card.getStyleClass().add("massacre-card");
@@ -212,17 +157,18 @@ public class MassacreSearchDialogController implements Initializable {
         VBox systemInfo = new VBox();
         systemInfo.setSpacing(2);
 
-        Label title = new Label(system.getSourceSystem());
-        title.getStyleClass().add("massacre-card-title");
-        // Ajouter tooltip et clic pour copier le système d'origine
-        title.setTooltip(createDelayedTooltip(system.getSourceSystem()));
-        title.getStyleClass().add("clickable-system-source");
-        title.setOnMouseClicked(e -> copySystemToClipboard(system.getSourceSystem(), e));
+        Label sourceSystem = new Label(system.getSourceSystem());
+        sourceSystem.getStyleClass().add("massacre-card-title");
+        sourceSystem.setTooltip(new TooltipComponent(system.getSourceSystem()));
+        sourceSystem.getStyleClass().add("clickable-system-source");
+        sourceSystem.setOnMouseClicked(e -> onClickSystem(system.getSourceSystem(), e));
 
-        Label subtitle = new Label("→ " + system.getTargetSystem() + "["+system.getTargetCount()+"]");
-        subtitle.getStyleClass().add("massacre-card-subtitle");
-
-        systemInfo.getChildren().addAll(title, subtitle);
+        Label targetSystem = new Label("→ " + system.getTargetSystem() + "["+system.getTargetCount()+"]");
+        targetSystem.setTooltip(new TooltipComponent(system.getTargetSystem()));
+        targetSystem.getStyleClass().add("massacre-card-subtitle");
+        targetSystem.getStyleClass().add("clickable-system-target");
+        targetSystem.setOnMouseClicked(e -> onClickSystem(system.getTargetSystem(), e));
+        systemInfo.getChildren().addAll(sourceSystem, targetSystem);
 
         // Distance
         Label distance = new Label(system.getDistanceLy() + " AL");

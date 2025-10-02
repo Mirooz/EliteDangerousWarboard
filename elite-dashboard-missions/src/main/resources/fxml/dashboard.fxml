@@ -3,8 +3,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mirooz.elitedangerous.dashboard.controller.DashboardController">
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="be.mirooz.elitedangerous.dashboard.controller.DashboardController">
    <center>
-      <BorderPane fx:id="mainPane" styleClass="main-content" />
+      <StackPane fx:id="popupContainer">
+         <!-- Ici tu mets un vrai conteneur principal -->
+         <BorderPane fx:id="mainPane" styleClass="main-content" />
+      </StackPane>
    </center>
 </BorderPane>
