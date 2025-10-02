@@ -441,6 +441,11 @@
     -fx-text-fill: -fx-elite-success;
     -fx-font-weight: bold;
 }
+.mission-time-failed {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-elite-danger;
+    -fx-font-weight: bold;
+}
 .faction-header {
     -fx-font-weight: bold;
     -fx-border-color: #555;

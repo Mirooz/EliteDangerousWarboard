@@ -112,10 +112,10 @@ public class HeaderController implements Initializable {
                     .mapToLong(Mission::getReward)
                     .sum();
             
-            creditsText = "CRÉDITS EN ATTENTE";
+            creditsText = "CRÉDITS POTENTIELS";
             creditsLabel.setText(String.format("%,d", totalCredits));
             creditsLabel.setStyle("-fx-text-fill: #FF6B00;"); // Orange pour le total
-            creditsTextLabel.setText("CRÉDITS EN ATTENTE");
+            creditsTextLabel.setText("CRÉDITS POTENTIELS");
             creditsTextLabel.setStyle("-fx-text-fill: #CCCCCC;"); // Couleur par défaut
             
             // Afficher les crédits en attente dans un label séparé

@@ -95,7 +95,7 @@ public class MassacreSearchDialogController implements Initializable {
     private void searchMassacreSystems() {
         String referenceSystem = referenceSystemField.getText();
         if (referenceSystem == null || referenceSystem.trim().isEmpty()) {
-            showAlert("Erreur", "Veuillez saisir un système de référence.");
+            referenceSystem=commanderStatus.getCurrentStarSystemString();
             return;
         }
 
@@ -109,12 +109,8 @@ public class MassacreSearchDialogController implements Initializable {
             List<MassacreSystem> systems = edToolsService.findMassacreSystems(referenceSystem, maxDistance, minSources);
             displayResults(systems);
 
-            if (systems.isEmpty()) {
-                showAlert("Information", "Aucun système massacre trouvé avec ces critères.");
-            }
 
         } catch (Exception e) {
-            showAlert("Erreur", "Erreur lors de la recherche: " + e.getMessage());
             e.printStackTrace();
         } finally {
             searchButton.setDisable(false);
@@ -231,11 +227,4 @@ public class MassacreSearchDialogController implements Initializable {
         stage.close();
     }
 
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }

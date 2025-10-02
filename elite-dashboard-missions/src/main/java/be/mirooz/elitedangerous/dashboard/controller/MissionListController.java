@@ -33,6 +33,9 @@ import java.util.function.Consumer;
  */
 public class MissionListController implements Initializable {
 
+    public static final String TERMINATED = "Terminée";
+    public static final String EXPIRED = "Expirée";
+    public static final String FAILED = "Echouée";
     @FXML
     private VBox missionsList;
 
@@ -251,20 +254,26 @@ public class MissionListController implements Initializable {
 
             if (mission.getExpiry() != null) {
                 String timeRemaining;
-                if (mission.getStatus() == MissionStatus.COMPLETED) {
-                    timeRemaining = "Terminée";
+                if (mission.getStatus() == MissionStatus.COMPLETED
+                    || (!missionFailed(mission) &&mission.getTargetCountLeft()==0)) {
+                    timeRemaining = TERMINATED;
+                } else if (missionFailed(mission)) {
+                    timeRemaining = FAILED;
                 } else {
                     long hoursRemaining = java.time.Duration.between(LocalDateTime.now(), mission.getExpiry()).toHours();
                     if (hoursRemaining > 0) {
                         timeRemaining = String.format("Restant: %dh", hoursRemaining);
                     } else {
-                        timeRemaining = "Expirée";
+                        timeRemaining = EXPIRED;
                     }
                 }
                 Label remainingLabel = new Label(timeRemaining);
-                if (mission.getStatus() == MissionStatus.COMPLETED) {
+                if (TERMINATED.equals(timeRemaining)) {
                     remainingLabel.getStyleClass().add("mission-time-completed");
-                } else {
+                }
+                else if (FAILED.equals(timeRemaining) || EXPIRED.equals(timeRemaining)){
+                    remainingLabel.getStyleClass().add("mission-time-failed");
+                }else {
                     long hoursRemaining = java.time.Duration.between(LocalDateTime.now(), mission.getExpiry()).toHours();
                     remainingLabel.getStyleClass().add(hoursRemaining > 24 ? "mission-time" : "mission-time-urgent");
                 }
@@ -280,6 +289,12 @@ public class MissionListController implements Initializable {
         card.getChildren().add(mainRow);
 
         return card;
+    }
+
+    private  boolean missionFailed(Mission mission) {
+        return mission.getStatus() == MissionStatus.FAILED
+                || mission.getStatus() == MissionStatus.EXPIRED
+                || mission.getStatus() == MissionStatus.ABANDONED;
     }
 
     @FXML
