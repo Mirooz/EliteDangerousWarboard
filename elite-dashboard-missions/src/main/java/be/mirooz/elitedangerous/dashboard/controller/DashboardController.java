@@ -10,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
@@ -26,28 +27,28 @@ public class DashboardController implements Initializable {
     @FXML
     private StackPane popupContainer;
 
-    private PopupManager popupManager = PopupManager.getInstance();
     private HeaderController headerController;
     private MissionListController missionListController;
     private FooterController footerController;
     private DestroyedShipsController destroyedShipsController;
     private UIRefreshManager uiRefreshManager = UIRefreshManager.getInstance();
-    
+
     private DashboardService dashboardService;
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
+    private PopupManager popupManager = PopupManager.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         dashboardService = DashboardService.getInstance();
-        
+
         loadComponents();
         loadMissions();
-
+        popupManager.attachToContainer(popupContainer);
     }
-    
+
     private void loadComponents() {
         try {
-            popupManager.setContainer(this.popupContainer);
+
             // Charger le header
             createHeaderPanel();
             // Charger la liste des missions
@@ -56,12 +57,9 @@ public class DashboardController implements Initializable {
             createDestroyedShipsPanel();
             // Charger le footer
             createFooterPanel();
-            uiRefreshManager.registerControllers(
-                    headerController,
-                    missionListController,
-                    footerController);
+            uiRefreshManager.registerControllers(headerController, missionListController, footerController);
             uiRefreshManager.registerDestroyedShipsController(destroyedShipsController);
-            
+
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement des composants: " + e.getMessage());
             e.printStackTrace();
@@ -79,7 +77,7 @@ public class DashboardController implements Initializable {
         FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/mission-list.fxml"));
         VBox missionList = missionListLoader.load();
         missionListController = missionListLoader.getController();
-         missionListController.setFilterChangeCallback(this::onFilterChange);
+        missionListController.setFilterChangeCallback(this::onFilterChange);
         mainPane.setCenter(missionList);
     }
 
@@ -102,13 +100,13 @@ public class DashboardController implements Initializable {
         // Mettre à jour le nom du commandant dans le footer
         uiRefreshManager.refresh();
     }
-    
-    
+
+
     private void onFilterChange(MissionStatus filter) {
         currentFilter = filter;
         headerController.setCurrentFilter(filter);
         missionListController.setCurrentFilter(filter);
         uiRefreshManager.refresh();
     }
-    
+
 }

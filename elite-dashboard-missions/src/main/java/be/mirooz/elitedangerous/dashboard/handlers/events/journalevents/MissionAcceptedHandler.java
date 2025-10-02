@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             String faction = jsonNode.get("Faction").asText();
             String targetFaction = jsonNode.has("TargetFaction") ? jsonNode.get("TargetFaction").asText() : null;
             String destinationSystem = jsonNode.has("DestinationSystem") ? jsonNode.get("DestinationSystem").asText() : null;
+            String targetType = jsonNode.has("TargetType") ? jsonNode.get("TargetType").asText() : null;
 
             // Essayer différents champs pour le nombre de kills requis
             int targetCount = 0;
@@ -62,6 +64,7 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             mission.setOriginStation(commanderStatus.getCurrentStationNameString());
             mission.setOriginSystem(commanderStatus.getCurrentStarSystemString());
             mission.setTargetCount(targetCount);
+            mission.setTargetType(TargetType.fromCode(targetType));
             mission.setCurrentCount(0);
             mission.setReward(reward);
             mission.setStatus(MissionStatus.ACTIVE);

@@ -51,6 +51,11 @@
          <padding>
             <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
          </padding>
+         <!-- Bouton de recherche massacre -->
+         <VBox alignment="CENTER_RIGHT" spacing="5.0">
+            <Button fx:id="massacreSearchButton" mnemonicParsing="false" onAction="#openMassacreSearchDialog" styleClass="elite-button" text="RECHERCHER SYSTÈMES MASSACRE" />
+         </VBox>
+
       </HBox>
    </children>
 </VBox>

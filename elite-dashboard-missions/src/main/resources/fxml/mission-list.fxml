@@ -4,34 +4,30 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mirooz.elitedangerous.dashboard.controller.MissionListController">
-   <children>
-      <HBox alignment="CENTER_LEFT" spacing="20.0">
-         <children>
-            <Label styleClass="section-title" text="MISSIONS DE MASSACRE" />
-            <Region HBox.hgrow="ALWAYS" />
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-               <children>
-                  <Label styleClass="filter-label" text="Filtre:" />
-                  <Button fx:id="activeFilterButton" mnemonicParsing="false" onAction="#filterActiveMissions" styleClass="filter-button" text="ACTIVES" />
-                  <Button fx:id="completedFilterButton" mnemonicParsing="false" onAction="#filterCompletedMissions" styleClass="filter-button" text="COMPLÉTÉES" />
-                  <Button fx:id="abandonedFilterButton" mnemonicParsing="false" onAction="#filterAbandonedMissions" styleClass="filter-button" text="ABANDONNÉES" />
-                  <Button fx:id="allFilterButton" mnemonicParsing="false" onAction="#filterAllMissions" styleClass="filter-button" text="TOUTES" />
-               </children>
-            </HBox>
-         </children>
-      </HBox>
-      <ScrollPane fitToWidth="true" styleClass="missions-scroll">
-         <content>
-            <VBox fx:id="missionsList" spacing="8.0" styleClass="missions-list">
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-            </VBox>
-         </content>
-      </ScrollPane>
-   </children>
+<?import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView?>
+<?import be.mirooz.elitedangerous.dashboard.model.Mission?>
+<VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.MissionListController">
    <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
    </padding>
+   <HBox alignment="CENTER_LEFT" spacing="20.0">
+      <Label styleClass="section-title" text="MISSIONS DE MASSACRE"/>
+      <Region HBox.hgrow="ALWAYS"/>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <Label styleClass="filter-label" text="Filtre:"/>
+         <Button fx:id="activeFilterButton" mnemonicParsing="false" onAction="#filterActiveMissions"
+                 styleClass="filter-button" text="ACTIVES"/>
+         <Button fx:id="completedFilterButton" mnemonicParsing="false" onAction="#filterCompletedMissions"
+                 styleClass="filter-button" text="COMPLÉTÉES"/>
+         <Button fx:id="failedFilterButton" mnemonicParsing="false" onAction="#filterAbandonedMissions"
+                 styleClass="filter-button" text="ECHOUÉES"/>
+         <Button fx:id="allFilterButton" mnemonicParsing="false" onAction="#filterAllMissions"
+                 styleClass="filter-button" text="TOUTES"/>
+      </HBox>
+   </HBox>
+   <GenericListView fx:id="missionsList"
+                    styleClass="missions-scroll"
+                    VBox.vgrow="ALWAYS"/>
 </VBox>

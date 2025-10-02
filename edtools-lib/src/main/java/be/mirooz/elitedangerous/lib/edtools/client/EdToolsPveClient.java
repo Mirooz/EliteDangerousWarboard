@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -22,7 +23,7 @@ public class EdToolsPveClient {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    public EdtoolResponse fetch(String referenceSystem, int maxDistanceLy, int minSourcesPerTarget) throws Exception {
+    public EdtoolResponse fetch(String referenceSystem, int maxDistanceLy, int minSourcesPerTarget) throws IllegalArgumentException, IOException, InterruptedException {
         validateParams(maxDistanceLy, minSourcesPerTarget);
         String s = URLEncoder.encode(referenceSystem, StandardCharsets.UTF_8);
         String url = String.format("https://edtools.cc/pve?s=%s&md=%d&sc=%d", s, maxDistanceLy, minSourcesPerTarget);
@@ -30,8 +31,14 @@ public class EdToolsPveClient {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                 .header("User-Agent", "Java HttpClient - ED Dashboard")
                 .GET().build();
-
+        System.out.printf(
+                "Calling EDTOOLS with parameters %s, %s, %s%n",
+                request, maxDistanceLy, minSourcesPerTarget
+        );
+        long start = System.currentTimeMillis();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        long durationCall = System.currentTimeMillis() - start;
+        System.out.println("EDTOOLS call duration: " + durationCall + " ms");
         if (response.statusCode() != 200) {
             throw new IllegalStateException("HTTP " + response.statusCode() + " calling " + url);
         }

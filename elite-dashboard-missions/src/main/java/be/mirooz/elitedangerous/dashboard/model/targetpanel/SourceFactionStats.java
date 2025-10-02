@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model;
+package be.mirooz.elitedangerous.dashboard.model.targetpanel;
 
 public class SourceFactionStats {
     private final String sourceFaction;

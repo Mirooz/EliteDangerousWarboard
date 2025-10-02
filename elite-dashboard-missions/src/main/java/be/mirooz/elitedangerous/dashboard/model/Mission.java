@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.model;
 
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -31,11 +32,35 @@ public class Mission {
     private String targetFaction;
     private int targetCount;
     private int currentCount;
+    private TargetType targetType;
     private LocalDateTime acceptedTime;
     private boolean wing;
+    public boolean isActivePirateMission(){
+        return isPirateMission() && MissionStatus.ACTIVE.equals(status);
+    }
+    public boolean isActiveDeserteurMission(){
+        return isDeserteurMission() && MissionStatus.ACTIVE.equals(status);
+    }
+    public boolean isPirateMission(){
+        return (TargetType.PIRATE.equals(targetType));
+    }
+    public boolean isDeserteurMission(){
+        return (TargetType.DESERTEUR.equals(targetType));
+    }
 
     public int getTargetCountLeft(){
         return targetCount-currentCount;
     }
+
+    public boolean isMassacreActive(){
+        return MissionStatus.ACTIVE.equals(this.status) && MissionType.MASSACRE.equals(this.type);
+    }
+
+    public  boolean isMissionFailed() {
+        return this.getStatus() == MissionStatus.FAILED
+                || this.getStatus() == MissionStatus.EXPIRED
+                || this.getStatus() == MissionStatus.ABANDONED;
+    }
+
 
 }

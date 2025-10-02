@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.dashboard.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
@@ -17,6 +18,7 @@ public class MissionService {
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final MissionsList missionsList;
     private final DestroyedShipsList destroyedShipsList;
+
     private MissionService() {
         this.missionsList = MissionsList.getInstance();
         this.destroyedShipsList = DestroyedShipsList.getInstance();
@@ -30,7 +32,7 @@ public class MissionService {
 
     public void updateTargetRewards(JsonNode jsonNode) {
         LocalDateTime timestamp = DateUtil.parseTimestamp(jsonNode.has("timestamp") ? jsonNode.get("timestamp").asText() : null);
-        String shipName = jsonNode.has("Target_Localised") ? jsonNode.get("Target_Localised").asText() : jsonNode.has("Target")? jsonNode.get("Target").asText():"";
+        String shipName = jsonNode.has("Target_Localised") ? jsonNode.get("Target_Localised").asText() : jsonNode.has("Target") ? jsonNode.get("Target").asText() : "";
         String pilotName = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
         int totalReward = jsonNode.has("TotalReward") ? jsonNode.get("TotalReward").asInt() : 0;
         String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
@@ -68,13 +70,13 @@ public class MissionService {
                 rewards.add(new Reward(faction, reward));
             }
         }
-        System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward + ", Wanted : " + +rewards.size() +  rewards);
+        System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward + ", Wanted : " + +rewards.size() + rewards);
 
         if (missionsList.getGlobalMissionMap().values().isEmpty()) {
             return;
         }
         List<Mission> eligibleMissions = missionsList.getGlobalMissionMap().values().stream()
-                .filter(mission -> mission.getStatus() == MissionStatus.ACTIVE)
+                .filter(Mission::isActivePirateMission)
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> mission.getTargetFaction() != null)
                 .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
@@ -97,12 +99,7 @@ public class MissionService {
             List<Mission> factionMissions = entry.getValue();
 
             // Trier par date d'acceptation (plus ancienne en premier)
-            factionMissions.sort((m1, m2) -> {
-                if (m1.getAcceptedTime() == null && m2.getAcceptedTime() == null) return 0;
-                if (m1.getAcceptedTime() == null) return 1;
-                if (m2.getAcceptedTime() == null) return -1;
-                return m1.getAcceptedTime().compareTo(m2.getAcceptedTime());
-            });
+            factionMissions.sort(new MissionTimestampComparator(true));
 
             // Prendre la mission la plus ancienne
             Mission oldestMission = factionMissions.get(0);

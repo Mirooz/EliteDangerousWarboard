@@ -146,8 +146,12 @@
 .missions-scroll {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-}
+    -fx-control-inner-background: transparent;
 
+}
+.missions-scroll:focused {
+    -fx-background-color: transparent;
+}
 .missions-scroll .viewport {
     -fx-background-color: transparent;
 }
@@ -165,7 +169,22 @@
     -fx-background-color: -fx-elite-gray;
     -fx-border-color: -fx-elite-orange;
 }
+.missions-scroll .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
 
+/* cellule sélectionnée */
+.missions-scroll .list-cell:selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: inherit; /* garder la couleur du texte normale */
+}
+
+/* cellule focus (souvent la première au chargement) */
+.missions-scroll .list-cell:focused {
+    -fx-background-color: transparent;
+    -fx-text-fill: inherit;
+}
 .missions-scroll .scroll-bar:horizontal .thumb {
     -fx-background-color: -fx-elite-orange;
 }
@@ -188,10 +207,20 @@
     -fx-border-color: -fx-elite-cyan;
     -fx-background-color: -fx-elite-gray;
 }
-
+.mission-card-wing {
+    -fx-border-color: -fx-elite-blue !important;
+}
 /* Carte de mission complète (active avec kills terminés) */
 .mission-card-complete {
-    -fx-border-color: -fx-elite-blue !important;
+    -fx-border-color: -fx-elite-success !important;
+}
+
+.mission-card-complete:hover {
+    -fx-border-color: -fx-elite-cyan !important;
+    -fx-background-color: -fx-elite-gray;
+}
+.mission-card-failed {
+    -fx-border-color: -fx-elite-danger !important;
 }
 
 .mission-card-complete:hover {
@@ -270,19 +299,19 @@
 }
 
 .footer-text {
-    -fx-font-size: 11px;
+    -fx-font-size: 14px;
     -fx-text-fill: -fx-elite-text-dim;
     -fx-font-weight: bold;
 }
 
 .footer-label {
-    -fx-font-size: 10px;
+    -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
 }
 
 .footer-value {
-    -fx-font-size: 11px;
+    -fx-font-size: 14px;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
 }
@@ -341,7 +370,21 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
 }
-
+.massacre-pirate {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-danger;
+    -fx-font-weight: bold;
+}
+.massacre-deserteur {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-weight: bold;
+}
+.massacre-default {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+}
 .massacre-target {
     -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-cyan;
@@ -360,11 +403,12 @@
 }
 
 .massacre-progress {
-    -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
+    -fx-border-color: transparent;
     -fx-border-width: 1;
 }
-
+.massacre-progress .track {
+    -fx-background-color: white;   /* ⚡ fond blanc */
+}
 .massacre-progress .bar {
     -fx-background-color: -fx-elite-orange;
 }
@@ -559,9 +603,6 @@
     -fx-text-fill: -fx-elite-orange;
 }
 
-.destroyed-ships-table .column-header:last-child {
-    -fx-border-width: 0;
-}
 
 .destroyed-ships-table .table-cell {
     -fx-text-fill: -fx-elite-text;

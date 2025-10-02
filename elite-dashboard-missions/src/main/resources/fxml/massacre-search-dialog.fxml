@@ -5,9 +5,10 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
+<?import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView?>
 <StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController">
-    
+
     <VBox spacing="20.0" styleClass="dialog-content">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
@@ -21,8 +22,6 @@
         </VBox>
     </HBox>
 
-    <!-- Séparateur -->
-    <Separator styleClass="dialog-separator"/>
 
     <!-- Panneau de configuration compact -->
     <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="config-panel">
@@ -34,14 +33,14 @@
 
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Label text="DISTANCE MAX:" styleClass="config-label"/>
-            <Spinner fx:id="maxDistanceSpinner" editable="true" initialValue="70" min="30" max="250" prefWidth="80"
+            <Spinner fx:id="maxDistanceSpinner" editable="true" initialValue="100" min="30" max="250" prefWidth="80"
                      styleClass="config-spinner"/>
             <Label text="AL" styleClass="config-unit"/>
         </HBox>
 
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Label text="SOURCES MIN:" styleClass="config-label"/>
-            <Spinner fx:id="minSourcesSpinner" editable="true" initialValue="1" min="1" max="5" prefWidth="50"
+            <Spinner fx:id="minSourcesSpinner" editable="true" initialValue="1" min="1" max="5" prefWidth="70"
                      styleClass="config-spinner"/>
             <Label text="SOURCES" styleClass="config-unit"/>
         </HBox>
@@ -80,10 +79,9 @@
         </HBox>
         <Label text="RES" styleClass="faction-header-label" translateX="30"/>
     </HBox>
-
-    <ScrollPane fx:id="resultsScrollPane" fitToWidth="true" styleClass="missions-scroll" VBox.vgrow="ALWAYS">
-        <VBox fx:id="resultsContainer" spacing="10.0" styleClass="results-container"/>
-    </ScrollPane>
+        <GenericListView fx:id="systemList"
+                  styleClass="missions-scroll"
+                  VBox.vgrow="ALWAYS"/>
 
     <!-- Panneau des boutons d'action -->
     <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="action-panel">
@@ -92,7 +90,11 @@
     </HBox>
     </VBox>
 
+    <ProgressIndicator fx:id="loadingIndicator"
+                       maxWidth="100" maxHeight="100"
+                       visible="false" />
+
     <!-- Conteneur pour les popups - au-dessus de tout -->
     <StackPane fx:id="popupContainer" mouseTransparent="true"/>
-    
+
 </StackPane>
