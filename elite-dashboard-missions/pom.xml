@@ -16,6 +16,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
+        </dependency>
         <dependency>
             <groupId>be.mirooz.elitedangerous.lib</groupId>
             <artifactId>edtools-lib</artifactId>
@@ -85,9 +91,8 @@
                     <systemProperties>
                         <systemProperty>
                             <key>journal.folder</key>
-                            <!--                            <value>C:\Users\ewen_\Saved Games\Frontier Developments\Elite Dangerous</value>-->
-
-                            <value>${project.basedir}/target/classes/exemple</value>
+                                                        <value>C:\Users\ewen_\Saved Games\Frontier Developments\Elite Dangerous</value>
+<!--                            <value>${project.basedir}/target/classes/exemple</value>-->
                         </systemProperty>
                     </systemProperties>
                 </configuration>

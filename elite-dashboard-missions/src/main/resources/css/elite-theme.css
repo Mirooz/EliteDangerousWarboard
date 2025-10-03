@@ -596,7 +596,7 @@
 }
 
 .destroyed-ships-table {
-    -fx-background-color: -fx-elite-dark;
+    -fx-background-color: transparent;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
     -fx-border-radius: 3;
@@ -916,24 +916,42 @@
 
 .massacre-card-title {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 14px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-min-width: 120;
-    -fx-pref-width: 120;
-    -fx-max-width: 120;
+    -fx-min-width: 100;
+    -fx-pref-width: 100;
+    -fx-max-width: 100;
 }
 
 .massacre-card-subtitle {
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-min-width: 120;
-    -fx-pref-width: 120;
-    -fx-max-width: 120;
+    -fx-min-width: 103;
+    -fx-pref-width: 103;
+    -fx-max-width: 103;
 }
-
-.massacre-card-distance {
+.icon-selected {
+    -fx-effect: dropshadow(gaussian, gold, 20, 0.8, 0, 0);
+    -fx-cursor: hand;
+}
+.icon-cursor{
+    -fx-cursor: hand;
+}
+.icon-cursor:hover {
+     -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.6), 15, 0.5, 0, 0);
+     -fx-opacity: 0.9;
+ }
+.massacre-card-count {
     -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-min-width: 20;
+    -fx-pref-width: 20;
+    -fx-max-width: 20;
+}
+.massacre-card-distance {
+    -fx-text-fill: -fx-elite-green;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-min-width: 80;
@@ -1005,7 +1023,11 @@
     -fx-font-weight: bold;
     -fx-alignment: CENTER_LEFT;
 }
-
+.hoverable-label:hover {
+    -fx-text-fill: #ffcc00; /* exemple : couleur dorée au survol */
+    -fx-underline: true;    /* souligne le texte */
+    -fx-cursor: hand;       /* curseur "main" pour indiquer l'interactivité */
+}
 .faction-header-name {
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-size: 10px;

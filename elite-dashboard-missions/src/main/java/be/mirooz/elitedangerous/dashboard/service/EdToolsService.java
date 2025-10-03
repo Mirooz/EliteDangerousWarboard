@@ -19,11 +19,21 @@ public class EdToolsService {
         return INSTANCE;
     }
 
-    public CompletableFuture<List<MassacreSystem>> findMassacreSystems(String referenceSystem, int maxDistanceLy, int minSourcesPerTarget) {
+    public CompletableFuture<List<MassacreSystem>> findMassacreSystems(String referenceSystem, int maxDistanceLy, int minSourcesPerTarget,boolean largPad) {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return client.fetch(referenceSystem, maxDistanceLy, minSourcesPerTarget).getRows();
+                return client.sendSystemSearch(referenceSystem, maxDistanceLy, minSourcesPerTarget,largPad).getRows();
+            } catch (Exception e) {
+                throw new RuntimeException("Erreur lors de l'appel EdTools", e);
+            }
+        });
+    }
+    public CompletableFuture<List<MassacreSystem>> findSourcesForTargetSystem(String referenceSystem) {
+
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return client.sendTargetSystemSearch(referenceSystem).getRows();
             } catch (Exception e) {
                 throw new RuntimeException("Erreur lors de l'appel EdTools", e);
             }

@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
 import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -79,8 +80,7 @@ public class DestroyedShipsController implements Initializable {
     }
 
     private void initializeTable() {
-
-        // Configuration des colonnes
+        // Colonne Bounty : format avec séparateur de milliers
         shipNameColumn.setCellValueFactory(new PropertyValueFactory<>("shipName"));
         pilotNameColumn.setCellValueFactory(new PropertyValueFactory<>("pilotName"));
         bountyColumn.setCellValueFactory(new PropertyValueFactory<>("totalBountyReward"));
@@ -92,46 +92,21 @@ public class DestroyedShipsController implements Initializable {
                 setText(empty || value == null ? null : DF.format(value));
             }
         });
+
+        // Colonne Heure : format HH:mm
         timeColumn.setCellValueFactory(cellData -> {
             DestroyedShip ship = cellData.getValue();
             if (ship.getDestroyedTime() != null) {
-                return new javafx.beans.property.SimpleStringProperty(
+                return new SimpleStringProperty(
                         ship.getDestroyedTime().format(DateTimeFormatter.ofPattern("HH:mm"))
                 );
             }
-            return new javafx.beans.property.SimpleStringProperty("N/A");
+            return new SimpleStringProperty("N/A");
         });
 
-        // Configuration du style des colonnes
-        shipNameColumn.setStyle("-fx-alignment: CENTER-LEFT;");
-        pilotNameColumn.setStyle("-fx-alignment: CENTER-LEFT;");
-        bountyColumn.setStyle("-fx-alignment: CENTER-LEFT;");
-        timeColumn.setStyle("-fx-alignment: CENTER;");
+        destroyedShipsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        destroyedShipsTable.setSelectionModel(null);
 
-        // Désactiver le tri sur toutes les colonnes
-        shipNameColumn.setSortable(false);
-        pilotNameColumn.setSortable(false);
-        bountyColumn.setSortable(false);
-        timeColumn.setSortable(false);
-
-        // Désactiver le redimensionnement des colonnes
-        shipNameColumn.setResizable(false);
-        pilotNameColumn.setResizable(false);
-        bountyColumn.setResizable(false);
-        timeColumn.setResizable(false);
-
-        // Configuration de la largeur des colonnes pour s'adapter à la largeur du tableau
-        timeColumn.setPrefWidth(90);
-        shipNameColumn.setPrefWidth(130);
-        pilotNameColumn.setPrefWidth(110);
-        bountyColumn.setPrefWidth(110);
-
-        // Ajuster automatiquement les colonnes pour éviter le défilement horizontal
-        destroyedShipsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        // Configuration du style de la table
-        destroyedShipsTable.setStyle("-fx-background-color: transparent;");
-        destroyedShipsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     }
 
     public void postBatch() {

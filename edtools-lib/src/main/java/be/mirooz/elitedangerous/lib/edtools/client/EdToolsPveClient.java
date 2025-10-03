@@ -22,12 +22,27 @@ import java.util.Optional;
 public class EdToolsPveClient {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    public EdtoolResponse sendTargetSystemSearch(String referenceSystem) throws IllegalArgumentException, IOException, InterruptedException {
+        String s = URLEncoder.encode(referenceSystem, StandardCharsets.UTF_8);
+        String baseUrl = String.format(
+                "https://edtools.cc/pve?s=%s&a=rt",s);
+        return fetch(referenceSystem, 0, 0, baseUrl);
+    }
 
-    public EdtoolResponse fetch(String referenceSystem, int maxDistanceLy, int minSourcesPerTarget) throws IllegalArgumentException, IOException, InterruptedException {
+    public EdtoolResponse sendSystemSearch(String referenceSystem, int maxDistanceLy, int minSourcesPerTarget,boolean largePad) throws IllegalArgumentException, IOException, InterruptedException {
         validateParams(maxDistanceLy, minSourcesPerTarget);
         String s = URLEncoder.encode(referenceSystem, StandardCharsets.UTF_8);
-        String url = String.format("https://edtools.cc/pve?s=%s&md=%d&sc=%d", s, maxDistanceLy, minSourcesPerTarget);
+        String baseUrl = String.format(
+                "https://edtools.cc/pve?s=%s&md=%d&sc=%d", s, maxDistanceLy, minSourcesPerTarget);
+        if (largePad) {
+            baseUrl += "&lo=on";
+        }
 
+        return fetch(referenceSystem, maxDistanceLy, minSourcesPerTarget, baseUrl);
+    }
+
+    private EdtoolResponse fetch(String referenceSystem, int maxDistanceLy, int minSourcesPerTarget, String baseUrl) throws IOException, InterruptedException {
+        String url = baseUrl;
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                 .header("User-Agent", "Java HttpClient - ED Dashboard")
                 .GET().build();
@@ -46,6 +61,7 @@ public class EdToolsPveClient {
         List<MassacreSystem> rows = parseTable(response.body());
         return new EdtoolResponse(referenceSystem, maxDistanceLy, minSourcesPerTarget, rows);
     }
+
     private void validateParams(int maxDistanceLy, int minSourcesPerTarget) {
         if (maxDistanceLy < 30 || maxDistanceLy > 250) {
             throw new IllegalArgumentException("maxDistanceLy doit être entre 30 et 250 (valeur: " + maxDistanceLy + ")");

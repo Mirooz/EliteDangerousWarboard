@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.ui.component;
 
+import be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController;
+import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
@@ -13,7 +15,14 @@ public class SystemCardComponent extends VBox{
 
     private final PopupManager popupManager = PopupManager.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
-    public SystemCardComponent(MassacreSystem system) {
+    private final MassacreSystem system;
+    private final MassacreSearchDialogController controller;
+    public SystemCardComponent(MassacreSystem system, MassacreSearchDialogController controller) {
+        this.system = system;
+        this.controller = controller;
+        buildUI();
+    }
+    private void buildUI(){
         this.getStyleClass().add("massacre-card");
 
         // Layout horizontal compact
@@ -21,22 +30,28 @@ public class SystemCardComponent extends VBox{
         mainContent.setAlignment(Pos.CENTER_LEFT);
         mainContent.setSpacing(15);
 
-        // Système source et cible
-        VBox systemInfo = new VBox();
-        systemInfo.setSpacing(2);
+        // 🔸 Ligne système : source → target / [x]
+        HBox systemInfo = new HBox();
+        systemInfo.setSpacing(5);
+        systemInfo.setAlignment(Pos.CENTER_LEFT);
 
         Label sourceSystem = new Label(system.getSourceSystem());
-        sourceSystem.getStyleClass().add("massacre-card-title");
+        sourceSystem.getStyleClass().addAll("massacre-card-title", "clickable-system-source");
         sourceSystem.setTooltip(new TooltipComponent(system.getSourceSystem()));
-        sourceSystem.getStyleClass().add("clickable-system-source");
         sourceSystem.setOnMouseClicked(e -> onClickSystem(system.getSourceSystem(), e));
 
-        Label targetSystem = new Label("→ " + system.getTargetSystem() + " / [" + system.getTargetCount() + "]");
+
+        Label targetSystem = new Label("→ " +system.getTargetSystem());
+        targetSystem.getStyleClass().addAll("massacre-card-subtitle", "clickable-system-target");
         targetSystem.setTooltip(new TooltipComponent(system.getTargetSystem()));
-        targetSystem.getStyleClass().add("massacre-card-subtitle");
-        targetSystem.getStyleClass().add("clickable-system-target");
         targetSystem.setOnMouseClicked(e -> onClickSystem(system.getTargetSystem(), e));
-        systemInfo.getChildren().addAll(sourceSystem, targetSystem);
+
+        Label targetCount = new Label("[" + system.getTargetCount() + "]");
+        targetCount.setOnMouseClicked(e -> onClickTargetCount(system.getTargetSystem()));
+        targetCount.setTooltip(new TooltipComponent("Voir systèmes source"));
+        targetCount.getStyleClass().addAll("massacre-card-count", "clickable-system-target");
+
+        systemInfo.getChildren().addAll(sourceSystem, targetSystem,targetCount);
 
         // Distance
         Label distance = new Label(system.getDistanceLy() + " AL");
@@ -45,30 +60,26 @@ public class SystemCardComponent extends VBox{
         // Pads
         HBox padsContainer = new HBox();
         padsContainer.setSpacing(5);
-
-        //PADS
         Label LPad = addShipPad("L");
         if (system.getLargePads().isEmpty()) {
             LPad.setOpacity(0);
         }
-        padsContainer.getChildren().add(LPad);
-        padsContainer.getChildren().add(addShipPad("M"));
-        padsContainer.getChildren().add(addShipPad("S"));
-        // Factions - alignées avec l'en-tête
+        padsContainer.getChildren().addAll(LPad, addShipPad("M"), addShipPad("S"));
+
+        // Factions
         HBox factionsContainer = new HBox();
         factionsContainer.setSpacing(5);
         factionsContainer.setAlignment(Pos.CENTER);
 
-        // Fédération
         Label fedValue = getSuperFaction(system.getFed());
         fedValue.setTranslateX(30);
-        // Empire
+
         Label impValue = getSuperFaction(system.getImp());
         impValue.setTranslateX(20);
-        // Alliance
+
         Label allValue = getSuperFaction(system.getAll());
         allValue.setTranslateX(13);
-        // Indépendant
+
         Label indValue = getSuperFaction(system.getInd());
         indValue.setTranslateX(-2);
 
@@ -79,11 +90,11 @@ public class SystemCardComponent extends VBox{
         resValue.getStyleClass().add("massacre-card-value");
         resValue.setTranslateX(-30);
 
-        // Assemblage du contenu horizontal
+        // Assemblage final
         mainContent.getChildren().addAll(systemInfo, distance, padsContainer, factionsContainer, resValue);
-
         this.getChildren().add(mainContent);
     }
+
     private Label addShipPad(String pad) {
 
         Label mediumPad = new Label(pad);
@@ -95,7 +106,12 @@ public class SystemCardComponent extends VBox{
     private void onClickSystem(String systemName, javafx.scene.input.MouseEvent event) {
         copyClipboardManager.copyToClipboard(systemName);
         Stage stage = (Stage) getScene().getWindow();
-        popupManager.showPopup("Système copié", event.getSceneX(), event.getSceneY(),stage); }
+        popupManager.showPopup("Système copié", event.getSceneX(), event.getSceneY(),stage);
+    }
+
+    private void onClickTargetCount(String systemName) {
+        controller.searchFromTarget(systemName);
+    }
 
 
     private static Label getSuperFaction(String factionNbre) {

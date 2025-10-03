@@ -4,51 +4,75 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.DestroyedShipsController"
-      styleClass="destroyed-ships-panel" spacing="10.0">
-   
-   <!-- En-tête du panneau -->
-   <VBox styleClass="panel-header" alignment="CENTER">
-      <Label text="VAISSEAUX DÉTRUITS" styleClass="section-title" textAlignment="CENTER"/>
-   </VBox>
+      styleClass="destroyed-ships-panel"
+      spacing="10.0">
 
-   
-   <!-- Table des vaisseaux détruits -->
-   <TableView fx:id="destroyedShipsTable" styleClass="destroyed-ships-table" 
-              prefHeight="250.0" prefWidth="440.0" VBox.vgrow="NEVER">
-      
-      <columns>
-         <TableColumn fx:id="timeColumn" text="HEURE" styleClass="faction-col-header"  />
-         <TableColumn fx:id="shipNameColumn" text="VAISSEAU"/>
-         <TableColumn fx:id="pilotNameColumn" text="PILOTE"/>
-         <TableColumn fx:id="bountyColumn" text="BOUNTY"  styleClass="faction-col-header"  />
-      </columns>
-      
-   </TableView>
-   
-   <!-- Statistiques -->
-   <VBox alignment="CENTER" spacing="5.0">
-      <!-- Nombre de vaisseaux -->
-      <VBox alignment="CENTER">
-         <Label text="0" fx:id="totalShipsLabel" styleClass="stat-number"/>
-         <Label text="VAISSEAUX" styleClass="stat-label"/>
-      </VBox>
-      
-      <!-- Statistiques par faction -->
-      <VBox fx:id="factionBountyStats" alignment="CENTER" spacing="2.0" styleClass="faction-bounty-stats">
-         <!-- Les statistiques par faction seront ajoutées dynamiquement -->
-      </VBox>
-      
-      <!-- Bounty total en dessous -->
-      <VBox alignment="CENTER">
-         <Label text="0 Cr" fx:id="totalBountyLabel" styleClass="stat-number"/>
-         <Label text="BOUNTY TOTAL" styleClass="stat-label"/>
-      </VBox>
-   </VBox>
-   
-   <padding>
-      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-   </padding>
-   
+    <!-- En-tête -->
+    <VBox styleClass="panel-header" alignment="CENTER">
+        <Label text="VAISSEAUX DÉTRUITS" styleClass="section-title" textAlignment="CENTER"/>
+    </VBox>
+
+    <!-- Table des vaisseaux détruits -->
+    <TableView fx:id="destroyedShipsTable"
+               styleClass="destroyed-ships-table"
+               prefHeight="250.0"
+               prefWidth="440.0"
+               VBox.vgrow="NEVER">
+
+        <columns>
+            <TableColumn fx:id="timeColumn"
+                         text="HEURE"
+                         prefWidth="90"
+                         sortable="false"
+                         resizable="false"
+                         reorderable="false"/>
+
+            <TableColumn fx:id="shipNameColumn"
+                         text="VAISSEAU"
+                         prefWidth="130"
+                         sortable="false"
+                         resizable="false"
+                         reorderable="false"/>
+
+            <TableColumn fx:id="pilotNameColumn"
+                         text="PILOTE"
+                         prefWidth="110"
+                         sortable="false"
+                         resizable="false"
+                         reorderable="false"/>
+
+            <TableColumn fx:id="bountyColumn"
+                         text="BOUNTY"
+                         prefWidth="110"
+                         sortable="false"
+                         resizable="false"
+                         reorderable="false"/>
+        </columns>
+    </TableView>
+
+    <!-- Statistiques -->
+    <VBox alignment="CENTER" spacing="5.0">
+        <VBox alignment="CENTER">
+            <Label text="0" fx:id="totalShipsLabel" styleClass="stat-number"/>
+            <Label text="VAISSEAUX" styleClass="stat-label"/>
+        </VBox>
+
+        <VBox fx:id="factionBountyStats"
+              alignment="CENTER"
+              spacing="2.0"
+              styleClass="faction-bounty-stats"/>
+
+        <VBox alignment="CENTER">
+            <Label text="0 Cr" fx:id="totalBountyLabel" styleClass="stat-number"/>
+            <Label text="BOUNTY TOTAL" styleClass="stat-label"/>
+        </VBox>
+    </VBox>
+
+    <padding>
+        <Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/>
+    </padding>
+
 </VBox>

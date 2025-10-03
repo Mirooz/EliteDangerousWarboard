@@ -12,19 +12,21 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.List;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Contrôleur pour la fenêtre de recherche de systèmes massacre
  */
 public class MassacreSearchDialogController implements Initializable {
 
+    @FXML
+    private CheckBox LPADonly;
     @FXML
     private TextField referenceSystemField;
 
@@ -64,6 +66,7 @@ public class MassacreSearchDialogController implements Initializable {
     private final EdToolsService edToolsService = EdToolsService.getInstance();
 
     private PopupManager popupManager = PopupManager.getInstance();
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Configurer le système de référence par défaut
@@ -73,9 +76,48 @@ public class MassacreSearchDialogController implements Initializable {
         }
         // Charger les icônes des factions dans l'en-tête
         loadFactionHeaderIcons();
-        systemList.setComponentFactory(SystemCardComponent::new);
+        systemList.setComponentFactory(system -> new SystemCardComponent(system, this));
         popupManager.attachToContainer(popupContainer);
 
+    }
+
+    List<MassacreSystem> massacreSystems;
+    private final Set<String> activeFilters = new HashSet<>();
+
+    @FXML
+    private void toggleHighlight(MouseEvent event) {
+        ImageView icon = (ImageView) event.getSource();
+        String iconName = (String) icon.getUserData();
+
+        if (icon.getStyleClass().contains("icon-selected")) {
+            // Désactivation du filtre
+            icon.getStyleClass().remove("icon-selected");
+            icon.getStyleClass().add("icon-cursor");
+            activeFilters.remove(iconName);
+        } else {
+            // Activation du filtre
+            icon.getStyleClass().add("icon-selected");
+            icon.getStyleClass().remove("icon-cursor");
+            activeFilters.add(iconName);
+        }
+
+        displayResults();
+    }
+
+    private List<MassacreSystem> applyFilters() {
+        if (massacreSystems == null)
+            return List.of();
+
+        return massacreSystems.stream()
+                .filter(system -> {
+                    if (activeFilters.contains("federation") && system.getFed().isEmpty()) return false;
+                    if (activeFilters.contains("empire") && system.getImp().isEmpty()) return false;
+                    if (activeFilters.contains("alliance") && system.getAll().isEmpty()) return false;
+                    if (activeFilters.contains("independent") && system.getInd().isEmpty()) return false;
+                    return true;
+                })
+                .sorted((s1, s2) -> compareByActiveFilters(s1, s2))
+                .toList();
     }
 
     private void loadFactionHeaderIcons() {
@@ -87,19 +129,19 @@ public class MassacreSearchDialogController implements Initializable {
 
     @FXML
     private void searchMassacreSystems() {
-        if (referenceSystemField.getText() == null || referenceSystemField.getText().trim().isEmpty()) {
-            referenceSystemField.setText(commanderStatus.getCurrentStarSystem());
-        }
         String referenceSystem = referenceSystemField.getText();
+        if (referenceSystem == null || referenceSystem.trim().isEmpty()) {
+            referenceSystem = commanderStatus.getCurrentStarSystem();
+            referenceSystemField.setText(referenceSystem);
+        }
+        executeMassacreSearch(referenceSystem, maxDistanceSpinner.getValue(), minSourcesSpinner.getValue(), LPADonly.isSelected());
+    }
 
-        int maxDistance = maxDistanceSpinner.getValue();
-        int minSources = minSourcesSpinner.getValue();
-
+    private void handleMassacreSearch(CompletableFuture<List<MassacreSystem>> future) {
         searching(true);
-
-        edToolsService.findMassacreSystems(referenceSystem, maxDistance, minSources)
-                .thenAccept(systems -> Platform.runLater(() -> {
-                    displayResults(systems);
+        future.thenAccept(systems -> Platform.runLater(() -> {
+                    massacreSystems = systems;
+                    displayResults();
                     searching(false);
                 }))
                 .exceptionally(ex -> {
@@ -109,29 +151,68 @@ public class MassacreSearchDialogController implements Initializable {
                 });
     }
 
+    public void searchFromTarget(String referenceSystem) {
+        handleMassacreSearch(edToolsService.findSourcesForTargetSystem(referenceSystem));
+    }
+
+    private void executeMassacreSearch(String referenceSystem, int maxDistance, int minSources, boolean largePad) {
+        handleMassacreSearch(edToolsService.findMassacreSystems(referenceSystem, maxDistance, minSources, largePad));
+    }
     private void searching(boolean isSearching) {
-        if (isSearching){
-        searchButton.setDisable(true);
-        searchButton.setText("RECHERCHE...");
-        systemList.getItems().clear();
-        loadingIndicator.setVisible(true);}
-        else {
+        if (isSearching) {
+            searchButton.setDisable(true);
+            searchButton.setText("RECHERCHE...");
+            systemList.getItems().clear();
+            loadingIndicator.setVisible(true);
+        } else {
             loadingIndicator.setVisible(false);
             searchButton.setDisable(false);
             searchButton.setText("RECHERCHER");
         }
     }
 
-    private void displayResults(List<MassacreSystem> systems) {
-        systemList.getItems().setAll(systems);
+    private void displayResults() {
+        systemList.getItems().setAll(applyFilters());
     }
-
 
 
     @FXML
     private void closeDialog() {
         Stage stage = (Stage) closeButton.getScene().getWindow();
         stage.close();
+    }
+
+    private int compareByActiveFilters(MassacreSystem s1, MassacreSystem s2) {
+        // Ordre de priorité fixe
+        String[] order = {"federation", "empire", "alliance", "independent"};
+
+        for (String filter : order) {
+            if (activeFilters.contains(filter)) {
+                int v1 = getValueForFilter(s1, filter);
+                int v2 = getValueForFilter(s2, filter);
+                int cmp = Integer.compare(v2, v1); // tri décroissant
+                if (cmp != 0) return cmp;
+            }
+        }
+        return 0;
+    }
+
+    private int getValueForFilter(MassacreSystem system, String filter) {
+        return switch (filter) {
+            case "federation" -> parseOrZero(system.getFed());
+            case "empire" -> parseOrZero(system.getImp());
+            case "alliance" -> parseOrZero(system.getAll());
+            case "independent" -> parseOrZero(system.getInd());
+            default -> 0;
+        };
+    }
+
+    private int parseOrZero(String value) {
+        try {
+            return (value != null && !value.isEmpty()) ? Integer.parseInt(value) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
 }
