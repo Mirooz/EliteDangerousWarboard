@@ -76,7 +76,7 @@ public class MissionService {
         }
         List<Mission> eligibleMissions = missionsList.getGlobalMissionMap().values().stream()
                 .filter(Mission::isShipActivePirateMission)
-                .filter(mission -> mission.getType() == MissionType.MASSACRE)
+                .filter(Mission::isMassacre)
                 .filter(mission -> mission.getTargetFaction() != null)
                 .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
                 .filter(mission -> commanderStatus.getCurrentStarSystem().equals(mission.getDestinationSystem()))

@@ -505,7 +505,7 @@
 }
 .mission-time-expired {
     -fx-font-size: 10px;
-    -fx-text-fill: -fx-elite-warning;
+    -fx-text-fill: -fx-elite-danger;
     -fx-font-weight: bold;
 }
 .faction-header {

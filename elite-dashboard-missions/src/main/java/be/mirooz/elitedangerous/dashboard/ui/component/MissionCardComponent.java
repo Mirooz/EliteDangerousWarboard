@@ -12,8 +12,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class MissionCardComponent extends VBox {
 
@@ -152,33 +156,25 @@ public class MissionCardComponent extends VBox {
             Label acceptedLabel = new Label("Accepté: " + mission.getAcceptedTime().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")));
             acceptedLabel.getStyleClass().add("mission-time");
 
+            Label remainingLabel = new Label();
             if (mission.getExpiry() != null) {
-                String timeRemaining;
                 if (mission.getStatus() == MissionStatus.COMPLETED
                         || (!mission.isMissionFailed() && mission.getTargetCountLeft() == 0)) {
-                    timeRemaining = TERMINATED;
+                    remainingLabel.setText(TERMINATED);
+                    remainingLabel.getStyleClass().add("mission-time-completed");
                 } else if (mission.isMissionFailed()) {
-                    timeRemaining = FAILED;
+                    remainingLabel.setText(FAILED);
+                    remainingLabel.getStyleClass().add("mission-time-failed");
                 } else {
-                    long hoursRemaining = java.time.Duration.between(LocalDateTime.now(), mission.getExpiry()).toHours();
-                    if (hoursRemaining > 0) {
-                        timeRemaining = String.format("Restant: %dh", hoursRemaining);
+                    String hoursRemaining = getHoursRemaining(mission);
+                    if (hoursRemaining !=null) {
+                        remainingLabel.setText(String.format("Restant: %s", hoursRemaining));
+                        remainingLabel.getStyleClass().add(Long.parseLong(Objects.requireNonNull(getHoursPartRemaining(mission))) > 24 ? "mission-time" : "mission-time-urgent");
                     } else {
-                        timeRemaining = EXPIRED;
+                        remainingLabel.setText(EXPIRED);
+                        remainingLabel.getStyleClass().add("mission-time-expired");
                     }
                 }
-                Label remainingLabel = new Label(timeRemaining);
-                if (TERMINATED.equals(timeRemaining)) {
-                    remainingLabel.getStyleClass().add("mission-time-completed");
-                } else if (FAILED.equals(timeRemaining)){
-                    remainingLabel.getStyleClass().add("mission-time-failed");
-                } else if (EXPIRED.equals(timeRemaining)){
-                    remainingLabel.getStyleClass().add("mission-time-expired");
-                } else {
-                    long hoursRemaining = java.time.Duration.between(LocalDateTime.now(), mission.getExpiry()).toHours();
-                    remainingLabel.getStyleClass().add(hoursRemaining > 24 ? "mission-time" : "mission-time-urgent");
-                }
-
                 timeSection.getChildren().addAll(acceptedLabel, remainingLabel);
             } else {
                 timeSection.getChildren().add(acceptedLabel);
@@ -186,7 +182,44 @@ public class MissionCardComponent extends VBox {
         }
         return timeSection;
     }
+    private String getHoursPartRemaining(Mission mission) {
+        Duration duration = getRemainingDuration(mission);
 
+        if (duration.isNegative()) {
+            return null;
+        }
+
+        long totalHours = duration.toHours();  // ✅ inclut les jours
+        return String.format("%02d", totalHours);
+    }
+    private ZonedDateTime toUtc(LocalDateTime dateTime) {
+        return dateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneOffset.UTC);
+    }
+
+    private Duration getRemainingDuration(Mission mission) {
+        ZonedDateTime nowUtc = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime expiryUtc = toUtc(mission.getExpiry());
+        return Duration.between(nowUtc, expiryUtc);
+    }
+    private String getHoursRemaining(Mission mission) {
+        Duration duration = getRemainingDuration(mission);
+
+        if (duration.isNegative()) {
+            return null;
+        }
+
+        long days = duration.toDays();
+        long hours = duration.toHoursPart();
+        long minutes = duration.toMinutesPart();
+
+        if (days > 0) {
+            return String.format("%dd %dh %d min", days, hours, minutes);
+        } else if (hours > 0) {
+            return String.format("%dh %d min", hours, minutes);
+        } else {
+            return String.format("%d min", minutes);
+        }
+    }
     private Label getWingLabel(Mission mission) {
         Label wingLabel = new Label();
         wingLabel.setPrefWidth(30);

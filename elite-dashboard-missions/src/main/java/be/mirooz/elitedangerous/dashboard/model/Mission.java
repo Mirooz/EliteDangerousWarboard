@@ -59,7 +59,7 @@ public class Mission {
 
     public boolean isMassacre(){
         return  (MissionType.MASSACRE.equals(this.type)
-                || MissionType.MASSACRE_ONFOOT.equals(this.type)
+                //|| MissionType.MASSACRE_ONFOOT.equals(this.type)
                 || MissionType.CONFLIT.equals(this.type));
     }
     public boolean isActive(){

@@ -17,8 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -237,65 +236,5 @@ public class JournalService {
     /**
      * Génère un résumé des missions
      */
-    public String generateMissionSummary() {
-        List<Mission> missions = getMissionsFromLastWeek();
 
-        long activeCount = missions.stream().filter(m -> m.getStatus() == MissionStatus.ACTIVE).count();
-        long completedCount = missions.stream().filter(m -> m.getStatus() == MissionStatus.COMPLETED).count();
-        long failedCount = missions.stream().filter(m -> m.getStatus() == MissionStatus.FAILED).count();
-
-        long totalReward = missions.stream()
-                .filter(m -> m.getStatus() == MissionStatus.COMPLETED)
-                .mapToLong(Mission::getReward)
-                .sum();
-
-        StringBuilder summary = new StringBuilder();
-        summary.append("=== RÉSUMÉ DES MISSIONS (7 DERNIERS JOURS) ===\n");
-        summary.append(String.format("Missions actives: %d\n", activeCount));
-        summary.append(String.format("Missions complétées: %d\n", completedCount));
-        summary.append(String.format("Missions abandonnées: %d\n", failedCount));
-        summary.append(String.format("Total des récompenses: %,d Cr\n", totalReward));
-        summary.append("\n=== MISSIONS ACTIVES ===\n");
-
-        missions.stream()
-                .filter(m -> m.getStatus() == MissionStatus.ACTIVE)
-                .sorted((m1, m2) -> m1.getFaction().compareTo(m2.getFaction()))
-                .forEach(mission -> {
-
-                    String killsText;
-                    if (mission.getStatus() == MissionStatus.COMPLETED) {
-                        // Pour les missions complétées, afficher y/y
-                        int targetCount = mission.getTargetCount();
-                        killsText = String.format("%d/%d", targetCount, targetCount);
-                    } else {
-                        // Pour les missions actives, afficher x/y
-                        int currentCount = mission.getCurrentCount();
-                        int targetCount = mission.getTargetCount();
-                        killsText = String.format("%d/%d", currentCount, targetCount);
-                    }
-
-                    // Informations temporelles
-                    String timeInfo = "";
-                    if (mission.getAcceptedTime() != null) {
-                        timeInfo = " - Accepté: " + mission.getAcceptedTime().format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
-                        if (mission.getExpiry() != null) {
-                            long hoursRemaining = java.time.Duration.between(LocalDateTime.now(), mission.getExpiry()).toHours();
-                            if (hoursRemaining > 0) {
-                                timeInfo += " (Restant: " + hoursRemaining + "h)";
-                            } else {
-                                timeInfo += " (Expirée)";
-                            }
-                        }
-                    }
-
-                    summary.append(String.format("- %s (%s): %s kills - %,d Cr%s\n",
-                            mission.getName(),
-                            mission.getFaction(),
-                            killsText,
-                            mission.getReward(),
-                            timeInfo));
-                });
-
-        return summary.toString();
-    }
 }
