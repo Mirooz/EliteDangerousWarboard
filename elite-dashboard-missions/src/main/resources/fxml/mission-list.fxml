@@ -27,7 +27,14 @@
                  styleClass="filter-button" text="TOUTES"/>
       </HBox>
    </HBox>
-   <GenericListView fx:id="missionsList"
-                    styleClass="missions-scroll"
-                    VBox.vgrow="ALWAYS"/>
+
+   <StackPane VBox.vgrow="ALWAYS">
+      <GenericListView fx:id="missionsList"
+                       styleClass="missions-scroll"/>
+
+      <ProgressIndicator fx:id="loadingIndicator"
+                         maxWidth="100" maxHeight="100"
+                         visible="false" />
+   </StackPane>
+
 </VBox>

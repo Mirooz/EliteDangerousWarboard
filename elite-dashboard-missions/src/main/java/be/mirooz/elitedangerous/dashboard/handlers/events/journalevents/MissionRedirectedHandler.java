@@ -22,6 +22,10 @@ public class MissionRedirectedHandler implements JournalEventHandler {
         try {
             String missionId = jsonNode.get("MissionID").asText();
             Mission mission = missionList.getGlobalMissionMap().get(missionId);
+            if (mission == null){
+                System.out.println("[Error redirected] " + missionId + " not found");
+                return;
+            }
             // Vérifier si c'est une mission de massacre et qu'elle st bien complétée
             if (notConsideredAsCompleted(mission)) {
                 System.out.println("[Error count] Mission de massacre " + mission.getId() + " kill = " + mission.getCurrentCount() + "/" + mission.getTargetCount());

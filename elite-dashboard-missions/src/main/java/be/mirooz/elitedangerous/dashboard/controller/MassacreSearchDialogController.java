@@ -4,7 +4,6 @@ import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
 import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView;
-import be.mirooz.elitedangerous.dashboard.ui.component.MissionCardComponent;
 import be.mirooz.elitedangerous.dashboard.ui.component.SystemCardComponent;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import javafx.application.Platform;
@@ -68,7 +67,7 @@ public class MassacreSearchDialogController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Configurer le système de référence par défaut
-        String currentSystem = commanderStatus.getCurrentStarSystemString();
+        String currentSystem = commanderStatus.getCurrentStarSystem();
         if (currentSystem != null && !currentSystem.trim().isEmpty()) {
             referenceSystemField.setText(currentSystem);
         }
@@ -89,7 +88,7 @@ public class MassacreSearchDialogController implements Initializable {
     @FXML
     private void searchMassacreSystems() {
         if (referenceSystemField.getText() == null || referenceSystemField.getText().trim().isEmpty()) {
-            referenceSystemField.setText(commanderStatus.getCurrentStarSystemString());
+            referenceSystemField.setText(commanderStatus.getCurrentStarSystem());
         }
         String referenceSystem = referenceSystemField.getText();
 

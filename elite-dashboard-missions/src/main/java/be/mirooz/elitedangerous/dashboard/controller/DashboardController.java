@@ -4,6 +4,8 @@ import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.ui.UIRefreshManager;
 import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -94,13 +96,23 @@ public class DashboardController implements Initializable {
         headerController = headerLoader.getController();
         mainPane.setTop(header);
     }
-
     private void loadMissions() {
-        dashboardService.InitActiveMissions();
-        // Mettre à jour le nom du commandant dans le footer
-        uiRefreshManager.refresh();
-    }
 
+        missionListController.setLoadingVisible(true);
+        new Thread(() -> {
+            try {
+                dashboardService.InitActiveMissions();
+
+                Platform.runLater(() -> {
+                    missionListController.setLoadingVisible(false);
+                    uiRefreshManager.refresh();
+                });
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Platform.runLater(() -> missionListController.setLoadingVisible(false));
+            }
+        }).start();
+    }
 
     private void onFilterChange(MissionStatus filter) {
         currentFilter = filter;

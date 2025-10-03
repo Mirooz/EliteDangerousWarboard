@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
+import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.ui.component.DialogComponent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -15,7 +15,6 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Contrôleur pour l'en-tête du dashboard
@@ -23,34 +22,29 @@ import java.util.stream.Collectors;
 public class HeaderController implements Initializable {
 
     @FXML
+    public Label missionCountTextLabel;
+    @FXML
+    public VBox lostCreditsBox;
+    @FXML
+    public VBox earnCreditsBox;
+    @FXML
+    public Label lostCreditsLabel;
+    @FXML
+    public VBox missionStatBox;
+    @FXML
+    public Label potentialCreditsLabel;
+    @FXML
+    public VBox potentialCreditsBox;
+    @FXML
     private Label missionCountLabel;
-
     @FXML
-    private Label missionCountTextLabel;
-
-    @FXML
-    private Label creditsLabel;
-
-    @FXML
-    private Label creditsTextLabel;
-
-    @FXML
-    private VBox thirdStatBox;
-
-    @FXML
-    private Label thirdStatLabel;
-
-    @FXML
-    private Label thirdStatTextLabel;
+    private Label earnCreditsLabel;
 
     @FXML
     private VBox pendingCreditsBox;
 
     @FXML
     private Label pendingCreditsLabel;
-
-    @FXML
-    private Label pendingCreditsTextLabel;
 
     @FXML
     private Button massacreSearchButton;
@@ -60,14 +54,14 @@ public class HeaderController implements Initializable {
 
     private MissionStatus currentFilter = MissionStatus.ACTIVE;
     private MissionsList missionsList = MissionsList.getInstance();
-    private CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        statusLabel.textProperty().bind(javafx.beans.binding.Bindings.when(commanderStatus.getIsOnline()).then("SYSTÈME EN LIGNE").otherwise("SYSTÈME HORS LIGNE"));
+        statusLabel.textProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent.getIsOnline()).then("SYSTÈME EN LIGNE").otherwise("SYSTÈME HORS LIGNE"));
 
         // Binding conditionnel pour la couleur du statut
-        statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatus.getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
+        statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent.getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
                 .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
         );
     }
@@ -78,148 +72,89 @@ public class HeaderController implements Initializable {
 
     public void updateStats() {
         // Filtrer les missions selon le filtre actuel
-        List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream().filter(mission -> mission.getType() == MissionType.MASSACRE).filter(mission -> currentFilter == null || mission.getStatus() == currentFilter).sorted(Comparator.comparing(Mission::getFaction)).toList();
-
-        // Compter les missions
-        int missionCount = filteredMissions.size();
-        missionCountLabel.setText(String.valueOf(missionCount));
-
+        List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream()
+                .filter(Mission::isMassacre)
+                .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
+                .sorted(Comparator.comparing(Mission::getFaction)).toList();
+        hide(missionStatBox);
+        hide(earnCreditsBox);
+        hide(pendingCreditsBox);
+        hide(potentialCreditsBox);
+        hide(lostCreditsBox);
         // Calculer les crédits selon le filtre
-        long totalCredits = 0;
-        String creditsText = "CRÉDITS";
-        String thirdStatText = "";
-        int thirdStatValue = 0;
         if (currentFilter == MissionStatus.ACTIVE) {
-            // Vue active : réorganiser l'ordre des stats
-            // 1. Missions actives
-            missionCountTextLabel.setText("MISSIONS ACTIVES");
-
-            // 2. Factions uniques
-            thirdStatValue = (int) filteredMissions.stream().map(Mission::getFaction).distinct().count();
-            thirdStatText = "FACTIONS";
-            thirdStatBox.setVisible(true);
-
-            // 3. Crédits espérés avec crédits déjà possibles en bleu
-            totalCredits = filteredMissions.stream().mapToLong(Mission::getReward).sum();
-
-            // Calculer les crédits déjà possibles (missions actives complétées)
-            long completedCredits = filteredMissions.stream().filter(mission -> mission.getCurrentCount() >= mission.getTargetCount()).mapToLong(Mission::getReward).sum();
-
-            creditsText = "CRÉDITS POTENTIELS";
-            creditsLabel.setText(String.format("%,d", totalCredits));
-            creditsLabel.setStyle("-fx-text-fill: #FF6B00;"); // Orange pour le total
-            creditsTextLabel.setText("CRÉDITS POTENTIELS");
-            creditsTextLabel.setStyle("-fx-text-fill: #CCCCCC;"); // Couleur par défaut
-
-            // Afficher les crédits en attente dans un label séparé
-            if (completedCredits > 0) {
-                pendingCreditsBox.setVisible(true);
-                pendingCreditsLabel.setText(String.format("%,d", completedCredits));
-                pendingCreditsLabel.setStyle("-fx-text-fill: #00BFFF;"); // Bleu pour les crédits en attente
-                pendingCreditsTextLabel.setText("CRÉDITS EN ATTENTE");
-                pendingCreditsTextLabel.setStyle("-fx-text-fill: #00BFFF;"); // Bleu pour le texte
-            } else {
-                pendingCreditsBox.setVisible(false);
-            }
-
+            setMissionsLabel("MISSIONS ACTIVES", filteredMissions);
+            setPotentialCredits(filteredMissions);
+            setPendingCredits(filteredMissions);
         } else if (currentFilter == MissionStatus.COMPLETED) {
-            // Vue complétée : crédits gagnés
-            totalCredits = filteredMissions.stream().mapToLong(Mission::getReward).sum();
-            creditsText = "CRÉDITS GAGNÉS";
-            missionCountTextLabel.setText("MISSIONS COMPLÉTÉES");
-
-            // Troisième stat : total des kills
-            thirdStatValue = filteredMissions.stream().mapToInt(Mission::getTargetCount).sum();
-            thirdStatText = "KILLS TOTAL";
-            thirdStatBox.setVisible(true);
-            pendingCreditsBox.setVisible(false);
-
+            setMissionsLabel("MISSIONS COMPLÉTÉES", filteredMissions);
+            setEarnCredits(filteredMissions);
         } else if (currentFilter == MissionStatus.FAILED) {
-            // Vue abandonnée : crédits perdus
-            totalCredits = filteredMissions.stream().mapToLong(Mission::getReward).sum();
-            creditsText = "CRÉDITS PERDUS";
-            missionCountTextLabel.setText("MISSIONS ABANDONNÉES");
-
-            // Troisième stat : factions uniques
-            thirdStatValue = (int) filteredMissions.stream().map(Mission::getFaction).distinct().count();
-            thirdStatText = "FACTIONS";
-            thirdStatBox.setVisible(true);
-            pendingCreditsBox.setVisible(false);
+            setMissionsLabel("MISSIONS ABANDONNÉES", filteredMissions);
+            setLostCredits(filteredMissions);
 
         } else {
-            // Vue toutes : afficher les 3 stats séparément
-            long activeCredits = missionsList.getGlobalMissionMap().values().stream().filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.ACTIVE).mapToLong(Mission::getReward).sum();
-
-            long completedCredits = missionsList.getGlobalMissionMap().values().stream().filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.COMPLETED).mapToLong(Mission::getReward).sum();
-
-            long failedCredits = missionsList.getGlobalMissionMap().values().stream().filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.FAILED).mapToLong(Mission::getReward).sum();
-
-            // Première colonne : missions actives
-            int activeCount = (int) missionsList.getGlobalMissionMap().values().stream().filter(m -> m.getType() == MissionType.MASSACRE && m.getStatus() == MissionStatus.ACTIVE).count();
-            missionCountLabel.setText(String.valueOf(activeCount));
-            missionCountTextLabel.setText("MISSIONS ACTIVES");
-
-            // Deuxième colonne : crédits gagnés
-            creditsLabel.setText(String.format("%,d", completedCredits));
-            creditsTextLabel.setText("CRÉDITS GAGNÉS");
-
-            // Troisième colonne : crédits perdus
-            thirdStatLabel.setText(String.format("%,d", failedCredits));
-            thirdStatTextLabel.setText("CRÉDITS PERDUS");
-            thirdStatBox.setVisible(true);
+            setMissionsLabel("MISSIONS", filteredMissions);
+            setEarnCredits(filteredMissions);
+            setPotentialCredits(filteredMissions);
+            setPendingCredits(filteredMissions);
+            setLostCredits(filteredMissions);
         }
-
-        // Mettre à jour les labels seulement si ce n'est pas la vue "toutes"
-        if (currentFilter != null) {
-            // Pour la vue ACTIVE, les crédits sont déjà mis à jour avec les couleurs
-            if (currentFilter != MissionStatus.ACTIVE) {
-                creditsLabel.setText(String.format("%,d", totalCredits));
-                creditsTextLabel.setText(creditsText);
-            }
-            thirdStatLabel.setText(String.valueOf(thirdStatValue));
-            thirdStatTextLabel.setText(thirdStatText);
-        }
-
-        // Masquer les crédits en attente pour les autres vues
-        if (currentFilter != MissionStatus.ACTIVE) {
-            pendingCreditsBox.setVisible(false);
-        }
-
-        // Appliquer les couleurs selon le filtre
-        updateStatColors();
     }
 
-    private void updateStatColors() {
-        // Réinitialiser les couleurs
-        missionCountLabel.getStyleClass().removeAll("stat-active", "stat-completed", "stat-failed");
-        creditsLabel.getStyleClass().removeAll("stat-active", "stat-completed", "stat-failed");
-        thirdStatLabel.getStyleClass().removeAll("stat-active", "stat-completed", "stat-failed");
+    private void setMissionsLabel(String label, List<Mission> filteredMissions) {
+        missionCountTextLabel.setText(label);
+        int missionCount = filteredMissions.size();
+        missionCountLabel.setText(String.valueOf(missionCount));
+        show(missionStatBox);;
+    }
 
-        if (currentFilter == MissionStatus.ACTIVE) {
-            missionCountLabel.getStyleClass().add("stat-active");
-            creditsLabel.getStyleClass().add("stat-active");
-            thirdStatLabel.getStyleClass().add("stat-active");
-        } else if (currentFilter == MissionStatus.COMPLETED) {
-            missionCountLabel.getStyleClass().add("stat-completed");
-            creditsLabel.getStyleClass().add("stat-completed");
-            thirdStatLabel.getStyleClass().add("stat-completed");
-        } else if (currentFilter == MissionStatus.FAILED) {
-            missionCountLabel.getStyleClass().add("stat-failed");
-            creditsLabel.getStyleClass().add("stat-failed");
-            thirdStatLabel.getStyleClass().add("stat-failed");
-        } else {
-            // Vue "toutes" : couleurs spécifiques pour chaque colonne
-            missionCountLabel.getStyleClass().add("stat-active");    // Missions actives en orange
-            creditsLabel.getStyleClass().add("stat-completed");      // Crédits gagnés en bleu
-            thirdStatLabel.getStyleClass().add("stat-failed");       // Crédits perdus en rouge
+    private void setPotentialCredits(List<Mission> filteredMissions) {
+        long totalCredits = filteredMissions.stream()
+                .filter(Mission::isActive)
+                .mapToLong(Mission::getReward).sum();
+        potentialCreditsLabel.setText(String.format("%,d", totalCredits));
+        show(potentialCreditsBox);
+    }
+    private void setPendingCredits(List<Mission> filteredMissions) {
+        long pending = filteredMissions.stream()
+                .filter(Mission::isPending)
+                .mapToLong(Mission::getReward).sum();
+        if (pending>0) {
+            pendingCreditsLabel.setText(String.format("%,d", pending));
+            show(pendingCreditsBox);
         }
+    }
+    private void setEarnCredits(List<Mission> filteredMissions) {
+        long completedCredits = filteredMissions.stream()
+                .filter(Mission::isCompleted)
+                .mapToLong(Mission::getReward).sum();
+        earnCreditsLabel.setText(String.format("%,d", completedCredits));
+        show(earnCreditsBox);
+    }
+    private void setLostCredits(List<Mission> filteredMissions) {
+        long completedCredits = filteredMissions.stream()
+                .filter(Mission::isMissionFailed)
+                .mapToLong(Mission::getReward).sum();
+        if (completedCredits >0) {
+            lostCreditsLabel.setText(String.format("%,d", completedCredits));
+            show(lostCreditsBox);
+        }
+    }
+    private void hide(VBox box){
+        box.setVisible(false);
+        box.setManaged(false);
+    }
+    private void show(VBox box){
+        box.setVisible(true);
+        box.setManaged(true);
     }
 
     @FXML
     private void openMassacreSearchDialog() {
         Stage primaryStage = (Stage) massacreSearchButton.getScene().getWindow();
 
-        DialogComponent<MassacreSearchDialogController> dialog = new DialogComponent<>("/fxml/massacre-search-dialog.fxml", "/css/elite-theme.css", "Recherche de Systèmes Massacre", 1000, 700);
+        DialogComponent dialog = new DialogComponent("/fxml/massacre-search-dialog.fxml", "/css/elite-theme.css", "Recherche de Systèmes Massacre", 1000, 700);
 
         dialog.init(primaryStage);
         dialog.showAndWait();

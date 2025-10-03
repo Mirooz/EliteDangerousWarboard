@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.model.enums;
 public enum TargetType {
     PIRATE("Pirate", "$MissionUtil_FactionTag_Pirate;"),
     DESERTEUR("Deserteur", "$MissionUtil_FactionTag_Deserter;"),
+    HUMANOID("Humain","$MissionUtil_FactionTag_AIHumanoid;"),
     UNKNOWN("Unknown", ""); // valeur par défaut
 
     private final String displayName;

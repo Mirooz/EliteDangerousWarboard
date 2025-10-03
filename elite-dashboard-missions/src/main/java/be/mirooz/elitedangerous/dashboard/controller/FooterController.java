@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
+import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.ui.component.FactionStatsComponent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -35,15 +36,15 @@ public class FooterController implements Initializable {
 
     @FXML
     private Label stationLabel;
-    private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
 
     private final MissionsList missionsList = MissionsList.getInstance();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        stationLabel.textProperty().bind(commanderStatus.getCurrentStationName());
-        systemLabel.textProperty().bind(commanderStatus.getCurrentStarSystem());
-        commanderLabel.textProperty().bind(commanderStatus.getCommanderName());
+        stationLabel.textProperty().bind(commanderStatusComponent.getCurrentStationName());
+        systemLabel.textProperty().bind(commanderStatusComponent.getCurrentStarSystem());
+        commanderLabel.textProperty().bind(commanderStatusComponent.getCommanderName());
     }
 
 

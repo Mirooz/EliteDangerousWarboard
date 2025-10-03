@@ -111,6 +111,7 @@ public class MissionCardComponent extends VBox {
             switch (mission.getTargetType()) {
                 case PIRATE -> targetLabel.getStyleClass().add("massacre-pirate");
                 case DESERTEUR -> targetLabel.getStyleClass().add("massacre-deserteur");
+                case HUMANOID -> targetLabel.getStyleClass().add("massacre-humain");
                 // autres cases ici
                 default -> targetLabel.getStyleClass().add("massacre-default");
             }
@@ -125,14 +126,11 @@ public class MissionCardComponent extends VBox {
         if (mission.getTargetFaction() != null) {
             targetInfo = mission.getTargetFaction();
         }
-        if (targetInfo.isEmpty()) {
-            targetInfo = "Pirates";
-        }
         Label targetLabel = new Label(targetInfo);
         targetLabel.getStyleClass().add("massacre-target");
-        targetLabel.setPrefWidth(160);
-        targetLabel.setMinWidth(160);
-        targetLabel.setMaxWidth(160);
+        targetLabel.setPrefWidth(120);
+        targetLabel.setMinWidth(120);
+        targetLabel.setMaxWidth(120);
 
         if (mission.getDestinationSystem() != null && !mission.getDestinationSystem().isEmpty()) {
             // Fallback: utiliser destinationSystem si targetSystem n'est pas défini

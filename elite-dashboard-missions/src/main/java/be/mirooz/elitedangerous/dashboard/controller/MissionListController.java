@@ -10,6 +10,7 @@ import be.mirooz.elitedangerous.dashboard.ui.component.MissionCardComponent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ProgressIndicator;
 
 import java.net.URL;
 import java.util.List;
@@ -20,6 +21,8 @@ import java.util.function.Consumer;
  * Contrôleur pour la liste des missions
  */
 public class MissionListController implements Initializable {
+    @FXML
+    private ProgressIndicator loadingIndicator;
     @FXML
     private GenericListView<Mission> missionsList;
 
@@ -52,6 +55,9 @@ public class MissionListController implements Initializable {
     }
 
 
+    public void setLoadingVisible(boolean visible){
+        this.loadingIndicator.setVisible(visible);
+    }
     public void setCurrentFilter(MissionStatus filter) {
         this.currentFilter = filter;
         updateFilterButtons();

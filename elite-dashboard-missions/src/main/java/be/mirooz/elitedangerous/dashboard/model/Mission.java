@@ -22,7 +22,7 @@ public class Mission {
     private String destinationSystem;
     private String originSystem;
     private String originStation;
-    private int reward;
+    private long reward;
     private int influence;
     private int reputation;
     private LocalDateTime expiry;
@@ -35,16 +35,16 @@ public class Mission {
     private TargetType targetType;
     private LocalDateTime acceptedTime;
     private boolean wing;
-    public boolean isActivePirateMission(){
-        return isPirateMission() && MissionStatus.ACTIVE.equals(status);
+    public boolean isShipActivePirateMission(){
+        return isShipPirateMission() && MissionStatus.ACTIVE.equals(status);
     }
-    public boolean isActiveDeserteurMission(){
-        return isDeserteurMission() && MissionStatus.ACTIVE.equals(status);
+    public boolean isShipActiveDeserteurMission(){
+        return isShipDeserteurMission() && MissionStatus.ACTIVE.equals(status);
     }
-    public boolean isPirateMission(){
+    public boolean isShipPirateMission(){
         return (TargetType.PIRATE.equals(targetType));
     }
-    public boolean isDeserteurMission(){
+    public boolean isShipDeserteurMission(){
         return (TargetType.DESERTEUR.equals(targetType));
     }
 
@@ -53,9 +53,24 @@ public class Mission {
     }
 
     public boolean isMassacreActive(){
-        return MissionStatus.ACTIVE.equals(this.status) && MissionType.MASSACRE.equals(this.type);
+        return MissionStatus.ACTIVE.equals(this.status)  && isMassacre();
+
     }
 
+    public boolean isMassacre(){
+        return  (MissionType.MASSACRE.equals(this.type)
+                || MissionType.MASSACRE_ONFOOT.equals(this.type)
+                || MissionType.CONFLIT.equals(this.type));
+    }
+    public boolean isActive(){
+        return MissionStatus.ACTIVE.equals(this.status);
+    }
+    public boolean isPending(){
+        return isActive() && getTargetCountLeft() ==0 && getTargetCount() !=0;
+    }
+    public boolean isCompleted(){
+        return MissionStatus.COMPLETED.equals(this.status);
+    }
     public  boolean isMissionFailed() {
         return this.getStatus() == MissionStatus.FAILED
                 || this.getStatus() == MissionStatus.EXPIRED

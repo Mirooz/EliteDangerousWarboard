@@ -1,43 +1,67 @@
 package be.mirooz.elitedangerous.dashboard;
 
+import be.mirooz.elitedangerous.dashboard.controller.DashboardController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.util.Objects;
 
-/**
- * Application principale du dashboard Elite Dangerous
- */
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 public class EliteDashboardApp extends Application {
-    
+
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(EliteDashboardApp.class.getResource("/fxml/dashboard.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
-        // Icône de l'application
-        Image icon = new Image(Objects.requireNonNull(
-                getClass().getResource("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png")
-        ).toExternalForm());
-        stage.getIcons().add(icon);
-        // Configuration du style Elite Dangerous
-        scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-        
-        stage.setTitle("Elite Dangerous - Dashboard des Missions");
-        stage.setScene(scene);
-        stage.setResizable(true);
-        stage.setMinWidth(1000);
-        stage.setMinHeight(600);
-        stage.setMaximized(true);
-        stage.show();
-        stage.setOnCloseRequest(event -> {
-            System.out.println("Fermeture demandée, arrêt de l’application...");
-            javafx.application.Platform.exit();
-            System.exit(0);
-        });
+    public void start(Stage stage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/dashboard.fxml")
+            );
+            Scene scene = new Scene(loader.load(), 1200, 800);
+
+            scene.getStylesheets().add(
+                    Objects.requireNonNull(getClass().getResource("/css/elite-theme.css"))
+                            .toExternalForm()
+            );
+
+            // --- Icône ---
+            Image icon = new Image(
+                    Objects.requireNonNull(
+                            getClass().getResource("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png")
+                    ).toExternalForm()
+            );
+            stage.getIcons().add(icon);
+
+            // --- Stage ---
+            stage.setTitle("Elite Dangerous - Dashboard des Missions");
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(1000);
+            stage.setMinHeight(600);
+            stage.setMaximized(true);
+
+            // --- Gestion de la fermeture ---
+            stage.setOnCloseRequest(event -> {
+                System.out.println("Fermeture demandée, arrêt de l’application...");
+                javafx.application.Platform.exit();
+                System.exit(0);
+            });
+
+            stage.setOnCloseRequest(event -> {
+                System.out.println("Arrêt des services de journal...");
+                JournalTailService.getInstance().stop();
+                JournalWatcherService.getInstance().stop();
+
+                javafx.application.Platform.exit();
+                System.exit(0);
+            });
+            stage.show();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors du chargement du Dashboard", e);
+        }
     }
 
     public static void main(String[] args) {

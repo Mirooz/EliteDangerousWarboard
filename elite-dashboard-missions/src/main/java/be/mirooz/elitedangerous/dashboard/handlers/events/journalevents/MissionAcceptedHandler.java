@@ -61,8 +61,8 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             mission.setFaction(faction);
             mission.setTargetFaction(targetFaction);
             mission.setDestinationSystem(destinationSystem);
-            mission.setOriginStation(commanderStatus.getCurrentStationNameString());
-            mission.setOriginSystem(commanderStatus.getCurrentStarSystemString());
+            mission.setOriginStation(commanderStatus.getCurrentStationName());
+            mission.setOriginSystem(commanderStatus.getCurrentStarSystem());
             mission.setTargetCount(targetCount);
             mission.setTargetType(TargetType.fromCode(targetType));
             mission.setCurrentCount(0);

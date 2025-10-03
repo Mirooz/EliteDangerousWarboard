@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
@@ -8,6 +9,7 @@ import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Service pour gérer les missions Elite Dangerous
@@ -28,6 +30,7 @@ public class DashboardService {
     public void InitActiveMissions() {
         // Essayer de lire les données réelles des journaux
         try {
+
             journalService.getMissionsFromLastWeek();
         } catch (Exception e) {
             System.err.println("Impossible de lire les journaux, utilisation des données de test: " + e.getMessage());

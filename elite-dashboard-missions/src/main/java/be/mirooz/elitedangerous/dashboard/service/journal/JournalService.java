@@ -33,6 +33,9 @@ public class JournalService {
     private static final String SHIPYARD_FILE = "Shipyard.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    JournalTailService tailService =JournalTailService.getInstance();
+    JournalWatcherService journalWatcherService = JournalWatcherService.getInstance();
+
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private String currentShip = null;
 
@@ -56,10 +59,14 @@ public class JournalService {
      */
     public List<Mission> getMissionsFromLastWeek() {
         try {
+            commanderStatus.setUiUpdatesEnabled(false);
             // D'abord extraire le nom du commandant du fichier le plus récent
             extractCommanderNameFromLatestJournal();
             // Utiliser la nouvelle méthode qui traite tous les fichiers et met à jour les missions
-            return parseAllJournalFiles();
+            List<Mission> missions = parseAllJournalFiles();
+            commanderStatus.setUiUpdatesEnabled(true);
+            commanderStatus.flushToUI();
+            return missions;
         } catch (Exception e) {
             System.err.println("Erreur lors de la lecture des journaux: " + e.getMessage());
             e.printStackTrace();
@@ -77,7 +84,6 @@ public class JournalService {
                 System.err.println("Aucun fichier journal trouvé");
                 return;
             }
-
             // Le premier fichier est le plus récent (trié par date décroissante)
             File latestJournal = journalFiles.get(0);
             List<String> lines = Files.readAllLines(latestJournal.toPath());
@@ -129,10 +135,10 @@ public class JournalService {
      * Récupère le nom du commandant
      */
     public String getCommanderName() {
-        return commanderStatus.getCommanderNameString();
+        return commanderStatus.getCommanderName();
     }
     public String getCommanderFid() {
-        return commanderStatus.getFIDString();
+        return commanderStatus.getFID();
     }
 
     /**
@@ -148,7 +154,7 @@ public class JournalService {
             return journalFiles;
         }
 
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(700);
 
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {
@@ -159,7 +165,6 @@ public class JournalService {
                     .sorted((p1, p2) -> p2.getFileName().toString().compareTo(p1.getFileName().toString()))
                     .forEach(path -> journalFiles.add(path.toFile()));
         }
-
         return journalFiles;
     }
 
@@ -197,7 +202,6 @@ public class JournalService {
             // Les fichiers sont déjà triés par date décroissante, on les inverse
             Collections.reverse(journalFiles);
             for (File journalFile : journalFiles) {
-                Map<String, Mission> fileMissionMap = new HashMap<>();
 
                 try {
                     List<String> lines = Files.readAllLines(journalFile.toPath());
@@ -217,13 +221,9 @@ public class JournalService {
 
             if (!journalFiles.isEmpty()) {
                 File latestJournal = journalFiles.get(journalFiles.size() - 1);
+                JournalWatcherService.getInstance().start(JOURNAL_PATH);
+                JournalTailService.getInstance().start(latestJournal);
 
-                // Lancer le tail sur le dernier fichier
-                JournalTailService tailService = new JournalTailService();
-                tailService.startTailing(latestJournal);
-
-                // Lancer un watcher pour basculer si un nouveau fichier apparaît
-                new Thread(new JournalWatcherService(JOURNAL_PATH, tailService)).start();
             }
 
         } catch (Exception e) {

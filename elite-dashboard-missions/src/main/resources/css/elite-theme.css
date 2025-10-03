@@ -3,7 +3,6 @@
 /* Variables de couleurs Elite Dangerous */
 .root {
     -fx-elite-orange: #FF6B00;
-    -fx-elite-blue: #00B4FF;
     -fx-elite-cyan: #00FFFF;
     -fx-elite-dark: #0A0A0A;
     -fx-elite-darker: #050505;
@@ -11,7 +10,9 @@
     -fx-elite-light-gray: #2A2A2A;
     -fx-elite-text: #E0E0E0;
     -fx-elite-text-dim: #A0A0A0;
-    -fx-elite-success: #00FF00;
+    -fx-elite-success: #00AEEF;
+    -fx-elite-green: #00FF00;
+    -fx-elite-blue: #007ACC;
     -fx-elite-warning: #FFAA00;
     -fx-elite-danger: #FF0000;
 }
@@ -90,12 +91,25 @@
 }
 
 /* Couleurs pour les statistiques selon le filtre */
-.stat-active {
+
+.stat{
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.stat-earn {
+    -fx-text-fill: -fx-elite-success !important;
+}
+.stat-mission {
+    -fx-text-fill: -fx-elite-orange !important;
+}
+.stat-potential {
     -fx-text-fill: -fx-elite-orange !important;
 }
 
-.stat-completed {
-    -fx-text-fill: -fx-elite-blue !important;
+.stat-pending {
+    -fx-text-fill: -fx-elite-success !important;
 }
 
 .stat-failed {
@@ -251,12 +265,6 @@
     -fx-text-fill: -fx-elite-text-dim;
 }
 
-.mission-reward {
-    -fx-font-size: 16px;
-    -fx-text-fill: -fx-elite-success;
-    -fx-font-weight: bold;
-}
-
 .mission-status {
     -fx-font-size: 10px;
     -fx-font-weight: bold;
@@ -271,7 +279,7 @@
 }
 
 .mission-status.completed {
-    -fx-background-color: -fx-elite-blue;
+    -fx-background-color: -fx-elite-success;
     -fx-text-fill: -fx-elite-dark;
 }
 
@@ -380,6 +388,11 @@
     -fx-text-fill: -fx-elite-warning;
     -fx-font-weight: bold;
 }
+.massacre-deserteur {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-blue;
+    -fx-font-weight: bold;
+}
 .massacre-default {
     -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-text;
@@ -398,7 +411,7 @@
 }
 
 .massacre-kills-waiting {
-    -fx-text-fill: -fx-elite-blue !important;
+    -fx-text-fill: -fx-elite-success !important;
     -fx-font-weight: bold;
 }
 
@@ -415,7 +428,7 @@
 
 .massacre-reward {
     -fx-font-size: 16px;
-    -fx-text-fill: -fx-elite-success;
+    -fx-text-fill: -fx-elite-green;
     -fx-font-weight: bold;
 }
 
@@ -719,7 +732,7 @@
 
 .faction-bounty-amount {
     -fx-font-size: 11px;
-    -fx-text-fill: -fx-elite-success;
+    -fx-text-fill: -fx-elite-green;
     -fx-font-weight: bold;
 }
 
@@ -959,33 +972,6 @@
     -fx-pref-width: 20;
     -fx-max-width: 20;
     -fx-alignment: CENTER;
-}
-
-.massacre-card-factions {
-    -fx-spacing: 5;
-}
-
-.massacre-card-faction {
-    -fx-background-color: -fx-elite-blue;
-    -fx-text-fill: -fx-elite-dark;
-    -fx-font-size: 9px;
-    -fx-font-weight: bold;
-    -fx-padding: 2 6 2 6;
-    -fx-border-radius: 3;
-    -fx-spacing: 1;
-    -fx-min-height: 48;
-    -fx-max-height: 48;
-    -fx-pref-height: 48;
-    -fx-min-width: 60;
-    -fx-pref-width: 60;
-    -fx-max-width: 60;
-    -fx-alignment: CENTER;
-}
-
-.massacre-card-faction-icon {
-    -fx-fit-width: 16;
-    -fx-fit-height: 16;
-    -fx-preserve-ratio: true;
 }
 
 .massacre-card-faction-number {

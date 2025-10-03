@@ -16,7 +16,7 @@ public class ShutDownHandler implements JournalEventHandler {
     public void handle(JsonNode jsonNode) {
         try {
             commanderStatus.setOnline(false);
-            System.out.println("Commandant " + commanderStatus.getCommanderNameString() + " is offline");
+            System.out.println("Commandant " + commanderStatus.getCommanderName() + " is offline");
 
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());

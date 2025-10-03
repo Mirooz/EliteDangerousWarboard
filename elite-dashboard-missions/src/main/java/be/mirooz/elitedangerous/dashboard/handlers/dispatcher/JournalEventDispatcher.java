@@ -5,9 +5,7 @@ import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.JournalE
 import com.fasterxml.jackson.databind.JsonNode;
 import org.reflections.Reflections;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class JournalEventDispatcher {
 

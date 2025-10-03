@@ -7,7 +7,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class DialogComponent<T> {
+public class DialogComponent {
 
     private final String fxmlPath;
     private final String cssPath;
@@ -16,8 +16,6 @@ public class DialogComponent<T> {
     private final double height;
 
     private Stage stage;
-    private T controller;
-
     public DialogComponent(String fxmlPath, String cssPath, String title, double width, double height) {
         this.fxmlPath = fxmlPath;
         this.cssPath = cssPath;
@@ -30,8 +28,6 @@ public class DialogComponent<T> {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Pane content = loader.load();
-
-            this.controller = loader.getController();
 
             Scene scene = new Scene(content, width, height);
             if (cssPath != null) {
@@ -57,11 +53,4 @@ public class DialogComponent<T> {
         stage.showAndWait();
     }
 
-    public T getController() {
-        return controller;
-    }
-
-    public Stage getStage() {
-        return stage;
-    }
 }

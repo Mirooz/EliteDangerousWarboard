@@ -19,7 +19,7 @@
         <dependency>
             <groupId>be.mirooz.elitedangerous.lib</groupId>
             <artifactId>edtools-lib</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
         </dependency>
         <!-- JavaFX Controls -->
         <dependency>
@@ -85,7 +85,9 @@
                     <systemProperties>
                         <systemProperty>
                             <key>journal.folder</key>
-                            <value>C:\Users\ewen_\Saved Games\Frontier Developments\Elite Dangerous</value>
+                            <!--                            <value>C:\Users\ewen_\Saved Games\Frontier Developments\Elite Dangerous</value>-->
+
+                            <value>${project.basedir}/target/classes/exemple</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

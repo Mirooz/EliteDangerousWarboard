@@ -2,8 +2,8 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.model.*;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
+import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -76,11 +76,11 @@ public class MissionService {
             return;
         }
         List<Mission> eligibleMissions = missionsList.getGlobalMissionMap().values().stream()
-                .filter(Mission::isActivePirateMission)
+                .filter(Mission::isShipActivePirateMission)
                 .filter(mission -> mission.getType() == MissionType.MASSACRE)
                 .filter(mission -> mission.getTargetFaction() != null)
                 .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
-                .filter(mission -> commanderStatus.getCurrentStarSystemString().equals(mission.getDestinationSystem()))
+                .filter(mission -> commanderStatus.getCurrentStarSystem().equals(mission.getDestinationSystem()))
                 .filter(mission -> mission.getTargetCountLeft() > 0)
                 .toList();
 
