@@ -1,8 +1,7 @@
-package be.mirooz.elitedangerous.dashboard.ui;
+package be.mirooz.elitedangerous.dashboard.ui.manager;
 
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.layout.StackPane;
 
 public class CopyClipboardManager {
     private static CopyClipboardManager instance;

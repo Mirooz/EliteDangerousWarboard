@@ -3,7 +3,6 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.dashboard.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
-import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 

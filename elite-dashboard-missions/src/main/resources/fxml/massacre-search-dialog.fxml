@@ -80,8 +80,8 @@
         <Label text="RES" styleClass="faction-header-label" translateX="30"/>
     </HBox>
         <GenericListView fx:id="systemList"
-                  styleClass="missions-scroll"
-                  VBox.vgrow="ALWAYS"/>
+                         styleClass="missions-scroll"
+                         VBox.vgrow="ALWAYS"/>
 
     <!-- Panneau des boutons d'action -->
     <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="action-panel">

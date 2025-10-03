@@ -29,7 +29,7 @@
    </HBox>
 
    <StackPane VBox.vgrow="ALWAYS">
-      <GenericListView fx:id="missionsList"
+      <GenericListView fx:id="missionListView"
                        styleClass="missions-scroll"/>
 
       <ProgressIndicator fx:id="loadingIndicator"

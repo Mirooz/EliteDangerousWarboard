@@ -7,6 +7,10 @@ import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
 import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.ui.component.FactionStatsComponent;
+import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -40,17 +44,26 @@ public class FooterController implements Initializable {
 
     private final MissionsList missionsList = MissionsList.getInstance();
 
+    private final DestroyedShipsList destroyedShipsList= DestroyedShipsList.getInstance();
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+
+        destroyedShipsList.addDestroyedShipsListener(this::updateFactionStats);
+        missionsList.addMissionMapListener(this::updateFactionStats);
+    }
+
+    public void postBatch(){
         stationLabel.textProperty().bind(commanderStatusComponent.getCurrentStationName());
         systemLabel.textProperty().bind(commanderStatusComponent.getCurrentStarSystem());
         commanderLabel.textProperty().bind(commanderStatusComponent.getCommanderName());
+        updateFactionStats();
     }
 
-
-    public void updateFactionStats() {
+    private void updateFactionStats() {
         // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
-        List<Mission> massacreMissions = missionsList.getGlobalMissionMap().values().stream().filter(Mission::isMassacreActive).collect(Collectors.toList());
+        List<Mission> massacreMissions = missionsList.getGlobalMissionMap().values().stream()
+                .filter(Mission::isMassacreActive)
+                .collect(Collectors.toList());
         Map<TargetType, CibleStats> stats = computeFactionStats(massacreMissions);
 
         // Supprimer toutes les lignes après l'en-tête

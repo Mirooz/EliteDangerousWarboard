@@ -1,9 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.ui.component.DialogComponent;
+import javafx.application.Platform;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -20,7 +23,6 @@ import java.util.ResourceBundle;
  * Contrôleur pour l'en-tête du dashboard
  */
 public class HeaderController implements Initializable {
-
     @FXML
     public Label missionCountTextLabel;
     @FXML
@@ -52,9 +54,10 @@ public class HeaderController implements Initializable {
     @FXML
     private Label statusLabel;
 
-    private MissionStatus currentFilter = MissionStatus.ACTIVE;
-    private MissionsList missionsList = MissionsList.getInstance();
-    private CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
+    private final MissionsList missionsList = MissionsList.getInstance();
+
+    public static final DashboardContext dashboardContext = DashboardContext.getInstance();
+    private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -64,13 +67,16 @@ public class HeaderController implements Initializable {
         statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent.getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
                 .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
         );
+
+        dashboardContext.addFilterListener(this::updateStats);
+        missionsList.addMissionMapListener(this::refreshStats);
+
     }
 
-    public void setCurrentFilter(MissionStatus filter) {
-        this.currentFilter = filter;
+    private void refreshStats(){
+        updateStats(DashboardContext.getInstance().getCurrentFilter());
     }
-
-    public void updateStats() {
+    private void updateStats(MissionStatus currentFilter) {
         // Filtrer les missions selon le filtre actuel
         List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream()
                 .filter(Mission::isMassacre)

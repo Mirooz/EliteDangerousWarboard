@@ -1,18 +1,15 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
-import be.mirooz.elitedangerous.dashboard.ui.UIRefreshManager;
-import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
+import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,16 +30,12 @@ public class DashboardController implements Initializable {
     private MissionListController missionListController;
     private FooterController footerController;
     private DestroyedShipsController destroyedShipsController;
-    private UIRefreshManager uiRefreshManager = UIRefreshManager.getInstance();
-
-    private DashboardService dashboardService;
-    private MissionStatus currentFilter = MissionStatus.ACTIVE;
-    private PopupManager popupManager = PopupManager.getInstance();
+    private final DashboardService dashboardService= DashboardService.getInstance();
+    private final DashboardContext dashboardContext= DashboardContext.getInstance();
+    private final PopupManager popupManager = PopupManager.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        dashboardService = DashboardService.getInstance();
-
         loadComponents();
         loadMissions();
         popupManager.attachToContainer(popupContainer);
@@ -59,8 +52,6 @@ public class DashboardController implements Initializable {
             createDestroyedShipsPanel();
             // Charger le footer
             createFooterPanel();
-            uiRefreshManager.registerControllers(headerController, missionListController, footerController);
-            uiRefreshManager.registerDestroyedShipsController(destroyedShipsController);
 
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement des composants: " + e.getMessage());
@@ -79,7 +70,6 @@ public class DashboardController implements Initializable {
         FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/mission-list.fxml"));
         VBox missionList = missionListLoader.load();
         missionListController = missionListLoader.getController();
-        missionListController.setFilterChangeCallback(this::onFilterChange);
         mainPane.setCenter(missionList);
     }
 
@@ -98,27 +88,22 @@ public class DashboardController implements Initializable {
     }
     private void loadMissions() {
 
-        missionListController.setLoadingVisible(true);
+        missionListController.preBatch();
         new Thread(() -> {
             try {
                 dashboardService.InitActiveMissions();
-
                 Platform.runLater(() -> {
-                    missionListController.setLoadingVisible(false);
-                    uiRefreshManager.refresh();
+                    missionListController.postBatch();
+                    footerController.postBatch();
+                    destroyedShipsController.postBatch();
                 });
             } catch (Exception ex) {
                 ex.printStackTrace();
-                Platform.runLater(() -> missionListController.setLoadingVisible(false));
+                missionListController.postBatch();
+                footerController.postBatch();
+                destroyedShipsController.postBatch();
             }
         }).start();
-    }
-
-    private void onFilterChange(MissionStatus filter) {
-        currentFilter = filter;
-        headerController.setCurrentFilter(filter);
-        missionListController.setCurrentFilter(filter);
-        uiRefreshManager.refresh();
     }
 
 }

@@ -1,5 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.model;
 
+import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -13,7 +18,8 @@ import java.util.stream.Collectors;
  */
 public class DestroyedShipsList {
     private static DestroyedShipsList instance;
-    private final List<DestroyedShip> destroyedShips;
+    private final ObservableList<DestroyedShip> destroyedShips =
+            FXCollections.observableArrayList();
     private Map<String,Integer> bountyPerFaction = new HashMap<>();
     @Getter
     private int totalBountyEarned;
@@ -21,7 +27,7 @@ public class DestroyedShipsList {
     private int shipsSinceLastReset;
 
     private DestroyedShipsList() {
-        this.destroyedShips = new ArrayList<>();
+        this.destroyedShips.clear();
         this.totalBountyEarned = 0;
         this.shipsSinceLastReset = 0;
     }
@@ -60,9 +66,15 @@ public class DestroyedShipsList {
     public void clearRewards(){
         this.bountyPerFaction = new HashMap<>();
     }
-
-    public List<DestroyedShip> getDestroyedShips() {
-        return new ArrayList<>(destroyedShips);
+    public void addDestroyedShipsListener(Runnable action) {
+        destroyedShips.addListener((ListChangeListener<DestroyedShip>) change -> {
+            if (!DashboardContext.getInstance().isBatchLoading()) {
+                Platform.runLater(action);
+            }
+        });
+    }
+    public ObservableList<DestroyedShip>  getDestroyedShips() {
+        return destroyedShips;
     }
 
     public List<DestroyedShip> getDestroyedShipsByFaction(String faction) {

@@ -1,14 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.ui.component;
 
-import be.mirooz.elitedangerous.dashboard.ui.CopyClipboardManager;
-import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
+import be.mirooz.elitedangerous.dashboard.ui.manager.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
-import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 

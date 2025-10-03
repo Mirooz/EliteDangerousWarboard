@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
-import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
+import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.ui.component.SystemCardComponent;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;

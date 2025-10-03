@@ -22,8 +22,6 @@ public class CommanderStatus {
     private String commanderName;
     private String FID;
     private Boolean isOnline;
-    @Setter
-    private boolean uiUpdatesEnabled = true;
 
     private CommanderStatus() {
     }
@@ -37,31 +35,26 @@ public class CommanderStatus {
     }
     public void setCurrentStarSystem(String value) {
         this.currentStarSystem = value;
-        if (uiUpdatesEnabled)
             component.setCurrentStarSystem(value);
     }
 
     public void setCurrentStationName(String value) {
         this.currentStationName = value;
-        if (uiUpdatesEnabled)
             component.setCurrentStationName(value);
     }
 
     public void setCommanderName(String value) {
         this.commanderName = value;
-        if (uiUpdatesEnabled)
             component.setCommanderName(value);
     }
 
     public void setFID(String value) {
         this.FID = value;
-        if (uiUpdatesEnabled)
             component.setFID(value);
     }
 
     public void setOnline(boolean value) {
         this.isOnline = value;
-        if (uiUpdatesEnabled)
             component.setOnline(value);
     }
 }

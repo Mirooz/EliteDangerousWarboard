@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
+import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,19 +34,15 @@ public class JournalService {
     private static final String SHIPYARD_FILE = "Shipyard.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    JournalTailService tailService =JournalTailService.getInstance();
-    JournalWatcherService journalWatcherService = JournalWatcherService.getInstance();
-
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
-    private String currentShip = null;
+    private final String currentShip = null;
 
-    private final Map<String, Mission> globalMissionList;
+    private final MissionsList missionsList = MissionsList.getInstance();
     private final JournalEventDispatcher dispatcher;
 
 
     private JournalService() {
         this.dispatcher = JournalEventDispatcher.getInstance();
-        this.globalMissionList = MissionsList.getInstance().getGlobalMissionMap();
     }
 
     private static final JournalService INSTANCE = new JournalService();
@@ -59,12 +56,10 @@ public class JournalService {
      */
     public List<Mission> getMissionsFromLastWeek() {
         try {
-            commanderStatus.setUiUpdatesEnabled(false);
             // D'abord extraire le nom du commandant du fichier le plus récent
             extractCommanderNameFromLatestJournal();
             // Utiliser la nouvelle méthode qui traite tous les fichiers et met à jour les missions
             List<Mission> missions = parseAllJournalFiles();
-            commanderStatus.setUiUpdatesEnabled(true);
             commanderStatus.flushToUI();
             return missions;
         } catch (Exception e) {
@@ -201,23 +196,7 @@ public class JournalService {
             // Traiter les fichiers dans l'ordre chronologique (plus ancien en premier)
             // Les fichiers sont déjà triés par date décroissante, on les inverse
             Collections.reverse(journalFiles);
-            for (File journalFile : journalFiles) {
-
-                try {
-                    List<String> lines = Files.readAllLines(journalFile.toPath());
-
-                    for (String line : lines) {
-                        try {
-                            JsonNode jsonNode = objectMapper.readTree(line);
-                            dispatcher.dispatch(jsonNode);
-                        } catch (Exception e) {
-                            // Ignorer les lignes malformées
-                        }
-                    }
-                } catch (IOException e) {
-                    System.err.println("Erreur lors de la lecture du fichier " + journalFile.getName() + ": " + e.getMessage());
-                }
-            }
+            dispatchAllEvents(journalFiles);
 
             if (!journalFiles.isEmpty()) {
                 File latestJournal = journalFiles.get(journalFiles.size() - 1);
@@ -229,8 +208,30 @@ public class JournalService {
         } catch (Exception e) {
             System.err.println("Erreur lors de la lecture des journaux: " + e.getMessage());
         }
+        return new ArrayList<>(missionsList.getGlobalMissionMap().values());
 
-        return new ArrayList<>(globalMissionList.values());
+    }
+
+    private void dispatchAllEvents(List<File> journalFiles) {
+        DashboardContext.getInstance().setBatchLoading(true);
+        for (File journalFile : journalFiles) {
+
+            try {
+                List<String> lines = Files.readAllLines(journalFile.toPath());
+
+                for (String line : lines) {
+                    try {
+                        JsonNode jsonNode = objectMapper.readTree(line);
+                        dispatcher.dispatch(jsonNode);
+                    } catch (Exception e) {
+                        // Ignorer les lignes malformées
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Erreur lors de la lecture du fichier " + journalFile.getName() + ": " + e.getMessage());
+            }
+        }
+        DashboardContext.getInstance().setBatchLoading(false);
     }
 
     /**

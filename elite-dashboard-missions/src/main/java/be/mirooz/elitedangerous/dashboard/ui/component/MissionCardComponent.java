@@ -2,8 +2,8 @@ package be.mirooz.elitedangerous.dashboard.ui.component;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.ui.CopyClipboardManager;
-import be.mirooz.elitedangerous.dashboard.ui.PopupManager;
+import be.mirooz.elitedangerous.dashboard.ui.manager.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -170,8 +170,10 @@ public class MissionCardComponent extends VBox {
                 Label remainingLabel = new Label(timeRemaining);
                 if (TERMINATED.equals(timeRemaining)) {
                     remainingLabel.getStyleClass().add("mission-time-completed");
-                } else if (FAILED.equals(timeRemaining) || EXPIRED.equals(timeRemaining)) {
+                } else if (FAILED.equals(timeRemaining)){
                     remainingLabel.getStyleClass().add("mission-time-failed");
+                } else if (EXPIRED.equals(timeRemaining)){
+                    remainingLabel.getStyleClass().add("mission-time-expired");
                 } else {
                     long hoursRemaining = java.time.Duration.between(LocalDateTime.now(), mission.getExpiry()).toHours();
                     remainingLabel.getStyleClass().add(hoursRemaining > 24 ? "mission-time" : "mission-time-urgent");

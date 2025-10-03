@@ -1,12 +1,18 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.comparator.MissionTimestampComparator;
+import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
+import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
+import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.MissionsList;
 import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.ui.component.MissionCardComponent;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -15,7 +21,6 @@ import javafx.scene.control.ProgressIndicator;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
 
 /**
  * Contrôleur pour la liste des missions
@@ -24,7 +29,7 @@ public class MissionListController implements Initializable {
     @FXML
     private ProgressIndicator loadingIndicator;
     @FXML
-    private GenericListView<Mission> missionsList;
+    private GenericListView<Mission> missionListView;
 
 
     @FXML
@@ -38,47 +43,48 @@ public class MissionListController implements Initializable {
 
     @FXML
     private Button allFilterButton;
+    private final MissionsList missionsList = MissionsList.getInstance();
 
-    private MissionStatus currentFilter = MissionStatus.ACTIVE;
-    private MissionsList allMissionsList = MissionsList.getInstance();
+    private final DashboardContext dashboardContext= DashboardContext.getInstance();
 
-    private Consumer<MissionStatus> filterChangeCallback;
-
+    private final DestroyedShipsList destroyedShipsList= DestroyedShipsList.getInstance();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        missionsList.setComponentFactory(MissionCardComponent::new);
+        missionListView.setComponentFactory(MissionCardComponent::new);
+
+        dashboardContext.addFilterListener(this::applyFilter);
+        missionsList.addMissionMapListener(this::refreshMissions);
+        destroyedShipsList.addDestroyedShipsListener(this::refreshMissions);
     }
 
-
-    public void setFilterChangeCallback(Consumer<MissionStatus> callback) {
-        this.filterChangeCallback = callback;
+    public void postBatch(){
+        setLoadingVisible(false);
+        filterActiveMissions();
     }
-
-
-    public void setLoadingVisible(boolean visible){
+    public void preBatch(){
+        setLoadingVisible(true);
+    }
+    private void setLoadingVisible(boolean visible) {
         this.loadingIndicator.setVisible(visible);
     }
-    public void setCurrentFilter(MissionStatus filter) {
-        this.currentFilter = filter;
-        updateFilterButtons();
-    }
 
-    public void applyFilter() {
-        missionsList.getItems().clear();
+    private void refreshMissions() {
+        applyFilter(DashboardContext.getInstance().getCurrentFilter());
+    }
+    private void applyFilter(MissionStatus currentFilter) {
         boolean isActive = MissionStatus.ACTIVE.equals(currentFilter);
-        List<Mission> filteredMissions = allMissionsList.getGlobalMissionMap().values().stream()
-                .filter(mission -> mission.getType() == MissionType.MASSACRE)
+        List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream()
+                .filter(Mission::isMassacre)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
                 .sorted(new MissionTimestampComparator(isActive,
                         isActive))
                 .toList();
-
-        missionsList.getItems().setAll(filteredMissions);
-
-        updateFilterButtons();
+        ObservableList<Mission> currentItems = missionListView.getItems();
+        currentItems.setAll(filteredMissions);
+        updateFilterButtons(currentFilter);
     }
 
-    private void updateFilterButtons() {
+    private void updateFilterButtons(MissionStatus currentFilter) {
         // Réinitialiser tous les boutons
         activeFilterButton.getStyleClass().removeAll("active");
         completedFilterButton.getStyleClass().removeAll("active");
@@ -97,29 +103,21 @@ public class MissionListController implements Initializable {
 
     @FXML
     private void filterActiveMissions() {
-        if (filterChangeCallback != null) {
-            filterChangeCallback.accept(MissionStatus.ACTIVE);
-        }
+        DashboardContext.getInstance().setCurrentFilter(MissionStatus.ACTIVE);
     }
 
     @FXML
     private void filterCompletedMissions() {
-        if (filterChangeCallback != null) {
-            filterChangeCallback.accept(MissionStatus.COMPLETED);
-        }
+        DashboardContext.getInstance().setCurrentFilter(MissionStatus.COMPLETED);
     }
 
     @FXML
     private void filterAbandonedMissions() {
-        if (filterChangeCallback != null) {
-            filterChangeCallback.accept(MissionStatus.FAILED);
-        }
+        DashboardContext.getInstance().setCurrentFilter(MissionStatus.FAILED);
     }
 
     @FXML
     private void filterAllMissions() {
-        if (filterChangeCallback != null) {
-            filterChangeCallback.accept(null);
-        }
+        DashboardContext.getInstance().setCurrentFilter(null);
     }
 }
