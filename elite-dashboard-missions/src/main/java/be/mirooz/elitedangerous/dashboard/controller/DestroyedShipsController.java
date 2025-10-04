@@ -1,12 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
-import be.mirooz.elitedangerous.dashboard.model.MissionsList;
-import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -26,7 +23,7 @@ import static java.time.format.DateTimeFormatter.ofLocalizedDateTime;
 /**
  * Contrôleur pour le panneau des vaisseaux détruits
  */
-public class DestroyedShipsController implements Initializable {
+public class DestroyedShipsController implements Initializable, Refreshable {
 
     @FXML
     private VBox destroyedShipsPanel;
@@ -58,17 +55,12 @@ public class DestroyedShipsController implements Initializable {
     private VBox factionBountyStats;
 
     private DestroyedShipsList destroyedShipsList = DestroyedShipsList.getInstance();
-    private final MissionsList missionsList = MissionsList.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         destroyedShipsList = DestroyedShipsList.getInstance();
         initializeTable();
-        destroyedShipsList.getDestroyedShips().addListener((ListChangeListener<DestroyedShip>) change -> {
-            if (!DashboardContext.getInstance().isBatchLoading()) {
-                Platform.runLater(this::updateStatistics);
-            }
-        });
+        UIManager.getInstance().register(this);
     }
 
     private static final DecimalFormat DF;
@@ -156,4 +148,8 @@ public class DestroyedShipsController implements Initializable {
         }
     }
 
+    @Override
+    public void refreshUI() {
+        updateStatistics();
+    }
 }

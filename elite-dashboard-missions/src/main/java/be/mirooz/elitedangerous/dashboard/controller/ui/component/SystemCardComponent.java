@@ -1,9 +1,8 @@
-package be.mirooz.elitedangerous.dashboard.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
 import be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController;
-import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
-import be.mirooz.elitedangerous.dashboard.ui.manager.CopyClipboardManager;
-import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

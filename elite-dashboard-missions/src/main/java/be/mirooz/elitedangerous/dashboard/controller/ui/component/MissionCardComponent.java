@@ -1,9 +1,9 @@
-package be.mirooz.elitedangerous.dashboard.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.ui.manager.CopyClipboardManager;
-import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

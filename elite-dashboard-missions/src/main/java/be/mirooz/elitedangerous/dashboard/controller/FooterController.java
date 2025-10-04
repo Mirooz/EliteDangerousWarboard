@@ -1,16 +1,13 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
-import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
-import be.mirooz.elitedangerous.dashboard.ui.component.FactionStatsComponent;
-import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
-import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
-import javafx.collections.MapChangeListener;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.FactionStatsComponent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -25,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Contrôleur pour le pied de page du dashboard
  */
-public class FooterController implements Initializable {
+public class FooterController implements Initializable, Refreshable {
 
     // Constantes pour garantir l'alignement
 
@@ -43,13 +40,10 @@ public class FooterController implements Initializable {
     private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
 
     private final MissionsList missionsList = MissionsList.getInstance();
-
-    private final DestroyedShipsList destroyedShipsList= DestroyedShipsList.getInstance();
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        destroyedShipsList.addDestroyedShipsListener(this::updateFactionStats);
-        missionsList.addMissionMapListener(this::updateFactionStats);
+        UIManager.getInstance().register(this);
     }
 
     public void postBatch(){
@@ -91,4 +85,8 @@ public class FooterController implements Initializable {
     }
 
 
+    @Override
+    public void refreshUI() {
+        updateFactionStats();
+    }
 }

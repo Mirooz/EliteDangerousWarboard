@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;

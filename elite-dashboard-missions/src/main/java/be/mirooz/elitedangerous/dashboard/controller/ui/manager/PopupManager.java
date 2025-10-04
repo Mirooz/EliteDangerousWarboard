@@ -1,6 +1,6 @@
-package be.mirooz.elitedangerous.dashboard.ui.manager;
+package be.mirooz.elitedangerous.dashboard.controller.ui.manager;
 
-import be.mirooz.elitedangerous.dashboard.ui.component.PopUpComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.PopUpComponent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;

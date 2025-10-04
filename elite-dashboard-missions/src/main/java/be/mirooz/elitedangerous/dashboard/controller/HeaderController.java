@@ -1,12 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
-import be.mirooz.elitedangerous.dashboard.ui.component.DialogComponent;
-import javafx.application.Platform;
-import javafx.collections.MapChangeListener;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -22,7 +21,7 @@ import java.util.ResourceBundle;
 /**
  * Contrôleur pour l'en-tête du dashboard
  */
-public class HeaderController implements Initializable {
+public class HeaderController implements Initializable, Refreshable {
     @FXML
     public Label missionCountTextLabel;
     @FXML
@@ -69,11 +68,12 @@ public class HeaderController implements Initializable {
         );
 
         dashboardContext.addFilterListener(this::updateStats);
-        missionsList.addMissionMapListener(this::refreshStats);
+
+        UIManager.getInstance().register(this);
 
     }
 
-    private void refreshStats(){
+    public void refreshUI(){
         updateStats(DashboardContext.getInstance().getCurrentFilter());
     }
     private void updateStats(MissionStatus currentFilter) {

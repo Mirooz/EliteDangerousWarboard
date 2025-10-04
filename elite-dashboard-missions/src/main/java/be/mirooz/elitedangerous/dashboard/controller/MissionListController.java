@@ -1,18 +1,13 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.comparator.MissionTimestampComparator;
-import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
-import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
-import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.MissionsList;
-import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView;
-import be.mirooz.elitedangerous.dashboard.ui.component.MissionCardComponent;
-import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -25,7 +20,7 @@ import java.util.ResourceBundle;
 /**
  * Contrôleur pour la liste des missions
  */
-public class MissionListController implements Initializable {
+public class MissionListController implements Initializable, Refreshable {
     @FXML
     private ProgressIndicator loadingIndicator;
     @FXML
@@ -46,15 +41,12 @@ public class MissionListController implements Initializable {
     private final MissionsList missionsList = MissionsList.getInstance();
 
     private final DashboardContext dashboardContext= DashboardContext.getInstance();
-
-    private final DestroyedShipsList destroyedShipsList= DestroyedShipsList.getInstance();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         missionListView.setComponentFactory(MissionCardComponent::new);
-
+        filterActiveMissions();
         dashboardContext.addFilterListener(this::applyFilter);
-        missionsList.addMissionMapListener(this::refreshMissions);
-        destroyedShipsList.addDestroyedShipsListener(this::refreshMissions);
+        UIManager.getInstance().register(this);
     }
 
     public void postBatch(){
@@ -79,8 +71,7 @@ public class MissionListController implements Initializable {
                 .sorted(new MissionTimestampComparator(isActive,
                         isActive))
                 .toList();
-        ObservableList<Mission> currentItems = missionListView.getItems();
-        currentItems.setAll(filteredMissions);
+        missionListView.getItems().setAll(filteredMissions);
         updateFilterButtons(currentFilter);
     }
 
@@ -119,5 +110,10 @@ public class MissionListController implements Initializable {
     @FXML
     private void filterAllMissions() {
         DashboardContext.getInstance().setCurrentFilter(null);
+    }
+
+    @Override
+    public void refreshUI() {
+        refreshMissions();
     }
 }

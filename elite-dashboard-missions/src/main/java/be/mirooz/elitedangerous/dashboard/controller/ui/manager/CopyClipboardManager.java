@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.ui.manager;
+package be.mirooz.elitedangerous.dashboard.controller.ui.manager;
 
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;

@@ -1,5 +1,6 @@
-package be.mirooz.elitedangerous.dashboard.ui.context;
+package be.mirooz.elitedangerous.dashboard.controller.ui.context;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -31,11 +32,6 @@ public class DashboardContext {
     public void setCurrentFilter(MissionStatus filter) {
         currentFilter.set(filter);
     }
-
-    public ObjectProperty<MissionStatus> currentFilterProperty() {
-        return currentFilter;
-    }
-
     public boolean isBatchLoading() {
         return batchLoading.get();
     }
@@ -49,5 +45,11 @@ public class DashboardContext {
                 Platform.runLater(() -> action.accept(newVal));
             }
         });
+    }
+    public void refreshUI(){
+        if (!isBatchLoading()){
+            System.out.println("UI refreshed");
+            UIManager.getInstance().refreshAllUI();
+        }
     }
 }

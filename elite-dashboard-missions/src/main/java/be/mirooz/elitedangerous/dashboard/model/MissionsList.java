@@ -1,13 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.model;
 
-import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Singleton pour stocker les missions globales, observable par la UI

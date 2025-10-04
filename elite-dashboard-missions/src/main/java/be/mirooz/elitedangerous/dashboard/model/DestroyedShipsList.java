@@ -1,13 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.model;
 
-import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

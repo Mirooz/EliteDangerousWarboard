@@ -5,7 +5,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<?import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView?>
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView?>
 <StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController">
 

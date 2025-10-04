@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;

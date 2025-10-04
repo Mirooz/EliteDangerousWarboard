@@ -1,8 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model;
 
-import be.mirooz.elitedangerous.dashboard.ui.component.CommanderStatusComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 @Getter

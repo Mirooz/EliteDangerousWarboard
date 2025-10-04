@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import be.mirooz.elitedangerous.dashboard.ui.component.GenericListView?>
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView?>
 <?import be.mirooz.elitedangerous.dashboard.model.Mission?>
 <VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"

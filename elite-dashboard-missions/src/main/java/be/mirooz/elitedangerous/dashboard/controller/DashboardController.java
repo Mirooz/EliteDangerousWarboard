@@ -1,8 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
-import be.mirooz.elitedangerous.dashboard.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -92,18 +93,19 @@ public class DashboardController implements Initializable {
         new Thread(() -> {
             try {
                 dashboardService.InitActiveMissions();
-                Platform.runLater(() -> {
-                    missionListController.postBatch();
-                    footerController.postBatch();
-                    destroyedShipsController.postBatch();
-                });
+                Platform.runLater(this::postBatch);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                missionListController.postBatch();
-                footerController.postBatch();
-                destroyedShipsController.postBatch();
+                postBatch();
             }
         }).start();
+    }
+
+    private void postBatch() {
+        missionListController.postBatch();
+        footerController.postBatch();
+        destroyedShipsController.postBatch();
+        dashboardContext.refreshUI();
     }
 
 }
