@@ -45,7 +45,7 @@ public class SystemCardComponent extends VBox{
         targetSystem.setTooltip(new TooltipComponent(system.getTargetSystem()));
         targetSystem.setOnMouseClicked(e -> onClickSystem(system.getTargetSystem(), e));
 
-        Label targetCount = new Label("[" + system.getTargetCount() + "]");
+        Label targetCount = new Label("[ " + system.getTargetCount() + " ]");
         targetCount.setOnMouseClicked(e -> onClickTargetCount(system.getTargetSystem()));
         targetCount.setTooltip(new TooltipComponent("Voir systèmes source"));
         targetCount.getStyleClass().addAll("massacre-card-count", "clickable-system-target");
@@ -77,10 +77,10 @@ public class SystemCardComponent extends VBox{
         impValue.setTranslateX(20);
 
         Label allValue = getSuperFaction(system.getAll());
-        allValue.setTranslateX(13);
+        allValue.setTranslateX(10);
 
         Label indValue = getSuperFaction(system.getInd());
-        indValue.setTranslateX(-2);
+        indValue.setTranslateX(-5);
 
         factionsContainer.getChildren().addAll(fedValue, impValue, allValue, indValue);
 

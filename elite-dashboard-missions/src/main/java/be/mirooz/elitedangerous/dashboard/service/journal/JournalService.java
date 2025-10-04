@@ -57,7 +57,6 @@ public class JournalService {
             extractCommanderNameFromLatestJournal();
             // Utiliser la nouvelle méthode qui traite tous les fichiers et met à jour les missions
             List<Mission> missions = parseAllJournalFiles();
-            commanderStatus.flushToUI();
             return missions;
         } catch (Exception e) {
             System.err.println("Erreur lors de la lecture des journaux: " + e.getMessage());

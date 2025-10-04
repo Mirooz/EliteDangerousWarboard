@@ -51,7 +51,6 @@ public class MissionListController implements Initializable, Refreshable {
 
     public void postBatch(){
         setLoadingVisible(false);
-        filterActiveMissions();
     }
     public void preBatch(){
         setLoadingVisible(true);

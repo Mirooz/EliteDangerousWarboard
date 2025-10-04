@@ -60,15 +60,7 @@ public class HeaderController implements Initializable, Refreshable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        statusLabel.textProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent.getIsOnline()).then("SYSTÈME EN LIGNE").otherwise("SYSTÈME HORS LIGNE"));
-
-        // Binding conditionnel pour la couleur du statut
-        statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent.getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
-                .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
-        );
-
         dashboardContext.addFilterListener(this::updateStats);
-
         UIManager.getInstance().register(this);
 
     }
@@ -164,6 +156,17 @@ public class HeaderController implements Initializable, Refreshable {
 
         dialog.init(primaryStage);
         dialog.showAndWait();
+
+    }
+
+    public void postBatch() {
+        statusLabel.textProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent
+                .getIsOnline()).then("SYSTÈME EN LIGNE").otherwise("SYSTÈME HORS LIGNE"));
+        // Binding conditionnel pour la couleur du statut
+        statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent
+                        .getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
+                .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
+        );
 
     }
 }

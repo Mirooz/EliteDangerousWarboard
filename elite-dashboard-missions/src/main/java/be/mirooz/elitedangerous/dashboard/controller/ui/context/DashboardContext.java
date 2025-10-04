@@ -17,7 +17,7 @@ public class DashboardContext {
     // Filtre observable
     private final ObjectProperty<MissionStatus> currentFilter = new SimpleObjectProperty<>();
 
-    private final BooleanProperty batchLoading = new SimpleBooleanProperty(false);
+    private final BooleanProperty batchLoading = new SimpleBooleanProperty(true);
 
     private DashboardContext() {}
 

@@ -12,7 +12,7 @@
                 <Label styleClass="app-title" text="ELITE DANGEROUS"/>
                 <Label styleClass="app-subtitle" text="DASHBOARD DES MISSIONS"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="statusLabel" styleClass="status-label" text="SYSTÈME EN LIGNE"/>
+                <Label fx:id="statusLabel" styleClass="status-label"/>
             </children>
             <padding>
                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0"/>
@@ -26,23 +26,23 @@
                 <Insets bottom="15.0" left="20.0" right="20.0" top="15.0"/>
             </padding>
 
-            <VBox alignment="CENTER" spacing="5.0" fx:id="missionStatBox">
+            <VBox alignment="CENTER" spacing="5.0" fx:id="missionStatBox" visible="false">
                 <Label fx:id="missionCountLabel" styleClass="stat,stat-mission" text="0"/>
                 <Label fx:id="missionCountTextLabel" styleClass="stat-label" text="MISSIONS"/>
             </VBox>
-            <VBox alignment="CENTER" spacing="5.0" fx:id="earnCreditsBox">
+            <VBox alignment="CENTER" spacing="5.0" fx:id="earnCreditsBox" visible="false">
                 <Label fx:id="earnCreditsLabel" styleClass="stat,stat-earn" text="0"/>
                 <Label styleClass="stat-label" text="CRÉDITS GAGNÉS"/>
             </VBox>
-            <VBox alignment="CENTER" spacing="5.0" fx:id="potentialCreditsBox">
+            <VBox alignment="CENTER" spacing="5.0" fx:id="potentialCreditsBox" visible="false">
                 <Label fx:id="potentialCreditsLabel" styleClass="stat,stat-potential" text="0"/>
                 <Label  styleClass="stat-label" text="CRÉDITS POTENTIELS"/>
             </VBox>
-            <VBox alignment="CENTER" spacing="5.0" fx:id="pendingCreditsBox">
+            <VBox alignment="CENTER" spacing="5.0" fx:id="pendingCreditsBox" visible="false">
                 <Label fx:id="pendingCreditsLabel" styleClass="stat,stat-pending" text="0"/>
                 <Label  styleClass="stat-label" text="CRÉDITS EN ATTENTE"/>
             </VBox>
-            <VBox alignment="CENTER" spacing="5.0" fx:id="lostCreditsBox">
+            <VBox alignment="CENTER" spacing="5.0" fx:id="lostCreditsBox" visible="false">
                 <Label fx:id="lostCreditsLabel" styleClass="stat,stat-failed" text="0"/>
                 <Label styleClass="stat-label" text="CRÉDITS PERDUS"/>
             </VBox>

@@ -211,37 +211,37 @@
 .mission-card {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1;
+    -fx-border-width: 2;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
     -fx-padding: 15;
 }
 
 .mission-card:hover {
-    -fx-border-color: -fx-elite-cyan;
-    -fx-background-color: -fx-elite-gray;
+    -fx-background-color: rgba(255, 140, 0, 0.12); /* orange doux transparent */
 }
+
 .mission-card-wing {
     -fx-border-color: -fx-elite-blue !important;
 }
 /* Carte de mission complète (active avec kills terminés) */
 .mission-card-complete {
-    -fx-border-color: -fx-elite-success !important;
-}
+    -fx-border-color: -fx-elite-success;
+    -fx-background-color: rgba(2, 115, 162, 0.1); /* bleu léger transparent */
 
+}
 .mission-card-complete:hover {
-    -fx-border-color: -fx-elite-cyan !important;
-    -fx-background-color: -fx-elite-gray;
+    -fx-background-color: rgba(0, 4, 255, 0.1);
 }
 .mission-card-failed {
     -fx-border-color: -fx-elite-danger !important;
+    -fx-background-color: rgba(255, 0, 0, 0.04); /* 🔸 plus clair au repos */
+    -fx-effect: dropshadow(gaussian, rgba(170, 7, 7, 0.15), 10, 0.3, 0, 0);
 }
 
-.mission-card-complete:hover {
-    -fx-border-color: -fx-elite-cyan !important;
-    -fx-background-color: -fx-elite-gray;
+.mission-card-failed:hover {
+    -fx-background-color: rgba(211, 0, 0, 0.10); /* 🔸 un peu plus rouge au hover */
 }
-
 .mission-title {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -593,10 +593,9 @@
     -fx-padding: 3 5 3 5;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 0 0 1 0;
-}
-
+}/* ====== Table globale ====== */
 .destroyed-ships-table {
-    -fx-background-color: transparent;
+    -fx-background-color: linear-gradient(to bottom, #111111, #0a0a0a);
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
     -fx-border-radius: 3;
@@ -604,53 +603,60 @@
     -fx-pref-width: 440;
     -fx-max-width: 440;
     -fx-min-width: 440;
+    -fx-effect: dropshadow(gaussian, rgba(255, 120, 0, 0.25), 10, 0.3, 0, 0);
 }
 
+/* ====== Entêtes ====== */
 .destroyed-ships-table .column-header {
-    -fx-background-color: -fx-elite-darker;
+    -fx-background-color: linear-gradient(to bottom, #1a1a1a, #0f0f0f);
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
-    -fx-font-size: 16px;
+    -fx-font-size: 15px;
     -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 0 1 0 0;
-    -fx-padding: 4 8 4 8;
+    -fx-padding: 6 8 6 8;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .destroyed-ships-table .column-header .label {
     -fx-text-fill: -fx-elite-orange;
+    -fx-text-transform: uppercase;
 }
 
-
+/* ====== Cellules ====== */
 .destroyed-ships-table .table-cell {
     -fx-text-fill: -fx-elite-text;
-    -fx-border-color: -fx-elite-gray;
+    -fx-border-color: rgba(255, 140, 0, 0.15);
     -fx-font-size: 14px;
     -fx-padding: 5 6 5 6;
     -fx-wrap-text: false;
+    -fx-alignment: CENTER_LEFT;
 }
 
+/* ====== Lignes ====== */
 .destroyed-ships-table .table-row-cell {
-    -fx-background-color: -fx-elite-dark;
-    -fx-border-color: -fx-elite-gray;
+    -fx-background-color: #0c0c0c;
+    -fx-border-color: rgba(255, 140, 0, 0.2);
     -fx-border-width: 0 0 1 0;
+    -fx-transition: background-color 0.15s ease-in-out;
 }
 
 .destroyed-ships-table .table-row-cell:hover {
-    -fx-background-color: -fx-elite-light-gray;
+    -fx-background-color: rgba(255, 140, 0, 0.15);
     -fx-border-color: -fx-elite-cyan;
 }
 
 .destroyed-ships-table .table-row-cell:selected {
-    -fx-background-color: -fx-elite-orange;
-    -fx-text-fill: -fx-elite-dark;
+    -fx-background-color: linear-gradient(to bottom, -fx-elite-orange, #ff8000);
+    -fx-text-fill: #000000;
 }
 
 .destroyed-ships-table .table-row-cell:selected .table-cell {
-    -fx-text-fill: -fx-elite-dark;
+    -fx-text-fill: #000000;
 }
 
-/* Styles pour les colonnes spécifiques */
+/* ====== Colonnes spécifiques ====== */
 .destroyed-ships-table .table-cell.ship-name {
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
@@ -685,14 +691,16 @@
     -fx-font-size: 13px;
 }
 
-/* Styles pour les scrollbars du tableau des vaisseaux détruits */
+/* ====== Scrollbars cockpit-style ====== */
 .destroyed-ships-table .scroll-bar:vertical {
-    -fx-background-color: -fx-elite-gray;
+    -fx-background-color: #1a1a1a;
     -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
 }
 
 .destroyed-ships-table .scroll-bar:vertical .thumb {
     -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2;
 }
 
 .destroyed-ships-table .scroll-bar:horizontal {
@@ -702,12 +710,32 @@
     -fx-max-height: 0;
 }
 
-/* Supprimer le carré blanc dans le coin du tableau */
-.destroyed-ships-table .corner {
-    -fx-background-color: -fx-elite-dark;
+/* ====== Colonnes de la table cockpit ====== */
+.destroyed-ships-table .column-header {
+    -fx-background-color: linear-gradient(to bottom, #1a1a1a, #0f0f0f);
     -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1;
+    -fx-border-width: 0 1 0 0;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 6 8 6 8;
+    -fx-alignment: CENTER;
+    -fx-text-transform: uppercase;
 }
+
+.destroyed-ships-table .column-header .label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-text-alignment: center;
+    -fx-alignment: CENTER;
+    -fx-text-transform: uppercase;
+}
+
+.destroyed-ships-table .column-header:hover {
+    -fx-background-color: rgba(255, 140, 0, 0.15);
+    -fx-cursor: hand;
+}
+
 
 /* Styles pour les statistiques de bounty par faction */
 .faction-bounty-stats {
@@ -899,9 +927,9 @@
     -fx-border-radius: 4;
     -fx-padding: 8 12 8 12;
     -fx-spacing: 0;
-    -fx-min-height: 60;
-    -fx-max-height: 60;
-    -fx-pref-height: 60;
+    -fx-min-height: 40;
+    -fx-max-height: 40;
+    -fx-pref-height: 40;
 }
 
 .massacre-card:hover {
@@ -946,9 +974,9 @@
     -fx-text-fill: -fx-elite-success;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-min-width: 20;
-    -fx-pref-width: 20;
-    -fx-max-width: 20;
+    -fx-min-width: 25;
+    -fx-pref-width: 25;
+    -fx-max-width: 25;
 }
 .massacre-card-distance {
     -fx-text-fill: -fx-elite-green;

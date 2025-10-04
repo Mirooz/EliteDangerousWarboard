@@ -102,10 +102,15 @@ public class DashboardController implements Initializable {
     }
 
     private void postBatch() {
+        try {
         missionListController.postBatch();
         footerController.postBatch();
         destroyedShipsController.postBatch();
+        headerController.postBatch();
         dashboardContext.refreshUI();
+    }catch (Exception e){
+
+        }
     }
 
 }

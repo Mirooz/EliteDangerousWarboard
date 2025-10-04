@@ -60,13 +60,13 @@
         <Button fx:id="searchButton" mnemonicParsing="false" onAction="#searchMassacreSystems" styleClass="elite-button"
                 text="RECHERCHER"/>
     </HBox>
-
+        <VBox>
     <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="faction-header">
         <Label text="SOURCE" styleClass="faction-header-label" prefWidth="100">
         </Label>
         <Label text="CIBLE" styleClass="faction-header-label" prefWidth="80">
         </Label>
-        <Label text="[#]" styleClass="faction-header-label,hoverable-label"  prefWidth="40">
+        <Label text="[ # ]" styleClass="faction-header-label,hoverable-label"  prefWidth="45">
             <tooltip>
                 <Tooltip showDelay="50ms" text="Nombre de systèmes source pour ce système cible"/>
             </tooltip>
@@ -97,6 +97,7 @@
                          styleClass="missions-scroll"
                          VBox.vgrow="ALWAYS"/>
 
+        </VBox>
     <!-- Panneau des boutons d'action -->
     <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="action-panel">
         <Button fx:id="closeButton" mnemonicParsing="false" onAction="#closeDialog" styleClass="elite-button-secondary"

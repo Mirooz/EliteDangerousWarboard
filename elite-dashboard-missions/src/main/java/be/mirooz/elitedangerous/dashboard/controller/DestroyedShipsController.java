@@ -90,7 +90,7 @@ public class DestroyedShipsController implements Initializable, Refreshable {
             DestroyedShip ship = cellData.getValue();
             if (ship.getDestroyedTime() != null) {
                 return new SimpleStringProperty(
-                        ship.getDestroyedTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+                        ship.getDestroyedTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
                 );
             }
             return new SimpleStringProperty("N/A");

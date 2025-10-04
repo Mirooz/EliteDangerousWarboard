@@ -24,14 +24,6 @@ public class CommanderStatus {
 
     private CommanderStatus() {
     }
-
-    public void flushToUI() {
-        component.setCurrentStarSystem(currentStarSystem);
-        component.setCurrentStationName(currentStationName);
-        component.setCommanderName(commanderName);
-        component.setFID(FID);
-        component.setOnline(isOnline);
-    }
     public void setCurrentStarSystem(String value) {
         this.currentStarSystem = value;
             component.setCurrentStarSystem(value);
