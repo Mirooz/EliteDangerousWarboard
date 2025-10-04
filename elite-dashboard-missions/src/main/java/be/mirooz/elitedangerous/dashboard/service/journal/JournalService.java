@@ -145,7 +145,7 @@ public class JournalService {
             return journalFiles;
         }
 
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(700);
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
 
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {

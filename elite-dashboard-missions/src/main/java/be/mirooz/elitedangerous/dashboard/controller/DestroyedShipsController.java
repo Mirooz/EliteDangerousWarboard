@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
+import be.mirooz.elitedangerous.dashboard.util.NumberUtil;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
 import static java.time.format.DateTimeFormatter.ofLocalizedDateTime;
 
 /**
@@ -63,14 +65,6 @@ public class DestroyedShipsController implements Initializable, Refreshable {
         UIManager.getInstance().register(this);
     }
 
-    private static final DecimalFormat DF;
-
-    static {
-        var sym = new DecimalFormatSymbols();
-        sym.setGroupingSeparator('.');
-        DF = new DecimalFormat("#,##0", sym);
-    }
-
     private void initializeTable() {
         // Colonne Bounty : format avec séparateur de milliers
         shipNameColumn.setCellValueFactory(new PropertyValueFactory<>("shipName"));
@@ -81,7 +75,7 @@ public class DestroyedShipsController implements Initializable, Refreshable {
             @Override
             protected void updateItem(Integer value, boolean empty) {
                 super.updateItem(value, empty);
-                setText(empty || value == null ? null : DF.format(value));
+                setText(empty || value == null ? null : getFormattedNumber(value));
             }
         });
 
@@ -112,7 +106,7 @@ public class DestroyedShipsController implements Initializable, Refreshable {
         int totalBounty = destroyedShipsList.getTotalBountyEarned();
 
         totalShipsLabel.setText(String.valueOf(shipsSinceReset));
-        totalBountyLabel.setText(DF.format(totalBounty) + " Cr");
+        totalBountyLabel.setText(getFormattedNumber(totalBounty) + " Cr");
 
         updateFactionBountyStats();
     }
@@ -139,7 +133,7 @@ public class DestroyedShipsController implements Initializable, Refreshable {
                         Label factionLabel = new Label(entry.getKey() + ":");
                         factionLabel.getStyleClass().add("faction-bounty-name");
 
-                        Label bountyLabel = new Label(DF.format(entry.getValue()) + " Cr");
+                        Label bountyLabel = new Label(getFormattedNumber(entry.getValue()) + " Cr");
                         bountyLabel.getStyleClass().add("faction-bounty-amount");
 
                         factionRow.getChildren().addAll(factionLabel, bountyLabel);

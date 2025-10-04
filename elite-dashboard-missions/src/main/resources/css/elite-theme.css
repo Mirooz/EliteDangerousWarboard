@@ -224,24 +224,33 @@
 .mission-card-wing {
     -fx-border-color: -fx-elite-blue !important;
 }
-/* Carte de mission complète (active avec kills terminés) */
+/* ✅ Carte mission complète (succès) */
 .mission-card-complete {
     -fx-border-color: -fx-elite-success;
-    -fx-background-color: rgba(2, 115, 162, 0.1); /* bleu léger transparent */
+    -fx-background-color: rgba(2, 115, 162, 0.10);
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-transition: -fx-background-color 0.2s ease-in-out;
+}
 
-}
 .mission-card-complete:hover {
-    -fx-background-color: rgba(0, 4, 255, 0.1);
+    -fx-background-color: rgba(2, 115, 162, 0.25); /* 💡 hover plus prononcé */
 }
+
+/* ❌ Carte mission échouée */
 .mission-card-failed {
     -fx-border-color: -fx-elite-danger !important;
-    -fx-background-color: rgba(255, 0, 0, 0.04); /* 🔸 plus clair au repos */
+    -fx-background-color: rgba(255, 0, 0, 0.05);
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
     -fx-effect: dropshadow(gaussian, rgba(170, 7, 7, 0.15), 10, 0.3, 0, 0);
+    -fx-transition: -fx-background-color 0.2s ease-in-out;
 }
 
 .mission-card-failed:hover {
-    -fx-background-color: rgba(211, 0, 0, 0.10); /* 🔸 un peu plus rouge au hover */
+    -fx-background-color: rgba(255, 0, 0, 0.20); /* 🔸 hover bien visible */
 }
+
 .mission-title {
     -fx-font-size: 14px;
     -fx-font-weight: bold;

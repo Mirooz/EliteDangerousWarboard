@@ -19,6 +19,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
+
 public class MissionCardComponent extends VBox {
 
 
@@ -75,7 +77,7 @@ public class MissionCardComponent extends VBox {
     }
 
     private Label getRewardLabel(Mission mission) {
-        Label rewardLabel = new Label(String.format("%,d Cr", mission.getReward()));
+        Label rewardLabel = new Label(getFormattedNumber(mission.getReward()) + " Cr");
         rewardLabel.getStyleClass().add("massacre-reward");
         rewardLabel.setPrefWidth(140);
         rewardLabel.setMinWidth(140);

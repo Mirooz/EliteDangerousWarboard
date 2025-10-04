@@ -14,9 +14,15 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
+
+import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
 
 /**
  * Contrôleur pour l'en-tête du dashboard
@@ -111,7 +117,7 @@ public class HeaderController implements Initializable, Refreshable {
         long totalCredits = filteredMissions.stream()
                 .filter(Mission::isActive)
                 .mapToLong(Mission::getReward).sum();
-        potentialCreditsLabel.setText(String.format("%,d", totalCredits));
+        potentialCreditsLabel.setText(getFormattedNumber(totalCredits));
         show(potentialCreditsBox);
     }
     private void setPendingCredits(List<Mission> filteredMissions) {
@@ -119,7 +125,7 @@ public class HeaderController implements Initializable, Refreshable {
                 .filter(Mission::isPending)
                 .mapToLong(Mission::getReward).sum();
         if (pending>0) {
-            pendingCreditsLabel.setText(String.format("%,d", pending));
+            pendingCreditsLabel.setText(getFormattedNumber(pending));
             show(pendingCreditsBox);
         }
     }
@@ -127,15 +133,19 @@ public class HeaderController implements Initializable, Refreshable {
         long completedCredits = filteredMissions.stream()
                 .filter(Mission::isCompleted)
                 .mapToLong(Mission::getReward).sum();
-        earnCreditsLabel.setText(String.format("%,d", completedCredits));
+        String formatted = getFormattedNumber(completedCredits);
+        earnCreditsLabel.setText(formatted);
         show(earnCreditsBox);
     }
+
+
+
     private void setLostCredits(List<Mission> filteredMissions) {
         long completedCredits = filteredMissions.stream()
                 .filter(Mission::isMissionFailed)
                 .mapToLong(Mission::getReward).sum();
         if (completedCredits >0) {
-            lostCreditsLabel.setText(String.format("%,d", completedCredits));
+            lostCreditsLabel.setText(getFormattedNumber(completedCredits));
             show(lostCreditsBox);
         }
     }
