@@ -180,7 +180,6 @@ public class MissionService {
     }
 
     private boolean isPirateShipKilled(JsonNode jsonNode) {
-        //TODO A modifier
         String pilotName_Localised = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
         boolean isShip = isBountyShip(jsonNode);
         if (!isShip) {

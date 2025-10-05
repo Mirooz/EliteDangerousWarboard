@@ -19,7 +19,6 @@
     <TableView fx:id="destroyedShipsTable"
                styleClass="destroyed-ships-table"
                prefHeight="250.0"
-               prefWidth="440.0"
                VBox.vgrow="NEVER">
 
         <columns>

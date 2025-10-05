@@ -152,9 +152,9 @@ public class MissionCardComponent extends VBox {
     private VBox getTimeRemaining(Mission mission) {
         VBox timeSection = new VBox();
         timeSection.setSpacing(2);
-        timeSection.setPrefWidth(150);
-        timeSection.setMinWidth(150);
-        timeSection.setMaxWidth(150);
+        timeSection.setPrefWidth(120);
+        timeSection.setMinWidth(120);
+        timeSection.setMaxWidth(120);
 
         if (mission.getAcceptedTime() != null) {
             Label acceptedLabel = new Label("Accepté: " + mission.getAcceptedTime().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")));

@@ -517,23 +517,6 @@
     -fx-text-fill: -fx-elite-danger;
     -fx-font-weight: bold;
 }
-.faction-header {
-    -fx-font-weight: bold;
-    -fx-border-color: #555;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 2 0 4 0;
-}
-
-.faction-header {
-    -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
-    -fx-font-size: 15px;
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-weight: bold;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 4 0 6 0;
-    -fx-background-color: -fx-elite-darker;
-}
 
 /* Icône Wing */
 .wing-icon {
