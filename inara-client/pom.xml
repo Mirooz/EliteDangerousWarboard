@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>be.mirooz.elitedangerous.lib</groupId>
-    <artifactId>edtools-lib</artifactId>
+    <artifactId>inara-client</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

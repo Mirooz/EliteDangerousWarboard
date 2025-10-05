@@ -13,7 +13,8 @@
     <name>Elite Dangerous Dashboard</name>
     <description>Dashboard pour afficher les missions Elite Dangerous</description>
     <modules>
-        <module>edtools-lib</module>
+        <module>edtools-client</module>
+        <module>inara-client</module>
         <module>elite-dashboard-missions</module>
     </modules>
 

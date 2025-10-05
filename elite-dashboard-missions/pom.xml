@@ -24,7 +24,12 @@
         </dependency>
         <dependency>
             <groupId>be.mirooz.elitedangerous.lib</groupId>
-            <artifactId>edtools-lib</artifactId>
+            <artifactId>edtools-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous.lib</groupId>
+            <artifactId>inara-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- JavaFX Controls -->
