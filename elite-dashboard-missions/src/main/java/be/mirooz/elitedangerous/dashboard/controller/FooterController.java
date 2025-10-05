@@ -1,7 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.*;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
@@ -41,6 +44,7 @@ public class FooterController implements Initializable, Refreshable {
     private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
 
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
+    private final DashboardContext dashboardContext = DashboardContext.getInstance();
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -51,13 +55,15 @@ public class FooterController implements Initializable, Refreshable {
         stationLabel.textProperty().bind(commanderStatusComponent.getCurrentStationName());
         systemLabel.textProperty().bind(commanderStatusComponent.getCurrentStarSystem());
         commanderLabel.textProperty().bind(commanderStatusComponent.getCommanderName());
-        updateFactionStats();
+        dashboardContext.addFilterListener(this::updateFactionStats);
+        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
     }
 
-    private void updateFactionStats() {
+    private void updateFactionStats(MissionStatus currentStatus, MissionType currentType) {
         // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
         List<Mission> massacreMissions = missionsRegistry.getGlobalMissionMap().values().stream()
                 .filter(Mission::isShipMassacreActive)
+                .filter(mission -> currentType == null || currentType.equals(mission.getType()))
                 .collect(Collectors.toList());
         Map<TargetType, CibleStats> stats = computeFactionStats(massacreMissions);
 
@@ -88,6 +94,6 @@ public class FooterController implements Initializable, Refreshable {
 
     @Override
     public void refreshUI() {
-        updateFactionStats();
+        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
     }
 }

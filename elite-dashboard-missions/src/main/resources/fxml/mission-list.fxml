@@ -13,10 +13,19 @@
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
    </padding>
    <HBox alignment="CENTER_LEFT" spacing="20.0">
-      <Label styleClass="section-title" text="MISSIONS DE MASSACRE"/>
+      <Label styleClass="section-title" text="MISSIONS"/>
       <Region HBox.hgrow="ALWAYS"/>
       <HBox alignment="CENTER_LEFT" spacing="10.0">
-         <Label styleClass="filter-label" text="Filtre:"/>
+         <Label styleClass="filter-label" text="Type:"/>
+         <Button fx:id="massacreTypeFilterButton" mnemonicParsing="false" onAction="#filterMassacreMissions"
+                 styleClass="filter-button" text="MASSACRE"/>
+         <Button fx:id="conflictTypeFilterButton" mnemonicParsing="false" onAction="#filterConflictMissions"
+                 styleClass="filter-button" text="CONFLIT"/>
+         <Button fx:id="allTypeFilterButton" mnemonicParsing="false" onAction="#filterAllTypeMissions"
+                 styleClass="filter-button" text="TOUTES"/>
+      </HBox>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <Label styleClass="filter-label" text="Statut:"/>
          <Button fx:id="activeFilterButton" mnemonicParsing="false" onAction="#filterActiveMissions"
                  styleClass="filter-button" text="ACTIVES"/>
          <Button fx:id="completedFilterButton" mnemonicParsing="false" onAction="#filterCompletedMissions"

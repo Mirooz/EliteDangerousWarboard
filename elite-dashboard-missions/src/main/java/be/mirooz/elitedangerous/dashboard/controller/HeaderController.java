@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -63,19 +64,20 @@ public class HeaderController implements Initializable, Refreshable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        dashboardContext.addFilterListener(this::updateStats);
+        dashboardContext.addFilterListener(this::applyFilter);
         UIManager.getInstance().register(this);
 
     }
 
     public void refreshUI(){
-        updateStats(DashboardContext.getInstance().getCurrentFilter());
+        applyFilter(DashboardContext.getInstance().getCurrentFilter(),DashboardContext.getInstance().getCurrentTypeFilter());
     }
-    private void updateStats(MissionStatus currentFilter) {
+    private void applyFilter(MissionStatus currentFilter, MissionType currentTypeFilter) {
         // Filtrer les missions selon le filtre actuel
         List<Mission> filteredMissions = missionsRegistry.getGlobalMissionMap().values().stream()
                 .filter(Mission::isShipMassacre)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
+                .filter(mission -> currentTypeFilter == null || mission.getType() == currentTypeFilter)
                 .sorted(Comparator.comparing(Mission::getFaction)).toList();
         hide(missionStatBox);
         hide(earnCreditsBox);

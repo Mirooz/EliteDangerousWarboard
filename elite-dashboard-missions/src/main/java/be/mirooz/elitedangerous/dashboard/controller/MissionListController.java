@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
@@ -38,6 +39,15 @@ public class MissionListController implements Initializable, Refreshable {
 
     @FXML
     private Button allFilterButton;
+
+    @FXML
+    private Button massacreTypeFilterButton;
+
+    @FXML
+    private Button conflictTypeFilterButton;
+
+    @FXML
+    private Button allTypeFilterButton;
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
 
     private final DashboardContext dashboardContext= DashboardContext.getInstance();
@@ -45,6 +55,7 @@ public class MissionListController implements Initializable, Refreshable {
     public void initialize(URL location, ResourceBundle resources) {
         missionListView.setComponentFactory(MissionCardComponent::new);
         filterActiveMissions();
+        filterAllTypeMissions(); // Initialiser avec tous les types
         dashboardContext.addFilterListener(this::applyFilter);
         UIManager.getInstance().register(this);
     }
@@ -60,21 +71,21 @@ public class MissionListController implements Initializable, Refreshable {
     }
 
     private void refreshMissions() {
-        applyFilter(DashboardContext.getInstance().getCurrentFilter());
+        applyFilter(DashboardContext.getInstance().getCurrentFilter(),DashboardContext.getInstance().getCurrentTypeFilter());
     }
-    private void applyFilter(MissionStatus currentFilter) {
+    private void applyFilter(MissionStatus currentFilter,MissionType currentTypeFilter) {
         boolean isActive = MissionStatus.ACTIVE.equals(currentFilter);
         List<Mission> filteredMissions = missionsRegistry.getGlobalMissionMap().values().stream()
                 .filter(Mission::isShipMassacre)
+                .filter(mission -> currentTypeFilter == null || mission.getType()== currentTypeFilter)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
-                .sorted(new MissionTimestampComparator(isActive,
-                        isActive))
+                .sorted(new MissionTimestampComparator(isActive, isActive))
                 .toList();
         missionListView.getItems().setAll(filteredMissions);
-        updateFilterButtons(currentFilter);
+        updateFilterButtons(currentFilter,currentTypeFilter);
     }
 
-    private void updateFilterButtons(MissionStatus currentFilter) {
+    private void updateFilterButtons(MissionStatus currentFilter,MissionType currentTypeFilter) {
         // Réinitialiser tous les boutons
         activeFilterButton.getStyleClass().removeAll("active");
         completedFilterButton.getStyleClass().removeAll("active");
@@ -82,13 +93,27 @@ public class MissionListController implements Initializable, Refreshable {
         allFilterButton.getStyleClass().removeAll("active");
         if (currentFilter == null) {
             allFilterButton.getStyleClass().add("active");
-            return;
+        } else {
+            switch (currentFilter) {
+                case ACTIVE -> activeFilterButton.getStyleClass().add("active");
+                case COMPLETED -> completedFilterButton.getStyleClass().add("active");
+                case FAILED -> failedFilterButton.getStyleClass().add("active");
+            }
         }
-        switch (currentFilter) {
-            case ACTIVE -> activeFilterButton.getStyleClass().add("active");
-            case COMPLETED -> completedFilterButton.getStyleClass().add("active");
-            case FAILED -> failedFilterButton.getStyleClass().add("active");
+
+        massacreTypeFilterButton.getStyleClass().removeAll("active");
+        conflictTypeFilterButton.getStyleClass().removeAll("active");
+        allTypeFilterButton.getStyleClass().removeAll("active");
+
+        if (currentTypeFilter == null) {
+            allTypeFilterButton.getStyleClass().add("active");
+        } else {
+            switch (currentTypeFilter) {
+                case MASSACRE -> massacreTypeFilterButton.getStyleClass().add("active");
+                case CONFLIT -> conflictTypeFilterButton.getStyleClass().add("active");
+            }
         }
+
     }
 
     @FXML
@@ -109,6 +134,21 @@ public class MissionListController implements Initializable, Refreshable {
     @FXML
     private void filterAllMissions() {
         DashboardContext.getInstance().setCurrentFilter(null);
+    }
+
+    @FXML
+    private void filterMassacreMissions() {
+        DashboardContext.getInstance().setCurrentTypeFilter(MissionType.MASSACRE);
+    }
+
+    @FXML
+    private void filterConflictMissions() {
+        DashboardContext.getInstance().setCurrentTypeFilter(MissionType.CONFLIT);
+    }
+
+    @FXML
+    private void filterAllTypeMissions() {
+        DashboardContext.getInstance().setCurrentTypeFilter(null);
     }
 
     @Override
