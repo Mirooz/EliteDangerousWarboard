@@ -11,14 +11,14 @@ import lombok.Data;
  * Singleton pour stocker les missions globales, observable par la UI
  */
 @Data
-public class MissionsList {
+public class MissionsRegistry {
 
-    private static final MissionsList INSTANCE = new MissionsList();
+    private static final MissionsRegistry INSTANCE = new MissionsRegistry();
 
     private final ObservableMap<String, Mission> globalMissionMap =
             FXCollections.observableHashMap();
 
-    public static MissionsList getInstance() {
+    public static MissionsRegistry getInstance() {
         return INSTANCE;
     }
     public void addMissionMapListener(Runnable action) {

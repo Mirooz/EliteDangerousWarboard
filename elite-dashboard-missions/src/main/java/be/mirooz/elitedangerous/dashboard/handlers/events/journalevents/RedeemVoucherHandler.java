@@ -1,13 +1,13 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
+import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsRegistery;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class RedeemVoucherHandler implements JournalEventHandler {
-    private final DestroyedShipsList destroyedShipsList;
+    private final DestroyedShipsRegistery destroyedShipsRegistery;
 
     public RedeemVoucherHandler() {
-        this.destroyedShipsList = DestroyedShipsList.getInstance();
+        this.destroyedShipsRegistery = DestroyedShipsRegistery.getInstance();
     }
 
     @Override
@@ -21,8 +21,8 @@ public class RedeemVoucherHandler implements JournalEventHandler {
             // Vérifier que c'est un encaissement de bounty
             if (jsonNode.has("Type") && "bounty".equals(jsonNode.get("Type").asText())) {
                 // Reset total des statistiques de bounty
-                destroyedShipsList.clearBounty();
-                destroyedShipsList.clearRewards();
+                destroyedShipsRegistery.clearBounty();
+                destroyedShipsRegistery.clearRewards();
                 
                 System.out.println("Reset complet des statistiques de bounty après encaissement");
             }

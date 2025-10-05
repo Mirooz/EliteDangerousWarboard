@@ -1,10 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.model.enums;
 
 public enum TargetType {
-    PIRATE("Pirate", "$MissionUtil_FactionTag_Pirate;"),
-    DESERTEUR("Deserteur", "$MissionUtil_FactionTag_Deserter;"),
-    HUMANOID("Humain","$MissionUtil_FactionTag_AIHumanoid;"),
-    UNKNOWN("Unknown", ""); // valeur par défaut
+    PIRATE("Pirate", "FactionTag_Pirate"),
+    DESERTEUR("Deserteur", "FactionTag_Deserter"),
+    HUMANOID("Humain","FactionTag_AIHumanoid"),
+    UNKNOWN("Faction", "UNKNOWN"); // valeur par défaut
 
     private final String displayName;
     private final String code;
@@ -24,7 +24,9 @@ public enum TargetType {
 
     public static TargetType fromCode(String input) {
         for (TargetType t : values()) {
-            if (t.getCode().equals(input)) {
+            if (input == null ||input.isEmpty())
+                return UNKNOWN;
+            if (input.contains(t.getCode())) {
                 return t;
             }
         }

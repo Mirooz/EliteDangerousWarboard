@@ -39,7 +39,7 @@ public class FooterController implements Initializable, Refreshable {
     private Label stationLabel;
     private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
 
-    private final MissionsList missionsList = MissionsList.getInstance();
+    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -55,8 +55,8 @@ public class FooterController implements Initializable, Refreshable {
 
     private void updateFactionStats() {
         // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
-        List<Mission> massacreMissions = missionsList.getGlobalMissionMap().values().stream()
-                .filter(Mission::isMassacreActive)
+        List<Mission> massacreMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+                .filter(Mission::isShipMassacreActive)
                 .collect(Collectors.toList());
         Map<TargetType, CibleStats> stats = computeFactionStats(massacreMissions);
 

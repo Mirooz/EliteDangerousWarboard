@@ -1,16 +1,14 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
-import be.mirooz.elitedangerous.dashboard.model.MissionsList;
+import be.mirooz.elitedangerous.dashboard.model.MissionsRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class MissionRedirectedHandler implements JournalEventHandler {
     
-    private final MissionsList missionList = MissionsList.getInstance();
+    private final MissionsRegistry missionList = MissionsRegistry.getInstance();
 
     @Override
     public String getEventType() {
@@ -34,8 +32,8 @@ public class MissionRedirectedHandler implements JournalEventHandler {
 
                // simuleBounty(jsonNode.get("timestamp").asText(), mission);
             }
-            else if (mission.getType() == MissionType.MASSACRE){
-                System.out.println("Mission " + missionId + " Redirected ");
+            else if (mission.isShipMassacre()){
+                System.out.println("Mission " + missionId + " Redirected : Completed");
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de MissionRedirected: " + e.getMessage());
@@ -64,8 +62,7 @@ public class MissionRedirectedHandler implements JournalEventHandler {
 
     private boolean notConsideredAsCompleted(Mission mission) {
         return mission != null
-                && mission.getType() == MissionType.MASSACRE
-                && mission.getStatus() == MissionStatus.ACTIVE
+                && mission.isShipMassacreActive()
                 && (mission.getCurrentCount() != mission.getTargetCount());
     }
 }

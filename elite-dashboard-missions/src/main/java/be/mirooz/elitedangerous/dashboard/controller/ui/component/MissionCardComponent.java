@@ -8,6 +8,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -230,11 +233,17 @@ public class MissionCardComponent extends VBox {
         wingLabel.setAlignment(Pos.CENTER);
 
         if (mission.isWing()) {
-            wingLabel.setText("✈"); // Icône d'avion pour wing
+            Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/wing.png")));
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(20);
+            imageView.setFitHeight(20);
+            imageView.setPreserveRatio(true);
+            wingLabel.setGraphic(imageView);
             wingLabel.getStyleClass().add("wing-icon");
             wingLabel.setTooltip(new TooltipComponent("Mission de Wing"));
         } else {
-            wingLabel.setText(""); // Vide pour les missions normales
+            wingLabel.setGraphic(null);
+            wingLabel.setText("");
         }
         return wingLabel;
     }

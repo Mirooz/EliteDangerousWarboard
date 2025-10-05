@@ -35,29 +35,33 @@ public class Mission {
     private TargetType targetType;
     private LocalDateTime acceptedTime;
     private boolean wing;
-    public boolean isShipActivePirateMission(){
+    public boolean isShipActivePirateMassacreMission(){
         return isShipPirateMission() && MissionStatus.ACTIVE.equals(status);
     }
-    public boolean isShipActiveDeserteurMission(){
+    public boolean isShipActiveDeserteurMassacreMission(){
         return isShipDeserteurMission() && MissionStatus.ACTIVE.equals(status);
     }
+    public boolean isShipActiveFactionConflictMission(){
+        return MissionType.CONFLIT.equals(this.type) && MissionStatus.ACTIVE.equals(status);
+    }
     public boolean isShipPirateMission(){
-        return (TargetType.PIRATE.equals(targetType));
+        return TargetType.PIRATE.equals(targetType) && MissionType.MASSACRE.equals(this.type);
     }
     public boolean isShipDeserteurMission(){
-        return (TargetType.DESERTEUR.equals(targetType));
+        return TargetType.DESERTEUR.equals(targetType) && MissionType.MASSACRE.equals(this.type);
     }
 
     public int getTargetCountLeft(){
         return targetCount-currentCount;
     }
 
-    public boolean isMassacreActive(){
-        return MissionStatus.ACTIVE.equals(this.status)  && isMassacre();
+    public boolean isShipMassacreActive(){
+        return MissionStatus.ACTIVE.equals(this.status)  && isShipMassacre();
 
     }
 
-    public boolean isMassacre(){
+
+    public boolean isShipMassacre(){
         return  (MissionType.MASSACRE.equals(this.type)
                 //|| MissionType.MASSACRE_ONFOOT.equals(this.type)
                 || MissionType.CONFLIT.equals(this.type));

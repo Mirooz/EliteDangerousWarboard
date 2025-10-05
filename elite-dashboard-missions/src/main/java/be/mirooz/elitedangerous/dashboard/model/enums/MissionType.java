@@ -17,7 +17,7 @@ public enum MissionType {
     EXPLORATION("Exploration", List.of("exploration")),
     CONFLIT("Conflict",List.of("conflit","civilwar")),
 
-    MASSACRE_ONFOOT("Massacre", List.of("onfoot_massacre")),
+    MASSACRE_ONFOOT("Massacre (foot)", List.of("onfoot_massacre")),
     ALTRUISM("Altruism",List.of("altruism")),
     MASSACRE("Massacre", List.of("massacre", "kill")),
     COMBAT("Combat", List.of()), // fallback

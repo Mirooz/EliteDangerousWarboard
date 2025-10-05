@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 /**
  * Liste des vaisseaux détruits - Singleton pour gérer l'état global
  */
-public class DestroyedShipsList {
-    private static DestroyedShipsList instance;
+public class DestroyedShipsRegistery {
+    private static DestroyedShipsRegistery instance;
     private final ObservableList<DestroyedShip> destroyedShips =
             FXCollections.observableArrayList();
     private Map<String,Integer> bountyPerFaction = new HashMap<>();
@@ -25,15 +25,15 @@ public class DestroyedShipsList {
     @Getter
     private int shipsSinceLastReset;
 
-    private DestroyedShipsList() {
+    private DestroyedShipsRegistery() {
         this.destroyedShips.clear();
         this.totalBountyEarned = 0;
         this.shipsSinceLastReset = 0;
     }
 
-    public static synchronized DestroyedShipsList getInstance() {
+    public static synchronized DestroyedShipsRegistery getInstance() {
         if (instance == null) {
-            instance = new DestroyedShipsList();
+            instance = new DestroyedShipsRegistery();
         }
         return instance;
     }

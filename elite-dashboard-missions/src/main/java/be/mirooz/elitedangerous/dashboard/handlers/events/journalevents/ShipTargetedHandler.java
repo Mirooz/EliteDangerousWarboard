@@ -1,22 +1,21 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.service.MissionService;
+import be.mirooz.elitedangerous.dashboard.service.ShipTargetService;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class BountyHandler implements JournalEventHandler {
-    private final MissionService missionService = MissionService.getInstance();;
+public class ShipTargetedHandler implements JournalEventHandler {
+    private final ShipTargetService shipTargetService = ShipTargetService.getInstance();;
 
     @Override
     public String getEventType() {
-        return "Bounty";
+        return "ShipTargeted";
     }
 
     @Override
     public void handle(JsonNode jsonNode) {
         try {
-            // Trouver toutes les missions actives de massacre pour cette faction cible
-            missionService.updateWantedKillCount(jsonNode);
-            missionService.updateBountyRewards(jsonNode);
+            shipTargetService.registerTarget(jsonNode);
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Bounty: " + e.getMessage());
             e.printStackTrace();

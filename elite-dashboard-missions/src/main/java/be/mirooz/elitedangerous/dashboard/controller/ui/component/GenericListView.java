@@ -20,8 +20,6 @@ public class GenericListView<T> extends ListView<T> {
 
         this.setCellFactory(lv -> new ListCell<>() {
 
-            private final ChangeListener<Object> propertyListener = (obs, oldVal, newVal) -> updateCell(getItem());
-
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);

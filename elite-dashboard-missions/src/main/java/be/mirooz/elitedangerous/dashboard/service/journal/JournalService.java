@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.dashboard.service.journal;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.CommanderHandler;
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.MissionsList;
+import be.mirooz.elitedangerous.dashboard.model.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
@@ -34,7 +34,7 @@ public class JournalService {
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final String currentShip = null;
 
-    private final MissionsList missionsList = MissionsList.getInstance();
+    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final JournalEventDispatcher dispatcher;
 
 
@@ -145,7 +145,7 @@ public class JournalService {
             return journalFiles;
         }
 
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(700);
 
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {
@@ -204,7 +204,7 @@ public class JournalService {
         } catch (Exception e) {
             System.err.println("Erreur lors de la lecture des journaux: " + e.getMessage());
         }
-        return new ArrayList<>(missionsList.getGlobalMissionMap().values());
+        return new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
 
     }
 

@@ -2,8 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
-import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsList;
-import be.mirooz.elitedangerous.dashboard.util.NumberUtil;
+import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsRegistery;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -13,8 +12,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -56,11 +53,11 @@ public class DestroyedShipsController implements Initializable, Refreshable {
     @FXML
     private VBox factionBountyStats;
 
-    private DestroyedShipsList destroyedShipsList = DestroyedShipsList.getInstance();
+    private DestroyedShipsRegistery destroyedShipsRegistery = DestroyedShipsRegistery.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        destroyedShipsList = DestroyedShipsList.getInstance();
+        destroyedShipsRegistery = DestroyedShipsRegistery.getInstance();
         initializeTable();
         UIManager.getInstance().register(this);
     }
@@ -96,14 +93,14 @@ public class DestroyedShipsController implements Initializable, Refreshable {
     }
 
     public void postBatch() {
-        destroyedShipsTable.setItems(destroyedShipsList.getDestroyedShips());
+        destroyedShipsTable.setItems(destroyedShipsRegistery.getDestroyedShips());
         updateStatistics();
     }
 
 
     private void updateStatistics() {
-        int shipsSinceReset = destroyedShipsList.getShipsSinceLastReset();
-        int totalBounty = destroyedShipsList.getTotalBountyEarned();
+        int shipsSinceReset = destroyedShipsRegistery.getShipsSinceLastReset();
+        int totalBounty = destroyedShipsRegistery.getTotalBountyEarned();
 
         totalShipsLabel.setText(String.valueOf(shipsSinceReset));
         totalBountyLabel.setText(getFormattedNumber(totalBounty) + " Cr");
@@ -115,7 +112,7 @@ public class DestroyedShipsController implements Initializable, Refreshable {
         // Vider les statistiques existantes
         factionBountyStats.getChildren().clear();
 
-        Map<String, Integer> bountyPerFaction = destroyedShipsList.getBountyPerFaction();
+        Map<String, Integer> bountyPerFaction = destroyedShipsRegistery.getBountyPerFaction();
 
         if (!bountyPerFaction.isEmpty()) {
             // Ajouter un titre

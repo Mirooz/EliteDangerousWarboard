@@ -14,12 +14,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
@@ -59,7 +55,7 @@ public class HeaderController implements Initializable, Refreshable {
     @FXML
     private Label statusLabel;
 
-    private final MissionsList missionsList = MissionsList.getInstance();
+    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
 
     public static final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
@@ -76,8 +72,8 @@ public class HeaderController implements Initializable, Refreshable {
     }
     private void updateStats(MissionStatus currentFilter) {
         // Filtrer les missions selon le filtre actuel
-        List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream()
-                .filter(Mission::isMassacre)
+        List<Mission> filteredMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+                .filter(Mission::isShipMassacre)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
                 .sorted(Comparator.comparing(Mission::getFaction)).toList();
         hide(missionStatBox);

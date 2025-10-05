@@ -5,7 +5,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionsList;
+import be.mirooz.elitedangerous.dashboard.model.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
 import javafx.fxml.FXML;
@@ -38,7 +38,7 @@ public class MissionListController implements Initializable, Refreshable {
 
     @FXML
     private Button allFilterButton;
-    private final MissionsList missionsList = MissionsList.getInstance();
+    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
 
     private final DashboardContext dashboardContext= DashboardContext.getInstance();
     @Override
@@ -64,8 +64,8 @@ public class MissionListController implements Initializable, Refreshable {
     }
     private void applyFilter(MissionStatus currentFilter) {
         boolean isActive = MissionStatus.ACTIVE.equals(currentFilter);
-        List<Mission> filteredMissions = missionsList.getGlobalMissionMap().values().stream()
-                .filter(Mission::isMassacre)
+        List<Mission> filteredMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+                .filter(Mission::isShipMassacre)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
                 .sorted(new MissionTimestampComparator(isActive,
                         isActive))

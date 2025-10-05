@@ -18,8 +18,8 @@ public class FactionKillBondHandler implements JournalEventHandler {
     @Override
     public void handle(JsonNode jsonNode) {
         try {
-            //missionService.updateKillsCount(jsonNode);
-            missionService.updateTargetRewards(jsonNode);
+            missionService.updatFactionKillCount(jsonNode);
+            missionService.updateFactionRewards(jsonNode);
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de FactionKillBond: " + e.getMessage());
             e.printStackTrace();

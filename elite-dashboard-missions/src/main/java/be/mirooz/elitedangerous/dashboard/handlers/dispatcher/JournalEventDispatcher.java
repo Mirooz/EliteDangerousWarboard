@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.dispatcher;
 
 import be.mirooz.elitedangerous.dashboard.handlers.events.LoggingEventHandlerDecorator;
+import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.DefaultJournalEventHandler;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.JournalEventHandler;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.reflections.Reflections;
@@ -12,6 +13,7 @@ public class JournalEventDispatcher {
     // Instance unique (singleton)
     private static final JournalEventDispatcher INSTANCE = new JournalEventDispatcher();
 
+    private final JournalEventHandler defaultHandler = new DefaultJournalEventHandler();
     public static JournalEventDispatcher getInstance() {
         return INSTANCE;
     }
@@ -40,7 +42,7 @@ public class JournalEventDispatcher {
     }
     public void dispatch(JsonNode jsonNode) {
         String event = jsonNode.get("event").asText();
-        JournalEventHandler handler = handlers.get(event);
+        JournalEventHandler handler = handlers.getOrDefault(event, new LoggingEventHandlerDecorator(defaultHandler));
         if (handler != null) {
             handler.handle(jsonNode);
         }
