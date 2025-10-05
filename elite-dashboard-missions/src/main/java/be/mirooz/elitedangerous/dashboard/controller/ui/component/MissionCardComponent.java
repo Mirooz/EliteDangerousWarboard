@@ -121,11 +121,10 @@ public class MissionCardComponent extends VBox {
                 case PIRATE -> targetLabel.getStyleClass().add("massacre-pirate");
                 case DESERTEUR -> targetLabel.getStyleClass().add("massacre-deserteur");
                 case HUMANOID -> targetLabel.getStyleClass().add("massacre-humain");
+                case UNKNOWN -> targetLabel.getStyleClass().add("massacre-conflict");
                 // autres cases ici
                 default -> targetLabel.getStyleClass().add("massacre-default");
             }
-        } else {
-            targetLabel.getStyleClass().add("target-unknown");
         }
         return targetLabel;
     }

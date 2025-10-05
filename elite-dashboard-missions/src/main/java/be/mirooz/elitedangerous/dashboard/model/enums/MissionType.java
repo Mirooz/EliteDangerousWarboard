@@ -15,7 +15,7 @@ public enum MissionType {
     SMUGGLING("Contrebande", List.of("smuggling", "contrebande")),
     TRADING("Commerce", List.of("trading", "commerce")),
     EXPLORATION("Exploration", List.of("exploration")),
-    CONFLIT("Conflict",List.of("conflit","civilwar")),
+    CONFLIT("Conflict",List.of("conflict","civilwar")),
 
     MASSACRE_ONFOOT("Massacre (foot)", List.of("onfoot_massacre")),
     ALTRUISM("Altruism",List.of("altruism")),

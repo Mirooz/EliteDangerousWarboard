@@ -99,11 +99,12 @@ public class DestroyedShipsController implements Initializable, Refreshable {
 
 
     private void updateStatistics() {
-        int shipsSinceReset = destroyedShipsRegistery.getShipsSinceLastReset();
+        int shipsSinceReset = destroyedShipsRegistery.getDestroyedShips().size();
         int totalBounty = destroyedShipsRegistery.getTotalBountyEarned();
+        int totalCombatBond = destroyedShipsRegistery.getTotalConflictBounty();
 
         totalShipsLabel.setText(String.valueOf(shipsSinceReset));
-        totalBountyLabel.setText(getFormattedNumber(totalBounty) + " Cr");
+        totalBountyLabel.setText(getFormattedNumber(totalBounty+totalCombatBond) + " Cr");
 
         updateFactionBountyStats();
     }
@@ -116,27 +117,38 @@ public class DestroyedShipsController implements Initializable, Refreshable {
 
         if (!bountyPerFaction.isEmpty()) {
             // Ajouter un titre
-            Label titleLabel = new Label("BOUNTY PAR FACTION");
+            Label titleLabel = new Label("BOUNTY");
             titleLabel.getStyleClass().add("faction-bounty-title");
-            factionBountyStats.getChildren().add(titleLabel);
-
-            // Ajouter les statistiques par faction
-            bountyPerFaction.entrySet().stream()
-                    .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue())) // Tri décroissant
-                    .forEach(entry -> {
-                        HBox factionRow = new HBox(10);
-                        factionRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-                        Label factionLabel = new Label(entry.getKey() + ":");
-                        factionLabel.getStyleClass().add("faction-bounty-name");
-
-                        Label bountyLabel = new Label(getFormattedNumber(entry.getValue()) + " Cr");
-                        bountyLabel.getStyleClass().add("faction-bounty-amount");
-
-                        factionRow.getChildren().addAll(factionLabel, bountyLabel);
-                        factionBountyStats.getChildren().add(factionRow);
-                    });
+            setAmountPerFaction(bountyPerFaction, titleLabel);
         }
+        Map<String, Integer> combatBondPerFaction = destroyedShipsRegistery.getCombatBondPerFaction();
+
+        if (!combatBondPerFaction.isEmpty()) {
+            Label titleLabel = new Label("COMBAT BONDS");
+            titleLabel.getStyleClass().add("faction-bond-title");
+            setAmountPerFaction(combatBondPerFaction, titleLabel);
+        }
+    }
+
+    private void setAmountPerFaction(Map<String, Integer> bountyPerFaction, Label titleLabel) {
+        factionBountyStats.getChildren().add(titleLabel);
+
+        // Ajouter les statistiques par faction
+        bountyPerFaction.entrySet().stream()
+                .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue())) // Tri décroissant
+                .forEach(entry -> {
+                    HBox factionRow = new HBox(10);
+                    factionRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+                    Label factionLabel = new Label(entry.getKey() + ":");
+                    factionLabel.getStyleClass().add("faction-bounty-name");
+
+                    Label bountyLabel = new Label(getFormattedNumber(entry.getValue()) + " Cr");
+                    bountyLabel.getStyleClass().add("faction-bounty-amount");
+
+                    factionRow.getChildren().addAll(factionLabel, bountyLabel);
+                    factionBountyStats.getChildren().add(factionRow);
+                });
     }
 
     @Override

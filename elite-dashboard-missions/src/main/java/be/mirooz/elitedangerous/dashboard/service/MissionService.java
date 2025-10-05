@@ -41,7 +41,7 @@ public class MissionService {
         List<Reward> rewards = getRewards(jsonNode);
         System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward + ", Wanted : " + +rewards.size() + rewards);
         if (totalReward > 0) {
-            DestroyedShip destroyedShip = DestroyedShip
+            DestroyedBountyShip destroyedShip = DestroyedBountyShip
                     .builder()
                     .destroyedTime(timestamp)
                     .shipName(shipName)
@@ -55,9 +55,8 @@ public class MissionService {
     }
 
     public void updateFactionRewards(JsonNode jsonNode) {
+        System.out.println(jsonNode);
         LocalDateTime timestamp = DateUtil.parseTimestamp(jsonNode.has("timestamp") ? jsonNode.get("timestamp").asText() : null);
-        String shipName = jsonNode.has("Target_Localised") ? jsonNode.get("Target_Localised").asText() : jsonNode.has("Target") ? jsonNode.get("Target").asText() : "";
-        String pilotName = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
         int totalReward = jsonNode.has("Reward") ? jsonNode.get("Reward").asInt() : 0;
         String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
         List<Reward> rewards = new ArrayList<>();
@@ -66,11 +65,11 @@ public class MissionService {
         rewards.add(reward);
         System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward + ", Wanted : " + +rewards.size() + rewards);
         if (totalReward > 0) {
-            DestroyedShip destroyedShip = DestroyedShip
+            DestroyedConflictShip destroyedShip = DestroyedConflictShip
                     .builder()
                     .destroyedTime(timestamp)
-                    .shipName(shipName)
-                    .pilotName(pilotName)
+                    .shipName(victimFaction)
+                    .pilotName(victimFaction)
                     .bountyFaction(victimFaction)
                     .totalBountyReward(totalReward)
                     .rewards(rewards)

@@ -387,12 +387,12 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
 }
-.massacre-pirate {
+.massacre-conflict {
     -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-danger;
     -fx-font-weight: bold;
 }
-.massacre-deserteur {
+.massacre-pirate {
     -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-warning;
     -fx-font-weight: bold;
@@ -763,6 +763,14 @@
     -fx-text-fill: -fx-elite-orange;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
     -fx-alignment: CENTER;
+}
+.faction-bond-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-danger;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-alignment: CENTER;
+    -fx-padding: 5 0 0 0; /* top right bottom left */
 }
 
 .faction-bounty-name {

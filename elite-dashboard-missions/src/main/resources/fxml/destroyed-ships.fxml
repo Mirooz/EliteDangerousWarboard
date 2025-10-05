@@ -67,7 +67,7 @@
 
         <VBox alignment="CENTER">
             <Label text="0 Cr" fx:id="totalBountyLabel" styleClass="stat-number"/>
-            <Label text="BOUNTY TOTAL" styleClass="stat-label"/>
+            <Label text="CRÉDITS EN ATTENTE" styleClass="stat-label"/>
         </VBox>
     </VBox>
 

@@ -42,7 +42,7 @@ public class JournalEventDispatcher {
     }
     public void dispatch(JsonNode jsonNode) {
         String event = jsonNode.get("event").asText();
-        JournalEventHandler handler = handlers.getOrDefault(event, new LoggingEventHandlerDecorator(defaultHandler));
+        JournalEventHandler handler = handlers.getOrDefault(event, defaultHandler);
         if (handler != null) {
             handler.handle(jsonNode);
         }

@@ -4,6 +4,8 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -40,6 +42,11 @@ public class DashboardController implements Initializable {
         loadComponents();
         loadMissions();
         popupManager.attachToContainer(popupContainer);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Arrêt global : arrêt des services de journal...");
+            JournalTailService.getInstance().stop();
+            JournalWatcherService.getInstance().stop();
+        }));
     }
 
     private void loadComponents() {
