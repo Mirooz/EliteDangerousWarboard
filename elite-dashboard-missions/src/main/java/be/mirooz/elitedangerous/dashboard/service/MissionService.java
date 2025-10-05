@@ -2,6 +2,8 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.model.*;
+import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -9,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

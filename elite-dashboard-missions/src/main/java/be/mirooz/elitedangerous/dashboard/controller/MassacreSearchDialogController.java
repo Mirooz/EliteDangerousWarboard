@@ -5,7 +5,10 @@ import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.SystemCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.ConflictCardComponent;
+import be.mirooz.elitedangerous.dashboard.service.InaraService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
+import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -29,34 +32,35 @@ public class MassacreSearchDialogController implements Initializable {
     private CheckBox LPADonly;
     @FXML
     private TextField referenceSystemField;
-
     @FXML
     private Spinner<Integer> maxDistanceSpinner;
-
     @FXML
     private Spinner<Integer> minSourcesSpinner;
 
+    // Onglet Conflit
+    @FXML
+    private TabPane searchTabPane;
+    @FXML
+    private TextField conflictReferenceSystemField;
+    @FXML
+    private Button conflictSearchButton;
 
     @FXML
     private GenericListView<MassacreSystem> systemList;
     @FXML
+    private GenericListView<ConflictSystem> conflictList;
+    @FXML
     private Button searchButton;
-
     @FXML
     private Button closeButton;
-
     @FXML
     private ImageView fedHeaderIcon;
-
     @FXML
     private ImageView impHeaderIcon;
-
     @FXML
     private ImageView allHeaderIcon;
-
     @FXML
     private ImageView indHeaderIcon;
-
     @FXML
     private StackPane popupContainer;
     @FXML
@@ -64,6 +68,7 @@ public class MassacreSearchDialogController implements Initializable {
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
+    private final InaraService inaraService = InaraService.getInstance();
 
     private PopupManager popupManager = PopupManager.getInstance();
 
@@ -77,7 +82,11 @@ public class MassacreSearchDialogController implements Initializable {
         // Charger les icônes des factions dans l'en-tête
         loadFactionHeaderIcons();
         systemList.setComponentFactory(system -> new SystemCardComponent(system, this));
+        conflictList.setComponentFactory(conflict -> new ConflictCardComponent(conflict));
         popupManager.attachToContainer(popupContainer);
+
+        // Initialiser les champs de conflit avec le système actuel
+        conflictReferenceSystemField.setText(currentSystem);
 
     }
 
@@ -158,6 +167,7 @@ public class MassacreSearchDialogController implements Initializable {
     private void executeMassacreSearch(String referenceSystem, int maxDistance, int minSources, boolean largePad) {
         handleMassacreSearch(edToolsService.findMassacreSystems(referenceSystem, maxDistance, minSources, largePad));
     }
+
     private void searching(boolean isSearching) {
         if (isSearching) {
             searchButton.setDisable(true);
@@ -212,6 +222,47 @@ public class MassacreSearchDialogController implements Initializable {
             return (value != null && !value.isEmpty()) ? Integer.parseInt(value) : 0;
         } catch (NumberFormatException e) {
             return 0;
+        }
+    }
+
+    @FXML
+    private void searchConflictSystems() {
+        String referenceSystem = conflictReferenceSystemField.getText();
+        if (referenceSystem == null || referenceSystem.trim().isEmpty()) {
+            referenceSystem = commanderStatus.getCurrentStarSystem();
+            conflictReferenceSystemField.setText(referenceSystem);
+        }
+
+        executeConflictSearch(referenceSystem);
+    }
+
+    private void executeConflictSearch(String referenceSystem) {
+        handleConflictSearch(inaraService.findConflictZoneSystems(referenceSystem));
+    }
+
+    private void handleConflictSearch(CompletableFuture<List<ConflictSystem>> future) {
+        searchingConflicts(true);
+        future.thenAccept(conflicts -> Platform.runLater(() -> {
+                    conflictList.getItems().setAll(conflicts);
+                    searchingConflicts(false);
+                }))
+                .exceptionally(ex -> {
+                    ex.printStackTrace();
+                    Platform.runLater(() -> searchingConflicts(false));
+                    return null;
+                });
+    }
+
+    private void searchingConflicts(boolean isSearching) {
+        if (isSearching) {
+            conflictSearchButton.setDisable(true);
+            conflictSearchButton.setText("RECHERCHE...");
+            conflictList.getItems().clear();
+            loadingIndicator.setVisible(true);
+        } else {
+            loadingIndicator.setVisible(false);
+            conflictSearchButton.setDisable(false);
+            conflictSearchButton.setText("RECHERCHER");
         }
     }
 

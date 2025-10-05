@@ -937,6 +937,154 @@
     -fx-padding: 10;
 }
 
+/* Styles pour les cartes de conflit */
+.conflict-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 15;
+    -fx-min-height: 50;
+    -fx-max-height: 50;
+    -fx-pref-height: 50;
+    -fx-alignment: CENTER_LEFT;
+}
+
+
+
+.conflict-card-distance {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-min-width: 100;
+    -fx-pref-width: 100;
+    -fx-max-width: 100;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.conflict-card-government {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-min-width: 160;
+    -fx-pref-width: 160;
+    -fx-max-width: 160;
+    -fx-font-weight: bold;
+}
+
+.conflict-card-allegiance {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-min-width: 160;
+    -fx-pref-width: 160;
+    -fx-max-width: 160;
+    -fx-font-weight: bold;
+}
+
+.conflict-card-updated {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-min-width: 100;
+    -fx-pref-width: 100;
+    -fx-max-width: 100;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+/* En-tête des conflits */
+.conflict-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-padding: 10 15 10 15;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 15;
+}
+
+.conflict-header-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.conflict-header-label.system {
+    -fx-min-width: 150;
+    -fx-pref-width: 150;
+    -fx-max-width: 150;
+}
+
+.conflict-header-label.distance {
+    -fx-min-width: 80;
+    -fx-pref-width: 80;
+    -fx-max-width: 80;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.conflict-header-label.government {
+    -fx-min-width: 120;
+    -fx-pref-width: 120;
+    -fx-max-width: 120;
+}
+
+.conflict-header-label.allegiance {
+    -fx-min-width: 120;
+    -fx-pref-width: 120;
+    -fx-max-width: 120;
+}
+
+.conflict-header-label.updated {
+    -fx-min-width: 100;
+    -fx-pref-width: 100;
+    -fx-max-width: 100;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+/* Styles pour les onglets */
+.elite-tab-pane {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.elite-tab-pane .tab-header-area {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 0;
+}
+
+.elite-tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: -fx-elite-darker;
+}
+
+.elite-tab-pane .tab-header-area .tab {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 4 4 0 0;
+    -fx-padding: 8 16 8 16;
+    -fx-background-insets: 0;
+}
+
+.elite-tab-pane .tab-header-area .tab:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.elite-tab-pane .tab-header-area .tab .tab-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.elite-tab-pane .tab-header-area .tab:selected .tab-label {
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.elite-tab-pane .tab-content-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
 .massacre-card {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
@@ -961,16 +1109,24 @@
 
 .massacre-card-title {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-min-width: 100;
     -fx-pref-width: 100;
     -fx-max-width: 100;
 }
+.conflict-card-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-min-width: 150;
+    -fx-pref-width: 150;
+    -fx-max-width: 150;
+}
 
 .massacre-card-subtitle {
     -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-min-width: 103;
     -fx-pref-width: 103;
@@ -989,7 +1145,7 @@
  }
 .massacre-card-count {
     -fx-text-fill: -fx-elite-success;
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-min-width: 25;
     -fx-pref-width: 25;

@@ -5,7 +5,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
 import javafx.fxml.FXML;

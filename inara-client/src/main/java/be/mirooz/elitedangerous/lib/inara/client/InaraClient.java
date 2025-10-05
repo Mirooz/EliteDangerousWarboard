@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.lib.inara.client;
 
-import be.mirooz.elitedangerous.lib.inara.model.NearbyStation;
+import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -15,51 +15,56 @@ import java.util.List;
 public class InaraClient {
 
     private static final String BASE_URL =
-            "https://inara.cz/elite/nearest-stations/?formbrief=1&pi17=1&pa1%5B%5D=8&pi25=1&pa2%5B%5D=3&pa2%5B%5D=2&pi26=1&ps1=";
+            "https://inara.cz/elite/nearest-misc/?pi20=1&ps1=";
 
-    public List<NearbyStation> fetchNearbyStations(String systemName) throws IOException {
-        String encodedSystem = URLEncoder.encode(systemName, StandardCharsets.UTF_8);
+    public List<ConflictSystem> fetchConflictSystems(String sourceSystem) throws IOException {
+        String encodedSystem = URLEncoder.encode(sourceSystem, StandardCharsets.UTF_8);
         String url = BASE_URL + encodedSystem;
-
+        System.out.printf(
+                "Calling INARA with parameters %s%n", sourceSystem);
+        long start = System.currentTimeMillis();
         Document doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0")
+                .header("User-Agent", "Java HttpClient - ED Dashboard")
                 .get();
 
-        List<NearbyStation> stations = new ArrayList<>();
-        Elements rows = doc.select("table.tablesortercollapsed tbody tr");
+        long durationCall = System.currentTimeMillis() - start;
+        System.out.println("INARA call duration: " + durationCall + " ms");
+        Element table = doc.selectFirst("table.tablesortercollapsed");
 
+        List<ConflictSystem> systems = new ArrayList<>();
+        if (table == null) return systems;
+
+        Elements rows = table.select("tbody tr");
         for (Element row : rows) {
-            Elements cells = row.select("td");
-            if (cells.size() >= 8) {
-                String stationName = cells.get(0).text();
+            Elements cols = row.select("td");
+            if (cols.size() < 5) continue;
 
-                // Nettoyer systemName et distance
-                String rawSystemName = cells.get(1).text();
-                String systemNameClean = rawSystemName.replaceAll("[^\\p{L}\\p{N} \\-']", "").trim();
+            ConflictSystem system = new ConflictSystem();
 
-                String economy = cells.get(2).text();
-                String government = cells.get(3).text();
-                String allegiance = cells.get(4).text();
+            // 1️⃣ System name → nettoyer les symboles "︎"
+            String systemName = cols.get(0).text().replace("︎", "").trim();
+            system.setSystemName(systemName);
 
-                String rawDistance = cells.get(6).text();
-                String distanceLy = rawDistance.replaceAll("[^0-9.,Ly ]", "").trim();
+            // 2️⃣ Surface conflicts
+            String conflictCount = cols.get(1).text().trim();
+            system.setSurfaceConflicts(conflictCount.isEmpty() ? 0 : Integer.parseInt(conflictCount));
 
-                String updated = cells.get(7).text().trim();
+            // 3️⃣ Faction
+            system.setFaction(cols.get(2).text().trim());
 
-                NearbyStation station = NearbyStation.builder()
-                        .stationName(stationName)
-                        .systemName(systemNameClean)
-                        .distanceLy(distanceLy)
-                        .updated(updated)
-                        .economy(economy)
-                        .government(government)
-                        .allegiance(allegiance)
-                        .build();
+            // 4️⃣ Opponent
+            system.setOpponentFaction(cols.get(3).text().trim());
 
-                stations.add(station);
+            // 5️⃣ Distance → nettoyer "Ly︎"
+            String distanceText = cols.get(4).text().replace("Ly", "").replace("︎", "").trim();
+            try {
+                system.setDistanceLy(Double.parseDouble(distanceText));
+            } catch (NumberFormatException e) {
+                system.setDistanceLy(0);
             }
+            systems.add(system);
         }
 
-        return stations;
+        return systems;
     }
 }

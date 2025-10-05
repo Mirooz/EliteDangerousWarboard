@@ -9,6 +9,6 @@ public class InaraMain {
     public static void main(String[] args) throws IOException {
 
         InaraClient client = new InaraClient();
-        System.out.println(client.fetchNearbyStations("LP 908-11"));
+        System.out.println(client.fetchConflictSystems("LP 908-11"));
     }
 }

@@ -1,4 +1,6 @@
-package be.mirooz.elitedangerous.dashboard.model;
+package be.mirooz.elitedangerous.dashboard.model.registries;
+
+import be.mirooz.elitedangerous.dashboard.model.ShipTarget;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

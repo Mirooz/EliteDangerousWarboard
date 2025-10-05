@@ -1,9 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.lib.edtools.client.EdToolsPveClient;
-import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
-import be.mirooz.elitedangerous.lib.inara.model.NearbyStation;
+import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -21,11 +19,11 @@ public class InaraService {
         return INSTANCE;
     }
 
-    public CompletableFuture<List<NearbyStation>> findConflictZoneSystems(String referenceSystem) {
+    public CompletableFuture<List<ConflictSystem>> findConflictZoneSystems(String referenceSystem) {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return client.fetchNearbyStations(referenceSystem);
+                return client.fetchConflictSystems(referenceSystem);
             } catch (Exception e) {
                 throw new RuntimeException("Erreur lors de l'appel Inara", e);
             }

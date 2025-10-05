@@ -1,7 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.DestroyedShipsRegistery;
-import be.mirooz.elitedangerous.dashboard.service.MissionService;
+import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class DiedHandler implements JournalEventHandler {

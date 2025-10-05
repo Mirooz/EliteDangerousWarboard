@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.*;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
+import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
