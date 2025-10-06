@@ -56,6 +56,9 @@ public class HeaderController implements Initializable, Refreshable {
     private Button massacreSearchButton;
 
     @FXML
+    private Button configButton;
+
+    @FXML
     private Label statusLabel;
 
     @FXML
@@ -199,7 +202,16 @@ public class HeaderController implements Initializable, Refreshable {
 
         dialog.init(primaryStage);
         dialog.showAndWait();
+    }
 
+    @FXML
+    private void openConfigDialog() {
+        Stage primaryStage = (Stage) configButton.getScene().getWindow();
+
+        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 400, 300);
+
+        dialog.init(primaryStage);
+        dialog.showAndWait();
     }
 
     public void postBatch() {

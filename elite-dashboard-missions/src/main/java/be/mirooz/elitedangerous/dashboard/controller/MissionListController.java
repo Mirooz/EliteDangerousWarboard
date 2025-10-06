@@ -60,8 +60,6 @@ public class MissionListController implements Initializable, Refreshable {
     @FXML
     private Label statusFilterLabel;
 
-    @FXML
-    private Button languageButton;
 
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
@@ -170,15 +168,6 @@ public class MissionListController implements Initializable, Refreshable {
         DashboardContext.getInstance().setCurrentTypeFilter(null);
     }
 
-    @FXML
-    private void toggleLanguage() {
-        if (localizationService.isFrench()) {
-            localizationService.setLanguage("en");
-        } else {
-            localizationService.setLanguage("fr");
-        }
-        updateLanguage();
-    }
 
     private void updateLanguage() {
         // Mettre à jour les labels
@@ -197,8 +186,6 @@ public class MissionListController implements Initializable, Refreshable {
         failedFilterButton.setText(localizationService.getString("missions.failed"));
         allFilterButton.setText(localizationService.getString("missions.all_status"));
 
-        // Mettre à jour le bouton de langue
-        languageButton.setText(localizationService.isFrench() ? "EN" : "FR");
         
         // Rafraîchir les missions pour recréer les cartes avec les nouvelles traductions
         refreshMissions();

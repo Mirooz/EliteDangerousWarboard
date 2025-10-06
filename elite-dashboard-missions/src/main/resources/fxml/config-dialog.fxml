@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="be.mirooz.elitedangerous.dashboard.controller.ConfigDialogController"
+           styleClass="config-dialog"
+           prefWidth="400" prefHeight="300">
+
+    <VBox spacing="20.0" styleClass="config-content">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+
+        <!-- Titre -->
+        <VBox alignment="CENTER" spacing="5.0">
+            <Label fx:id="configTitleLabel" text="CONFIGURATION" styleClass="config-title"/>
+            <Separator styleClass="config-separator"/>
+        </VBox>
+
+        <!-- Section Langue -->
+        <VBox spacing="10.0" styleClass="config-section">
+            <Label fx:id="languageSectionLabel" text="LANGUE" styleClass="config-section-title"/>
+            
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+                <RadioButton fx:id="frenchRadioButton" text="Français" 
+                           onAction="#selectFrench" styleClass="config-radio"/>
+                <RadioButton fx:id="englishRadioButton" text="English" 
+                           onAction="#selectEnglish" styleClass="config-radio"/>
+            </HBox>
+        </VBox>
+
+        <!-- Boutons -->
+        <HBox alignment="CENTER_RIGHT" spacing="15.0">
+            <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveConfig"
+                    styleClass="config-save-button" text="SAUVEGARDER"/>
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelConfig"
+                    styleClass="config-cancel-button" text="ANNULER"/>
+        </HBox>
+    </VBox>
+
+</StackPane>

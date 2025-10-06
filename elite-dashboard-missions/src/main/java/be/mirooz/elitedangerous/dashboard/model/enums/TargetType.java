@@ -1,21 +1,23 @@
 package be.mirooz.elitedangerous.dashboard.model.enums;
 
-public enum TargetType {
-    PIRATE("Pirate", "FactionTag_Pirate"),
-    DESERTEUR("Deserteur", "FactionTag_Deserter"),
-    HUMANOID("Humain","FactionTag_AIHumanoid"),
-    UNKNOWN("Faction", "UNKNOWN"); // valeur par défaut
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 
-    private final String displayName;
+public enum TargetType {
+    PIRATE("target.pirate", "FactionTag_Pirate"),
+    DESERTEUR("target.deserter", "FactionTag_Deserter"),
+    HUMANOID("target.humanoid","FactionTag_AIHumanoid"),
+    UNKNOWN("target.faction", "UNKNOWN"); // valeur par défaut
+
+    private final String localizationKey;
     private final String code;
 
-    TargetType(String displayName, String code) {
-        this.displayName = displayName;
+    TargetType(String localizationKey, String code) {
+        this.localizationKey = localizationKey;
         this.code = code;
     }
 
     public String getDisplayName() {
-        return displayName;
+        return LocalizationService.getInstance().getString(localizationKey);
     }
 
     public String getCode() {

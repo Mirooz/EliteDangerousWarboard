@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 import be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -19,6 +20,7 @@ import javafx.stage.Stage;
 public class ConflictCardComponent extends HBox {
     private final ConflictSystem conflict;
     private final PopupManager popupManager;
+    private final LocalizationService localizationService = LocalizationService.getInstance();
 
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     public ConflictCardComponent(ConflictSystem conflict) {
@@ -59,6 +61,6 @@ public class ConflictCardComponent extends HBox {
     private void onClickSystem(String systemName, javafx.scene.input.MouseEvent event) {
         copyClipboardManager.copyToClipboard(systemName);
         Stage stage = (Stage) getScene().getWindow();
-        popupManager.showPopup("Système copié", event.getSceneX(), event.getSceneY(),stage);
+        popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(),stage);
     }
 }

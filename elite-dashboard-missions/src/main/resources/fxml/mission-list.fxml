@@ -35,10 +35,6 @@
          <Button fx:id="allFilterButton" mnemonicParsing="false" onAction="#filterAllMissions"
                  styleClass="filter-button" text="TOUTES"/>
       </HBox>
-      <HBox alignment="CENTER_LEFT" spacing="10.0">
-         <Button fx:id="languageButton" mnemonicParsing="false" onAction="#toggleLanguage"
-                 styleClass="filter-button" text="FR"/>
-      </HBox>
    </HBox>
 
    <StackPane VBox.vgrow="ALWAYS">

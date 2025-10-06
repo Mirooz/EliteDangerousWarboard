@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 import be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -14,6 +15,7 @@ public class SystemCardComponent extends VBox{
 
     private final PopupManager popupManager = PopupManager.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
     private final MassacreSystem system;
     private final MassacreSearchDialogController controller;
     public SystemCardComponent(MassacreSystem system, MassacreSearchDialogController controller) {
@@ -105,7 +107,7 @@ public class SystemCardComponent extends VBox{
     private void onClickSystem(String systemName, javafx.scene.input.MouseEvent event) {
         copyClipboardManager.copyToClipboard(systemName);
         Stage stage = (Stage) getScene().getWindow();
-        popupManager.showPopup("Système copié", event.getSceneX(), event.getSceneY(),stage);
+        popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(),stage);
     }
 
     private void onClickTargetCount(String systemName) {

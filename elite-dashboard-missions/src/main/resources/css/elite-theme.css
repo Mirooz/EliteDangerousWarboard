@@ -54,6 +54,156 @@
     -fx-font-weight: bold;
 }
 
+.config-button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 6 10 6 10;
+    -fx-cursor: hand;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.config-button:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.config-button:pressed {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+/* Fenêtre de configuration */
+.config-dialog {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.config-content {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.config-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.config-separator {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.config-section {
+    -fx-padding: 10 0 10 0;
+}
+
+.config-section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.config-radio {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.config-radio .radio {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.config-radio:selected .radio {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.config-radio .dot {
+    -fx-background-color: -fx-elite-dark;
+    -fx-background-radius: 3;
+}
+
+.config-radio:hover .radio {
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.config-radio:selected:hover .radio {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Boutons de configuration */
+.config-save-button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.config-save-button:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.config-save-button:pressed {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.config-cancel-button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-text-dim;
+    -fx-border-width: 1;
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.config-cancel-button:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.config-cancel-button:pressed {
+    -fx-background-color: -fx-elite-text-dim;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.elite-button-secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: -fx-elite-text-dim;
+    -fx-border-width: 1;
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+}
+
+.elite-button-secondary:hover {
+    -fx-background-color: -fx-elite-text-dim;
+    -fx-text-fill: -fx-elite-dark;
+}
+
 .header-separator {
     -fx-background-color: -fx-elite-orange;
 }

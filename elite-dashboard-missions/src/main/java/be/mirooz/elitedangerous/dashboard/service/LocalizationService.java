@@ -15,8 +15,10 @@ public class LocalizationService {
     private final CopyOnWriteArrayList<Consumer<Locale>> languageChangeListeners = new CopyOnWriteArrayList<>();
 
     private LocalizationService() {
-        // Par défaut, on utilise l'anglais
-        setLocale(Locale.ENGLISH);
+        // Charger la langue depuis les préférences
+        PreferencesService preferencesService = PreferencesService.getInstance();
+        String savedLanguage = preferencesService.getLanguage();
+        setLanguage(savedLanguage);
     }
 
     public static LocalizationService getInstance() {

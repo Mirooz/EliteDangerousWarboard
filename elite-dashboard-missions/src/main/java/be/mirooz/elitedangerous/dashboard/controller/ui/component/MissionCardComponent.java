@@ -96,12 +96,14 @@ public class MissionCardComponent extends VBox {
 
         // Ajouter tooltip et clic pour copier le système d'origine
         if (mission.getOriginSystem() != null && !mission.getOriginSystem().isEmpty()) {
-            factionLabel.setTooltip(new TooltipComponent(mission.getOriginSystem() + " | " + mission.getOriginStation()));
+            String tooltipText = localizationService.getString("tooltip.origin_system") + ": " + 
+                                mission.getOriginSystem() + " | " + mission.getOriginStation();
+            factionLabel.setTooltip(new TooltipComponent(tooltipText));
             factionLabel.getStyleClass().add("clickable-system-source");
             factionLabel.setOnMouseClicked(e -> onClickMission(mission.getOriginSystem(), e));
         } else {
             // Debug: afficher un tooltip même si pas de système d'origine
-            factionLabel.setTooltip(new TooltipComponent("Système d'origine: Non défini"));
+            factionLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.origin_system_undefined")));
         }
         return factionLabel;
     }
@@ -141,9 +143,12 @@ public class MissionCardComponent extends VBox {
 
         if (mission.getDestinationSystem() != null && !mission.getDestinationSystem().isEmpty()) {
             // Fallback: utiliser destinationSystem si targetSystem n'est pas défini
-            targetLabel.setTooltip(new TooltipComponent(mission.getDestinationSystem()));
+            String tooltipText = localizationService.getString("tooltip.destination_system") + ": " + mission.getDestinationSystem();
+            targetLabel.setTooltip(new TooltipComponent(tooltipText));
             targetLabel.getStyleClass().add("clickable-system-target");
             targetLabel.setOnMouseClicked(e -> onClickMission(mission.getDestinationSystem(), e));
+        } else {
+            targetLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.destination_system_undefined")));
         }
         return targetLabel;
     }
@@ -238,7 +243,7 @@ public class MissionCardComponent extends VBox {
             imageView.setPreserveRatio(true);
             wingLabel.setGraphic(imageView);
             wingLabel.getStyleClass().add("wing-icon");
-            wingLabel.setTooltip(new TooltipComponent("Mission de Wing"));
+            wingLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.wing_mission")));
         } else {
             wingLabel.setGraphic(null);
             wingLabel.setText("");
@@ -293,7 +298,7 @@ public class MissionCardComponent extends VBox {
     private void onClickMission(String systemName, javafx.scene.input.MouseEvent event) {
         copyClipboardManager.copyToClipboard(systemName);
         Stage stage = (Stage) getScene().getWindow();
-        popupManager.showPopup("Système copié", event.getSceneX(), event.getSceneY(), stage);
+        popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(), stage);
 
     }
 
