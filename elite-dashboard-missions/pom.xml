@@ -79,6 +79,26 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <filesets>
+                        <!-- Supprime la runtime générée -->
+                        <fileset>
+                            <directory>${project.basedir}/target/runtime</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+
+                        <!-- Supprime le dossier app-image EliteDashboard généré par jpackage -->
+                        <fileset>
+                            <directory>${project.basedir}/executable</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
@@ -125,6 +145,23 @@
                 </goals>
                 <executions>
                     <execution>
+                        <id>create-runtime</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>jlink</executable>
+                            <commandlineArgs>
+                                --module-path "C:/Progra~1/BellSoft/LibericaJDK-17-Full/jmods"
+                                --add-modules java.base,javafx.controls,javafx.fxml,java.logging,java.xml,java.net.http,jdk.crypto.ec
+                                --strip-debug --compress=2
+                                --output target/runtime
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                    <execution>
                         <id>package-exe</id>
                         <phase>package</phase>
                         <goals>
@@ -137,14 +174,16 @@
                                 <argument>app-image</argument>
                                 <argument>--name</argument>
                                 <argument>EliteDashboard</argument>
+                                <argument>--dest</argument>
+                                <argument>executable</argument>
                                 <argument>--input</argument>
                                 <argument>target</argument>
                                 <argument>--main-jar</argument>
                                 <argument>elite-dashboard-missions-1.0.0-jar-with-dependencies.jar</argument>
                                 <argument>--main-class</argument>
-                                <argument>be.mirooz.elitedangerous.dashboard.MainClass</argument>
+                                <argument>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</argument>
                                 <argument>--runtime-image</argument>
-                                <argument>C:\Program Files\BellSoft\LibericaJDK-17-Full</argument>
+                                <argument>target/runtime</argument>
                                 <argument>--icon</argument>
                                 <argument>src/main/resources/images/elite_dashboard_icon.ico</argument>
                             </arguments>
