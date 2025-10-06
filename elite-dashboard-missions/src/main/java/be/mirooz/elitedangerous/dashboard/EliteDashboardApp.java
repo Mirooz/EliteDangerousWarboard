@@ -1,6 +1,5 @@
 package be.mirooz.elitedangerous.dashboard;
 
-import be.mirooz.elitedangerous.dashboard.controller.DashboardController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -29,7 +28,7 @@ public class EliteDashboardApp extends Application {
             // --- Icône ---
             Image icon = new Image(
                     Objects.requireNonNull(
-                            getClass().getResource("/images/614-6140312_elite-dangerous-hd-png-elite-dangerous-logo-transparent.png")
+                            getClass().getResource("/images/elite_dashboard_icon.png")
                     ).toExternalForm()
             );
             stage.getIcons().add(icon);
@@ -65,6 +64,6 @@ public class EliteDashboardApp extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 }

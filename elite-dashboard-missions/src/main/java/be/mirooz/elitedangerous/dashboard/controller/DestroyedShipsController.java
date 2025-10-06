@@ -114,7 +114,7 @@ public class DestroyedShipsController implements Initializable, Refreshable {
             return new SimpleStringProperty("N/A");
         });
 
-        destroyedShipsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        destroyedShipsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         destroyedShipsTable.setSelectionModel(null);
 
     }

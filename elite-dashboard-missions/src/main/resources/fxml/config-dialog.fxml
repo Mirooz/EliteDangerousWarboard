@@ -33,6 +33,18 @@
             </HBox>
         </VBox>
 
+        <!-- Section Dossier Journal -->
+        <VBox spacing="10.0" styleClass="config-section">
+            <Label fx:id="journalFolderSectionLabel" text="DOSSIER JOURNAL" styleClass="config-section-title"/>
+            
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <TextField fx:id="journalFolderTextField" styleClass="config-textfield" 
+                          promptText="Chemin vers le dossier Journal Elite Dangerous"/>
+                <Button fx:id="browseJournalFolderButton" text="Parcourir..." 
+                       onAction="#browseJournalFolder" styleClass="config-browse-button"/>
+            </HBox>
+        </VBox>
+
         <!-- Boutons -->
         <HBox alignment="CENTER_RIGHT" spacing="15.0">
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveConfig"

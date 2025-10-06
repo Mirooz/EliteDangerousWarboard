@@ -7,6 +7,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -35,6 +37,15 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private Button cancelButton;
 
+    @FXML
+    private Label journalFolderSectionLabel;
+
+    @FXML
+    private TextField journalFolderTextField;
+
+    @FXML
+    private Button browseJournalFolderButton;
+
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
 
@@ -48,11 +59,15 @@ public class ConfigDialogController implements Initializable {
         } else {
             englishRadioButton.setSelected(true);
         }
+        
+        // Initialiser le champ du dossier journal
+        journalFolderTextField.setText(preferencesService.getJournalFolder());
     }
 
     private void updateTranslations() {
         configTitleLabel.setText(localizationService.getString("config.title"));
         languageSectionLabel.setText(localizationService.getString("config.language"));
+        journalFolderSectionLabel.setText(localizationService.getString("config.journal.folder"));
         saveButton.setText(localizationService.getString("config.save"));
         cancelButton.setText(localizationService.getString("config.cancel"));
     }
@@ -78,6 +93,9 @@ public class ConfigDialogController implements Initializable {
             localizationService.setLanguage("en");
         }
         
+        // Sauvegarder le dossier journal
+        preferencesService.setJournalFolder(journalFolderTextField.getText());
+        
         // Fermer la fenêtre
         Stage stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
@@ -89,4 +107,32 @@ public class ConfigDialogController implements Initializable {
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
     }
+
+    @FXML
+    private void browseJournalFolder() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Sélectionner le dossier Journal Elite Dangerous");
+        
+        // Définir le répertoire initial
+        String currentPath = journalFolderTextField.getText();
+        if (currentPath != null && !currentPath.isEmpty()) {
+            try {
+                java.io.File initialDir = new java.io.File(currentPath);
+                if (initialDir.exists()) {
+                    directoryChooser.setInitialDirectory(initialDir);
+                }
+            } catch (Exception e) {
+                // Ignorer les erreurs de chemin
+            }
+        }
+        
+        Stage stage = (Stage) browseJournalFolderButton.getScene().getWindow();
+        java.io.File selectedDirectory = directoryChooser.showDialog(stage);
+        
+        if (selectedDirectory != null) {
+            journalFolderTextField.setText(selectedDirectory.getAbsolutePath());
+        }
+    }
 }
+
+

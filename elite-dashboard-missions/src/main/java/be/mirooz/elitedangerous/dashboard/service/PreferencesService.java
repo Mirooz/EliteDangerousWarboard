@@ -87,4 +87,23 @@ public class PreferencesService {
     public String getPreference(String key, String defaultValue) {
         return preferences.getProperty(key, defaultValue);
     }
+
+    /**
+     * Définit le dossier journal Elite Dangerous
+     */
+    public void setJournalFolder(String journalFolder) {
+        preferences.setProperty("journal.folder", journalFolder);
+        savePreferences();
+    }
+
+    /**
+     * Récupère le dossier journal Elite Dangerous
+     */
+    public String getJournalFolder() {
+        // Chemin par défaut pour Windows
+        String defaultPath = System.getProperty("user.home") + "\\Saved Games\\Frontier Developments\\Elite Dangerous";
+        return preferences.getProperty("journal.folder", defaultPath);
+    }
 }
+
+

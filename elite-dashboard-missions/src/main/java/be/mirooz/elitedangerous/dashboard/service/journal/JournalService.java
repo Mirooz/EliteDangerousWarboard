@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispat
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,13 +27,13 @@ import java.util.stream.Stream;
  */
 public class JournalService {
 
-    private static final String JOURNAL_PATH = System.getProperty("journal.folder");
     private static final String JOURNAL_PREFIX = "Journal.";
     private static final String SHIPYARD_FILE = "Shipyard.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final String currentShip = null;
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
 
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final JournalEventDispatcher dispatcher;
@@ -137,11 +138,12 @@ public class JournalService {
      */
     private List<File> getJournalFilesFromLastWeek() throws IOException {
         List<File> journalFiles = new ArrayList<>();
-        System.out.println("Journal path : " + JOURNAL_PATH);
-        Path journalDir = Paths.get(JOURNAL_PATH);
+        String journalPath = preferencesService.getJournalFolder();
+        System.out.println("Journal path : " + journalPath);
+        Path journalDir = Paths.get(journalPath);
 
         if (!Files.exists(journalDir)) {
-            System.err.println("Dossier Journal introuvable: " + JOURNAL_PATH);
+            System.err.println("Dossier Journal introuvable: " + journalPath);
             return journalFiles;
         }
 
@@ -196,7 +198,7 @@ public class JournalService {
 
             if (!journalFiles.isEmpty()) {
                 File latestJournal = journalFiles.get(journalFiles.size() - 1);
-                JournalWatcherService.getInstance().start(JOURNAL_PATH);
+                JournalWatcherService.getInstance().start(preferencesService.getJournalFolder());
                 JournalTailService.getInstance().start(latestJournal);
 
             }

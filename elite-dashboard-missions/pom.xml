@@ -85,8 +85,31 @@
                     <source>17</source>
                     <target>17</target>
                     <encoding>UTF-8</encoding>
-                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -94,21 +117,41 @@
                 <version>3.1.0</version>
                 <configuration>
                     <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
-                    <systemProperties>
-                        <systemProperty>
-                            <key>journal.folder</key>
-                                                        <value>C:\Users\ewen_\Saved Games\Frontier Developments\Elite Dangerous</value>
-<!--                            <value>${project.basedir}/target/classes/exemple</value>-->
-                        </systemProperty>
-                    </systemProperties>
                 </configuration>
                 <goals>
                     <goal>
                         java
                     </goal>
                 </goals>
+                <executions>
+                    <execution>
+                        <id>package-exe</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>jpackage</executable>
+                            <arguments>
+                                <argument>--type</argument>
+                                <argument>app-image</argument>
+                                <argument>--name</argument>
+                                <argument>EliteDashboard</argument>
+                                <argument>--input</argument>
+                                <argument>target</argument>
+                                <argument>--main-jar</argument>
+                                <argument>elite-dashboard-missions-1.0.0-jar-with-dependencies.jar</argument>
+                                <argument>--main-class</argument>
+                                <argument>be.mirooz.elitedangerous.dashboard.MainClass</argument>
+                                <argument>--runtime-image</argument>
+                                <argument>C:\Program Files\BellSoft\LibericaJDK-17-Full</argument>
+                                <argument>--icon</argument>
+                                <argument>src/main/resources/images/elite_dashboard_icon.ico</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
-
 </project>
