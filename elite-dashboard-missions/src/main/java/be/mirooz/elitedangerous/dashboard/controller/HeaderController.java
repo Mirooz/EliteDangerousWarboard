@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatu
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -57,16 +58,49 @@ public class HeaderController implements Initializable, Refreshable {
     @FXML
     private Label statusLabel;
 
-    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
+    @FXML
+    private Label appTitleLabel;
 
+    @FXML
+    private Label appSubtitleLabel;
+
+    @FXML
+    private Label earnCreditsTextLabel;
+
+    @FXML
+    private Label potentialCreditsTextLabel;
+
+    @FXML
+    private Label pendingCreditsTextLabel;
+
+    @FXML
+    private Label lostCreditsTextLabel;
+
+    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     public static final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         dashboardContext.addFilterListener(this::applyFilter);
         UIManager.getInstance().register(this);
+        updateTranslations();
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> updateTranslations());
+    }
 
+    private void updateTranslations() {
+        appTitleLabel.setText(localizationService.getString("header.app.title"));
+        appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
+        massacreSearchButton.setText(localizationService.getString("header.search.button"));
+        missionCountTextLabel.setText(localizationService.getString("header.missions"));
+        earnCreditsTextLabel.setText(localizationService.getString("header.credits.earned"));
+        potentialCreditsTextLabel.setText(localizationService.getString("header.credits.potential"));
+        pendingCreditsTextLabel.setText(localizationService.getString("header.credits.pending"));
+        lostCreditsTextLabel.setText(localizationService.getString("header.credits.lost"));
+        updateStatusLabel();
     }
 
     public void refreshUI(){
@@ -169,13 +203,20 @@ public class HeaderController implements Initializable, Refreshable {
     }
 
     public void postBatch() {
-        statusLabel.textProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent
-                .getIsOnline()).then("SYSTÈME EN LIGNE").otherwise("SYSTÈME HORS LIGNE"));
+        updateStatusLabel();
         // Binding conditionnel pour la couleur du statut
         statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent
                         .getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
                 .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
         );
 
+    }
+    
+    private void updateStatusLabel() {
+        if (commanderStatusComponent.getIsOnline().get()) {
+            statusLabel.setText(localizationService.getString("commander.online"));
+        } else {
+            statusLabel.setText(localizationService.getString("commander.offline"));
+        }
     }
 }

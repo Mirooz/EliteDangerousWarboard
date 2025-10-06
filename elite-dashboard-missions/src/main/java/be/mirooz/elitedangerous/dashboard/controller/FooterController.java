@@ -12,6 +12,7 @@ import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.FactionStatsComponent;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -41,14 +42,51 @@ public class FooterController implements Initializable, Refreshable {
 
     @FXML
     private Label stationLabel;
-    private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
 
+    @FXML
+    private Label commanderHeaderLabel;
+
+    @FXML
+    private Label systemHeaderLabel;
+
+    @FXML
+    private Label stationHeaderLabel;
+
+    @FXML
+    private Label targetHeaderLabel;
+
+    @FXML
+    private Label targetFactionHeaderLabel;
+
+    @FXML
+    private Label sourceFactionHeaderLabel;
+
+    @FXML
+    private Label killsHeaderLabel;
+
+    private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
         UIManager.getInstance().register(this);
+        updateTranslations();
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> updateTranslations());
+    }
+
+    private void updateTranslations() {
+        commanderHeaderLabel.setText(localizationService.getString("footer.commander"));
+        systemHeaderLabel.setText(localizationService.getString("footer.system"));
+        stationHeaderLabel.setText(localizationService.getString("footer.station"));
+        
+        // En-têtes du tableau des factions
+        targetHeaderLabel.setText(localizationService.getString("footer.target"));
+        targetFactionHeaderLabel.setText(localizationService.getString("footer.target_faction"));
+        sourceFactionHeaderLabel.setText(localizationService.getString("footer.source_faction"));
+        killsHeaderLabel.setText(localizationService.getString("footer.kills"));
     }
 
     public void postBatch(){

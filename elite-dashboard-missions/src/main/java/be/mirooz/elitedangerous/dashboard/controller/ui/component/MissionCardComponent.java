@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -27,12 +28,10 @@ import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNum
 public class MissionCardComponent extends VBox {
 
 
-    public static final String TERMINATED = "Terminée";
-    public static final String EXPIRED = "Expirée";
-    public static final String FAILED = "Echouée";
     // Conteneur pour les popups
     private final PopupManager popupManager = PopupManager.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
 
     public MissionCardComponent(Mission mission) {
         this.getStyleClass().add("mission-card");
@@ -157,25 +156,25 @@ public class MissionCardComponent extends VBox {
         timeSection.setMaxWidth(120);
 
         if (mission.getAcceptedTime() != null) {
-            Label acceptedLabel = new Label("Accepté: " + mission.getAcceptedTime().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")));
+            Label acceptedLabel = new Label(localizationService.getString("mission.accepted") + ": " + mission.getAcceptedTime().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")));
             acceptedLabel.getStyleClass().add("mission-time");
 
             Label remainingLabel = new Label();
             if (mission.getExpiry() != null) {
                 if (mission.getStatus() == MissionStatus.COMPLETED
                         || (!mission.isMissionFailed() && mission.getTargetCountLeft() == 0)) {
-                    remainingLabel.setText(TERMINATED);
+                    remainingLabel.setText(localizationService.getString("mission.terminated"));
                     remainingLabel.getStyleClass().add("mission-time-completed");
                 } else if (mission.isMissionFailed()) {
-                    remainingLabel.setText(FAILED);
+                    remainingLabel.setText(localizationService.getString("mission.failed"));
                     remainingLabel.getStyleClass().add("mission-time-failed");
                 } else {
                     String hoursRemaining = getHoursRemaining(mission);
                     if (hoursRemaining !=null) {
-                        remainingLabel.setText(String.format("Restant: %s", hoursRemaining));
+                        remainingLabel.setText(String.format(localizationService.getString("mission.remaining") + ": %s", hoursRemaining));
                         remainingLabel.getStyleClass().add(Long.parseLong(Objects.requireNonNull(getHoursPartRemaining(mission))) > 24 ? "mission-time" : "mission-time-urgent");
                     } else {
-                        remainingLabel.setText(EXPIRED);
+                        remainingLabel.setText(localizationService.getString("mission.expired"));
                         remainingLabel.getStyleClass().add("mission-time-expired");
                     }
                 }

@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.SystemCardComponent;
@@ -66,8 +67,70 @@ public class MassacreSearchDialogController implements Initializable {
     @FXML
     private ProgressIndicator loadingIndicator;
 
+    @FXML
+    private Label dialogTitleLabel;
+    @FXML
+    private Label dialogSubtitleLabel;
+    @FXML
+    private Tab massacreTab;
+    @FXML
+    private Tab conflictTab;
+
+    @FXML
+    private Label systemLabel;
+    @FXML
+    private Label distanceLabel;
+    @FXML
+    private Label distanceUnitLabel;
+    @FXML
+    private Label sourcesLabel;
+    @FXML
+    private Label sourcesUnitLabel;
+    @FXML
+    private Tooltip largePadTooltip;
+
+    @FXML
+    private Label sourceHeaderLabel;
+
+    @FXML
+    private Label targetHeaderLabel;
+
+    @FXML
+    private Label countHeaderLabel;
+
+    @FXML
+    private Label distanceHeaderLabel;
+
+    @FXML
+    private Label padsHeaderLabel;
+
+    @FXML
+    private Label resHeaderLabel;
+
+    @FXML
+    private Tooltip countTooltip;
+
+    @FXML
+    private Label conflictSystemHeaderLabel;
+
+    @FXML
+    private Label conflictDistanceHeaderLabel;
+
+    @FXML
+    private Label conflictFactionHeaderLabel;
+
+    @FXML
+    private Label conflictOpponentHeaderLabel;
+
+    @FXML
+    private Label conflictSurfaceHeaderLabel;
+
+    @FXML
+    private Label conflictSystemLabel;
+
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
     private final InaraService inaraService = InaraService.getInstance();
 
     private PopupManager popupManager = PopupManager.getInstance();
@@ -88,6 +151,53 @@ public class MassacreSearchDialogController implements Initializable {
         // Initialiser les champs de conflit avec le système actuel
         conflictReferenceSystemField.setText(currentSystem);
 
+        // Mettre à jour les traductions
+        updateTranslations();
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> updateTranslations());
+    }
+
+    private void updateTranslations() {
+        // Mettre à jour les titres
+        dialogTitleLabel.setText(localizationService.getString("search.systems.title"));
+        dialogSubtitleLabel.setText(localizationService.getString("search.systems.subtitle"));
+        
+        // Mettre à jour les onglets
+        massacreTab.setText(localizationService.getString("search.massacre.title"));
+        conflictTab.setText(localizationService.getString("search.conflict.title"));
+        
+        // Mettre à jour les labels de configuration
+        systemLabel.setText(localizationService.getString("search.system.label"));
+        distanceLabel.setText(localizationService.getString("search.distance.label"));
+        distanceUnitLabel.setText(localizationService.getString("search.distance.unit"));
+        sourcesLabel.setText(localizationService.getString("search.sources.label"));
+        sourcesUnitLabel.setText(localizationService.getString("search.sources.unit"));
+        
+        // Mettre à jour les boutons
+        searchButton.setText(localizationService.getString("search.button"));
+        conflictSearchButton.setText(localizationService.getString("search.button"));
+        closeButton.setText(localizationService.getString("search.close"));
+        
+        // Mettre à jour les tooltips
+        largePadTooltip.setText(localizationService.getString("search.large_pads"));
+        countTooltip.setText(localizationService.getString("search.count_tooltip"));
+        
+        // Mettre à jour les en-têtes de massacre
+        sourceHeaderLabel.setText(localizationService.getString("search.massacre.source"));
+        targetHeaderLabel.setText(localizationService.getString("search.massacre.target"));
+        countHeaderLabel.setText(localizationService.getString("search.massacre.count"));
+        distanceHeaderLabel.setText(localizationService.getString("search.massacre.distance"));
+        padsHeaderLabel.setText(localizationService.getString("search.massacre.pads"));
+        resHeaderLabel.setText(localizationService.getString("search.massacre.res"));
+        
+        // Mettre à jour les en-têtes de conflit
+        conflictSystemLabel.setText(localizationService.getString("search.system.label"));
+        conflictSystemHeaderLabel.setText(localizationService.getString("search.conflict.system"));
+        conflictDistanceHeaderLabel.setText(localizationService.getString("search.conflict.distance"));
+        conflictFactionHeaderLabel.setText(localizationService.getString("search.conflict.faction"));
+        conflictOpponentHeaderLabel.setText(localizationService.getString("search.conflict.opponent"));
+        conflictSurfaceHeaderLabel.setText(localizationService.getString("search.conflict.surface"));
     }
 
     List<MassacreSystem> massacreSystems;
@@ -171,13 +281,13 @@ public class MassacreSearchDialogController implements Initializable {
     private void searching(boolean isSearching) {
         if (isSearching) {
             searchButton.setDisable(true);
-            searchButton.setText("RECHERCHE...");
+            searchButton.setText(localizationService.getString("search.searching"));
             systemList.getItems().clear();
             loadingIndicator.setVisible(true);
         } else {
             loadingIndicator.setVisible(false);
             searchButton.setDisable(false);
-            searchButton.setText("RECHERCHER");
+            searchButton.setText(localizationService.getString("search.button"));
         }
     }
 
@@ -256,13 +366,13 @@ public class MassacreSearchDialogController implements Initializable {
     private void searchingConflicts(boolean isSearching) {
         if (isSearching) {
             conflictSearchButton.setDisable(true);
-            conflictSearchButton.setText("RECHERCHE...");
+            conflictSearchButton.setText(localizationService.getString("search.searching"));
             conflictList.getItems().clear();
             loadingIndicator.setVisible(true);
         } else {
             loadingIndicator.setVisible(false);
             conflictSearchButton.setDisable(false);
-            conflictSearchButton.setText("RECHERCHER");
+            conflictSearchButton.setText(localizationService.getString("search.button"));
         }
     }
 

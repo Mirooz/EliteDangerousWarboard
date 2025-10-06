@@ -12,7 +12,7 @@
 
     <!-- En-tête -->
     <VBox styleClass="panel-header" alignment="CENTER">
-        <Label text="VAISSEAUX DÉTRUITS" styleClass="section-title" textAlignment="CENTER"/>
+        <Label fx:id="destroyedShipsTitleLabel" text="VAISSEAUX DÉTRUITS" styleClass="section-title" textAlignment="CENTER"/>
     </VBox>
 
     <!-- Table des vaisseaux détruits -->
@@ -56,7 +56,7 @@
     <VBox alignment="CENTER" spacing="5.0">
         <VBox alignment="CENTER">
             <Label text="0" fx:id="totalShipsLabel" styleClass="stat-number"/>
-            <Label text="VAISSEAUX" styleClass="stat-label"/>
+            <Label fx:id="totalShipsTextLabel" text="VAISSEAUX" styleClass="stat-label"/>
         </VBox>
 
         <VBox fx:id="factionBountyStats"
@@ -66,7 +66,7 @@
 
         <VBox alignment="CENTER">
             <Label text="0 Cr" fx:id="totalBountyLabel" styleClass="stat-number"/>
-            <Label text="CRÉDITS EN ATTENTE" styleClass="stat-label"/>
+            <Label fx:id="totalBountyTextLabel" text="CRÉDITS EN ATTENTE" styleClass="stat-label"/>
         </VBox>
     </VBox>
 

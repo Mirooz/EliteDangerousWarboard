@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -53,13 +54,39 @@ public class DestroyedShipsController implements Initializable, Refreshable {
     @FXML
     private VBox factionBountyStats;
 
+    @FXML
+    private Label destroyedShipsTitleLabel;
+
+    @FXML
+    private Label totalShipsTextLabel;
+
+    @FXML
+    private Label totalBountyTextLabel;
+
     private DestroyedShipsRegistery destroyedShipsRegistery = DestroyedShipsRegistery.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         destroyedShipsRegistery = DestroyedShipsRegistery.getInstance();
         initializeTable();
         UIManager.getInstance().register(this);
+        updateTranslations();
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> updateTranslations());
+    }
+
+    private void updateTranslations() {
+        destroyedShipsTitleLabel.setText(localizationService.getString("destroyed_ships.title"));
+        totalShipsTextLabel.setText(localizationService.getString("destroyed_ships.ships"));
+        totalBountyTextLabel.setText(localizationService.getString("destroyed_ships.credits_pending"));
+        
+        // Mettre à jour les en-têtes de colonnes
+        timeColumn.setText(localizationService.getString("destroyed_ships.time"));
+        shipNameColumn.setText(localizationService.getString("destroyed_ships.ship"));
+        pilotNameColumn.setText(localizationService.getString("destroyed_ships.pilot"));
+        bountyColumn.setText(localizationService.getString("destroyed_ships.bounty"));
     }
 
     private void initializeTable() {

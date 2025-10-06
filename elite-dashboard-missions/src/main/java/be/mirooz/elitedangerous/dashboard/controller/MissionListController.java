@@ -9,9 +9,11 @@ import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 
 import java.net.URL;
@@ -48,9 +50,22 @@ public class MissionListController implements Initializable, Refreshable {
 
     @FXML
     private Button allTypeFilterButton;
-    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
 
-    private final DashboardContext dashboardContext= DashboardContext.getInstance();
+    @FXML
+    private Label missionsTitleLabel;
+
+    @FXML
+    private Label typeFilterLabel;
+
+    @FXML
+    private Label statusFilterLabel;
+
+    @FXML
+    private Button languageButton;
+
+    private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
+    private final DashboardContext dashboardContext = DashboardContext.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         missionListView.setComponentFactory(MissionCardComponent::new);
@@ -58,6 +73,10 @@ public class MissionListController implements Initializable, Refreshable {
         filterAllTypeMissions(); // Initialiser avec tous les types
         dashboardContext.addFilterListener(this::applyFilter);
         UIManager.getInstance().register(this);
+        updateLanguage();
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> updateLanguage());
     }
 
     public void postBatch(){
@@ -149,6 +168,40 @@ public class MissionListController implements Initializable, Refreshable {
     @FXML
     private void filterAllTypeMissions() {
         DashboardContext.getInstance().setCurrentTypeFilter(null);
+    }
+
+    @FXML
+    private void toggleLanguage() {
+        if (localizationService.isFrench()) {
+            localizationService.setLanguage("en");
+        } else {
+            localizationService.setLanguage("fr");
+        }
+        updateLanguage();
+    }
+
+    private void updateLanguage() {
+        // Mettre à jour les labels
+        missionsTitleLabel.setText(localizationService.getString("missions.title"));
+        typeFilterLabel.setText(localizationService.getString("filter.type"));
+        statusFilterLabel.setText(localizationService.getString("filter.status"));
+
+        // Mettre à jour les boutons de type
+        massacreTypeFilterButton.setText(localizationService.getString("missions.massacre"));
+        conflictTypeFilterButton.setText(localizationService.getString("missions.conflict"));
+        allTypeFilterButton.setText(localizationService.getString("missions.all"));
+
+        // Mettre à jour les boutons de statut
+        activeFilterButton.setText(localizationService.getString("missions.active"));
+        completedFilterButton.setText(localizationService.getString("missions.completed"));
+        failedFilterButton.setText(localizationService.getString("missions.failed"));
+        allFilterButton.setText(localizationService.getString("missions.all_status"));
+
+        // Mettre à jour le bouton de langue
+        languageButton.setText(localizationService.isFrench() ? "EN" : "FR");
+        
+        // Rafraîchir les missions pour recréer les cartes avec les nouvelles traductions
+        refreshMissions();
     }
 
     @Override

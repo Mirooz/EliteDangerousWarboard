@@ -14,11 +14,11 @@
    <VBox alignment="CENTER_LEFT" spacing="2.0">
       <!-- Labels d'en-tête -->
       <HBox alignment="CENTER_LEFT" spacing="10.0">
-         <Label styleClass="footer-text" text="COMMANDANT" prefWidth="140"/>
+         <Label fx:id="commanderHeaderLabel" styleClass="footer-text" text="COMMANDANT" prefWidth="140"/>
          <Label styleClass="footer-text" text="|"/>
-         <Label styleClass="footer-text" text="SYSTÈME" prefWidth="160"/>
+         <Label fx:id="systemHeaderLabel" styleClass="footer-text" text="SYSTÈME" prefWidth="160"/>
          <Label styleClass="footer-text" text="|"/>
-         <Label styleClass="footer-text" text="STATION" prefWidth="160"/>
+         <Label fx:id="stationHeaderLabel" styleClass="footer-text" text="STATION" prefWidth="160"/>
       </HBox>
 
       <!-- Valeurs -->
@@ -37,10 +37,10 @@
                           >
       <!-- En-tête -->
       <HBox alignment="CENTER" spacing="40.0" styleClass="faction-header">
-         <Label text="Cible" styleClass="faction-col-header" prefWidth="100"/>
-         <Label text="Target Faction" styleClass="faction-col-header" prefWidth="150"/>
-         <Label text="Source Faction" styleClass="faction-col-header" prefWidth="150"/>
-         <Label text="Kills" styleClass="faction-col-header" prefWidth="50"/>
+         <Label fx:id="targetHeaderLabel" text="Cible" styleClass="faction-col-header" prefWidth="100"/>
+         <Label fx:id="targetFactionHeaderLabel" text="Target Faction" styleClass="faction-col-header" prefWidth="150"/>
+         <Label fx:id="sourceFactionHeaderLabel" text="Source Faction" styleClass="faction-col-header" prefWidth="150"/>
+         <Label fx:id="killsHeaderLabel" text="Kills" styleClass="faction-col-header" prefWidth="60"/>
       </HBox>
       <!-- Ici le contrôleur Java ajoutera dynamiquement les lignes -->
    </FactionStatsComponent>

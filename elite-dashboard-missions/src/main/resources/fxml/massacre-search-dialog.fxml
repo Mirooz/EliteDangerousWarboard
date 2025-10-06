@@ -17,42 +17,42 @@
     <!-- En-tête avec titre -->
     <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="dialog-header">
         <VBox spacing="2.0">
-            <Label text="RECHERCHE DE SYSTÈMES POUR MISSIONS" styleClass="dialog-title"/>
-            <Label text="Massacre et zones de conflit" styleClass="dialog-subtitle"/>
+            <Label fx:id="dialogTitleLabel" text="RECHERCHE DE SYSTÈMES POUR MISSIONS" styleClass="dialog-title"/>
+            <Label fx:id="dialogSubtitleLabel" text="Massacre et zones de conflit" styleClass="dialog-subtitle"/>
         </VBox>
     </HBox>
 
     <!-- TabPane pour les différents types de recherche -->
     <TabPane fx:id="searchTabPane" styleClass="elite-tab-pane" VBox.vgrow="ALWAYS">
         <!-- Onglet Massacre -->
-        <Tab text="MASSACRE" closable="false">
+        <Tab fx:id="massacreTab" text="MASSACRE" closable="false">
             <VBox spacing="15.0">
                 <!-- Panneau de configuration compact -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="config-panel">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label text="SYSTÈME:" styleClass="config-label"/>
+                        <Label fx:id="systemLabel" text="SYSTÈME:" styleClass="config-label"/>
                         <TextField fx:id="referenceSystemField" styleClass="config-field" prefWidth="150"
                                    promptText="Système de référence"/>
                     </HBox>
 
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label text="DISTANCE MAX:" styleClass="config-label"/>
+                        <Label fx:id="distanceLabel" text="DISTANCE MAX:" styleClass="config-label"/>
                         <Spinner fx:id="maxDistanceSpinner" editable="true" initialValue="100" min="30" max="250" prefWidth="80"
                                  styleClass="config-spinner"/>
-                        <Label text="AL" styleClass="config-unit"/>
+                        <Label fx:id="distanceUnitLabel" text="AL" styleClass="config-unit"/>
                     </HBox>
 
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label text="SOURCES MIN:" styleClass="config-label"/>
+                        <Label fx:id="sourcesLabel" text="SOURCES MIN:" styleClass="config-label"/>
                         <Spinner fx:id="minSourcesSpinner" editable="true" initialValue="1" min="1" max="5" prefWidth="70"
                                  styleClass="config-spinner"/>
-                        <Label text="SOURCES" styleClass="config-unit"/>
+                        <Label fx:id="sourcesUnitLabel" text="SOURCES" styleClass="config-unit"/>
                     </HBox>
                     
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                         <CheckBox fx:id="LPADonly">
                             <tooltip>
-                                <Tooltip showDelay="50ms" text="Large PAD uniquement"/>
+                                <Tooltip fx:id="largePadTooltip" showDelay="50ms" text="Large PAD uniquement"/>
                             </tooltip>
                         </CheckBox>
                         <Label text="L" styleClass="massacre-card-pad"/>
@@ -66,15 +66,15 @@
                 
                 <!-- En-tête des factions -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="faction-header">
-                    <Label text="SOURCE" styleClass="faction-header-label" prefWidth="100"/>
-                    <Label text="CIBLE" styleClass="faction-header-label" prefWidth="80"/>
-                    <Label text="[ # ]" styleClass="faction-header-label,hoverable-label" prefWidth="45">
+                    <Label fx:id="sourceHeaderLabel" text="SOURCE" styleClass="faction-header-label" prefWidth="100"/>
+                    <Label fx:id="targetHeaderLabel" text="CIBLE" styleClass="faction-header-label" prefWidth="80"/>
+                    <Label fx:id="countHeaderLabel" text="[ # ]" styleClass="faction-header-label,hoverable-label" prefWidth="45">
                         <tooltip>
-                            <Tooltip showDelay="50ms" text="Nombre de systèmes source pour ce système cible"/>
+                            <Tooltip fx:id="countTooltip" showDelay="50ms" text="Nombre de systèmes source pour ce système cible"/>
                         </tooltip>
                     </Label>
-                    <Label text="DISTANCE" styleClass="faction-header-label" prefWidth="70"/>
-                    <Label text="PADS" styleClass="faction-header-label" prefWidth="60"/>
+                    <Label fx:id="distanceHeaderLabel" text="DISTANCE" styleClass="faction-header-label" prefWidth="70"/>
+                    <Label fx:id="padsHeaderLabel" text="PADS" styleClass="faction-header-label" prefWidth="60"/>
                     <HBox alignment="CENTER" spacing="40.0">
                         <VBox alignment="CENTER" spacing="5.0">
                             <ImageView fx:id="fedHeaderIcon" fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" styleClass="icon-cursor"
@@ -93,7 +93,7 @@
                                        preserveRatio="true" onMouseClicked="#toggleHighlight" userData="independent"/>
                         </VBox>
                     </HBox>
-                    <Label text="RES" styleClass="faction-header-label" translateX="30"/>
+                    <Label fx:id="resHeaderLabel" text="RES" styleClass="faction-header-label" translateX="30"/>
                 </HBox>
                 
                 <!-- Liste des systèmes massacre -->
@@ -104,12 +104,12 @@
         </Tab>
         
         <!-- Onglet Conflit -->
-        <Tab text="CONFLIT" closable="false">
+        <Tab fx:id="conflictTab" text="CONFLIT" closable="false">
             <VBox spacing="15.0">
                 <!-- Panneau de configuration pour les conflits -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="config-panel">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label text="SYSTÈME:" styleClass="config-label"/>
+                        <Label fx:id="conflictSystemLabel" text="SYSTÈME:" styleClass="config-label"/>
                         <TextField fx:id="conflictReferenceSystemField" styleClass="config-field" prefWidth="150"
                                    promptText="Système de référence"/>
                     </HBox>
@@ -121,11 +121,11 @@
                 
                 <!-- En-tête pour les conflits -->
                 <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="conflict-header">
-                    <Label text="SYSTÈME" styleClass="faction-header-label" prefWidth="140"/>
-                    <Label text="DISTANCE" styleClass="faction-header-label" prefWidth="90"/>
-                    <Label text="FACTION" styleClass="faction-header-label" prefWidth="160"/>
-                    <Label text="OPPOSANT" styleClass="faction-header-label" prefWidth="180"/>
-                    <Label text="CONFLIT DE SURFACE" styleClass="faction-header-label" prefWidth="200"/>
+                    <Label fx:id="conflictSystemHeaderLabel" text="SYSTÈME" styleClass="faction-header-label" prefWidth="140"/>
+                    <Label fx:id="conflictDistanceHeaderLabel" text="DISTANCE" styleClass="faction-header-label" prefWidth="90"/>
+                    <Label fx:id="conflictFactionHeaderLabel" text="FACTION" styleClass="faction-header-label" prefWidth="160"/>
+                    <Label fx:id="conflictOpponentHeaderLabel" text="OPPOSANT" styleClass="faction-header-label" prefWidth="180"/>
+                    <Label fx:id="conflictSurfaceHeaderLabel" text="CONFLIT DE SURFACE" styleClass="faction-header-label" prefWidth="200"/>
                 </HBox>
                 
                 <!-- Liste des conflits -->
