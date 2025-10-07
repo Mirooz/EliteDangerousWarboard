@@ -1,189 +1,211 @@
-# Elite Dangerous Dashboard
+# Elite Dangerous Warboard
 
 ## Description
 
-Le Elite Dangerous Dashboard est une application JavaFX conçue pour améliorer l'expérience de jeu Elite Dangerous en fournissant une vue d'ensemble en temps réel de la progression des missions, des vaisseaux détruits et des statistiques de bounty. Elle traite les événements de journal générés par le jeu pour afficher les informations pertinentes dans une interface propre et intuitive.
+**Elite Dangerous Warboard** is a specialized dashboard designed to optimize the Elite Dangerous gaming experience, specifically focused on massacre and conflict missions. The application analyzes game journal files in real-time to provide a comprehensive overview of your missions, combat statistics, and mission opportunities.
 
-![exempledashboard.png](elite-dashboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fexempledashboard.png)
-## Fonctionnalités
+![exempledashboard.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fexempledashboard.png)
 
-### 🎯 Suivi des missions en temps réel
-- **Missions de massacre actives** : Affiche les missions actives avec les factions cibles, la progression et les récompenses attendues
-- **Indicateur de mission Wing** : Les missions contenant "Wing_name" dans leur titre sont marquées avec une icône "✈"
-- **Filtrage dynamique** : Filtre les missions par statut (Actives, Complétées, Abandonnées, Toutes)
-- **Filtrage par faction** : Cliquez sur une entrée dans le tableau des statistiques du footer pour filtrer les missions actives par cette faction source et cible spécifique
+## 🎯 Main Features
 
-### 🚀 Gestion des vaisseaux détruits
-- **Journal des vaisseaux détruits** : Liste les vaisseaux récemment détruits, leurs bounties et l'heure de destruction
-- **Statistiques de bounty** : Suit le bounty total gagné et la répartition par faction depuis le dernier reset
-- **Reset automatique** : Tous les logs de vaisseaux détruits et statistiques de bounty sont automatiquement réinitialisés lors d'un événement `RedeemVoucher` (spécifiquement pour bounty)
+### 📊 **Massacre Mission Dashboard**
+- **Mission stacking** : Visualize all your active massacre missions with real-time progression
+- **Conflict missions** : Track civil war and conflict missions
+- **Smart filtering** : Filter by type (Massacre/Conflict) and status (Active/Completed/Failed) with styled ComboBoxes
+- **Wing missions** : Automatic detection of wing missions with distinctive icon
+- **Visual progression** : Progress bars to track your kills toward objectives
 
-### 💰 Gestion des crédits
-- **Crédits en attente** : Pour les missions actives, les crédits des missions complétées mais non récupérées sont affichés séparément dans l'en-tête comme "CRÉDITS EN ATTENTE" en bleu
-- **Crédits espérés** : Affiche le total des crédits attendus des missions actives
+### 🔍 **Combat System Search**
+- **Massacre search** : Find systems conducive to massacre missions via EdTools API
+- **Conflict search** : Locate civil war and conflict zones via Inara API
+- **Advanced filters** : Maximum distance, minimum sources, large pads only
+- **Faction filtering** : Filter results by Federation, Empire, Alliance, or Independent
+- **Bilingual interface** : English and French with explanatory descriptions
 
-### 📊 Statistiques avancées
-- **Mise en évidence des kills** : Dans le tableau des statistiques de faction du footer, le plus haut nombre de kills pour une faction cible est affiché en gras orange, tandis que les autres entrées montrent le nombre de kills et la différence au plus haut nombre en vert (ex: "8 (-7)")
-- **Complétion automatique** : Les missions de massacre qui reçoivent un événement `MissionRedirected` auront leur `currentCount` défini à `targetCount` pour les marquer comme complétées, sans changer leur statut
+### 💰 **Credits and Bounty Management**
+- **Pending credits** : Track credits from completed but unredeemed missions
+- **Potential credits** : Estimate total earnings from active missions
+- **Bounty journal** : History of destroyed ships with bounties and timestamps
+- **Automatic reset** : Automatic reset when redeeming bounties
 
-### 🎨 Interface utilisateur
-- **Thème Elite Dangerous** : CSS personnalisé pour un thème cohérent Elite Dangerous
-- **Tailles de police ajustées** : Tailles de police améliorées pour une meilleure lisibilité des informations clés
-- **Interface épurée** : Design moderne et intuitif sans boutons inutiles
+### 🚀 **Advanced Features**
+- **New commander detection** : Automatic popup and journal re-reading when switching commanders
+- **Real-time reading** : Automatic monitoring of new journal files
+- **Elite Dangerous interface** : Visual theme consistent with the game universe
+- **Network error handling** : Translated error popups in case of connection issues
+[seachsystem](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fseachsystem)
+## 🛠️ Installation
 
-## Technologies utilisées
+### **Simple Installation (Recommended)**
+1. Download `EliteWarboard-Setup.exe` from releases
+2. Run the installer
+3. Launch the application from Start Menu or desktop
 
-- **JavaFX** : Pour construire l'interface utilisateur graphique
-- **Maven** : Pour la gestion de projet et l'automatisation de build
-- **Jackson** : Pour analyser les fichiers journal JSON
-- **Lombok** : Pour réduire le code boilerplate (getters, setters)
+**✅ No external downloads required** : JDK and JavaFX are embedded in the installer. No Java installation or additional dependencies needed.
 
-## Prérequis
+### **Configuration**
+1. On first launch, configure your Elite Dangerous journal folder
+2. Default location: `C:/Users/[YourName]/Saved Games/Frontier Developments/Elite Dangerous`
+3. Select your language (English/French)
+4. The application automatically starts analyzing your journals
 
-- Java Development Kit (JDK) 17 ou supérieur
-- Apache Maven 3.6.0 ou supérieur
-- Elite Dangerous installé (pour générer les fichiers journal)
+## 🎮 Usage
 
-## Installation et configuration
+### **Main Interface**
+- **Header** : Overview of active missions, credits and statistics
+- **Left panel** : Destroyed ships journal and bounties
+- **Center panel** : Mission list with ComboBox filters
+- **Right panel** : Detailed faction statistics
+- **Footer** : Commander information and current system
 
-### 1. Cloner le repository
-```bash
-git clone https://github.com/your-repo/elite-dangerous-dashboard.git
-cd elite-dangerous-dashboard/elite-dashboard
+### **System Search**
+1. Click "SEARCH COMBAT SYSTEMS" in the header
+2. Choose "MASSACRE" or "CONFLICT" tab
+3. Configure your search criteria
+4. Click "SEARCH" to get results
+5. Click on a system to copy it to clipboard
+
+### **Mission Filtering**
+- **Type** : All, Massacre, Conflict
+- **Status** : All, Active, Completed, Failed
+- **Faction** : Click on a row in statistics to filter
+
+
+![seachsystem.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fseachsystem.png)
+## 🌐 Language Support
+
+The application is available in **English and French** with complete interface translation including:
+- All menus and buttons
+- Error messages and notifications
+- System search descriptions
+- Mission types and statuses
+
+## 🔧 Technologies Used
+
+- **JavaFX 17** : Modern user interface
+- **Maven** : Project management and automated build
+- **Jackson** : JSON journal file analysis
+- **Lombok** : Boilerplate code reduction
+- **EdTools API** : Massacre system search
+- **Inara API** : Conflict zone search
+- **jpackage** : Installer creation with embedded runtime
+
+## 📁 Project Structure
+
+```
+elite-warboard-missions/
+├── src/main/java/be/mirooz/elitedangerous/dashboard/
+│   ├── controller/          # JavaFX controllers
+│   ├── handlers/            # Journal event handlers
+│   ├── model/               # Data models and enums
+│   ├── service/             # Business services (EdTools, Inara, Journal)
+│   └── ui/                  # Interface components
+├── src/main/resources/
+│   ├── css/                 # Elite Dangerous theme
+│   ├── fxml/               # User interfaces
+│   ├── images/             # Icons and images
+│   └── messages_*.properties # Translations
+├── executable/             # Final build with embedded runtime
+└── installer.iss           # Inno Setup installation script
 ```
 
-### 2. Configurer le dossier journal
-L'application doit savoir où se trouvent vos fichiers journal Elite Dangerous. Vous pouvez configurer cela dans le fichier `pom.xml`.
+## 📋 Supported Journal Events
 
-Ouvrez `pom.xml` et localisez la configuration `exec-maven-plugin`. Mettez à jour la balise `<value>` dans `<systemProperty>` avec le chemin de votre dossier journal Elite Dangerous.
+The application automatically processes these Elite Dangerous events:
 
-```xml
-<plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>exec-maven-plugin</artifactId>
-    <version>3.1.0</version>
-    <configuration>
-        <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
-        <systemProperties>
-            <systemProperty>
-                <key>journal.folder</key>
-                <value>C:\Users\ewen_\Saved Games\Frontier Developments\Elite Dangerous</value> <!-- METTRE À JOUR CE CHEMIN -->
-            </systemProperty>
-        </systemProperties>
-    </configuration>
-    <goals>
-        <goal>java</goal>
-    </goals>
-</plugin>
-```
+- `MissionAccepted` : Adds a new mission
+- `MissionCompleted` : Marks a mission as completed
+- `MissionFailed` : Marks a mission as failed
+- `MissionRedirected` : Marks massacre missions as completed
+- `Bounty` : Updates kill counters and bounties
+- `RedeemVoucher` : Resets bounty statistics
+- `Commander` : Detects commander changes
+- `LoadGame` : Updates ship information
+- `Location` : Updates current position
+- `Docked`/`Undocked` : Tracks docking status
 
-**Note :** Assurez-vous que le chemin est correct pour votre système. Si votre chemin contient des espaces, il devrait être géré correctement par Maven.
+## 🌐 External APIs
 
-### 3. Construire et exécuter
-Naviguez vers le répertoire `elite-dashboard` dans votre terminal et exécutez :
+- **EdTools PvE** : Massacre system search
+- **Inara** : Conflict zone and civil war search
+- **Error handling** : Translated network error popups
 
+## 🎨 User Interface
+
+- **Elite Dangerous theme** : Characteristic orange/cyan colors
+- **Styled ComboBoxes** : Consistent filter styling
+- **Contextual popups** : Error messages and notifications
+- **Responsive** : Adaptive interface with optimized padding and spacing
+- **Bilingual** : Complete English/French support
+
+## 🚀 Build and Development
+
+### **Local Build**
 ```bash
 mvn clean install
+```
+
+### **Installer Creation**
+```bash
+mvn clean install
+# Automatically generates EliteWarboard-Setup.exe with embedded runtime
+```
+
+### **Development**
+```bash
 mvn exec:java
 ```
 
-La fenêtre de l'application devrait apparaître, affichant vos données de missions et bounty Elite Dangerous en lisant vos fichiers journal.
+## 📝 Changelog
 
-## Utilisation
-
-### Interface utilisateur
-
-- **En-tête** : Fournit un aperçu rapide des missions actives, des factions impliquées et des crédits attendus/en attente
-- **Panneau gauche (VAISSEAUX DÉTRUITS)** : Affiche une liste des vaisseaux que vous avez détruits et votre bounty total. Cette liste et le bounty total se réinitialisent lorsque vous récupérez les bounties en jeu
-- **Panneau droit (MISSIONS DE MASSACRE)** : Affiche vos missions de massacre actives. Les barres de progression indiquent votre nombre de kills vers l'objectif. Utilisez les boutons de filtre pour voir les missions par statut
-- **Footer** : Affiche votre nom de commandant, système actuel, station et vaisseau. Le côté droit du footer affiche des statistiques détaillées de kills par faction cible et source. Cliquez sur une ligne dans ce tableau pour filtrer les missions actives dans le panneau droit pour ne montrer que les missions liées à cette faction source et cible spécifique. Cliquez à nouveau pour effacer le filtre
-
-### Fonctionnalités interactives
-
-1. **Filtrage des missions** : Utilisez les boutons en haut du panneau des missions pour filtrer par statut
-2. **Filtrage par faction** : Cliquez sur une ligne dans le tableau des statistiques du footer pour filtrer les missions actives
-3. **Surbrillance** : La ligne sélectionnée dans le tableau des factions est mise en surbrillance en orange
-4. **Annulation du filtre** : Cliquez à nouveau sur la même ligne pour annuler le filtre
-
-## Structure du projet
-
-```
-elite-dashboard/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── be/mirooz/elitedangerous/dashboard/
-│   │   │       ├── controller/          # Contrôleurs JavaFX
-│   │   │       ├── handlers/            # Gestionnaires d'événements journal
-│   │   │       ├── model/               # Modèles de données
-│   │   │       ├── service/             # Services métier
-│   │   │       └── ui/                  # Gestionnaire d'interface
-│   │   └── resources/
-│   │       ├── css/                     # Styles CSS
-│   │       ├── fxml/                    # Fichiers FXML
-│   │       └── exemple/                 # Exemples de fichiers journal
-│   └── test/                            # Tests unitaires
-├── pom.xml                              # Configuration Maven
-└── README.md                            # Ce fichier
-```
-
-## Événements journal supportés
-
-L'application traite les événements suivants du journal Elite Dangerous :
-
-- `MissionAccepted` : Ajoute une nouvelle mission
-- `MissionCompleted` : Marque une mission comme complétée
-- `MissionFailed` : Marque une mission comme échouée
-- `MissionRedirected` : Marque les missions de massacre comme complétées
-- `Bounty` : Met à jour le compteur de kills et les bounties
-- `RedeemVoucher` : Réinitialise les statistiques de bounty
-- `Commander` : Met à jour le nom du commandant
-- `LoadGame` : Met à jour les informations du vaisseau
-- `Location` : Met à jour la position actuelle
-
-## Développement
-
-### Ajout de nouvelles fonctionnalités
-
-1. **Nouveaux événements journal** : Ajoutez un nouveau handler dans `src/main/java/be/mirooz/elitedangerous/dashboard/handlers/events/`
-2. **Nouveaux modèles** : Ajoutez les modèles de données dans `src/main/java/be/mirooz/elitedangerous/dashboard/model/`
-3. **Nouveaux contrôleurs** : Ajoutez les contrôleurs JavaFX dans `src/main/java/be/mirooz/elitedangerous/dashboard/controller/`
-
-### Tests
-
-```bash
-mvn test
-```
-
-## Contribution
-
-1. Fork le projet
-2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-## Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## Support
-
-Si vous rencontrez des problèmes ou avez des questions :
-
-1. Vérifiez que votre chemin journal est correct dans `pom.xml`
-2. Assurez-vous que Elite Dangerous génère des fichiers journal
-3. Vérifiez que Java 17+ et Maven 3.6+ sont installés
-4. Ouvrez une issue sur GitHub avec les détails de votre problème
-
-## Changelog
+### Version 1.1.0
+- ✅ Automatic new commander detection
+- ✅ Notification popup with automatic journal re-reading
+- ✅ Immediate reading of new journal files
+- ✅ Network error handling with translated popups
+- ✅ Styled ComboBoxes for mission filters
+- ✅ Explanatory descriptions for search tabs
+- ✅ Complete conflict mission support
+- ✅ Bilingual English/French interface
 
 ### Version 1.0.0
-- Suivi des missions de massacre en temps réel
-- Journal des vaisseaux détruits
-- Statistiques de bounty par faction
-- Filtrage interactif des missions
-- Interface utilisateur Elite Dangerous
-- Support des missions Wing
-- Reset automatique des bounties
-- Gestion des crédits en attente
+- ✅ Real-time massacre mission dashboard
+- ✅ System search via EdTools and Inara
+- ✅ Destroyed ships journal
+- ✅ Faction bounty statistics
+- ✅ Interactive mission filtering
+- ✅ Elite Dangerous user interface
+- ✅ Wing mission support
+- ✅ Automatic bounty reset
+
+## 🤝 Contributing
+
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## 🆘 Support
+
+If you encounter issues:
+
+1. Verify your Elite Dangerous journal folder is correctly configured
+2. Ensure Elite Dangerous is generating journal files
+3. Check your internet connection for system searches
+4. Open a GitHub issue with your problem details
+
+## 🎯 Project Goal
+
+**Elite Dangerous Warboard** is specifically designed to optimize the experience for players focused on massacre and conflict missions. It enables you to:
+
+- **Efficiently stack** massacre missions to maximize earnings
+- **Quickly find** the best systems for combat missions
+- **Track in real-time** your mission progression
+- **Optimize** your credit and reputation farming strategy
+
+The application is completely self-contained and requires no external dependency installation.
