@@ -140,6 +140,8 @@ public class HeaderController implements Initializable, IRefreshable, IBatchList
             setPendingCredits(filteredMissions);
             setLostCredits(filteredMissions);
         }
+
+        updateStatusLabel();
     }
 
     private void setMissionsLabel(String label, List<Mission> filteredMissions) {

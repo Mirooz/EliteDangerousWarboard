@@ -106,10 +106,11 @@ public class MissionService {
             if (isPirateShipKilled(jsonNode)) {
                 System.out.println("Pirate bounty");
                 eligibleMissions = getPirateShipMissions(victimFaction);
-            } else if (isDeserteurShipKilled(jsonNode)) {
+            }
+            /*else if (isDeserteurShipKilled(jsonNode)) {
                 System.out.println("Deserteur bounty");
                 eligibleMissions = getDeserteurShipMissions(victimFaction);
-            }
+            }*/
         }
 //        else if (isOnFoot(jsonNode)){
 //            //Pirate par defaut
@@ -185,10 +186,13 @@ public class MissionService {
     }
 
     private boolean isPirateShipKilled(JsonNode jsonNode) {
+        return true;
+        /*TODO Les deserteur ne sont pas dinstinguable*/
+       /*
         String pilotName_Localised = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
         ShipTarget shipTarget = getShipTarget(jsonNode, pilotName_Localised);
         if (shipTarget == null) return false;
-        return shipTarget.isPirate();
+        return shipTarget.isPirate();*/
     }
 
     private boolean isShip(JsonNode jsonNode) {
