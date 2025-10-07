@@ -1,10 +1,17 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.ShipTargetRegistry;
 import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
+import javafx.application.Platform;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,34 +23,55 @@ import java.util.List;
  */
 public class DashboardService {
     private static final DashboardService INSTANCE = new DashboardService();
+
     private DashboardService() {
         this.journalService = JournalService.getInstance();
     }
-    public static DashboardService getInstance() { return INSTANCE; }
 
+
+    public void addBatchListener(IBatchListener controller) {
+        listeners.add(controller);
+    }
+    public static DashboardService getInstance() {
+        return INSTANCE;
+    }
+
+    private final List<IBatchListener> listeners = new ArrayList<>();
     private final JournalService journalService;
 
     /**
      * Récupère la liste des missions actives
+     *
      * @return Liste des missions actives
      */
-    public void InitActiveMissions() {
-        // Essayer de lire les données réelles des journaux
-        try {
+    public void initActiveMissions() {
+        listeners.forEach(l -> Platform.runLater(l::onBatchStart));
 
-            journalService.getMissionsFromLastWeek();
-        } catch (Exception e) {
-            System.err.println("Impossible de lire les journaux, utilisation des données de test: " + e.getMessage());
-        }
+        new Thread(() -> {
+            try {
+                MissionsRegistry.getInstance().clear();
+                DestroyedShipsRegistery.getInstance().clearAll();
+                ShipTargetRegistry.getInstance().clear();
+                JournalTailService.getInstance().stop();
+                JournalWatcherService.getInstance().stop();
+                journalService.getMissionsFromLastWeek();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
+                DashboardContext.getInstance().refreshUI();
+            }
+        }).start();
     }
 
     /**
      * Génère des missions de test pour la démonstration
+     *
      * @return Liste de missions de test
      */
     private List<Mission> generateTestMissions() {
         List<Mission> missions = new ArrayList<>();
-        
+
         // Mission 1: Transport de courrier
         Mission mission1 = new Mission();
         mission1.setId("M001");
@@ -59,7 +87,7 @@ public class DashboardService {
         mission1.setReputation(1);
         mission1.setExpiry(LocalDateTime.now().plusHours(6));
         missions.add(mission1);
-        
+
         // Mission 2: Chasse aux primes
         Mission mission2 = new Mission();
         mission2.setId("M002");
@@ -77,7 +105,7 @@ public class DashboardService {
         mission2.setTargetCount(1);
         mission2.setCurrentCount(0);
         missions.add(mission2);
-        
+
         // Mission 3: Livraison de marchandises
         Mission mission3 = new Mission();
         mission3.setId("M003");
@@ -95,7 +123,7 @@ public class DashboardService {
         mission3.setCommodity("Painite");
         mission3.setCommodityCount(50);
         missions.add(mission3);
-        
+
         // Mission 4: Transport de passagers
         Mission mission4 = new Mission();
         mission4.setId("M004");
@@ -111,7 +139,7 @@ public class DashboardService {
         mission4.setReputation(1);
         mission4.setExpiry(LocalDateTime.now().plusDays(1));
         missions.add(mission4);
-        
+
         // Mission 5: Massacre de pirates
         Mission mission5 = new Mission();
         mission5.setId("M005");
@@ -130,7 +158,7 @@ public class DashboardService {
         mission5.setCurrentCount(8);
         mission5.setTargetFaction("Pirates de l'Espace");
         missions.add(mission5);
-        
+
         // Mission 9: Massacre de pirates - Fédération
         Mission mission9 = new Mission();
         mission9.setId("M009");
@@ -149,7 +177,7 @@ public class DashboardService {
         mission9.setCurrentCount(12);
         mission9.setTargetFaction("Pirates de l'Espace");
         missions.add(mission9);
-        
+
         // Mission 10: Massacre de pirates - Empire
         Mission mission10 = new Mission();
         mission10.setId("M010");
@@ -168,7 +196,7 @@ public class DashboardService {
         mission10.setCurrentCount(18);
         mission10.setTargetFaction("Pirates de l'Espace");
         missions.add(mission10);
-        
+
         // Mission 11: Massacre de pirates - Alliance
         Mission mission11 = new Mission();
         mission11.setId("M011");
@@ -187,7 +215,7 @@ public class DashboardService {
         mission11.setCurrentCount(7);
         mission11.setTargetFaction("Pirates de l'Espace");
         missions.add(mission11);
-        
+
         // Mission 12: Massacre de pirates - Fédération
         Mission mission12 = new Mission();
         mission12.setId("M012");
@@ -206,7 +234,7 @@ public class DashboardService {
         mission12.setCurrentCount(22);
         mission12.setTargetFaction("Pirates de l'Espace");
         missions.add(mission12);
-        
+
         // Mission 6: Exploration
         Mission mission6 = new Mission();
         mission6.setId("M006");
@@ -222,7 +250,7 @@ public class DashboardService {
         mission6.setReputation(2);
         mission6.setExpiry(LocalDateTime.now().plusDays(7));
         missions.add(mission6);
-        
+
         // Mission 7: Récupération
         Mission mission7 = new Mission();
         mission7.setId("M007");
@@ -240,7 +268,7 @@ public class DashboardService {
         mission7.setTargetCount(5);
         mission7.setCurrentCount(3);
         missions.add(mission7);
-        
+
         // Mission 8: Scan
         Mission mission8 = new Mission();
         mission8.setId("M008");
@@ -256,7 +284,8 @@ public class DashboardService {
         mission8.setReputation(1);
         mission8.setExpiry(LocalDateTime.now().plusHours(8));
         missions.add(mission8);
-        
+
         return missions;
     }
+
 }

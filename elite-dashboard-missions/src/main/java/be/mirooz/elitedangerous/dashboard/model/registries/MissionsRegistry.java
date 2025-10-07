@@ -29,5 +29,9 @@ public class MissionsRegistry {
             }
         });
     }
+    public void clear(){
+        globalMissionMap.clear();
+    }
+
 
 }

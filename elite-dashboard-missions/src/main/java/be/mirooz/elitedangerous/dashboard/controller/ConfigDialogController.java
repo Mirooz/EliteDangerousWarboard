@@ -1,7 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -21,6 +23,9 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private Label configTitleLabel;
+
+    @FXML
+    private Label configSubtitleLabel;
 
     @FXML
     private Label languageSectionLabel;
@@ -48,6 +53,7 @@ public class ConfigDialogController implements Initializable {
 
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
+    private final DashboardService dashboardService = DashboardService.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -62,12 +68,19 @@ public class ConfigDialogController implements Initializable {
         
         // Initialiser le champ du dossier journal
         journalFolderTextField.setText(preferencesService.getJournalFolder());
+        
+        // Stocker le chemin initial pour détecter les changements
+        originalJournalFolder = preferencesService.getJournalFolder();
     }
+    
+    private String originalJournalFolder;
 
     private void updateTranslations() {
         configTitleLabel.setText(localizationService.getString("config.title"));
+        configSubtitleLabel.setText(localizationService.getString("config.subtitle"));
         languageSectionLabel.setText(localizationService.getString("config.language"));
         journalFolderSectionLabel.setText(localizationService.getString("config.journal.folder"));
+        browseJournalFolderButton.setText(localizationService.getString("config.browse"));
         saveButton.setText(localizationService.getString("config.save"));
         cancelButton.setText(localizationService.getString("config.cancel"));
     }
@@ -94,7 +107,15 @@ public class ConfigDialogController implements Initializable {
         }
         
         // Sauvegarder le dossier journal
-        preferencesService.setJournalFolder(journalFolderTextField.getText());
+        String newJournalFolder = journalFolderTextField.getText();
+        preferencesService.setJournalFolder(newJournalFolder);
+        
+        // Si le dossier journal a changé, relancer le chargement des missions
+        if (!newJournalFolder.equals(originalJournalFolder)) {
+            // Relancer le chargement des missions dans un thread séparé
+            dashboardService.initActiveMissions();
+
+        }
         
         // Fermer la fenêtre
         Stage stage = (Stage) saveButton.getScene().getWindow();

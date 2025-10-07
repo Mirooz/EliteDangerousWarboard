@@ -66,7 +66,16 @@ public class DestroyedShipsRegistery {
         }
     }
 
+    public void clearAll() {
+        // Réinitialise les récompenses de bounty
+        clearBounty();
 
+        // Réinitialise les récompenses de combat
+        clearCombatBond();
+
+        // Vide la liste principale de tous les vaisseaux restants (au cas où il y aurait d'autres types)
+        destroyedShips.clear();
+    }
     public void clearBounty(){
         totalBountyEarned=0;
         this.bountyPerFaction = new HashMap<>();

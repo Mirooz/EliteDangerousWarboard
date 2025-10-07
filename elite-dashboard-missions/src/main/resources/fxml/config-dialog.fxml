@@ -8,18 +8,20 @@
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="be.mirooz.elitedangerous.dashboard.controller.ConfigDialogController"
            styleClass="config-dialog"
-           prefWidth="400" prefHeight="300">
+           prefWidth="750" prefHeight="1000">
 
     <VBox spacing="20.0" styleClass="config-content">
         <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
         </padding>
 
-        <!-- Titre -->
-        <VBox alignment="CENTER" spacing="5.0">
-            <Label fx:id="configTitleLabel" text="CONFIGURATION" styleClass="config-title"/>
-            <Separator styleClass="config-separator"/>
-        </VBox>
+        <!-- En-tête avec titre -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="config-header">
+            <VBox spacing="2.0">
+                <Label fx:id="configTitleLabel" text="CONFIGURATION" styleClass="config-title"/>
+                <Label fx:id="configSubtitleLabel" text="Paramètres de l'application" styleClass="config-subtitle"/>
+            </VBox>
+        </HBox>
 
         <!-- Section Langue -->
         <VBox spacing="10.0" styleClass="config-section">
@@ -39,18 +41,18 @@
             
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <TextField fx:id="journalFolderTextField" styleClass="config-textfield" 
-                          promptText="Chemin vers le dossier Journal Elite Dangerous"/>
+                          promptText="Chemin vers le dossier Journal Elite Dangerous" HBox.hgrow="ALWAYS"/>
                 <Button fx:id="browseJournalFolderButton" text="Parcourir..." 
-                       onAction="#browseJournalFolder" styleClass="config-browse-button"/>
+                       onAction="#browseJournalFolder" styleClass="elite-button"/>
             </HBox>
         </VBox>
 
-        <!-- Boutons -->
-        <HBox alignment="CENTER_RIGHT" spacing="15.0">
+        <!-- Panneau des boutons d'action -->
+        <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="config-action-panel">
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveConfig"
-                    styleClass="config-save-button" text="SAUVEGARDER"/>
+                    styleClass="elite-button" text="SAUVEGARDER"/>
             <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelConfig"
-                    styleClass="config-cancel-button" text="ANNULER"/>
+                    styleClass="elite-button-secondary" text="ANNULER"/>
         </HBox>
     </VBox>
 

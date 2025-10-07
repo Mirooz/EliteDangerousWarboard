@@ -26,7 +26,7 @@ import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNum
 /**
  * Contrôleur pour l'en-tête du dashboard
  */
-public class HeaderController implements Initializable, Refreshable {
+public class HeaderController implements Initializable, IRefreshable, IBatchListener {
     @FXML
     public Label missionCountTextLabel;
     @FXML
@@ -208,13 +208,18 @@ public class HeaderController implements Initializable, Refreshable {
     private void openConfigDialog() {
         Stage primaryStage = (Stage) configButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 400, 300);
+        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 400);
 
         dialog.init(primaryStage);
         dialog.showAndWait();
     }
 
-    public void postBatch() {
+    @Override
+    public void onBatchStart(){
+        statusLabel.styleProperty().unbind();
+    }
+    @Override
+    public void onBatchEnd() {
         updateStatusLabel();
         // Binding conditionnel pour la couleur du statut
         statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent

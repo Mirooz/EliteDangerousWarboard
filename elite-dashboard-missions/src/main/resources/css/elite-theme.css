@@ -85,17 +85,28 @@
 
 .config-content {
     -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 20, 0, 0, 5);
+}
+
+.config-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 15;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 2 0;
 }
 
 .config-title {
+    -fx-text-fill: -fx-elite-orange;
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: -fx-elite-orange;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
 }
 
-.config-separator {
-    -fx-background-color: -fx-elite-orange;
+.config-subtitle {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
 }
 
 .config-section {
@@ -188,21 +199,13 @@
     -fx-text-fill: -fx-elite-dark;
 }
 
-.elite-button-secondary {
-    -fx-background-color: transparent;
-    -fx-border-color: -fx-elite-text-dim;
-    -fx-border-width: 1;
-    -fx-text-fill: -fx-elite-text-dim;
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-padding: 8 16 8 16;
-    -fx-cursor: hand;
+.config-action-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 15;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2 0 0 0;
 }
 
-.elite-button-secondary:hover {
-    -fx-background-color: -fx-elite-text-dim;
-    -fx-text-fill: -fx-elite-dark;
-}
 
 .header-separator {
     -fx-background-color: -fx-elite-orange;
@@ -1431,12 +1434,14 @@
     -fx-text-fill: -fx-elite-text;
     -fx-font-weight: bold;
     -fx-font-size: 12px;
-    -fx-padding: 10 20;
+    -fx-padding: 8 16;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
     -fx-border-radius: 4;
     -fx-background-radius: 4;
 }
+
+
 
 .elite-button-secondary:hover {
     -fx-background-color: -fx-elite-light-gray;

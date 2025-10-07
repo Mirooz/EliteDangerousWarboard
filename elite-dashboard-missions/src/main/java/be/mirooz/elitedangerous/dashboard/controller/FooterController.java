@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Contrôleur pour le pied de page du dashboard
  */
-public class FooterController implements Initializable, Refreshable {
+public class FooterController implements Initializable, IRefreshable, IBatchListener {
 
     // Constantes pour garantir l'alignement
 
@@ -88,8 +88,15 @@ public class FooterController implements Initializable, Refreshable {
         sourceFactionHeaderLabel.setText(localizationService.getString("footer.source_faction"));
         killsHeaderLabel.setText(localizationService.getString("footer.kills"));
     }
+    @Override
+    public void onBatchStart(){
+        stationLabel.textProperty().unbind();
+        systemLabel.textProperty().unbind();
+        commanderLabel.textProperty().unbind();
+    }
 
-    public void postBatch(){
+    @Override
+    public void onBatchEnd() {
         stationLabel.textProperty().bind(commanderStatusComponent.getCurrentStationName());
         systemLabel.textProperty().bind(commanderStatusComponent.getCurrentStarSystem());
         commanderLabel.textProperty().bind(commanderStatusComponent.getCommanderName());

@@ -23,7 +23,7 @@ import java.util.ResourceBundle;
 /**
  * Contrôleur pour la liste des missions
  */
-public class MissionListController implements Initializable, Refreshable {
+public class MissionListController implements Initializable, IRefreshable, IBatchListener {
     @FXML
     private ProgressIndicator loadingIndicator;
     @FXML
@@ -76,11 +76,12 @@ public class MissionListController implements Initializable, Refreshable {
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateLanguage());
     }
-
-    public void postBatch(){
+    @Override
+    public void onBatchEnd() {
         setLoadingVisible(false);
     }
-    public void preBatch(){
+    @Override
+    public void onBatchStart() {
         setLoadingVisible(true);
     }
     private void setLoadingVisible(boolean visible) {

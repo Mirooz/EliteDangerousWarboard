@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.service.MissionService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Platform;
@@ -28,13 +29,7 @@ public class DashboardController implements Initializable {
 
     @FXML
     private StackPane popupContainer;
-
-    private HeaderController headerController;
-    private MissionListController missionListController;
-    private FooterController footerController;
-    private DestroyedShipsController destroyedShipsController;
-    private final DashboardService dashboardService= DashboardService.getInstance();
-    private final DashboardContext dashboardContext= DashboardContext.getInstance();
+    private final DashboardService dashboardService = DashboardService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
 
     @Override
@@ -70,54 +65,38 @@ public class DashboardController implements Initializable {
     private void createFooterPanel() throws IOException {
         FXMLLoader footerLoader = new FXMLLoader(getClass().getResource("/fxml/footer.fxml"));
         javafx.scene.layout.HBox footer = footerLoader.load();
-        footerController = footerLoader.getController();
+        FooterController footerController = footerLoader.getController();
+        dashboardService.addBatchListener(footerController);
         mainPane.setBottom(footer);
     }
 
     private void createMissionPanel() throws IOException {
         FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/mission-list.fxml"));
         VBox missionList = missionListLoader.load();
-        missionListController = missionListLoader.getController();
+        MissionListController missionListController = missionListLoader.getController();
+        dashboardService.addBatchListener(missionListController);
         mainPane.setCenter(missionList);
     }
 
     private void createDestroyedShipsPanel() throws IOException {
         FXMLLoader destroyedShipsLoader = new FXMLLoader(getClass().getResource("/fxml/destroyed-ships.fxml"));
         VBox destroyedShipsPanel = destroyedShipsLoader.load();
-        destroyedShipsController = destroyedShipsLoader.getController();
+        DestroyedShipsController destroyedShipsController = destroyedShipsLoader.getController();
+        dashboardService.addBatchListener(destroyedShipsController);
         mainPane.setLeft(destroyedShipsPanel);
     }
 
     private void createHeaderPanel() throws IOException {
         FXMLLoader headerLoader = new FXMLLoader(getClass().getResource("/fxml/header.fxml"));
         VBox header = headerLoader.load();
-        headerController = headerLoader.getController();
+        HeaderController headerController = headerLoader.getController();
+        dashboardService.addBatchListener(headerController);
         mainPane.setTop(header);
     }
+
     private void loadMissions() {
-
-        missionListController.preBatch();
-        new Thread(() -> {
-            try {
-                dashboardService.InitActiveMissions();
-                Platform.runLater(this::postBatch);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                postBatch();
-            }
-        }).start();
+        dashboardService.initActiveMissions();
     }
 
-    private void postBatch() {
-        try {
-        missionListController.postBatch();
-        footerController.postBatch();
-        destroyedShipsController.postBatch();
-        headerController.postBatch();
-        dashboardContext.refreshUI();
-    }catch (Exception e){
-
-        }
-    }
 
 }

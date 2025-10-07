@@ -23,7 +23,7 @@ import static java.time.format.DateTimeFormatter.ofLocalizedDateTime;
 /**
  * Contrôleur pour le panneau des vaisseaux détruits
  */
-public class DestroyedShipsController implements Initializable, Refreshable {
+public class DestroyedShipsController implements Initializable, IRefreshable, IBatchListener {
 
     @FXML
     private VBox destroyedShipsPanel;
@@ -119,7 +119,12 @@ public class DestroyedShipsController implements Initializable, Refreshable {
 
     }
 
-    public void postBatch() {
+    @Override
+    public void onBatchStart(){
+        destroyedShipsTable.setItems(null);
+    }
+    @Override
+    public void onBatchEnd() {
         destroyedShipsTable.setItems(destroyedShipsRegistery.getDestroyedShips());
         updateStatistics();
     }
