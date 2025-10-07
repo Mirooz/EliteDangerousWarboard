@@ -24,21 +24,21 @@ public class CommanderHandler implements JournalEventHandler {
             if (jsonNode.has("Name")) {
                 String name = jsonNode.get("Name").asText();
                 String fid = jsonNode.get("FID").asText();
-                
+
                 // Vérifier si c'est un nouveau commandant
                 String currentCommanderName = commanderStatus.getCommanderName();
                 String currentFID = commanderStatus.getFID();
-                
-                boolean isNewCommander = currentCommanderName == null || 
-                                       currentFID == null || 
-                                       !currentFID.equals(fid);
-                
+
+                boolean isNewCommander = currentCommanderName == null ||
+                        currentFID == null ||
+                        !currentFID.equals(fid);
+
                 // Mettre à jour le statut du commandant
                 commanderStatus.setCommanderName(name);
                 commanderStatus.setFID(fid);
-                
+
                 System.out.println("Commandant - " + name + " - " + fid);
-                
+
                 // Si c'est un nouveau commandant, afficher le popup et relire les journaux
                 if (isNewCommander && currentCommanderName != null) {
                     showNewCommanderPopup(name);
@@ -49,7 +49,7 @@ public class CommanderHandler implements JournalEventHandler {
             System.err.println("Erreur lors du parsing de Commander: " + e.getMessage());
         }
     }
-    
+
     /**
      * Affiche un popup indiquant qu'un nouveau commandant a été détecté
      */
@@ -62,7 +62,7 @@ public class CommanderHandler implements JournalEventHandler {
                         .filter(window -> window.isShowing() && !window.getScene().getRoot().getChildrenUnmodifiable().isEmpty())
                         .findFirst()
                         .orElse(null);
-                
+
                 if (primaryWindow != null) {
                     popupManager.showWarningPopup(message, 0, 0, primaryWindow);
                 }
@@ -71,7 +71,7 @@ public class CommanderHandler implements JournalEventHandler {
             }
         });
     }
-    
+
     /**
      * Relit tous les fichiers journal pour le nouveau commandant
      */
@@ -80,8 +80,7 @@ public class CommanderHandler implements JournalEventHandler {
             try {
                 // Utiliser initActiveMissions pour bien tout reset et initialiser les batch listeners
                 DashboardService dashboardService = DashboardService.getInstance();
-
-                    dashboardService.initActiveMissions();
+                dashboardService.initActiveMissions();
 
             } catch (Exception e) {
                 System.err.println("Erreur lors de la relecture des journaux pour le nouveau commandant: " + e.getMessage());
