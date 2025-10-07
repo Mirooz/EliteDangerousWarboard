@@ -74,7 +74,10 @@ public class FooterController implements Initializable, IRefreshable, IBatchList
         updateTranslations();
         
         // Écouter les changements de langue
-        localizationService.addLanguageChangeListener(locale -> updateTranslations());
+        localizationService.addLanguageChangeListener(locale -> {
+            updateTranslations();
+            updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
+        });
     }
 
     private void updateTranslations() {

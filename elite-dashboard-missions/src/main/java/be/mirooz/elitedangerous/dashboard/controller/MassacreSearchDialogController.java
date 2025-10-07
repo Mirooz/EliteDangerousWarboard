@@ -145,7 +145,7 @@ public class MassacreSearchDialogController implements Initializable {
         // Charger les icônes des factions dans l'en-tête
         loadFactionHeaderIcons();
         systemList.setComponentFactory(system -> new SystemCardComponent(system, this));
-        conflictList.setComponentFactory(conflict -> new ConflictCardComponent(conflict));
+        conflictList.setComponentFactory(ConflictCardComponent::new);
         popupManager.attachToContainer(popupContainer);
 
         // Initialiser les champs de conflit avec le système actuel
@@ -265,7 +265,16 @@ public class MassacreSearchDialogController implements Initializable {
                 }))
                 .exceptionally(ex -> {
                     ex.printStackTrace();
-                    Platform.runLater(() -> searching(false));
+                    Platform.runLater(() -> {
+                        searching(false);
+                        // Afficher un popup d'erreur réseau à la position du loading indicator
+                        String errorMessage = localizationService.getString("error.network");
+                        // Calculer la position du loading indicator
+                        double x = loadingIndicator.getLayoutX() + loadingIndicator.getBoundsInLocal().getWidth() / 2;
+                        double y = loadingIndicator.getLayoutY() + loadingIndicator.getBoundsInLocal().getHeight() / 2;
+                        popupManager.showWarningPopup(errorMessage, x, y, 
+                            (Stage) searchButton.getScene().getWindow());
+                    });
                     return null;
                 });
     }
@@ -358,7 +367,16 @@ public class MassacreSearchDialogController implements Initializable {
                 }))
                 .exceptionally(ex -> {
                     ex.printStackTrace();
-                    Platform.runLater(() -> searchingConflicts(false));
+                    Platform.runLater(() -> {
+                        searchingConflicts(false);
+                        // Afficher un popup d'erreur réseau à la position du loading indicator
+                        String errorMessage = localizationService.getString("error.network");
+                        // Calculer la position du loading indicator
+                        double x = loadingIndicator.getLayoutX() + loadingIndicator.getBoundsInLocal().getWidth() / 2;
+                        double y = loadingIndicator.getLayoutY() + loadingIndicator.getBoundsInLocal().getHeight() / 2;
+                        popupManager.showWarningPopup(errorMessage, x, y, 
+                            (Stage) conflictSearchButton.getScene().getWindow());
+                    });
                     return null;
                 });
     }
