@@ -44,19 +44,10 @@ public class EliteDashboardApp extends Application {
             stage.setMinWidth(1000);
             stage.setMinHeight(600);
             stage.setMaximized(true);
-
-            // --- Gestion de la fermeture ---
-            stage.setOnCloseRequest(event -> {
-                System.out.println("Fermeture demandée, arrêt de l’application...");
-                javafx.application.Platform.exit();
-                System.exit(0);
-            });
-
             stage.setOnCloseRequest(event -> {
                 System.out.println("Arrêt des services de journal...");
                 JournalTailService.getInstance().stop();
                 JournalWatcherService.getInstance().stop();
-
                 javafx.application.Platform.exit();
                 System.exit(0);
             });

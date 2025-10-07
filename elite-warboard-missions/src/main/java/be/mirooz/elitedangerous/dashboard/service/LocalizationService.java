@@ -74,6 +74,18 @@ public class LocalizationService {
     }
 
     /**
+     * Récupère une traduction avec paramètres
+     */
+    public String getString(String key, Object... params) {
+        try {
+            String template = currentBundle.getString(key);
+            return String.format(template, params);
+        } catch (Exception e) {
+            return key; // Retourne la clé si la traduction n'existe pas
+        }
+    }
+
+    /**
      * Récupère la locale actuelle
      */
     public Locale getCurrentLocale() {

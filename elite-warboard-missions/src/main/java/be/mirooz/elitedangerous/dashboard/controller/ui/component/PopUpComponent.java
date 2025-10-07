@@ -68,7 +68,7 @@ public class PopUpComponent extends VBox {
         fadeIn.setToValue(1.0);
 
         // Pause visible (plus longue pour les avertissements)
-        PauseTransition pause = new PauseTransition(Duration.millis(isWarning ? 6000 : 1000));
+        PauseTransition pause = new PauseTransition(Duration.millis(isWarning ? 4000 : 1000));
 
         // Animation de disparition
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), this);

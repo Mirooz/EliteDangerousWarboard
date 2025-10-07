@@ -87,7 +87,7 @@ public class JournalService {
             for (String line : lines) {
                 try {
                     JsonNode jsonNode = objectMapper.readTree(line);
-                    if (new CommanderHandler().getEventType().equals(jsonNode.get("event").asText())) {
+                    if ("Commander".equals(jsonNode.get("event").asText())) {
                         dispatcher.dispatch(jsonNode);
                         return;
                     }
@@ -113,7 +113,7 @@ public class JournalService {
             for (String line : lines) {
                 try {
                     JsonNode jsonNode = objectMapper.readTree(line);
-                    if (new CommanderHandler().getEventType().equals(jsonNode.get("event").asText())) {
+                    if ("Commander".equals(jsonNode.get("event").asText())) {
                         String fileFID = jsonNode.get("FID").asText();
                         return getCommanderFid().equals(fileFID);
                     }
@@ -215,7 +215,7 @@ public class JournalService {
             if (!journalFiles.isEmpty()) {
                 File latestJournal = journalFiles.get(journalFiles.size() - 1);
                 JournalWatcherService.getInstance().start(preferencesService.getJournalFolder());
-                JournalTailService.getInstance().start(latestJournal);
+                JournalTailService.getInstance().start(latestJournal,false);
 
             }
 

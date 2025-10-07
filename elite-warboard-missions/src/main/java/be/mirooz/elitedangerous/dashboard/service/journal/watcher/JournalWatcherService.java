@@ -52,7 +52,7 @@ public class JournalWatcherService implements Runnable {
 
                         if (filename.matches("^Journal\\..*\\.log$")) {
                             System.out.println("[Watcher] New journal detected: " + filename);
-                            tailService.start(createdPath.toFile());
+                            tailService.start(createdPath.toFile(),true);
                         }
                     }
                 }
