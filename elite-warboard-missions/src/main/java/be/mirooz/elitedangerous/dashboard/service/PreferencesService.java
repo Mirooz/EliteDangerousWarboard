@@ -16,7 +16,7 @@ public class PreferencesService {
 
     private PreferencesService() {
         this.preferences = new Properties();
-        this.preferencesFile = Paths.get(System.getProperty("user.home"), ".elite-dashboard", "preferences.properties");
+        this.preferencesFile = Paths.get(System.getProperty("user.home"), ".elite-wardboard", "preferences.properties");
         loadPreferences();
     }
 

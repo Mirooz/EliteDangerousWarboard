@@ -6,16 +6,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>be.mirooz.elitedangerous</groupId>
-    <artifactId>elite-dashboard</artifactId>
+    <artifactId>elite-warboard-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Elite Dangerous Dashboard</name>
-    <description>Dashboard pour afficher les missions Elite Dangerous</description>
+    <name>Elite Warboard</name>
+    <description>Elite Dangerous tool to easily stack massacre missions</description>
     <modules>
         <module>edtools-client</module>
         <module>inara-client</module>
-        <module>elite-dashboard-missions</module>
+        <module>elite-warboard-missions</module>
     </modules>
 
     <properties>

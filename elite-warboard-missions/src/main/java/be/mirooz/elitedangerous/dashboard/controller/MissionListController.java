@@ -7,7 +7,7 @@ import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
@@ -27,7 +27,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @FXML
     private ProgressIndicator loadingIndicator;
     @FXML
-    private GenericListView<Mission> missionListView;
+    private NotSelectableListView<Mission> missionListView;
 
     @FXML
     private ComboBox<String> typeFilterComboBox;
@@ -52,20 +52,20 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     public void initialize(URL location, ResourceBundle resources) {
         missionListView.setComponentFactory(MissionCardComponent::new);
 
-        updateLanguage();
         initializeComboBoxes();
-        dashboardContext.addFilterListener(this::applyFilter);
+        updateLanguage();
+
         UIManager.getInstance().register(this);
 
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateLanguage());
+
+        dashboardContext.addFilterListener(this::applyFilter);
+        dashboardContext.setCurrentFilter(MissionStatus.ACTIVE);
     }
 
     private void initializeComboBoxes() {
         // Initialiser les ComboBox avec les valeurs par défaut
-        typeFilterComboBox.getSelectionModel().select(0); // "Toutes"
-        statusFilterComboBox.getSelectionModel().select(1); // "Toutes"
-
         // Déclencher les filtres initiaux
         onTypeFilterChanged();
         onStatusFilterChanged();
@@ -166,10 +166,16 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         typeFilterLabel.setText(localizationService.getString("filter.type"));
         statusFilterLabel.setText(localizationService.getString("filter.status"));
 
+        int currentTypeSelection=0;
+        int currentStatusSelection=0;
         // Sauvegarder les sélections actuelles
-        int currentTypeSelection = typeFilterComboBox.getSelectionModel().getSelectedIndex();
-        int currentStatusSelection = statusFilterComboBox.getSelectionModel().getSelectedIndex();
+        if (typeFilterComboBox != null && typeFilterComboBox.getSelectionModel() != null) {
+            currentTypeSelection = typeFilterComboBox.getSelectionModel().getSelectedIndex();
+        }
 
+        if (statusFilterComboBox != null && statusFilterComboBox.getSelectionModel() != null) {
+            currentStatusSelection = statusFilterComboBox.getSelectionModel().getSelectedIndex();
+        }
         // Mettre à jour les options des ComboBox
         updateComboBoxOptions();
 

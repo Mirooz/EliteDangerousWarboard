@@ -114,9 +114,9 @@ public class MissionCardComponent extends VBox {
             targetInfo = mission.getTargetType().getDisplayName();
         }
         Label targetLabel = new Label(targetInfo);
-        targetLabel.setPrefWidth(100);
-        targetLabel.setMinWidth(100);
-        targetLabel.setMaxWidth(100);
+        targetLabel.setPrefWidth(80);
+        targetLabel.setMinWidth(80);
+        targetLabel.setMaxWidth(80);
         if (mission.getTargetType() != null) {
             switch (mission.getTargetType()) {
                 case PIRATE -> targetLabel.getStyleClass().add("massacre-pirate");
@@ -137,9 +137,9 @@ public class MissionCardComponent extends VBox {
         }
         Label targetLabel = new Label(targetInfo);
         targetLabel.getStyleClass().add("massacre-target");
-        targetLabel.setPrefWidth(120);
-        targetLabel.setMinWidth(120);
-        targetLabel.setMaxWidth(120);
+        targetLabel.setPrefWidth(180);
+        targetLabel.setMinWidth(180);
+        targetLabel.setMaxWidth(180);
 
         if (mission.getDestinationSystem() != null && !mission.getDestinationSystem().isEmpty()) {
             // Fallback: utiliser destinationSystem si targetSystem n'est pas défini
@@ -255,9 +255,9 @@ public class MissionCardComponent extends VBox {
         HBox killsSection = new HBox();
         killsSection.setSpacing(8);
         killsSection.setAlignment(Pos.CENTER_LEFT);
-        killsSection.setPrefWidth(120);
-        killsSection.setMinWidth(120);
-        killsSection.setMaxWidth(120);
+        killsSection.setPrefWidth(110);
+        killsSection.setMinWidth(110);
+        killsSection.setMaxWidth(110);
 
         // Afficher x/y pour les missions actives, y/y pour les missions complétées
         String killsText;

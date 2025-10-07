@@ -293,6 +293,7 @@
     -fx-background-color: -fx-elite-light-gray;
     -fx-border-color: -fx-elite-cyan;
     -fx-text-fill: -fx-elite-cyan;
+    -fx-cursor: hand;
 }
 
 .elite-button:pressed {
@@ -783,7 +784,8 @@
     -fx-font-size: 14px;
     -fx-padding: 5 6 5 6;
     -fx-wrap-text: false;
-    -fx-alignment: CENTER_LEFT;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
 }
 
 /* ====== Lignes ====== */
@@ -1102,7 +1104,7 @@
 }
 
 .elite-combobox .list-cell {
-    -fx-background-color: -fx-elite-darker;
+    -fx-background-color: -fx-elite-gray;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
     -fx-font-size: 12px;
@@ -1113,6 +1115,7 @@
 .elite-combobox .list-cell:hover {
     -fx-background-color: -fx-elite-gray;
     -fx-text-fill: -fx-elite-cyan;
+    -fx-cursor: hand;
 }
 .config-spinner {
     -fx-background-color: -fx-elite-dark;
@@ -1542,6 +1545,7 @@
 .elite-button-secondary:hover {
     -fx-background-color: -fx-elite-light-gray;
     -fx-text-fill: -fx-elite-orange;
+    -fx-cursor: hand;
 }
 
 /* Styles pour les onglets */

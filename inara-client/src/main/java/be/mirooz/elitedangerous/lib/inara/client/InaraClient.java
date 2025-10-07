@@ -24,7 +24,7 @@ public class InaraClient {
                 "Calling INARA with parameters %s%n", sourceSystem);
         long start = System.currentTimeMillis();
         Document doc = Jsoup.connect(url)
-                .header("User-Agent", "Java HttpClient - ED Dashboard")
+                .header("User-Agent", "Java HttpClient - ED Warboard")
                 .get();
 
         long durationCall = System.currentTimeMillis() - start;

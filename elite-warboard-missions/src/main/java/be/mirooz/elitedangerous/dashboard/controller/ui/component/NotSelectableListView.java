@@ -1,17 +1,16 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
-import javafx.beans.value.ChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 
 import java.util.function.Function;
 
-public class GenericListView<T> extends ListView<T> {
+public class NotSelectableListView<T> extends ListView<T> {
 
     private Function<T, Node> componentFactory;
 
-    public GenericListView() {
+    public NotSelectableListView() {
         super();
     }
 
@@ -19,7 +18,6 @@ public class GenericListView<T> extends ListView<T> {
         this.componentFactory = factory;
 
         this.setCellFactory(lv -> new ListCell<>() {
-
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
@@ -41,6 +39,6 @@ public class GenericListView<T> extends ListView<T> {
         });
 
         // Supprime toute sélection possible (utile pour une liste purement visuelle)
-        this.setSelectionModel(null);
+        this.setSelectionModel(new NoSelectionModel<>());
     }
 }

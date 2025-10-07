@@ -5,10 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>be.mirooz.elitedangerous</groupId>
-        <artifactId>elite-dashboard</artifactId>
+        <artifactId>elite-warboard-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>elite-dashboard-missions</artifactId>
+    <artifactId>elite-warboard-missions</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -124,7 +125,7 @@
                 <executions>
                     <execution>
                         <id>make-assembly</id>
-                        <phase>package</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
@@ -146,7 +147,7 @@
                 <executions>
                     <execution>
                         <id>create-runtime</id>
-                        <phase>package</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -162,8 +163,8 @@
                     </execution>
 
                     <execution>
-                        <id>package-exe</id>
-                        <phase>package</phase>
+                        <id>create-installer-windows</id>
+                        <phase>install</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -173,24 +174,49 @@
                                 <argument>--type</argument>
                                 <argument>app-image</argument>
                                 <argument>--name</argument>
-                                <argument>EliteDashboard</argument>
+                                <argument>Elite Warboard</argument>
                                 <argument>--dest</argument>
                                 <argument>executable</argument>
+                                <argument>--vendor</argument>
+                                <argument>Mirooz</argument>
                                 <argument>--input</argument>
                                 <argument>target</argument>
                                 <argument>--main-jar</argument>
-                                <argument>elite-dashboard-missions-${project.version}-jar-with-dependencies.jar</argument>
+                                <argument>elite-warboard-missions-${project.version}-jar-with-dependencies.jar</argument>
                                 <argument>--main-class</argument>
                                 <argument>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</argument>
                                 <argument>--runtime-image</argument>
                                 <argument>target/runtime</argument>
                                 <argument>--icon</argument>
                                 <argument>src/main/resources/images/elite_dashboard_icon.ico</argument>
+
                             </arguments>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <!-- jpackage déjà ajouté ci-dessus -->
+                    <execution>
+                        <id>inno-setup</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>C:\Program Files (x86)\Inno Setup 6\ISCC.exe</executable>
+                            <arguments>
+                                <argument>installer.iss</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 </project>

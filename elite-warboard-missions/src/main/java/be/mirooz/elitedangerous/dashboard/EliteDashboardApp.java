@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard;
 
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -12,6 +13,7 @@ import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailSer
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 public class EliteDashboardApp extends Application {
 
+    LocalizationService localizationService = LocalizationService.getInstance();
     @Override
     public void start(Stage stage) {
         try {
@@ -34,7 +36,9 @@ public class EliteDashboardApp extends Application {
             stage.getIcons().add(icon);
 
             // --- Stage ---
-            stage.setTitle("Elite Dangerous - Dashboard des Missions");
+
+            String title =localizationService.getString("app.title");
+            stage.setTitle(title);
             stage.setScene(scene);
             stage.setResizable(true);
             stage.setMinWidth(1000);

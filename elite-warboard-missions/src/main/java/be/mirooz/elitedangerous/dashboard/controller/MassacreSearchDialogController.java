@@ -4,7 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.GenericListView;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.SystemCardComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.ConflictCardComponent;
 import be.mirooz.elitedangerous.dashboard.service.InaraService;
@@ -47,9 +47,9 @@ public class MassacreSearchDialogController implements Initializable {
     private Button conflictSearchButton;
 
     @FXML
-    private GenericListView<MassacreSystem> systemList;
+    private NotSelectableListView<MassacreSystem> systemList;
     @FXML
-    private GenericListView<ConflictSystem> conflictList;
+    private NotSelectableListView<ConflictSystem> conflictList;
     @FXML
     private Button searchButton;
     @FXML
@@ -143,22 +143,19 @@ public class MassacreSearchDialogController implements Initializable {
     private final InaraService inaraService = InaraService.getInstance();
 
     private PopupManager popupManager = PopupManager.getInstance();
+    private List<MassacreSystem> massacreSystems;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Configurer le système de référence par défaut
-        String currentSystem = commanderStatus.getCurrentStarSystem();
-        if (currentSystem != null && !currentSystem.trim().isEmpty()) {
-            referenceSystemField.setText(currentSystem);
-        }
+        getReferenceSystem(referenceSystemField);
+        getReferenceSystem(conflictReferenceSystemField);
         // Charger les icônes des factions dans l'en-tête
         loadFactionHeaderIcons();
         systemList.setComponentFactory(system -> new SystemCardComponent(system, this));
         conflictList.setComponentFactory(ConflictCardComponent::new);
         popupManager.attachToContainer(popupContainer);
 
-        // Initialiser les champs de conflit avec le système actuel
-        conflictReferenceSystemField.setText(currentSystem);
 
         // Mettre à jour les traductions
         updateTranslations();
@@ -213,7 +210,6 @@ public class MassacreSearchDialogController implements Initializable {
         conflictDescriptionLabel.setText(localizationService.getString("search.conflict.description"));
     }
 
-    List<MassacreSystem> massacreSystems;
     private final Set<String> activeFilters = new HashSet<>();
 
     @FXML
@@ -261,12 +257,7 @@ public class MassacreSearchDialogController implements Initializable {
 
     @FXML
     private void searchMassacreSystems() {
-        String referenceSystem = referenceSystemField.getText();
-        if (referenceSystem == null || referenceSystem.trim().isEmpty()) {
-            referenceSystem = commanderStatus.getCurrentStarSystem();
-            referenceSystemField.setText(referenceSystem);
-        }
-        executeMassacreSearch(referenceSystem, maxDistanceSpinner.getValue(), minSourcesSpinner.getValue(), LPADonly.isSelected());
+        executeMassacreSearch(getReferenceSystem(referenceSystemField), maxDistanceSpinner.getValue(), minSourcesSpinner.getValue(), LPADonly.isSelected());
     }
 
     private void handleMassacreSearch(CompletableFuture<List<MassacreSystem>> future) {
@@ -359,13 +350,18 @@ public class MassacreSearchDialogController implements Initializable {
 
     @FXML
     private void searchConflictSystems() {
-        String referenceSystem = conflictReferenceSystemField.getText();
+        executeConflictSearch(getReferenceSystem(conflictReferenceSystemField));
+    }
+
+    private String getReferenceSystem(TextField referenceSystemField) {
+        String referenceSystem = referenceSystemField.getText();
         if (referenceSystem == null || referenceSystem.trim().isEmpty()) {
             referenceSystem = commanderStatus.getCurrentStarSystem();
-            conflictReferenceSystemField.setText(referenceSystem);
+            referenceSystemField.setText(referenceSystem);
+            if (referenceSystemField.getText().isEmpty())
+                referenceSystemField.setText("Sol");
         }
-
-        executeConflictSearch(referenceSystem);
+        return referenceSystem;
     }
 
     private void executeConflictSearch(String referenceSystem) {
