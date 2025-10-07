@@ -59,13 +59,13 @@ public class Mission {
     }
 
     public boolean isShipMassacreActive(){
-        return MissionStatus.ACTIVE.equals(this.status)  && (isShipMassacre() || isOnFootMassacre()) ;
+        return MissionStatus.ACTIVE.equals(this.status)  && (isShipMassacre()) ;
 
     }
 
 
     public boolean isShipMassacre(){
-        return  (MissionType.MASSACRE.equals(this.type)
+        return  ((MissionType.MASSACRE.equals(this.type) && TargetType.PIRATE.equals(this.targetType))
                 || MissionType.CONFLIT.equals(this.type));
     }
     public boolean isOnFootMassacre(){

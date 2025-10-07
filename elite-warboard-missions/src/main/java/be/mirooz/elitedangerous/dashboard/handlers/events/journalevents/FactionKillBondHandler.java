@@ -23,6 +23,9 @@ public class FactionKillBondHandler implements JournalEventHandler {
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de FactionKillBond: " + e.getMessage());
             e.printStackTrace();
+
+            //467 220 reel
+            //114 025 loggé (4 cilbe)
         }
     }
 }
