@@ -27,6 +27,8 @@
         <!-- Onglet Massacre -->
         <Tab fx:id="massacreTab" text="MASSACRE" closable="false">
             <VBox spacing="15.0">
+                <!-- Description de l'onglet -->
+                <Label fx:id="massacreDescriptionLabel" styleClass="tab-description" wrapText="true"/>
                 <!-- Panneau de configuration compact -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="config-panel">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
@@ -95,17 +97,23 @@
                     </HBox>
                     <Label fx:id="resHeaderLabel" text="RES" styleClass="faction-header-label" translateX="30"/>
                 </HBox>
-                
+
                 <!-- Liste des systèmes massacre -->
-                <GenericListView fx:id="systemList"
-                                 styleClass="missions-scroll"
-                                 VBox.vgrow="ALWAYS"/>
+                <StackPane VBox.vgrow="ALWAYS">
+                    <GenericListView fx:id="systemList"
+                                     styleClass="missions-scroll"/>
+                    <ProgressIndicator fx:id="loadingIndicator"
+                                       maxWidth="100" maxHeight="100"
+                                       visible="false" />
+                </StackPane>
             </VBox>
         </Tab>
         
         <!-- Onglet Conflit -->
         <Tab fx:id="conflictTab" text="CONFLIT" closable="false">
             <VBox spacing="15.0">
+                <!-- Description de l'onglet -->
+                <Label fx:id="conflictDescriptionLabel" styleClass="tab-description" wrapText="true"/>
                 <!-- Panneau de configuration pour les conflits -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="config-panel">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
@@ -127,11 +135,15 @@
                     <Label fx:id="conflictOpponentHeaderLabel" text="OPPOSANT" styleClass="faction-header-label" prefWidth="180"/>
                     <Label fx:id="conflictSurfaceHeaderLabel" text="CONFLIT DE SURFACE" styleClass="faction-header-label" prefWidth="200"/>
                 </HBox>
-                
+
                 <!-- Liste des conflits -->
-                <GenericListView fx:id="conflictList"
-                                 styleClass="missions-scroll"
-                                 VBox.vgrow="ALWAYS"/>
+                <StackPane VBox.vgrow="ALWAYS">
+                    <GenericListView fx:id="conflictList"
+                                     styleClass="missions-scroll"/>
+                    <ProgressIndicator fx:id="conflictLoadingIndicator"
+                                       maxWidth="100" maxHeight="100"
+                                       visible="false" />
+                </StackPane>
             </VBox>
         </Tab>
     </TabPane>
@@ -143,9 +155,6 @@
     </HBox>
     </VBox>
 
-    <ProgressIndicator fx:id="loadingIndicator"
-                       maxWidth="100" maxHeight="100"
-                       visible="false" />
 
     <!-- Conteneur pour les popups - au-dessus de tout -->
     <StackPane fx:id="popupContainer" mouseTransparent="true"/>

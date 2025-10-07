@@ -1055,6 +1055,65 @@
     -fx-background-radius: 3;
 }
 
+/* Styles pour les ComboBox Elite Dangerous */
+.elite-combobox {
+    -fx-background-color: transparent;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-border-radius: 2;
+    -fx-pref-width: 130;
+    -fx-min-width: 130;
+}
+
+.elite-combobox:hover {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+
+.elite-combobox .arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.elite-combobox .arrow-button:hover {
+    -fx-background-color: transparent;
+}
+
+.elite-combobox .arrow {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.elite-combobox:hover .arrow {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Styles pour la liste déroulante */
+.elite-combobox .list-view {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 10, 0, 0, 2);
+}
+
+.elite-combobox .list-cell {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 6 8 6 8;
+    -fx-border-color: transparent;
+}
+
+.elite-combobox .list-cell:hover {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-cyan;
+}
 .config-spinner {
     -fx-background-color: -fx-elite-dark;
     -fx-border-color: -fx-elite-orange;
@@ -1224,7 +1283,7 @@
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
     -fx-border-radius: 4 4 0 0;
-    -fx-padding: 8 16 8 16;
+    -fx-padding: 10 20 10 20;
     -fx-background-insets: 0;
 }
 
@@ -1245,6 +1304,17 @@
 
 .elite-tab-pane .tab-content-area {
     -fx-background-color: -fx-elite-dark;
+    -fx-padding: 10;
+}
+
+/* Style pour les descriptions des onglets */
+.tab-description {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-padding: 5 0 10 0;
+    -fx-wrap-text: true;
+    -fx-max-width: 800;
 }
 
 .massacre-card {

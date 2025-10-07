@@ -12,7 +12,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardCom
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 
@@ -29,27 +29,11 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @FXML
     private GenericListView<Mission> missionListView;
 
+    @FXML
+    private ComboBox<String> typeFilterComboBox;
 
     @FXML
-    private Button activeFilterButton;
-
-    @FXML
-    private Button completedFilterButton;
-
-    @FXML
-    private Button failedFilterButton;
-
-    @FXML
-    private Button allFilterButton;
-
-    @FXML
-    private Button massacreTypeFilterButton;
-
-    @FXML
-    private Button conflictTypeFilterButton;
-
-    @FXML
-    private Button allTypeFilterButton;
+    private ComboBox<String> statusFilterComboBox;
 
     @FXML
     private Label missionsTitleLabel;
@@ -60,115 +44,121 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @FXML
     private Label statusFilterLabel;
 
-
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         missionListView.setComponentFactory(MissionCardComponent::new);
-        filterActiveMissions();
-        filterAllTypeMissions(); // Initialiser avec tous les types
+
+        updateLanguage();
+        initializeComboBoxes();
         dashboardContext.addFilterListener(this::applyFilter);
         UIManager.getInstance().register(this);
-        updateLanguage();
-        
+
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateLanguage());
     }
+
+    private void initializeComboBoxes() {
+        // Initialiser les ComboBox avec les valeurs par défaut
+        typeFilterComboBox.getSelectionModel().select(0); // "Toutes"
+        statusFilterComboBox.getSelectionModel().select(1); // "Toutes"
+
+        // Déclencher les filtres initiaux
+        onTypeFilterChanged();
+        onStatusFilterChanged();
+    }
+
     @Override
     public void onBatchEnd() {
         setLoadingVisible(false);
     }
+
     @Override
     public void onBatchStart() {
         setLoadingVisible(true);
     }
+
     private void setLoadingVisible(boolean visible) {
         this.loadingIndicator.setVisible(visible);
     }
 
     private void refreshMissions() {
-        applyFilter(DashboardContext.getInstance().getCurrentFilter(),DashboardContext.getInstance().getCurrentTypeFilter());
+        applyFilter(DashboardContext.getInstance().getCurrentFilter(), DashboardContext.getInstance().getCurrentTypeFilter());
     }
-    private void applyFilter(MissionStatus currentFilter,MissionType currentTypeFilter) {
+
+    private void applyFilter(MissionStatus currentFilter, MissionType currentTypeFilter) {
         boolean isActive = MissionStatus.ACTIVE.equals(currentFilter);
         List<Mission> filteredMissions = missionsRegistry.getGlobalMissionMap().values().stream()
                 .filter(Mission::isShipMassacre)
-                .filter(mission -> currentTypeFilter == null || mission.getType()== currentTypeFilter)
+                .filter(mission -> currentTypeFilter == null || mission.getType() == currentTypeFilter)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
                 .sorted(new MissionTimestampComparator(isActive, isActive))
                 .toList();
         missionListView.getItems().setAll(filteredMissions);
-        updateFilterButtons(currentFilter,currentTypeFilter);
+        updateComboBoxSelections(currentFilter, currentTypeFilter);
     }
 
-    private void updateFilterButtons(MissionStatus currentFilter,MissionType currentTypeFilter) {
-        // Réinitialiser tous les boutons
-        activeFilterButton.getStyleClass().removeAll("active");
-        completedFilterButton.getStyleClass().removeAll("active");
-        failedFilterButton.getStyleClass().removeAll("active");
-        allFilterButton.getStyleClass().removeAll("active");
-        if (currentFilter == null) {
-            allFilterButton.getStyleClass().add("active");
-        } else {
-            switch (currentFilter) {
-                case ACTIVE -> activeFilterButton.getStyleClass().add("active");
-                case COMPLETED -> completedFilterButton.getStyleClass().add("active");
-                case FAILED -> failedFilterButton.getStyleClass().add("active");
-            }
-        }
-
-        massacreTypeFilterButton.getStyleClass().removeAll("active");
-        conflictTypeFilterButton.getStyleClass().removeAll("active");
-        allTypeFilterButton.getStyleClass().removeAll("active");
-
+    private void updateComboBoxSelections(MissionStatus currentFilter, MissionType currentTypeFilter) {
+        // Mettre à jour la sélection du ComboBox de type
         if (currentTypeFilter == null) {
-            allTypeFilterButton.getStyleClass().add("active");
+            typeFilterComboBox.getSelectionModel().select(0); // "Toutes"
         } else {
             switch (currentTypeFilter) {
-                case MASSACRE -> massacreTypeFilterButton.getStyleClass().add("active");
-                case CONFLIT -> conflictTypeFilterButton.getStyleClass().add("active");
+                case MASSACRE -> typeFilterComboBox.getSelectionModel().select(1); // "Massacre"
+                case CONFLIT -> typeFilterComboBox.getSelectionModel().select(2); // "Conflit"
+                default -> typeFilterComboBox.getSelectionModel().select(0); // "Toutes" par défaut
             }
         }
 
+        // Mettre à jour la sélection du ComboBox de statut
+        if (currentFilter == null) {
+            statusFilterComboBox.getSelectionModel().select(0); // "Toutes"
+        } else {
+            switch (currentFilter) {
+                case ACTIVE -> statusFilterComboBox.getSelectionModel().select(1); // "Actives"
+                case COMPLETED -> statusFilterComboBox.getSelectionModel().select(2); // "Complétées"
+                case FAILED -> statusFilterComboBox.getSelectionModel().select(3); // "Échouées"
+                default -> statusFilterComboBox.getSelectionModel().select(0); // "Toutes" par défaut
+            }
+        }
     }
 
     @FXML
-    private void filterActiveMissions() {
-        DashboardContext.getInstance().setCurrentFilter(MissionStatus.ACTIVE);
+    private void onTypeFilterChanged() {
+        String selectedType = typeFilterComboBox.getSelectionModel().getSelectedItem();
+        if (selectedType == null) return;
+
+        MissionType typeFilter = null;
+        if (selectedType.equals(localizationService.getString("missions.massacre"))) {
+            typeFilter = MissionType.MASSACRE;
+        } else if (selectedType.equals(localizationService.getString("missions.conflict"))) {
+            typeFilter = MissionType.CONFLIT;
+        }
+        // Si "Toutes" ou autre, typeFilter reste null
+
+        dashboardContext.setCurrentTypeFilter(typeFilter);
     }
 
     @FXML
-    private void filterCompletedMissions() {
-        DashboardContext.getInstance().setCurrentFilter(MissionStatus.COMPLETED);
-    }
+    private void onStatusFilterChanged() {
+        String selectedStatus = statusFilterComboBox.getSelectionModel().getSelectedItem();
+        if (selectedStatus == null) return;
 
-    @FXML
-    private void filterAbandonedMissions() {
-        DashboardContext.getInstance().setCurrentFilter(MissionStatus.FAILED);
-    }
+        MissionStatus statusFilter = null;
+        if (selectedStatus.equals(localizationService.getString("missions.active"))) {
+            statusFilter = MissionStatus.ACTIVE;
+        } else if (selectedStatus.equals(localizationService.getString("missions.completed"))) {
+            statusFilter = MissionStatus.COMPLETED;
+        } else if (selectedStatus.equals(localizationService.getString("missions.failed"))) {
+            statusFilter = MissionStatus.FAILED;
+        }
+        // Si "Toutes" ou autre, statusFilter reste null
 
-    @FXML
-    private void filterAllMissions() {
-        DashboardContext.getInstance().setCurrentFilter(null);
+        dashboardContext.setCurrentFilter(statusFilter);
     }
-
-    @FXML
-    private void filterMassacreMissions() {
-        DashboardContext.getInstance().setCurrentTypeFilter(MissionType.MASSACRE);
-    }
-
-    @FXML
-    private void filterConflictMissions() {
-        DashboardContext.getInstance().setCurrentTypeFilter(MissionType.CONFLIT);
-    }
-
-    @FXML
-    private void filterAllTypeMissions() {
-        DashboardContext.getInstance().setCurrentTypeFilter(null);
-    }
-
 
     private void updateLanguage() {
         // Mettre à jour les labels
@@ -176,20 +166,53 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         typeFilterLabel.setText(localizationService.getString("filter.type"));
         statusFilterLabel.setText(localizationService.getString("filter.status"));
 
-        // Mettre à jour les boutons de type
-        massacreTypeFilterButton.setText(localizationService.getString("missions.massacre"));
-        conflictTypeFilterButton.setText(localizationService.getString("missions.conflict"));
-        allTypeFilterButton.setText(localizationService.getString("missions.all"));
+        // Sauvegarder les sélections actuelles
+        int currentTypeSelection = typeFilterComboBox.getSelectionModel().getSelectedIndex();
+        int currentStatusSelection = statusFilterComboBox.getSelectionModel().getSelectedIndex();
 
-        // Mettre à jour les boutons de statut
-        activeFilterButton.setText(localizationService.getString("missions.active"));
-        completedFilterButton.setText(localizationService.getString("missions.completed"));
-        failedFilterButton.setText(localizationService.getString("missions.failed"));
-        allFilterButton.setText(localizationService.getString("missions.all_status"));
+        // Mettre à jour les options des ComboBox
+        updateComboBoxOptions();
 
-        
+        // Restaurer les sélections
+        restoreComboBoxSelections(currentTypeSelection, currentStatusSelection);
+
         // Rafraîchir les missions pour recréer les cartes avec les nouvelles traductions
         refreshMissions();
+    }
+
+    private void updateComboBoxOptions() {
+        // Mettre à jour les options du ComboBox de type
+        typeFilterComboBox.getItems().clear();
+        typeFilterComboBox.getItems().addAll(
+                localizationService.getString("missions.all"),
+                localizationService.getString("missions.massacre"),
+                localizationService.getString("missions.conflict")
+        );
+
+        // Mettre à jour les options du ComboBox de statut
+        statusFilterComboBox.getItems().clear();
+        statusFilterComboBox.getItems().addAll(
+                localizationService.getString("missions.all_status"),
+                localizationService.getString("missions.active"),
+                localizationService.getString("missions.completed"),
+                localizationService.getString("missions.failed")
+        );
+    }
+
+    private void restoreComboBoxSelections(int currentTypeSelection, int currentStatusSelection) {
+        // Restaurer la sélection du type
+        if (typeFilterComboBox.getItems().size() > currentTypeSelection) {
+            typeFilterComboBox.getSelectionModel().select(currentTypeSelection);
+        } else {
+            typeFilterComboBox.getSelectionModel().select(0); // Par défaut "Toutes"
+        }
+        // Restaurer la sélection du statut
+        if (statusFilterComboBox.getItems().size() > currentStatusSelection) {
+            statusFilterComboBox.getSelectionModel().select(currentStatusSelection);
+        } else {
+            statusFilterComboBox.getSelectionModel().select(0); // Par défaut "Toutes"
+        }
+
     }
 
     @Override

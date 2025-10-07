@@ -17,23 +17,11 @@
       <Region HBox.hgrow="ALWAYS"/>
       <HBox alignment="CENTER_LEFT" spacing="10.0">
          <Label fx:id="typeFilterLabel" styleClass="filter-label" text="Type:"/>
-         <Button fx:id="massacreTypeFilterButton" mnemonicParsing="false" onAction="#filterMassacreMissions"
-                 styleClass="filter-button" text="MASSACRE"/>
-         <Button fx:id="conflictTypeFilterButton" mnemonicParsing="false" onAction="#filterConflictMissions"
-                 styleClass="filter-button" text="CONFLIT"/>
-         <Button fx:id="allTypeFilterButton" mnemonicParsing="false" onAction="#filterAllTypeMissions"
-                 styleClass="filter-button" text="TOUTES"/>
+         <ComboBox fx:id="typeFilterComboBox" styleClass="elite-combobox" onAction="#onTypeFilterChanged"/>
       </HBox>
       <HBox alignment="CENTER_LEFT" spacing="10.0">
          <Label fx:id="statusFilterLabel" styleClass="filter-label" text="Statut:"/>
-         <Button fx:id="activeFilterButton" mnemonicParsing="false" onAction="#filterActiveMissions"
-                 styleClass="filter-button" text="ACTIVES"/>
-         <Button fx:id="completedFilterButton" mnemonicParsing="false" onAction="#filterCompletedMissions"
-                 styleClass="filter-button" text="COMPLÉTÉES"/>
-         <Button fx:id="failedFilterButton" mnemonicParsing="false" onAction="#filterAbandonedMissions"
-                 styleClass="filter-button" text="ECHOUÉES"/>
-         <Button fx:id="allFilterButton" mnemonicParsing="false" onAction="#filterAllMissions"
-                 styleClass="filter-button" text="TOUTES"/>
+         <ComboBox fx:id="statusFilterComboBox" styleClass="elite-combobox" onAction="#onStatusFilterChanged"/>
       </HBox>
    </HBox>
 

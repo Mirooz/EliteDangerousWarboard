@@ -68,6 +68,9 @@ public class MassacreSearchDialogController implements Initializable {
     private ProgressIndicator loadingIndicator;
 
     @FXML
+    private ProgressIndicator conflictLoadingIndicator;
+
+    @FXML
     private Label dialogTitleLabel;
     @FXML
     private Label dialogSubtitleLabel;
@@ -127,6 +130,12 @@ public class MassacreSearchDialogController implements Initializable {
 
     @FXML
     private Label conflictSystemLabel;
+
+    @FXML
+    private Label massacreDescriptionLabel;
+
+    @FXML
+    private Label conflictDescriptionLabel;
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
@@ -198,6 +207,10 @@ public class MassacreSearchDialogController implements Initializable {
         conflictFactionHeaderLabel.setText(localizationService.getString("search.conflict.faction"));
         conflictOpponentHeaderLabel.setText(localizationService.getString("search.conflict.opponent"));
         conflictSurfaceHeaderLabel.setText(localizationService.getString("search.conflict.surface"));
+        
+        // Mettre à jour les descriptions des onglets
+        massacreDescriptionLabel.setText(localizationService.getString("search.massacre.description"));
+        conflictDescriptionLabel.setText(localizationService.getString("search.conflict.description"));
     }
 
     List<MassacreSystem> massacreSystems;
@@ -386,9 +399,9 @@ public class MassacreSearchDialogController implements Initializable {
             conflictSearchButton.setDisable(true);
             conflictSearchButton.setText(localizationService.getString("search.searching"));
             conflictList.getItems().clear();
-            loadingIndicator.setVisible(true);
+            conflictLoadingIndicator.setVisible(true);
         } else {
-            loadingIndicator.setVisible(false);
+            conflictLoadingIndicator.setVisible(false);
             conflictSearchButton.setDisable(false);
             conflictSearchButton.setText(localizationService.getString("search.button"));
         }
