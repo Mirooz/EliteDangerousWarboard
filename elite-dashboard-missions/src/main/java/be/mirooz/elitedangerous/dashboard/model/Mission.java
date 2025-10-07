@@ -38,6 +38,9 @@ public class Mission {
     public boolean isShipActivePirateMassacreMission(){
         return isShipPirateMission() && MissionStatus.ACTIVE.equals(status);
     }
+    public boolean isOnFootActiveMassacreMission(){
+        return isOnFootMassacre() && MissionStatus.ACTIVE.equals(status) && TargetType.HUMANOID.equals(this.targetType);
+    }
     public boolean isShipActiveDeserteurMassacreMission(){
         return isShipDeserteurMission() && MissionStatus.ACTIVE.equals(status);
     }
@@ -56,15 +59,17 @@ public class Mission {
     }
 
     public boolean isShipMassacreActive(){
-        return MissionStatus.ACTIVE.equals(this.status)  && isShipMassacre();
+        return MissionStatus.ACTIVE.equals(this.status)  && (isShipMassacre() || isOnFootMassacre()) ;
 
     }
 
 
     public boolean isShipMassacre(){
         return  (MissionType.MASSACRE.equals(this.type)
-                //|| MissionType.MASSACRE_ONFOOT.equals(this.type)
                 || MissionType.CONFLIT.equals(this.type));
+    }
+    public boolean isOnFootMassacre(){
+        return (MissionType.MASSACRE_ONFOOT.equals(this.type));
     }
     public boolean isActive(){
         return MissionStatus.ACTIVE.equals(this.status);

@@ -6,7 +6,7 @@ public enum TargetType {
     PIRATE("target.pirate", "FactionTag_Pirate"),
     DESERTEUR("target.deserter", "FactionTag_Deserter"),
     HUMANOID("target.humanoid","FactionTag_AIHumanoid"),
-    UNKNOWN("target.faction", "UNKNOWN"); // valeur par défaut
+    UNKNOWN("target.faction", "UNKNOWN");
 
     private final String localizationKey;
     private final String code;
@@ -26,12 +26,14 @@ public enum TargetType {
 
     public static TargetType fromCode(String input) {
         for (TargetType t : values()) {
-            if (input == null ||input.isEmpty())
+            if (input == null ||input.isEmpty()) {
                 return UNKNOWN;
+            }
             if (input.contains(t.getCode())) {
                 return t;
             }
         }
+        System.out.println("[Error targetType] :" +input);
         return UNKNOWN;
     }
 }

@@ -101,16 +101,21 @@ public class MissionService {
         if (missionsRegistry.getGlobalMissionMap().values().isEmpty()) {
             return;
         }
-        List<Mission> eligibleMissions;
-        if (isPirateShipKilled(jsonNode)) {
-            System.out.println("Pirate bounty");
-            eligibleMissions = getPirateShipMissions(victimFaction);
-            UpdateCurrentKillForMissions(eligibleMissions);
-        } else if (isDeserteurShipKilled(jsonNode)) {
-            System.out.println("Deserteur bounty");
-            eligibleMissions = getDeserteurShipMissions(victimFaction);
-            UpdateCurrentKillForMissions(eligibleMissions);
+        List<Mission> eligibleMissions = new ArrayList<>();
+        if ( isShip(jsonNode)) {
+            if (isPirateShipKilled(jsonNode)) {
+                System.out.println("Pirate bounty");
+                eligibleMissions = getPirateShipMissions(victimFaction);
+            } else if (isDeserteurShipKilled(jsonNode)) {
+                System.out.println("Deserteur bounty");
+                eligibleMissions = getDeserteurShipMissions(victimFaction);
+            }
         }
+//        else if (isOnFoot(jsonNode)){
+//            //Pirate par defaut
+//            eligibleMissions = getOnFootMissions(victimFaction);
+//        }
+        updateCurrentKillForMissions(eligibleMissions);
     }
 
     public void updatFactionKillCount(JsonNode jsonNode) {
@@ -119,7 +124,7 @@ public class MissionService {
             return;
         }
         List<Mission> eligibleMissions = getFactionShipMissions(victimFaction);
-        UpdateCurrentKillForMissions(eligibleMissions);
+        updateCurrentKillForMissions(eligibleMissions);
     }
 
     private List<Mission> getDeserteurShipMissions(String victimFaction) {
@@ -131,10 +136,6 @@ public class MissionService {
 
     private boolean isDeserteurShipKilled(JsonNode jsonNode) {
         String pilotName_Localised = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
-        boolean isShip = isBountyShip(jsonNode);
-        if (!isShip) {
-            return false;
-        }
         ShipTarget shipTarget = getShipTarget(jsonNode, pilotName_Localised);
         if (shipTarget == null) return false;
         return shipTarget.isDeserteur();
@@ -150,7 +151,7 @@ public class MissionService {
         return shipTarget;
     }
 
-    private static void UpdateCurrentKillForMissions(List<Mission> eligibleMissions) {
+    private void updateCurrentKillForMissions(List<Mission> eligibleMissions) {
         if (eligibleMissions.isEmpty()) {
             return;
         }
@@ -185,24 +186,25 @@ public class MissionService {
 
     private boolean isPirateShipKilled(JsonNode jsonNode) {
         String pilotName_Localised = jsonNode.has("PilotName_Localised") ? jsonNode.get("PilotName_Localised").asText() : "";
-        boolean isShip = isBountyShip(jsonNode);
-        if (!isShip) {
-            return false;
-        }
         ShipTarget shipTarget = getShipTarget(jsonNode, pilotName_Localised);
         if (shipTarget == null) return false;
         return shipTarget.isPirate();
     }
 
-    private boolean isBountyShip(JsonNode jsonNode) {
+    private boolean isShip(JsonNode jsonNode) {
         String target = jsonNode.hasNonNull("Target") ? jsonNode.get("Target").asText().toLowerCase().trim() : "";
-        if (target.contains("suitai") || target.contains("skimmerdrone")) {
-            return false;
-        }
-
-        return true;
+        return !target.contains("suitai") && !target.contains("skimmerdrone");
+    }
+    private boolean isOnFoot(JsonNode jsonNode){
+        String target = jsonNode.hasNonNull("Target") ? jsonNode.get("Target").asText().toLowerCase().trim() : "";
+        return target.contains("suitai");
     }
 
+    private List<Mission> getOnFootMissions(String victimFaction) {
+        return getEligiblesMissions(victimFaction,
+                Mission::isOnFootActiveMassacreMission,
+                Mission::isOnFootMassacre);
+    }
 
     private List<Mission> getPirateShipMissions(String victimFaction) {
         return getEligiblesMissions(victimFaction,
@@ -221,7 +223,8 @@ public class MissionService {
         Stream<Mission> stream = missionsRegistry.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.getTargetFaction() != null)
                 .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
-                .filter(mission -> commanderStatus.getCurrentStarSystem().equals(mission.getDestinationSystem()))
+                .filter(mission -> mission.getDestinationSystem() == null ||
+                        commanderStatus.getCurrentStarSystem().equals(mission.getDestinationSystem()))
                 .filter(mission -> mission.getTargetCountLeft() > 0);
 
         // Application des filtres supplémentaires passés en paramètre

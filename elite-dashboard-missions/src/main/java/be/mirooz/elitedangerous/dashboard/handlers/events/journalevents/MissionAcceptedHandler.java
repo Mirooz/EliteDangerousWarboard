@@ -29,6 +29,7 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             String targetFaction = jsonNode.has("TargetFaction") ? jsonNode.get("TargetFaction").asText() : null;
             String destinationSystem = jsonNode.has("DestinationSystem") ? jsonNode.get("DestinationSystem").asText() : null;
             String targetType = jsonNode.has("TargetType") ? jsonNode.get("TargetType").asText() : null;
+            String description = jsonNode.has("LocalisedName") ? jsonNode.get("LocalisedName").asText() : null;
 
             // Essayer différents champs pour le nombre de kills requis
             int targetCount = 0;
@@ -59,6 +60,7 @@ public class MissionAcceptedHandler implements JournalEventHandler {
             mission.setId(missionId);
             mission.setName(missionName);
             mission.setFaction(faction);
+            mission.setDescription(description);
             mission.setTargetFaction(targetFaction);
             mission.setDestinationSystem(destinationSystem);
             mission.setOriginStation(commanderStatus.getCurrentStationName());
