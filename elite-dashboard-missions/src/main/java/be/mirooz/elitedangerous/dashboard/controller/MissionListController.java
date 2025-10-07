@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.comparator.MissionTimestampComparator;
+import be.mirooz.elitedangerous.dashboard.util.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.Mission;

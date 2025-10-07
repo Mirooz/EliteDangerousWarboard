@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.journal;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.CommanderHandler;
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
@@ -8,9 +10,11 @@ import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispat
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +38,8 @@ public class JournalService {
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final String currentShip = null;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final PopupManager popupManager = PopupManager.getInstance();
 
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final JournalEventDispatcher dispatcher;
@@ -146,7 +152,7 @@ public class JournalService {
             return journalFiles;
         }
 
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(700);
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
 
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {
@@ -189,6 +195,17 @@ public class JournalService {
                     .collect(Collectors.toList());
 
             System.out.println("Fichiers journal du commandant " + getCommanderName() + ": " + journalFiles.size());
+
+            // Vérifier s'il n'y a aucun fichier de journal
+            if (journalFiles.isEmpty()) {
+                // Si aucun fichier de préférences n'existe, ouvrir la fenêtre de configuration
+                if (!preferencesService.hasPreferencesFile()) {
+                    openConfigDialog();
+                } else {
+                    showNoJournalsWarning();
+                }
+                return new ArrayList<>();
+            }
 
             // Traiter les fichiers dans l'ordre chronologique (plus ancien en premier)
             // Les fichiers sont déjà triés par date décroissante, on les inverse
@@ -234,5 +251,50 @@ public class JournalService {
     /**
      * Génère un résumé des missions
      */
+
+    /**
+     * Affiche un message d'avertissement quand aucun fichier de journal n'est trouvé
+     */
+    private void showNoJournalsWarning() {
+        Platform.runLater(() -> {
+            try {
+                String warningMessage = localizationService.getString("warning.no_journals");
+                // Afficher le popup au centre de l'écran
+                javafx.stage.Window primaryWindow = javafx.stage.Stage.getWindows().stream()
+                        .filter(window -> window.isShowing() && !window.getScene().getRoot().getChildrenUnmodifiable().isEmpty())
+                        .findFirst()
+                        .orElse(null);
+                
+                if (primaryWindow != null) {
+                    // Afficher au centre (les coordonnées seront ignorées car on utilise CENTER)
+                    popupManager.showWarningPopup(warningMessage, 0, 0, primaryWindow);
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'affichage du message d'avertissement: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Ouvre automatiquement la fenêtre de configuration
+     */
+    private void openConfigDialog() {
+        Platform.runLater(() -> {
+            try {
+                javafx.stage.Window primaryWindow = javafx.stage.Stage.getWindows().stream()
+                        .filter(window -> window.isShowing() && !window.getScene().getRoot().getChildrenUnmodifiable().isEmpty())
+                        .findFirst()
+                        .orElse(null);
+                
+                if (primaryWindow instanceof javafx.stage.Stage stage) {
+                    DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
+                    dialog.init(stage);
+                    dialog.showAndWait();
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'ouverture de la fenêtre de configuration: " + e.getMessage());
+            }
+        });
+    }
 
 }

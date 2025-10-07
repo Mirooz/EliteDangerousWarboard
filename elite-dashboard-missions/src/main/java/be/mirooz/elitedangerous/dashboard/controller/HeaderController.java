@@ -208,7 +208,7 @@ public class HeaderController implements Initializable, IRefreshable, IBatchList
     private void openConfigDialog() {
         Stage primaryStage = (Stage) configButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 400);
+        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
 
         dialog.init(primaryStage);
         dialog.showAndWait();

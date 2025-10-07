@@ -104,6 +104,13 @@ public class PreferencesService {
         String defaultPath = System.getProperty("user.home") + "\\Saved Games\\Frontier Developments\\Elite Dangerous";
         return preferences.getProperty("journal.folder", defaultPath);
     }
+
+    /**
+     * Vérifie si un fichier de préférences existe
+     */
+    public boolean hasPreferencesFile() {
+        return Files.exists(preferencesFile);
+    }
 }
 
 

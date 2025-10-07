@@ -46,6 +46,9 @@ public class ConfigDialogController implements Initializable {
     private Label journalFolderSectionLabel;
 
     @FXML
+    private Label journalFolderDescriptionLabel;
+
+    @FXML
     private TextField journalFolderTextField;
 
     @FXML
@@ -80,6 +83,11 @@ public class ConfigDialogController implements Initializable {
         configSubtitleLabel.setText(localizationService.getString("config.subtitle"));
         languageSectionLabel.setText(localizationService.getString("config.language"));
         journalFolderSectionLabel.setText(localizationService.getString("config.journal.folder"));
+        
+        // Traiter les retours à la ligne pour la description
+        String description = localizationService.getString("config.journal.description");
+        journalFolderDescriptionLabel.setText(description.replace("\\n", "\n"));
+        
         browseJournalFolderButton.setText(localizationService.getString("config.browse"));
         saveButton.setText(localizationService.getString("config.save"));
         cancelButton.setText(localizationService.getString("config.cancel"));

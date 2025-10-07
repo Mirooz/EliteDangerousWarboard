@@ -1,11 +1,9 @@
-package be.mirooz.elitedangerous.dashboard.model;
+package be.mirooz.elitedangerous.dashboard.model.ships;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

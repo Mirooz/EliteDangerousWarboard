@@ -119,6 +119,13 @@
     -fx-text-fill: -fx-elite-cyan;
 }
 
+.config-description {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-wrap-text: true;
+    -fx-padding: 5 0 0 0;
+}
+
 .config-radio {
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 12px;
@@ -964,6 +971,25 @@
     -fx-font-size: 12px;
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-weight: bold;
+}
+
+/* Styles pour le popup d'avertissement */
+.warning-popup {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.4), 12, 0, 0, 2);
+    -fx-padding: 12 20 12 20;
+}
+
+.warning-popup .popup-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-text-alignment: center;
 }
 
 /* Styles pour la fenêtre de dialogue de recherche massacre - Style Elite Dangerous */

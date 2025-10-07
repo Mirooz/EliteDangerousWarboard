@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.comparator;
+package be.mirooz.elitedangerous.dashboard.util.comparator;
 
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;

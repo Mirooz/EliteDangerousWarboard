@@ -7,12 +7,11 @@
 <StackPane xmlns="http://javafx.com/javafx/11.0.1"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="be.mirooz.elitedangerous.dashboard.controller.ConfigDialogController"
-           styleClass="config-dialog"
-           prefWidth="750" prefHeight="1000">
+           styleClass="config-dialog">
 
     <VBox spacing="20.0" styleClass="config-content">
         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            <Insets bottom="5.0" left="10.0" right="5.0" top="10.0"/>
         </padding>
 
         <!-- En-tête avec titre -->
@@ -45,6 +44,9 @@
                 <Button fx:id="browseJournalFolderButton" text="Parcourir..." 
                        onAction="#browseJournalFolder" styleClass="elite-button"/>
             </HBox>
+            
+            <Label fx:id="journalFolderDescriptionLabel" text="Votre dossier contenant les journaux de log, généralement à C:/Users/Saved Games/Frontier Developments/Elite Dangerous" 
+                   styleClass="config-description"/>
         </VBox>
 
         <!-- Panneau des boutons d'action -->

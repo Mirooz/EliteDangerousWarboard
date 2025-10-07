@@ -1,9 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.model.registries;
 
-import be.mirooz.elitedangerous.dashboard.model.DestroyedBountyShip;
-import be.mirooz.elitedangerous.dashboard.model.DestroyedConflictShip;
-import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
-import be.mirooz.elitedangerous.dashboard.model.Reward;
+import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedBountyShip;
+import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedConflictShip;
+import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShip;
+import be.mirooz.elitedangerous.dashboard.model.ships.Reward;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Getter;

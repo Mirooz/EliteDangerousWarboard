@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
-import be.mirooz.elitedangerous.dashboard.model.DestroyedShip;
+import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.beans.property.SimpleStringProperty;
