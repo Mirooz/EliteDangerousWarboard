@@ -1,5 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-public interface Refreshable {
+public interface IRefreshable {
     void refreshUI();
 }

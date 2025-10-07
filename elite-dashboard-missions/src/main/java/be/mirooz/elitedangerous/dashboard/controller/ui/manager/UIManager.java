@@ -1,17 +1,15 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.manager;
 
-import be.mirooz.elitedangerous.dashboard.controller.Refreshable;
+import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import javafx.application.Platform;
-import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class UIManager {
     private static final UIManager INSTANCE = new UIManager();
 
-    private final List<Refreshable> refreshables = new ArrayList<>();
+    private final List<IRefreshable> IRefreshables = new ArrayList<>();
 
     private UIManager() {}
 
@@ -19,19 +17,19 @@ public class UIManager {
         return INSTANCE;
     }
 
-    public void register(Refreshable refreshable) {
-        if (!refreshables.contains(refreshable)) {
-            refreshables.add(refreshable);
+    public void register(IRefreshable IRefreshable) {
+        if (!IRefreshables.contains(IRefreshable)) {
+            IRefreshables.add(IRefreshable);
         }
     }
 
-    public void unregister(Refreshable refreshable) {
-        refreshables.remove(refreshable);
+    public void unregister(IRefreshable IRefreshable) {
+        IRefreshables.remove(IRefreshable);
     }
 
     public void refreshAllUI() {
         Platform.runLater(() -> {
-            for (Refreshable r : refreshables) {
+            for (IRefreshable r : IRefreshables) {
                 try {
                     r.refreshUI();
                 } catch (Exception e) {
