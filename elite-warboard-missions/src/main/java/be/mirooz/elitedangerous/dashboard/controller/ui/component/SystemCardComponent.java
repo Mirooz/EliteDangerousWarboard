@@ -55,7 +55,9 @@ public class SystemCardComponent extends VBox{
         systemInfo.getChildren().addAll(sourceSystem, targetSystem,targetCount);
 
         // Distance
-        Label distance = new Label(system.getDistanceLy() + " AL");
+        Label distance = new Label(system.getDistanceLy()
+                + " "
+                + localizationService.getString("search.distance.unit"));
         distance.getStyleClass().add("massacre-card-distance");
 
         // Pads

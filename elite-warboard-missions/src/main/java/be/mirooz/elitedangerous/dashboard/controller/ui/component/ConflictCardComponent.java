@@ -39,7 +39,9 @@ public class ConflictCardComponent extends HBox {
         systemLabel.setOnMouseClicked(e -> onClickSystem(conflict.getSystemName(), e));
 
         // Distance
-        Label distanceLabel = new Label(String.valueOf(conflict.getDistanceLy() + " AL"));
+        Label distanceLabel = new Label(conflict.getDistanceLy()
+                + " "
+                + localizationService.getString("search.distance.unit"));
         distanceLabel.getStyleClass().add("conflict-card-distance");
 
         // Gouvernement (Faction 2)

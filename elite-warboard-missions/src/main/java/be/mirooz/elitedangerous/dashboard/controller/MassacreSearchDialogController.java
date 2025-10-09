@@ -358,8 +358,10 @@ public class MassacreSearchDialogController implements Initializable {
         if (referenceSystem == null || referenceSystem.trim().isEmpty()) {
             referenceSystem = commanderStatus.getCurrentStarSystem();
             referenceSystemField.setText(referenceSystem);
-            if (referenceSystemField.getText().isEmpty())
+            if (referenceSystem == null || referenceSystem.isEmpty()) {
                 referenceSystemField.setText("Sol");
+                referenceSystem = "Sol";
+            }
         }
         return referenceSystem;
     }
