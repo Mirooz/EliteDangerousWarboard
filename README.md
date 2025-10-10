@@ -158,7 +158,7 @@ mvn exec:java
 
 ## 📝 Changelog
 
-### Version 1.1.0
+### Version 1.0.0
 - ✅ Automatic new commander detection
 - ✅ Notification popup with automatic journal re-reading
 - ✅ Immediate reading of new journal files
@@ -167,8 +167,6 @@ mvn exec:java
 - ✅ Explanatory descriptions for search tabs
 - ✅ Complete conflict mission support
 - ✅ Bilingual English/French interface
-
-### Version 1.0.0
 - ✅ Real-time massacre mission dashboard
 - ✅ System search via EdTools and Inara
 - ✅ Destroyed ships journal
