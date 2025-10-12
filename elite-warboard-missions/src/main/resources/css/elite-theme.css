@@ -341,12 +341,15 @@
 }
 
 .missions-scroll .scroll-bar:horizontal {
-    -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
+    -fx-opacity: 0;
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
 }
 .missions-scroll .list-cell {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-padding: 2 0 2 0;
 }
 
 /* cellule sélectionnée */
@@ -587,15 +590,30 @@
 
 .massacre-progress {
     -fx-border-color: transparent;
-    -fx-border-width: 1;
-}
-.massacre-progress .track {
-    -fx-background-color: white;   /* ⚡ fond blanc */
-}
-.massacre-progress .bar {
-    -fx-background-color: -fx-elite-orange;
+    -fx-border-width: 0;
+    -fx-padding: 0;                     /* 🧠 enlève le padding interne global */
+    -fx-background-insets: 0;
 }
 
+.massacre-progress .track {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;           /* optionnel : coins légèrement arrondis */
+    -fx-padding: 0;                     /* 👈 enlève l'épaisseur inutile */
+    -fx-min-height: 10px;               /* 👈 fixe la hauteur réelle */
+    -fx-pref-height: 10px;
+    -fx-max-height: 10px;
+}
+
+.massacre-progress .bar {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;           /* optionnel */
+    -fx-padding: 0;
+    -fx-min-height: 10px;
+    -fx-pref-height: 10px;
+    -fx-max-height: 10px;
+}
 .massacre-reward {
     -fx-font-size: 16px;
     -fx-text-fill: -fx-elite-green;

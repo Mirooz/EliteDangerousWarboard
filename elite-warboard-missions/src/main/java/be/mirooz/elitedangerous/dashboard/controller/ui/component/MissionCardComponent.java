@@ -7,12 +7,11 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -44,13 +43,17 @@ public class MissionCardComponent extends VBox {
         } else if (mission.isWing()) {
             this.getStyleClass().add("mission-card-wing");
         }
-        this.setSpacing(5);
-        this.setPadding(new Insets(10));
+        this.setPrefHeight(50);
+        this.setMinHeight(50);
+        this.setMaxHeight(50);
+        this.setSpacing(1);
+        this.setPadding(new Insets(3, 10, 3, 10));
 
         // Ligne compacte avec les informations essentielles
         HBox mainRow = new HBox();
         mainRow.setSpacing(15);
         mainRow.setAlignment(Pos.CENTER_LEFT);
+        mainRow.setFillHeight(false);
 
         // Faction - largeur fixe pour alignement
         Label sourceFactionLabel = getSourceFaction(mission);
@@ -64,7 +67,7 @@ public class MissionCardComponent extends VBox {
         HBox killsSection = getKillsSection(mission);
 
         // Icône Wing - largeur fixe pour alignement
-        Label wingLabel = getWingLabel(mission);
+        StackPane wingLabel = getWingLabel(mission);
 
         // Récompense - largeur fixe pour alignement
         Label rewardLabel = getRewardLabel(mission);
@@ -72,7 +75,7 @@ public class MissionCardComponent extends VBox {
         // Temps d'acceptation et temps restant - largeur fixe pour alignement
         VBox timeSection = getTimeRemaining(mission);
 
-        mainRow.getChildren().addAll(sourceFactionLabel, targetFactionLabel, targetLabel, killsSection, wingLabel, rewardLabel, timeSection);
+        mainRow.getChildren().addAll(sourceFactionLabel, targetFactionLabel, targetLabel, killsSection, wingLabel,rewardLabel,timeSection);
 
         this.getChildren().add(mainRow);
 
@@ -82,8 +85,10 @@ public class MissionCardComponent extends VBox {
         Label rewardLabel = new Label(getFormattedNumber(mission.getReward()) + " Cr");
         rewardLabel.getStyleClass().add("massacre-reward");
         rewardLabel.setPrefWidth(140);
-        rewardLabel.setMinWidth(140);
+        rewardLabel.setMinWidth(110);
         rewardLabel.setMaxWidth(140);
+        rewardLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
+        rewardLabel.setWrapText(false);
         return rewardLabel;
     }
 
@@ -91,7 +96,7 @@ public class MissionCardComponent extends VBox {
         Label factionLabel = new Label(mission.getFaction());
         factionLabel.getStyleClass().add("massacre-faction");
         factionLabel.setPrefWidth(180);
-        factionLabel.setMinWidth(180);
+        factionLabel.setMinWidth(70);
         factionLabel.setMaxWidth(180);
 
         // Ajouter tooltip et clic pour copier le système d'origine
@@ -115,7 +120,7 @@ public class MissionCardComponent extends VBox {
         }
         Label targetLabel = new Label(targetInfo);
         targetLabel.setPrefWidth(80);
-        targetLabel.setMinWidth(80);
+        targetLabel.setMinWidth(30);
         targetLabel.setMaxWidth(80);
         if (mission.getTargetType() != null) {
             switch (mission.getTargetType()) {
@@ -138,9 +143,8 @@ public class MissionCardComponent extends VBox {
         Label targetLabel = new Label(targetInfo);
         targetLabel.getStyleClass().add("massacre-target");
         targetLabel.setPrefWidth(180);
-        targetLabel.setMinWidth(180);
+        targetLabel.setMinWidth(50);
         targetLabel.setMaxWidth(180);
-
         if (mission.getDestinationSystem() != null && !mission.getDestinationSystem().isEmpty()) {
             // Fallback: utiliser destinationSystem si targetSystem n'est pas défini
             String tooltipText = localizationService.getString("tooltip.destination_system") + ": " + mission.getDestinationSystem();
@@ -157,8 +161,12 @@ public class MissionCardComponent extends VBox {
         VBox timeSection = new VBox();
         timeSection.setSpacing(2);
         timeSection.setPrefWidth(120);
-        timeSection.setMinWidth(120);
+        timeSection.setMinWidth(70);
         timeSection.setMaxWidth(120);
+        timeSection.setPrefHeight(20);
+        timeSection.setMinHeight(20);
+        timeSection.setMaxHeight(20);
+        timeSection.setAlignment(Pos.CENTER_LEFT);
 
         if (mission.getAcceptedTime() != null) {
             Label acceptedLabel = new Label(localizationService.getString("mission.accepted") + ": " + mission.getAcceptedTime().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")));
@@ -228,27 +236,28 @@ public class MissionCardComponent extends VBox {
             return String.format("%d min", minutes);
         }
     }
-    private Label getWingLabel(Mission mission) {
-        Label wingLabel = new Label();
-        wingLabel.setPrefWidth(30);
-        wingLabel.setMinWidth(30);
-        wingLabel.setMaxWidth(30);
-        wingLabel.setAlignment(Pos.CENTER);
+    private StackPane getWingLabel(Mission mission) {
+        StackPane wingPane = new StackPane();
+        wingPane.setPrefSize(30, 20);
+        wingPane.setMinSize(30, 20);
+        wingPane.setMaxSize(30, 20);
+        wingPane.setAlignment(Pos.CENTER);
 
         if (mission.isWing()) {
             Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/wing.png")));
             ImageView imageView = new ImageView(image);
-            imageView.setFitWidth(20);
-            imageView.setFitHeight(20);
+            imageView.setFitWidth(16);
+            imageView.setFitHeight(16);
             imageView.setPreserveRatio(true);
-            wingLabel.setGraphic(imageView);
-            wingLabel.getStyleClass().add("wing-icon");
-            wingLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.wing_mission")));
-        } else {
-            wingLabel.setGraphic(null);
-            wingLabel.setText("");
+
+            wingPane.getChildren().add(imageView);
+            wingPane.getStyleClass().add("wing-icon");
+
+            Tooltip tooltip = new Tooltip(localizationService.getString("tooltip.wing_mission"));
+            Tooltip.install(wingPane, tooltip); // ✅ tooltip sur le pane
         }
-        return wingLabel;
+
+        return wingPane;
     }
 
     private HBox getKillsSection(Mission mission) {
@@ -256,8 +265,9 @@ public class MissionCardComponent extends VBox {
         killsSection.setSpacing(8);
         killsSection.setAlignment(Pos.CENTER_LEFT);
         killsSection.setPrefWidth(110);
-        killsSection.setMinWidth(110);
+        killsSection.setMinWidth(70);
         killsSection.setMaxWidth(110);
+        killsSection.setFillHeight(false);
 
         // Afficher x/y pour les missions actives, y/y pour les missions complétées
         String killsText;
@@ -281,16 +291,15 @@ public class MissionCardComponent extends VBox {
             killsLabel.getStyleClass().add("massacre-kills-waiting");
         }
         killsLabel.setPrefWidth(50);
-        killsLabel.setMinWidth(50);
+        killsLabel.setMinWidth(30);
         killsLabel.setMaxWidth(50);
 
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress((double) mission.getCurrentCount() / mission.getTargetCount());
         progressBar.getStyleClass().add("massacre-progress");
         progressBar.setPrefWidth(60);
-        progressBar.setMinWidth(60);
+        progressBar.setMinWidth(40);
         progressBar.setMaxWidth(60);
-
         killsSection.getChildren().addAll(killsLabel, progressBar);
         return killsSection;
     }
