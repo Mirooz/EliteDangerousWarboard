@@ -1,0 +1,202 @@
+/* Journal Analyzer CSS */
+
+/* Root styles */
+.root {
+    -fx-background-color: #1a1a1a;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 12px;
+}
+
+/* Header */
+.header-panel {
+    -fx-background-color: #0a0a0a;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 0 0 2 0;
+    -fx-padding: 10;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00FFFF;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Panels */
+.filter-panel {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 10;
+}
+
+.events-panel {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 10;
+}
+
+.json-panel {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 10;
+}
+
+/* Filter List */
+.filter-list {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+
+.filter-list:focused {
+    -fx-background-color: transparent;
+}
+
+.filter-list .viewport {
+    -fx-background-color: transparent;
+}
+
+.filter-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #E0E0E0;
+    -fx-font-size: 11px;
+    -fx-padding: 3 5 3 5;
+}
+
+.filter-list .list-cell:hover {
+    -fx-background-color: rgba(255, 140, 0, 0.1);
+    -fx-text-fill: #00FFFF;
+}
+
+.filter-list .list-cell:selected {
+    -fx-background-color: rgba(255, 140, 0, 0.2);
+    -fx-text-fill: #FF6B00;
+}
+
+/* Events List */
+.events-list {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+
+.events-list:focused {
+    -fx-background-color: transparent;
+}
+
+.events-list .viewport {
+    -fx-background-color: transparent;
+}
+
+.events-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 5;
+}
+
+.events-list .list-cell:hover {
+    -fx-background-color: rgba(255, 140, 0, 0.1);
+}
+
+.events-list .list-cell:selected {
+    -fx-background-color: rgba(255, 140, 0, 0.2);
+}
+
+/* JSON TextArea - White background, black text */
+.json-textarea {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 1;
+    -fx-text-fill: #000000;
+    -fx-font-family: "Courier New", monospace;
+    -fx-font-size: 11px;
+    -fx-wrap-text: true;
+}
+
+.json-textarea:focused {
+    -fx-border-color: #00FFFF;
+}
+
+/* Small Buttons */
+.small-button {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 1;
+    -fx-text-fill: #FF6B00;
+    -fx-font-weight: bold;
+    -fx-font-size: 10px;
+    -fx-padding: 4 8 4 8;
+    -fx-background-radius: 2;
+    -fx-border-radius: 2;
+    -fx-cursor: hand;
+}
+
+.small-button:hover {
+    -fx-background-color: #3a3a3a;
+    -fx-border-color: #00FFFF;
+    -fx-text-fill: #00FFFF;
+}
+
+.small-button:pressed {
+    -fx-background-color: #FF6B00;
+    -fx-text-fill: #000000;
+}
+
+/* Button styles */
+.button {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 2;
+    -fx-text-fill: #FF6B00;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #3a3a3a;
+    -fx-border-color: #00FFFF;
+    -fx-text-fill: #00FFFF;
+}
+
+.button:pressed {
+    -fx-background-color: #FF6B00;
+    -fx-text-fill: #000000;
+}
+
+/* Label styles */
+.label {
+    -fx-text-fill: #E0E0E0;
+}
+
+/* Scroll bars */
+.scroll-bar:vertical {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #FF6B00;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #FF6B00;
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #FF6B00;
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #FF6B00;
+}

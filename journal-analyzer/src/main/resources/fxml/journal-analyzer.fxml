@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.mirooz.elitedangerous.journal.JournalAnalyzerController">
+   <children>
+      <!-- Header -->
+      <HBox spacing="10.0" styleClass="header-panel">
+         <children>
+            <Button fx:id="selectJournalButton" onAction="#selectJournalFile" text="Select Journal File" />
+            <Label fx:id="statusLabel" text="Ready - Select a journal file" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </HBox>
+      
+      <!-- Main Content -->
+      <HBox VBox.vgrow="ALWAYS" spacing="10.0">
+         <children>
+            <!-- Left Panel - Event Type Filter -->
+            <VBox prefWidth="250.0" spacing="10.0" styleClass="filter-panel">
+               <children>
+                  <Label text="Event Types" styleClass="section-title" />
+                  
+                  <HBox spacing="5.0">
+                     <children>
+                        <Button onAction="#selectAllEventTypes" text="Select All" styleClass="small-button" />
+                        <Button onAction="#deselectAllEventTypes" text="Deselect All" styleClass="small-button" />
+                     </children>
+                  </HBox>
+                  
+                  <ListView fx:id="eventTypeFilterList" VBox.vgrow="ALWAYS" styleClass="filter-list" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Center Panel - Events List -->
+            <VBox HBox.hgrow="ALWAYS" spacing="10.0" styleClass="events-panel">
+               <children>
+                  <Label text="Journal Events" styleClass="section-title" />
+                  
+                  <ListView fx:id="eventsList" VBox.vgrow="ALWAYS" styleClass="events-list" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Right Panel - JSON Viewer -->
+            <VBox prefWidth="400.0" spacing="10.0" styleClass="json-panel">
+               <children>
+                  <Label text="JSON Viewer" styleClass="section-title" />
+                  
+                  <TextArea fx:id="jsonViewer" VBox.vgrow="ALWAYS" styleClass="json-textarea" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </HBox>
+   </children>
+</VBox>
