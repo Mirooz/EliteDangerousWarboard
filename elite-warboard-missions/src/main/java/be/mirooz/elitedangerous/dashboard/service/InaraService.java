@@ -5,6 +5,8 @@ import be.mirooz.elitedangerous.lib.inara.model.Commodity;
 import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
 import be.mirooz.elitedangerous.lib.inara.model.CoreMineralRegistry;
 import be.mirooz.elitedangerous.lib.inara.model.minerals.CoreMineral;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +50,7 @@ public class InaraService {
 
         // Lancer une requête par minéral en parallèle
         List<CompletableFuture<List<Commodity>>> futures = new ArrayList<>();
-
+        long start = System.currentTimeMillis();
         for (CoreMineral mineral : allMinerals) {
             CompletableFuture<List<Commodity>> future = CompletableFuture.supplyAsync(() -> {
                 try {
@@ -77,6 +79,8 @@ public class InaraService {
                         }
                     }
                     System.out.println("✅ Recherche terminée. Total de " + allCommodities.size() + " commodités trouvées.");
+                    long durationCall = System.currentTimeMillis() - start;
+                    System.out.println("INARA total calls duration: " + durationCall + " ms");
                     return allCommodities;
                 });
     }

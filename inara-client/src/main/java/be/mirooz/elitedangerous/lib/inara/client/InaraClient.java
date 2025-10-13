@@ -208,6 +208,7 @@ public class InaraClient {
                 if (cols.size() > 5) {
                     String priceText = cols.get(5).text()
                         .replace("Cr", "")
+                            .replace(",","")
                         .trim();
                     
                     // Gérer les prix avec min/max (ex: "480,335 - 891,144")
@@ -217,14 +218,14 @@ public class InaraClient {
                             String minPrice = priceParts[0].trim();
                             String maxPrice = priceParts[1].trim();
                             
-                            commodity.setPriceMin(minPrice);
-                            commodity.setPriceMax(maxPrice);
-                            commodity.setPrice(minPrice); // Prix principal = prix minimum
+                            commodity.setPriceMin(Integer.parseInt(minPrice));
+                            commodity.setPriceMax(Integer.parseInt(maxPrice));
+                            commodity.setPrice(Integer.parseInt(minPrice)); // Prix principal = prix minimum
                         } else {
-                            commodity.setPrice(priceText);
+                            commodity.setPrice(Integer.parseInt(priceText));
                         }
                     } else {
-                        commodity.setPrice(priceText);
+                        commodity.setPrice(Integer.parseInt(priceText));
                     }
                 }
                 
@@ -232,7 +233,7 @@ public class InaraClient {
                 if (cols.size() > 6) {
                     commodity.setLastUpdate(cols.get(6).text().trim());
                 }
-                commodity.setName(coreMineral.getInaraName());
+                commodity.setCoreMineral(coreMineral);
                 
                 commodities.add(commodity);
                 

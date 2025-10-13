@@ -129,7 +129,7 @@
                 <executions>
                     <execution>
                         <id>make-assembly</id>
-                        <phase>install</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
@@ -151,7 +151,7 @@
                 <executions>
                     <execution>
                         <id>create-runtime</id>
-                        <phase>install</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -168,7 +168,7 @@
 
                     <execution>
                         <id>create-installer-windows</id>
-                        <phase>install</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -207,7 +207,7 @@
                     <!-- jpackage déjà ajouté ci-dessus -->
                     <execution>
                         <id>inno-setup</id>
-                        <phase>install</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>

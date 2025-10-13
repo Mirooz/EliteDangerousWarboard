@@ -1,9 +1,11 @@
 package be.mirooz.elitedangerous.lib.inara.model.minerals;
 
+import lombok.ToString;
+
 /**
  * Interface représentant un minéral de core mining dans Elite Dangerous
  */
-public interface CoreMineral {
+public abstract class CoreMineral {
     
     // Constantes des noms de minéraux
     String VOID_OPAL = "Void Opal";
@@ -17,17 +19,13 @@ public interface CoreMineral {
     String SERENDIBITE = "Serendibite";
     String PAINITE = "Painite";
     String BROMELLITE = "Bromellite";
-    
-    /**
-     * Retourne l'ID unique du minéral
-     * @return L'ID du minéral
-     */
-    String getInaraId();
-    
-    /**
-     * Retourne le nom du minéral
-     * @return Le nom du minéral
-     */
-    String getInaraName();
-    
+
+
+    public abstract String getInaraId();
+    public abstract String getInaraName();
+    @Override
+    public String toString() {
+        return getInaraName() + " (" + getInaraId() + ")";
+    }
+
 }

@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.lib.inara.model.minerals;
 /**
  * Monazite - Minéral de core mining
  */
-public class Monazite implements CoreMineral {
+public class Monazite extends CoreMineral {
     
     @Override
     public String getInaraId() {

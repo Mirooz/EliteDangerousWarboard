@@ -18,7 +18,7 @@ public class InaraMain {
             commodities.stream()
                 .limit(10)
                 .forEach(commodity -> 
-                    System.out.println(commodity.getName() + " - " + 
+                    System.out.println(commodity.getCoreMineral().getInaraName() + " - " +
                                      commodity.getStationName() + " - " + 
                                      commodity.getPrice() + " Cr")
                 );

@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.lib.inara.model.minerals;
 /**
  * Low Temperature Diamonds - Minéral de core mining
  */
-public class LowTemperatureDiamonds implements CoreMineral {
+public class LowTemperatureDiamonds extends CoreMineral {
     
     @Override
     public String getInaraId() {

@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.lib.inara.model.minerals;
 /**
  * Alexandrite - Minéral de core mining
  */
-public class Alexandrite implements CoreMineral {
+public class Alexandrite extends CoreMineral {
     
     @Override
     public String getInaraId() {

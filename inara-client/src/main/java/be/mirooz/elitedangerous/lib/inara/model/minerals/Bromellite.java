@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.lib.inara.model.minerals;
 /**
  * Bromellite - Minéral de core mining
  */
-public class Bromellite implements CoreMineral {
+public class Bromellite extends CoreMineral {
     
     @Override
     public String getInaraId() {

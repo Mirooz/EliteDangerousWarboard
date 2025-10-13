@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.lib.inara.model.minerals;
 /**
  * Void Opal - Minéral de core mining
  */
-public class VoidOpal implements CoreMineral {
+public class VoidOpal extends CoreMineral {
     
     @Override
     public String getInaraId() {

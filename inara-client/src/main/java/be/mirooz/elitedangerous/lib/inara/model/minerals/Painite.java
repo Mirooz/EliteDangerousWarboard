@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.lib.inara.model.minerals;
 /**
  * Painite - Minéral de core mining
  */
-public class Painite implements CoreMineral {
+public class Painite extends CoreMineral {
     
     @Override
     public String getInaraId() {

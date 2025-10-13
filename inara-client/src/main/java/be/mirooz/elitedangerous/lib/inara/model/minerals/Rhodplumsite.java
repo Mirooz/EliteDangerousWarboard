@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.lib.inara.model.minerals;
 /**
  * Rhodplumsite - Minéral de core mining
  */
-public class Rhodplumsite implements CoreMineral {
+public class Rhodplumsite extends CoreMineral {
     
     @Override
     public String getInaraId() {
