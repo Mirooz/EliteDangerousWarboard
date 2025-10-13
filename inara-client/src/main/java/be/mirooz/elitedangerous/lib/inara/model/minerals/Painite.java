@@ -12,6 +12,11 @@ public class Painite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return PAINITE;
+        return "Painite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Painite";
     }
 }

@@ -12,6 +12,11 @@ public class LowTemperatureDiamonds extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return LOW_TEMPERATURE_DIAMONDS;
+        return "Low Temperature Diamonds";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "LowTemperatureDiamond"; // Sans espaces comme dans edtools.cc
     }
 }

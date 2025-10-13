@@ -12,6 +12,11 @@ public class Benitoite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return BENITOITE;
+        return "Benitoite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Benitoite";
     }
 }

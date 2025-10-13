@@ -12,6 +12,11 @@ public class Musgravite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return MUSGRAVITE;
+        return "Musgravite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Musgravite";
     }
 }

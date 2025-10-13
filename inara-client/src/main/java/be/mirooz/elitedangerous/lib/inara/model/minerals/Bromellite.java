@@ -12,6 +12,11 @@ public class Bromellite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return BROMELLITE;
+        return "Bromellite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Bromellite";
     }
 }

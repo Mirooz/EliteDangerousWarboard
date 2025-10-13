@@ -12,6 +12,11 @@ public class Grandidierite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return GRANDIDIERITE;
+        return "Grandidierite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Grandidierite";
     }
 }

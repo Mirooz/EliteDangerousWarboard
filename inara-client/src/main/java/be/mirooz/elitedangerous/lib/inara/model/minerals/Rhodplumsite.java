@@ -12,6 +12,11 @@ public class Rhodplumsite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return RHODPLUMSITE;
+        return "Rhodplumsite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Rhodplumsite";
     }
 }

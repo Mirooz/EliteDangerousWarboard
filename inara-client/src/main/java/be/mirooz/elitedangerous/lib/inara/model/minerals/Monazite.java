@@ -12,6 +12,11 @@ public class Monazite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return MONAZITE;
+        return "Monazite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Monazite";
     }
 }

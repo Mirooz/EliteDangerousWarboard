@@ -12,6 +12,11 @@ public class Serendibite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return SERENDIBITE;
+        return "Serendibite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Serendibite";
     }
 }

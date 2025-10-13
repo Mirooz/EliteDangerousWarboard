@@ -12,6 +12,11 @@ public class VoidOpal extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return VOID_OPAL;
+        return "Void Opal";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Opal";
     }
 }

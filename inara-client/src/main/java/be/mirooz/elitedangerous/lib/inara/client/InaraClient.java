@@ -165,15 +165,33 @@ public class InaraClient {
                     }
                 }
                 
-                // Séparer station et système si possible
-                String[] parts = stationText.split("\\|");
-                if (parts.length >= 2) {
-                    commodity.setStationName(parts[0].trim());
-                    // Nettoyer tous les symboles spéciaux du nom de système
-                    String systemName = cleanSpecialSymbols(parts[1].trim());
-                    commodity.setSystemName(systemName);
+                // Extraire le nom de la station depuis le premier span
+                Element stationNameElement = stationElement.selectFirst("span.standardcase");
+                if (stationNameElement != null) {
+                    String stationName = stationNameElement.text().trim();
+                    // Supprimer le | et tout ce qui suit
+                    if (stationName.contains("|")) {
+                        stationName = stationName.substring(0, stationName.indexOf("|")).trim();
+                    }
+                    commodity.setStationName(stationName);
                 } else {
                     commodity.setStationName(stationText);
+                }
+                
+                // Extraire le nom du système depuis le span avec classe "uppercase nowrap"
+                Element systemNameElement = stationElement.selectFirst("span.uppercase.nowrap");
+                if (systemNameElement != null) {
+                    String systemName = cleanSpecialSymbols(systemNameElement.text().trim());
+                    commodity.setSystemName(systemName);
+                } else {
+                    // Fallback: essayer de parser depuis le texte brut
+                    String[] parts = stationText.split("\\|");
+                    if (parts.length >= 2) {
+                        String systemName = parts[1].trim();
+                        systemName = systemName.replaceAll("\\s*PP\\+\\s*", " ").trim();
+                        systemName = cleanSpecialSymbols(systemName);
+                        commodity.setSystemName(systemName);
+                    }
                 }
                 
                 // Définir le statut Fleet Carrier

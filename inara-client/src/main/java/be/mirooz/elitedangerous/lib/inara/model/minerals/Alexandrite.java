@@ -12,6 +12,11 @@ public class Alexandrite extends CoreMineral {
     
     @Override
     public String getInaraName() {
-        return ALEXANDRITE;
+        return "Alexandrite";
+    }
+    
+    @Override
+    public String getEdToolName() {
+        return "Alexandrite";
     }
 }
