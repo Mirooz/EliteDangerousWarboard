@@ -22,30 +22,38 @@ public class CommanderStatus {
     private String FID;
     private Boolean isOnline;
 
+    private CommanderShip ship;
+
+    public void setShip(CommanderShip ship) {
+        this.ship = ship;
+    }
+
+
     private CommanderStatus() {
     }
+
     public void setCurrentStarSystem(String value) {
         this.currentStarSystem = value;
-            component.setCurrentStarSystem(value);
+        component.setCurrentStarSystem(value);
     }
 
     public void setCurrentStationName(String value) {
         this.currentStationName = value;
-            component.setCurrentStationName(value);
+        component.setCurrentStationName(value);
     }
 
     public void setCommanderName(String value) {
         this.commanderName = value;
-            component.setCommanderName(value);
+        component.setCommanderName(value);
     }
 
     public void setFID(String value) {
         this.FID = value;
-            component.setFID(value);
+        component.setFID(value);
     }
 
     public void setOnline(boolean value) {
         this.isOnline = value;
-            component.setOnline(value);
+        component.setOnline(value);
     }
 }

@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.lib.inara.model;
+package be.mirooz.elitedangerous.lib.inara.model.conflictsearch;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

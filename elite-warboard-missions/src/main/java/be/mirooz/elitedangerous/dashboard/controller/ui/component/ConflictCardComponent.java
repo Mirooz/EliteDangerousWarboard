@@ -1,17 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
-import be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
-import javafx.geometry.Pos;
+import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
 import javafx.scene.control.Label;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**

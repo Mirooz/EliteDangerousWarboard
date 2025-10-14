@@ -13,10 +13,6 @@ import java.util.Map;
 
 public class FactionStatsComponent extends VBox {
 
-    private static final double COL_WIDTH_TARGET = 150;
-    private static final double COL_WIDTH_TARGETFACTION = 150;
-    private static final double COL_WIDTH_SOURCE = 180;
-    private static final double COL_WIDTH_KILLS = 80;
     public FactionStatsComponent(){
         super();
     }
@@ -45,13 +41,13 @@ public class FactionStatsComponent extends VBox {
                     HBox row = new HBox(0);
                     row.setAlignment(Pos.CENTER_LEFT);
                     row.getStyleClass().add("faction-row");
-
                     // Label de la cible (une seule fois par bloc cible/faction)
                     Label cibleLabel = new Label(
                             lastCible != null && lastCible.equals(stat.getCible().getDisplayName())
                                     ? "" : targetType.getDisplayName()
                     );
-                    cibleLabel.setPrefWidth(COL_WIDTH_TARGET);
+                    cibleLabel.setPrefWidth(150);
+                    cibleLabel.setMinWidth(10);
                     cibleLabel.getStyleClass().add("faction-col");
                     cibleLabel.setTranslateX(10);
 
@@ -60,14 +56,14 @@ public class FactionStatsComponent extends VBox {
                             lastTargetFaction != null && lastTargetFaction.equals(stat.getTargetFaction())
                                     ? "" : stat.getTargetFaction()
                     );
-                    targetLabel.setPrefWidth(COL_WIDTH_TARGETFACTION);
+                    targetLabel.setPrefWidth(190);
                     targetLabel.getStyleClass().add("faction-col");
-
+                    targetLabel.setMinWidth(70);
                     // Label de la faction source
                     Label sourceLabel = new Label(src.getSourceFaction());
-                    sourceLabel.setPrefWidth(COL_WIDTH_SOURCE);
+                    sourceLabel.setPrefWidth(200);
+                    sourceLabel.setMinWidth(200);
                     sourceLabel.getStyleClass().add("faction-col");
-                    sourceLabel.setTranslateX(30);
 
                     // Label des kills
                     Label killsLabel;
@@ -82,10 +78,10 @@ public class FactionStatsComponent extends VBox {
                         killsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00;");
                     }
 
-                    killsLabel.setPrefWidth(COL_WIDTH_KILLS);
-                    killsLabel.setAlignment(Pos.CENTER_RIGHT);
+                    killsLabel.setPrefWidth(60);
+                    killsLabel.setMinWidth(60);
+                    killsLabel.setAlignment(Pos.CENTER_LEFT);
                     killsLabel.getStyleClass().addAll("faction-col", "kills");
-                    killsLabel.setTranslateX(30);
 
                     // Construction de la ligne
                     row.getChildren().addAll(cibleLabel, targetLabel, sourceLabel, killsLabel);

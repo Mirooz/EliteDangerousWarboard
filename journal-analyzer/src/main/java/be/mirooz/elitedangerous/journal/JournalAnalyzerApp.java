@@ -36,7 +36,7 @@ public class JournalAnalyzerApp extends Application {
         // Set stage properties
         primaryStage.setTitle("Elite Dangerous Journal Analyzer");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(1000);
+        primaryStage.setMinWidth(1200);
         primaryStage.setMinHeight(700);
         
         // Set application icon

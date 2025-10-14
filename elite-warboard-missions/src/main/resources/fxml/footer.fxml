@@ -37,10 +37,10 @@
                           >
       <!-- En-tête -->
       <HBox alignment="CENTER" spacing="40.0" styleClass="faction-header">
-         <Label fx:id="targetHeaderLabel" text="Cible" styleClass="faction-col-header" prefWidth="100"/>
-         <Label fx:id="targetFactionHeaderLabel" text="Target Faction" styleClass="faction-col-header" prefWidth="150"/>
-         <Label fx:id="sourceFactionHeaderLabel" text="Source Faction" styleClass="faction-col-header" prefWidth="150"/>
-         <Label fx:id="killsHeaderLabel" text="Kills" styleClass="faction-col-header" prefWidth="60"/>
+         <Label fx:id="targetHeaderLabel" text="Cible" styleClass="faction-col-header" minWidth="50" prefWidth="100"/>
+         <Label fx:id="targetFactionHeaderLabel" text="Target Faction" styleClass="faction-col-header" minWidth="100" prefWidth="150"/>
+         <Label fx:id="sourceFactionHeaderLabel" text="Source Faction" styleClass="faction-col-header" minWidth="130" prefWidth="150"/>
+         <Label fx:id="killsHeaderLabel" text="Kills" styleClass="faction-col-header" minWidth="60" prefWidth="60"/>
       </HBox>
       <!-- Ici le contrôleur Java ajoutera dynamiquement les lignes -->
    </FactionStatsComponent>

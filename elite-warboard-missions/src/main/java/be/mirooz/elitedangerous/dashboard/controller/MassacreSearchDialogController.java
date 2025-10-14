@@ -9,7 +9,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.SystemCardComp
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.ConflictCardComponent;
 import be.mirooz.elitedangerous.dashboard.service.InaraService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
-import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
+import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

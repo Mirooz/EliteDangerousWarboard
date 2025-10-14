@@ -1,8 +1,8 @@
 package be.mirooz.elitedangerous.lib.inara.client;
 
-import be.mirooz.elitedangerous.lib.inara.model.Commodity;
-import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
-import be.mirooz.elitedangerous.lib.inara.model.minerals.CoreMineral;
+import be.mirooz.elitedangerous.lib.inara.model.commodities.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
+import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -70,23 +70,10 @@ public class InaraClient {
         return systems;
     }
 
-    /**
-     * Récupère la liste des commodités depuis Inara selon les paramètres spécifiés
-     * 
-     * @param commodityName Nom de la commodité (ex: "Void Opal")
-     * @param sourceSystem Système source pour la recherche (ex: "HIP 50694")
-     * @param maxSystemDistance Distance maximale du système en années-lumière (ex: 50)
-     * @param minLandingPad Taille minimale du pad d'atterrissage ("Small", "Medium", "Large")
-     * @param maxStationDistance Distance maximale de la station en Ls (ex: 15000)
-     * @param maxPriceAge Âge maximum des prix en jours (ex: 2)
-     * @param minSupplyDemand Offre/demande minimale (ex: 1000)
-     * @return Liste des commodités trouvées
-     * @throws IOException en cas d'erreur de connexion
-     */
-    public List<Commodity> fetchCommoditiesAllArgs(CoreMineral coreMineral, String sourceSystem,
-                                                   int maxSystemDistance, boolean largePad,
-                                                   int maxStationDistance, int maxPriceAge,
-                                                   int minSupplyDemand) throws IOException {
+    public List<InaraCommoditiesStats> fetchCommoditiesAllArgs(CoreMineralType coreMineral, String sourceSystem,
+                                                               int maxSystemDistance, boolean largePad,
+                                                               int maxStationDistance, int maxPriceAge,
+                                                               int minSupplyDemand) throws IOException {
         
         // Encoder les paramètres pour l'URL
         String encodedSystem = URLEncoder.encode(sourceSystem, StandardCharsets.UTF_8);
@@ -94,7 +81,7 @@ public class InaraClient {
         // Construire l'URL avec les paramètres
         StringBuilder urlBuilder = new StringBuilder(BASE_URL + "/elite/commodities/?formbrief=1");
         urlBuilder.append("&pi1=2"); // I want to sell
-        urlBuilder.append("&pa1%5B%5D=").append(coreMineral.getInaraId()); // Commodity ID (à adapter selon la commodité)
+        urlBuilder.append("&pa1%5B%5D=").append(coreMineral.getInaraId()); // InaraCommoditiesStats ID (à adapter selon la commodité)
         urlBuilder.append("&ps1=").append(encodedSystem); // Source system
         urlBuilder.append("&pi10=1"); // Include surface stations
         urlBuilder.append("&pi11=").append(maxSystemDistance); // Max system distance
@@ -121,7 +108,7 @@ public class InaraClient {
         long durationCall = System.currentTimeMillis() - start;
         System.out.println("INARA commodities call duration: " + durationCall + " ms");
         
-        List<Commodity> commodities = new ArrayList<>();
+        List<InaraCommoditiesStats> commodities = new ArrayList<>();
         
         // Chercher la table des résultats
         Element table = doc.selectFirst("table.tablesortercollapsed");
@@ -147,7 +134,7 @@ public class InaraClient {
                 continue; // Vérifier qu'on a assez de colonnes
             }
             
-            Commodity commodity = new Commodity();
+            InaraCommoditiesStats inaraCommoditiesStats = new InaraCommoditiesStats();
             
             try {
                 // Colonne 0: Station name et système
@@ -173,16 +160,16 @@ public class InaraClient {
                     if (stationName.contains("|")) {
                         stationName = stationName.substring(0, stationName.indexOf("|")).trim();
                     }
-                    commodity.setStationName(stationName);
+                    inaraCommoditiesStats.setStationName(stationName);
                 } else {
-                    commodity.setStationName(stationText);
+                    inaraCommoditiesStats.setStationName(stationText);
                 }
                 
                 // Extraire le nom du système depuis le span avec classe "uppercase nowrap"
                 Element systemNameElement = stationElement.selectFirst("span.uppercase.nowrap");
                 if (systemNameElement != null) {
                     String systemName = cleanSpecialSymbols(systemNameElement.text().trim());
-                    commodity.setSystemName(systemName);
+                    inaraCommoditiesStats.setSystemName(systemName);
                 } else {
                     // Fallback: essayer de parser depuis le texte brut
                     String[] parts = stationText.split("\\|");
@@ -190,22 +177,22 @@ public class InaraClient {
                         String systemName = parts[1].trim();
                         systemName = systemName.replaceAll("\\s*PP\\+\\s*", " ").trim();
                         systemName = cleanSpecialSymbols(systemName);
-                        commodity.setSystemName(systemName);
+                        inaraCommoditiesStats.setSystemName(systemName);
                     }
                 }
                 
                 // Définir le statut Fleet Carrier
-                commodity.setFleetCarrier(isFleetCarrier ? "Yes" : "No");
+                inaraCommoditiesStats.setFleetCarrier(isFleetCarrier);
                 
                 // Colonne 1: Landing pad size
                 if (cols.size() > 1) {
-                    commodity.setLandingPadSize(cols.get(1).text().trim());
+                    inaraCommoditiesStats.setLandingPadSize(cols.get(1).text().trim());
                 }
                 
                 // Colonne 2: Station distance
                 if (cols.size() > 2) {
                     String stationDist = cols.get(2).text().replace("Ls", "").trim();
-                    commodity.setStationDistance(stationDist);
+                    inaraCommoditiesStats.setStationDistance(stationDist);
                 }
                 
                 // Colonne 3: System distance
@@ -213,13 +200,14 @@ public class InaraClient {
                     String systemDist = cleanSpecialSymbols(cols.get(3).text())
                         .replace("Ly", "")
                         .trim();
-                    commodity.setSystemDistance(Double.parseDouble(systemDist));
+                    inaraCommoditiesStats.setSystemDistance(Double.parseDouble(systemDist));
                 }
                 
-                // Colonne 4: Supply/Demand
+                // Colonne 4: Demand
                 if (cols.size() > 4) {
-                    String supplyText = cleanSpecialSymbols(cols.get(4).text()).trim();
-                    commodity.setSupply(supplyText);
+                    String demandText = cleanSpecialSymbols(cols.get(4).text()).trim()
+                                    .replace(",","");
+                    inaraCommoditiesStats.setDemand(Integer.parseInt(demandText));
                 }
                 
                 // Colonne 5: Price
@@ -236,27 +224,27 @@ public class InaraClient {
                             String minPrice = priceParts[0].trim();
                             String maxPrice = priceParts[1].trim();
                             
-                            commodity.setPriceMin(Integer.parseInt(minPrice));
-                            commodity.setPriceMax(Integer.parseInt(maxPrice));
-                            commodity.setPrice(Integer.parseInt(minPrice)); // Prix principal = prix minimum
+                            inaraCommoditiesStats.setPriceMin(Integer.parseInt(minPrice));
+                            inaraCommoditiesStats.setPriceMax(Integer.parseInt(maxPrice));
+                            inaraCommoditiesStats.setPrice(Integer.parseInt(minPrice)); // Prix principal = prix minimum
                         } else {
-                            commodity.setPrice(Integer.parseInt(priceText));
+                            inaraCommoditiesStats.setPrice(Integer.parseInt(priceText));
                         }
                     } else {
-                        commodity.setPrice(Integer.parseInt(priceText));
+                        inaraCommoditiesStats.setPrice(Integer.parseInt(priceText));
                     }
                 }
                 
                 // Colonne 6: Last update
                 if (cols.size() > 6) {
-                    commodity.setLastUpdate(cols.get(6).text().trim());
+                    inaraCommoditiesStats.setLastUpdate(cols.get(6).text().trim());
                 }
-                commodity.setCoreMineral(coreMineral);
+                inaraCommoditiesStats.setCoreMineral(coreMineral);
                 
-                commodities.add(commodity);
+                commodities.add(inaraCommoditiesStats);
                 
             } catch (Exception e) {
-                System.err.println("Error parsing commodity row: " + e.getMessage());
+                System.err.println("Error parsing inaraCommoditiesStats row: " + e.getMessage());
                 continue;
             }
         }
@@ -277,30 +265,7 @@ public class InaraClient {
         return text.replaceAll("[^a-zA-Z0-9\\s\\-.,()\\[\\]|+\\s]", "").trim();
     }
 
-
-    /**
-     * Méthode simplifiée pour récupérer les commodités avec les paramètres de l'URL fournie
-     * Utilise les paramètres par défaut correspondant à l'URL Inara fournie
-     * 
-     * Exemple d'utilisation :
-     * <pre>
-     * InaraClient client = new InaraClient();
-     * List&lt;Commodity&gt; commodities = client.fetchCommoditiesSimple("Musgravite", "HIP 50694");
-     * 
-     * for (Commodity commodity : commodities) {
-     *     System.out.println("Station: " + commodity.getStationName());
-     *     System.out.println("Système: " + commodity.getSystemName());
-     *     System.out.println("Prix: " + commodity.getPrice());
-     *     System.out.println("Distance: " + commodity.getSystemDistance() + " Ly");
-     * }
-     * </pre>
-     * 
-     * @param commodityName Nom de la commodité (ex: "Musgravite")
-     * @param sourceSystem Système source (ex: "HIP 50694")
-     * @return Liste des commodités trouvées
-     * @throws IOException en cas d'erreur de connexion
-     */
-    public List<Commodity> fetchMinerMarket(CoreMineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) throws IOException {
+    public List<InaraCommoditiesStats> fetchMinerMarket(CoreMineralType coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) throws IOException {
         // Trouver l'ID correspondant au nom
         return fetchCommoditiesAllArgs(
                 coreMineral,

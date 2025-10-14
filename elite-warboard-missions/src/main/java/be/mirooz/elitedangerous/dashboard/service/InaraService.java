@@ -1,12 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
-import be.mirooz.elitedangerous.lib.inara.model.Commodity;
-import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
-import be.mirooz.elitedangerous.lib.inara.model.CoreMineralRegistry;
-import be.mirooz.elitedangerous.lib.inara.model.minerals.CoreMineral;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import be.mirooz.elitedangerous.lib.inara.model.commodities.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
+import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,17 +39,17 @@ public class InaraService {
             }
         });
     }
-    public CompletableFuture<List<Commodity>> fetchAllMinerMarkets(String sourceSystem, int distance,
-                                                                   int supplyDemand, boolean largePad) {
+    public CompletableFuture<List<InaraCommoditiesStats>> fetchAllMinerMarkets(String sourceSystem, int distance,
+                                                                               int supplyDemand, boolean largePad) {
 
         // Récupérer tous les minéraux de core mining
-        List<CoreMineral> allMinerals = new ArrayList<>(CoreMineralRegistry.getAllMinerals().values());
+        List<CoreMineralType> allMinerals = CoreMineralType.all();
 
         // Lancer une requête par minéral en parallèle
-        List<CompletableFuture<List<Commodity>>> futures = new ArrayList<>();
+        List<CompletableFuture<List<InaraCommoditiesStats>>> futures = new ArrayList<>();
         long start = System.currentTimeMillis();
-        for (CoreMineral mineral : allMinerals) {
-            CompletableFuture<List<Commodity>> future = CompletableFuture.supplyAsync(() -> {
+        for (CoreMineralType mineral : allMinerals) {
+            CompletableFuture<List<InaraCommoditiesStats>> future = CompletableFuture.supplyAsync(() -> {
                 try {
                     System.out.println("🔍 Recherche du marché pour: " + mineral.getInaraName());
                     return client.fetchMinerMarket(mineral, sourceSystem, distance, supplyDemand, largePad).stream()
@@ -70,8 +67,8 @@ public class InaraService {
         // Combiner toutes les futures en une seule
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                 .thenApply(v -> {
-                    List<Commodity> allCommodities = new ArrayList<>();
-                    for (CompletableFuture<List<Commodity>> future : futures) {
+                    List<InaraCommoditiesStats> allCommodities = new ArrayList<>();
+                    for (CompletableFuture<List<InaraCommoditiesStats>> future : futures) {
                         try {
                             allCommodities.addAll(future.get());
                         } catch (InterruptedException | ExecutionException e) {
@@ -83,13 +80,6 @@ public class InaraService {
                     System.out.println("INARA total calls duration: " + durationCall + " ms");
                     return allCommodities;
                 });
-    }
-
-    /**
-     * Version simplifiée avec paramètres par défaut
-     */
-    public CompletableFuture<List<Commodity>> fetchAllMinerMarkets(String sourceSystem) {
-        return fetchAllMinerMarkets(sourceSystem, 100, 500, false);
     }
 
 }

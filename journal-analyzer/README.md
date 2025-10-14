@@ -169,3 +169,4 @@ If you encounter issues:
 - ✅ JSON visualization
 - ✅ Elite Dangerous theme
 - ✅ Standalone JAR support
+

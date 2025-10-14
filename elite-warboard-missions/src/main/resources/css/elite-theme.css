@@ -727,23 +727,15 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
     -fx-padding: 4 8 4 8;
+
+    -fx-alignment: CENTER_LEFT;
 }
 
 /* Alignements spécifiques */
 .faction-col-header.target,
-.faction-col.target {
-    -fx-alignment: CENTER_LEFT;
-}
-
-.faction-col-header.source,
-.faction-col.source {
-    -fx-alignment: CENTER; /* centré */
-}
-
 .faction-col-header.kills,
 .faction-col.kills {
     -fx-text-fill: -fx-elite-orange;
-    -fx-alignment: CENTER_RIGHT;
 }
 
 /* Styles pour le panneau des vaisseaux détruits */

@@ -2,8 +2,8 @@ package be.mirooz.elitedangerous.dashboard.service.journal;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
-import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.CommanderHandler;
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.CargoFile;
 import be.mirooz.elitedangerous.dashboard.model.Mission;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
@@ -32,11 +32,10 @@ import java.util.stream.Stream;
 public class JournalService {
 
     private static final String JOURNAL_PREFIX = "Journal.";
-    private static final String SHIPYARD_FILE = "Shipyard.json";
+    private static final String CARGO_FILE = "Cargo.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
-    private final String currentShip = null;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
@@ -152,7 +151,7 @@ public class JournalService {
             return journalFiles;
         }
 
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(30);
 
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {
@@ -295,6 +294,30 @@ public class JournalService {
                 System.err.println("Erreur lors de l'ouverture de la fenêtre de configuration: " + e.getMessage());
             }
         });
+    }
+
+    /**
+     * Lit et parse le fichier cargo.json d'Elite Dangerous
+     * @return CargoFile contenant les données de cargo ou null en cas d'erreur
+     */
+    public CargoFile readCargoFile() {
+        try {
+            String journalPath = preferencesService.getJournalFolder();
+            Path cargoFilePath = Paths.get(journalPath, CARGO_FILE);
+            
+            if (!Files.exists(cargoFilePath)) {
+                System.out.println("Fichier cargo.json introuvable: " + cargoFilePath);
+                return null;
+            }
+            
+            System.out.println("Lecture du fichier cargo.json: " + cargoFilePath);
+            return objectMapper.readValue(cargoFilePath.toFile(), CargoFile.class);
+            
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture du fichier cargo.json: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

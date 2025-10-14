@@ -85,7 +85,7 @@ public class MissionCardComponent extends VBox {
         Label rewardLabel = new Label(getFormattedNumber(mission.getReward()) + " Cr");
         rewardLabel.getStyleClass().add("massacre-reward");
         rewardLabel.setPrefWidth(140);
-        rewardLabel.setMinWidth(110);
+        rewardLabel.setMinWidth(70);
         rewardLabel.setMaxWidth(140);
         rewardLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
         rewardLabel.setWrapText(false);
@@ -265,7 +265,7 @@ public class MissionCardComponent extends VBox {
         killsSection.setSpacing(8);
         killsSection.setAlignment(Pos.CENTER_LEFT);
         killsSection.setPrefWidth(110);
-        killsSection.setMinWidth(70);
+        killsSection.setMinWidth(90);
         killsSection.setMaxWidth(110);
         killsSection.setFillHeight(false);
 
@@ -291,7 +291,7 @@ public class MissionCardComponent extends VBox {
             killsLabel.getStyleClass().add("massacre-kills-waiting");
         }
         killsLabel.setPrefWidth(50);
-        killsLabel.setMinWidth(30);
+        killsLabel.setMinWidth(50);
         killsLabel.setMaxWidth(50);
 
         ProgressBar progressBar = new ProgressBar();
