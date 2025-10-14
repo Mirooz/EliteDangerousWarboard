@@ -55,7 +55,7 @@ public class MineralFactory {
      * @param name Le nom de minéral prospecté (ex: "Benitoite")
      * @return Optional contenant le minéral ou vide si non trouvé
      */
-    public static Optional<Mineral> fromCoreMineralName(String name) {
+    public static Optional<CoreMineralType> fromCoreMineralName(String name) {
         if (name == null || name.isBlank()) return Optional.empty();
 
         // Core Minerals

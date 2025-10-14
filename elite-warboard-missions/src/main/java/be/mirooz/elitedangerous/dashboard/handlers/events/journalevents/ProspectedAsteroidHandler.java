@@ -24,11 +24,11 @@ public class ProspectedAsteroidHandler implements JournalEventHandler {
     public void handle(JsonNode jsonNode) {
         try {
             ProspectedAsteroid prospectedAsteroid = parseProspectedAsteroid(jsonNode);
-            System.out.println("ProspectedAsteroid parsed: " + prospectedAsteroid.getMotherlodeMaterial() + 
-                             " (Content: " + prospectedAsteroid.getContentLocalised() + ", Remaining: " + 
+            System.out.println("ProspectedAsteroid parsed: core " + prospectedAsteroid.getMotherlodeMaterial() +
+                             " (Content: " + prospectedAsteroid.getMaterials() + ", Remaining: " +
                              prospectedAsteroid.getRemaining() + "%)");
-            Optional<Mineral> mineral = MineralFactory.fromCoreMineralName(prospectedAsteroid.getMotherlodeMaterial());
-            mineral.ifPresent(m -> prospectedAsteroid.setCoreMineral((CoreMineralType) m));
+            Optional<CoreMineralType> mineral = MineralFactory.fromCoreMineralName(prospectedAsteroid.getMotherlodeMaterial());
+            mineral.ifPresent(prospectedAsteroid::setCoreMineral);
             prospectedAsteroidRegistry.register(prospectedAsteroid);
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de ProspectedAsteroid: " + e.getMessage());
