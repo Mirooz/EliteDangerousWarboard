@@ -26,7 +26,7 @@ import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNum
 /**
  * Contrôleur pour l'en-tête du dashboard
  */
-public class HeaderController implements Initializable, IRefreshable, IBatchListener {
+public class HeaderController implements Initializable, IRefreshable {
     @FXML
     public Label missionCountTextLabel;
     @FXML
@@ -56,18 +56,6 @@ public class HeaderController implements Initializable, IRefreshable, IBatchList
     private Button massacreSearchButton;
 
     @FXML
-    private Button configButton;
-
-    @FXML
-    private Label statusLabel;
-
-    @FXML
-    private Label appTitleLabel;
-
-    @FXML
-    private Label appSubtitleLabel;
-
-    @FXML
     private Label earnCreditsTextLabel;
 
     @FXML
@@ -95,15 +83,12 @@ public class HeaderController implements Initializable, IRefreshable, IBatchList
     }
 
     private void updateTranslations() {
-        appTitleLabel.setText(localizationService.getString("header.app.title"));
-        appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
         massacreSearchButton.setText(localizationService.getString("header.search.button"));
         missionCountTextLabel.setText(localizationService.getString("header.missions"));
         earnCreditsTextLabel.setText(localizationService.getString("header.credits.earned"));
         potentialCreditsTextLabel.setText(localizationService.getString("header.credits.potential"));
         pendingCreditsTextLabel.setText(localizationService.getString("header.credits.pending"));
         lostCreditsTextLabel.setText(localizationService.getString("header.credits.lost"));
-        updateStatusLabel();
     }
 
     public void refreshUI(){
@@ -140,8 +125,6 @@ public class HeaderController implements Initializable, IRefreshable, IBatchList
             setPendingCredits(filteredMissions);
             setLostCredits(filteredMissions);
         }
-
-        updateStatusLabel();
     }
 
     private void setMissionsLabel(String label, List<Mission> filteredMissions) {
@@ -206,36 +189,5 @@ public class HeaderController implements Initializable, IRefreshable, IBatchList
         dialog.showAndWait();
     }
 
-    @FXML
-    private void openConfigDialog() {
-        Stage primaryStage = (Stage) configButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
-
-        dialog.init(primaryStage);
-        dialog.showAndWait();
-    }
-
-    @Override
-    public void onBatchStart(){
-        statusLabel.styleProperty().unbind();
-    }
-    @Override
-    public void onBatchEnd() {
-        updateStatusLabel();
-        // Binding conditionnel pour la couleur du statut
-        statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent
-                        .getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
-                .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
-        );
-
-    }
-    
-    private void updateStatusLabel() {
-        if (commanderStatusComponent.getIsOnline().get()) {
-            statusLabel.setText(localizationService.getString("commander.online"));
-        } else {
-            statusLabel.setText(localizationService.getString("commander.offline"));
-        }
-    }
 }

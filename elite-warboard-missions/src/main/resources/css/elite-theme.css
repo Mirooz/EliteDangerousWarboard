@@ -17,6 +17,54 @@
     -fx-elite-danger: #FF0000;
 }
 
+/* Styles pour les onglets */
+.main-tab-pane {
+    -fx-tab-min-width: 120px;
+    -fx-tab-max-width: 120px;
+    -fx-tab-min-height: 35px;
+    -fx-tab-max-height: 35px;
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+}
+
+.main-tab-pane .tab {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+}
+
+.main-tab-pane .tab:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.main-tab-pane .tab:hover {
+    -fx-background-color: -fx-elite-light-gray;
+}
+
+.main-tab-pane .tab-header-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.main-tab-pane .tab-header-background {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.main-tab-pane .tab-content-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
+/* Styles pour le contenu de mining */
+.mining-content {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 20px;
+    -fx-spacing: 10px;
+}
+
 /* Styles généraux */
 .root {
     -fx-background-color: -fx-elite-dark;

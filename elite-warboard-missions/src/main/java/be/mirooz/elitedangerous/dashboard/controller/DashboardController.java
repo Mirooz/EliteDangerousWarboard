@@ -1,9 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MissionService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
@@ -11,9 +14,14 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
@@ -22,16 +30,35 @@ import java.util.ResourceBundle;
 /**
  * Contrôleur principal du dashboard Elite Dangerous
  */
-public class DashboardController implements Initializable {
+public class DashboardController implements Initializable , IRefreshable, IBatchListener{
 
+    public Label appTitleLabel;
+    public Label appSubtitleLabel;
+    public Label statusLabel;
+    public Button configButton;
     @FXML
-    private BorderPane mainPane;
+    private TabPane mainTabPane;
+    
+    @FXML
+    private Tab missionsTab;
+    
+    @FXML
+    private Tab miningTab;
+    
+    @FXML
+    private BorderPane missionsPane;
+    
+    @FXML
+    private BorderPane miningPane;
 
     @FXML
     private StackPane popupContainer;
     private final DashboardService dashboardService = DashboardService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
+    private final CommanderStatusComponent commanderStatusComponent= CommanderStatusComponent.getInstance();
 
+
+    private final LocalizationService localizationService = LocalizationService.getInstance();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadComponents();
@@ -42,19 +69,24 @@ public class DashboardController implements Initializable {
             JournalTailService.getInstance().stop();
             JournalWatcherService.getInstance().stop();
         }));
+
+        updateTranslations();
+
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }
 
     private void loadComponents() {
         try {
 
-            // Charger le header
-            createHeaderPanel();
-            // Charger la liste des missions
+            dashboardService.addBatchListener(this);
+            // Charger l'onglet Missions
             createMissionPanel();
-            // Charger le panneau des vaisseaux détruits
             createDestroyedShipsPanel();
-            // Charger le footer
             createFooterPanel();
+            
+            // Charger l'onglet Mining
+            createMiningPanel();
 
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement des composants: " + e.getMessage());
@@ -67,7 +99,7 @@ public class DashboardController implements Initializable {
         javafx.scene.layout.HBox footer = footerLoader.load();
         FooterController footerController = footerLoader.getController();
         dashboardService.addBatchListener(footerController);
-        mainPane.setBottom(footer);
+        missionsPane.setBottom(footer);
     }
 
     private void createMissionPanel() throws IOException {
@@ -75,7 +107,7 @@ public class DashboardController implements Initializable {
         VBox missionList = missionListLoader.load();
         MissionListController missionListController = missionListLoader.getController();
         dashboardService.addBatchListener(missionListController);
-        mainPane.setCenter(missionList);
+        missionsPane.setCenter(missionList);
     }
 
     private void createDestroyedShipsPanel() throws IOException {
@@ -83,20 +115,62 @@ public class DashboardController implements Initializable {
         VBox destroyedShipsPanel = destroyedShipsLoader.load();
         DestroyedShipsController destroyedShipsController = destroyedShipsLoader.getController();
         dashboardService.addBatchListener(destroyedShipsController);
-        mainPane.setLeft(destroyedShipsPanel);
+        missionsPane.setLeft(destroyedShipsPanel);
     }
 
-    private void createHeaderPanel() throws IOException {
-        FXMLLoader headerLoader = new FXMLLoader(getClass().getResource("/fxml/header.fxml"));
-        VBox header = headerLoader.load();
-        HeaderController headerController = headerLoader.getController();
-        dashboardService.addBatchListener(headerController);
-        mainPane.setTop(header);
+    private void createMiningPanel() throws IOException {
+        // Pour l'instant, onglet vide
+        // TODO: Ajouter les composants de mining ici
+        VBox miningContent = new VBox();
+        miningContent.getStyleClass().add("mining-content");
+        miningPane.setCenter(miningContent);
     }
 
     private void loadMissions() {
         dashboardService.initActiveMissions();
     }
 
+    private void updateTranslations(){
 
+        appTitleLabel.setText(localizationService.getString("header.app.title"));
+        appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
+    }
+    @Override
+    public void onBatchStart(){
+        statusLabel.styleProperty().unbind();
+    }
+
+    @Override
+    public void onBatchEnd() {
+        updateStatusLabel();
+        // Binding conditionnel pour la couleur du statut
+        statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent
+                        .getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
+                .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
+        );
+
+    }
+
+    private void updateStatusLabel() {
+        if (commanderStatusComponent.getIsOnline().get()) {
+            statusLabel.setText(localizationService.getString("commander.online"));
+        } else {
+            statusLabel.setText(localizationService.getString("commander.offline"));
+        }
+    }
+
+    @FXML
+    private void openConfigDialog() {
+        Stage primaryStage = (Stage) configButton.getScene().getWindow();
+
+        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
+
+        dialog.init(primaryStage);
+        dialog.showAndWait();
+    }
+
+    @Override
+    public void refreshUI() {
+        updateStatusLabel();
+    }
 }
