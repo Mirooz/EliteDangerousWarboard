@@ -170,3 +170,4 @@ If you encounter issues:
 - ✅ Elite Dangerous theme
 - ✅ Standalone JAR support
 
+

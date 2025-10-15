@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.MiningController" 
+      styleClass="mining-panel">
+    
+    <children>
+
+        <!-- Contenu principal en deux colonnes -->
+        <HBox spacing="20" styleClass="mining-content">
+            <!-- Colonne gauche : Derniers prospecteurs -->
+            <VBox spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS">
+                <Label text="DERNIERS PROSPECTEURS" styleClass="mining-section-title"/>
+                
+                <!-- Dernier prospecteur (plus visible) -->
+                <VBox fx:id="lastProspectorContainer" styleClass="last-prospector-container" visible="false">
+                    <Label text="DERNIER PROSPECTEUR" styleClass="last-prospector-title"/>
+                    <VBox fx:id="lastProspectorContent" styleClass="last-prospector-content"/>
+                </VBox>
+                
+                <!-- Liste des 4 autres prospecteurs -->
+                <VBox spacing="5" fx:id="prospectorsList" styleClass="prospectors-list"/>
+            </VBox>
+            
+            <!-- Colonne droite : Cargo actuel -->
+            <VBox spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS">
+                <Label text="CARGO ACTUEL" styleClass="mining-section-title"/>
+                
+                <!-- Informations du cargo -->
+                <HBox spacing="20" styleClass="cargo-info">
+                    <VBox alignment="CENTER" spacing="5">
+                        <Label fx:id="cargoUsedLabel" text="0" styleClass="cargo-stat-number"/>
+                        <Label text="UTILISÉ" styleClass="cargo-stat-label"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="5">
+                        <Label fx:id="cargoMaxLabel" text="0" styleClass="cargo-stat-number"/>
+                        <Label text="CAPACITÉ" styleClass="cargo-stat-label"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="5">
+                        <Label fx:id="limpetsCountLabel" text="0" styleClass="cargo-stat-number"/>
+                        <Label text="LIMPETS" styleClass="cargo-stat-label"/>
+                    </VBox>
+                </HBox>
+                
+                <!-- Liste des minéraux dans le cargo -->
+                <VBox spacing="5" fx:id="cargoMineralsList" styleClass="cargo-minerals-list"/>
+            </VBox>
+        </HBox>
+    </children>
+    
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+</VBox>
+

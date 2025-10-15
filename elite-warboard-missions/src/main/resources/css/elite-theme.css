@@ -58,11 +58,239 @@
     -fx-background-color: -fx-elite-dark;
 }
 
-/* Styles pour le contenu de mining */
-.mining-content {
+/* Styles pour le panneau de mining */
+.mining-panel {
     -fx-background-color: -fx-elite-dark;
-    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+.mining-title-bar {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 10px 20px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.mining-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.mining-separator {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.mining-content {
+    -fx-spacing: 20px;
+}
+
+.mining-left-panel, .mining-right-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.mining-section-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10px 0;
+}
+
+/* Styles pour les prospecteurs */
+.last-prospector-container {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
     -fx-spacing: 10px;
+}
+
+.last-prospector-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.last-prospector-content {
+    -fx-spacing: 5px;
+}
+
+.last-prospector-mineral {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.last-prospector-content {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 14px;
+}
+
+.last-prospector-remaining {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+}
+
+.last-prospector-material {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+}
+
+.prospectors-list {
+    -fx-spacing: 8px;
+}
+
+.prospector-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 10px;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-spacing: 5px;
+}
+
+.prospector-mineral {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.prospector-content {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+}
+
+.prospector-remaining {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 10px;
+}
+
+.prospector-material {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 10px;
+}
+
+.materials-container {
+    -fx-spacing: 2px;
+    -fx-padding: 5px 0 0 10px;
+}
+
+/* Styles pour le cargo */
+.cargo-info {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.cargo-stat-number {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.cargo-stat-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 10px;
+}
+
+.cargo-minerals-list {
+    -fx-spacing: 5px;
+}
+
+.mineral-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 8px 12px;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-alignment: center-left;
+}
+
+.mineral-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.mineral-quantity {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.no-minerals-label {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+/* Styles pour le tableau des missions */
+.missions-table-container {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 10px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.table-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.missions-table {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-table-cell-border-color: -fx-elite-light-gray;
+}
+
+.missions-table .column-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 1px 1px 0;
+}
+
+.missions-table .table-row-cell {
+    -fx-background-color: -fx-elite-dark;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 10px;
+}
+
+.missions-table .table-row-cell:odd {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.missions-table .table-row-cell:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.missions-table .table-cell {
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 0 1px 0 0;
+    -fx-padding: 5px;
+}
+
+.table-column {
+    -fx-alignment: center-left;
 }
 
 /* Styles généraux */
@@ -522,9 +750,6 @@
 
 /* Pied de page */
 .footer-panel {
-    -fx-background-color: -fx-elite-darker;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 2 0 0 0;
 }
 
 .footer-text {
@@ -776,14 +1001,10 @@
     -fx-text-fill: -fx-elite-orange;
     -fx-padding: 4 8 4 8;
 
-    -fx-alignment: CENTER_LEFT;
-}
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-style: solid;
 
-/* Alignements spécifiques */
-.faction-col-header.target,
-.faction-col-header.kills,
-.faction-col.kills {
-    -fx-text-fill: -fx-elite-orange;
 }
 
 /* Styles pour le panneau des vaisseaux détruits */
@@ -1507,7 +1728,7 @@
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
     -fx-border-radius: 4;
-    -fx-padding: 10 15 10 15;
+    -fx-padding: 10 5 10 5;
     -fx-alignment: CENTER_LEFT;
 }
 
@@ -1654,4 +1875,95 @@
 .massacre-search-content {
     -fx-background-color: -fx-elite-dark;
     -fx-padding: 20;
+}
+
+/* ====== STYLES POUR LE PANNEAU DE CIBLES ====== */
+
+/* Conteneur principal du panneau de cibles */
+.target-panel-container {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 5px;
+}
+
+/* Panneau de cibles principal */
+.target-panel {
+    -fx-background-color: transparent;
+    -fx-spacing: 10px;
+    -fx-padding: 10px;
+}
+
+/* Titre principal du panneau */
+.target-panel-title {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-alignment: center;
+    -fx-padding: 0 0 8px 0;
+}
+
+/* Titres des sections */
+.target-section-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 5px 10px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-alignment: center-left;
+}
+
+/* Titre section Pirates */
+.pirate-title {
+    -fx-text-fill: -fx-elite-warning;
+    -fx-background-color: rgba(255, 170, 0, 0.1);
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 1px;
+}
+
+/* Titre section Conflits */
+.conflict-title {
+    -fx-text-fill: -fx-elite-danger;
+    -fx-background-color: rgba(255, 0, 0, 0.1);
+    -fx-border-color: -fx-elite-danger;
+    -fx-border-width: 1px;
+}
+
+/* Sections de cibles */
+.target-section {
+    -fx-spacing: 5px;
+    -fx-padding: 5px 0;
+}
+
+/* Séparateur entre les sections */
+.target-separator {
+    -fx-background-color: -fx-elite-orange;
+    -fx-pref-height: 1px;
+}
+
+/* Message pour les sections vides */
+.empty-section-message {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-alignment: center;
+    -fx-padding: 15px;
+    -fx-background-color: rgba(255, 107, 0, 0.05);
+    -fx-border-color: rgba(255, 107, 0, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+/* ====== STYLES POUR LE CONTENEUR DU FOOTER ====== */
+
+/* Conteneur du footer */
+.footer-container {
+    -fx-background-color: transparent;
+    -fx-padding: 0px;
+    -fx-spacing: 0px;
 }

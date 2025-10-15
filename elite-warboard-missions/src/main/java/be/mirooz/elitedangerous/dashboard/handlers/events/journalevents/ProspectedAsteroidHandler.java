@@ -27,8 +27,13 @@ public class ProspectedAsteroidHandler implements JournalEventHandler {
             System.out.println("ProspectedAsteroid parsed: core " + prospectedAsteroid.getMotherlodeMaterial() +
                              " (Content: " + prospectedAsteroid.getMaterials() + ", Remaining: " +
                              prospectedAsteroid.getRemaining() + "%)");
-            Optional<CoreMineralType> mineral = MineralFactory.fromCoreMineralName(prospectedAsteroid.getMotherlodeMaterial());
-            mineral.ifPresent(prospectedAsteroid::setCoreMineral);
+            Optional<Mineral> mineral = MineralFactory.fromCoreMineralName(prospectedAsteroid.getMotherlodeMaterial());
+            mineral.ifPresent(m -> {
+                if (m instanceof CoreMineralType coreMineral) {
+                    prospectedAsteroid.setCoreMineral(coreMineral);
+                }
+            });
+
             prospectedAsteroidRegistry.register(prospectedAsteroid);
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de ProspectedAsteroid: " + e.getMessage());
@@ -79,7 +84,7 @@ public class ProspectedAsteroidHandler implements JournalEventHandler {
 
         if (rawName != null) {
             material.setName(
-                    MineralFactory.fromMiningRefinedName(rawName)
+                    MineralFactory.fromCoreMineralName(rawName)
                             .orElseGet(() -> new UnknownMineral(rawName))
             );
         }

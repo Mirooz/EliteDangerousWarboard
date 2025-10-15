@@ -19,6 +19,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -53,6 +54,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
     @FXML
     private StackPane popupContainer;
+    
+    @FXML
+    private HBox footerContainer;
     private final DashboardService dashboardService = DashboardService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final CommanderStatusComponent commanderStatusComponent= CommanderStatusComponent.getInstance();
@@ -70,6 +74,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             JournalWatcherService.getInstance().stop();
         }));
 
+        UIManager.getInstance().register(this);
         updateTranslations();
 
         // Écouter les changements de langue
@@ -81,6 +86,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
             dashboardService.addBatchListener(this);
             // Charger l'onglet Missions
+            createHeaderPanel();
             createMissionPanel();
             createDestroyedShipsPanel();
             createFooterPanel();
@@ -93,13 +99,19 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             e.printStackTrace();
         }
     }
+    private void createHeaderPanel() throws IOException {
+        FXMLLoader headerLoader = new FXMLLoader(getClass().getResource("/fxml/header.fxml"));
+        VBox header = headerLoader.load();
+        HeaderController headerController = headerLoader.getController();
+        missionsPane.setTop(header);
+    }
 
     private void createFooterPanel() throws IOException {
         FXMLLoader footerLoader = new FXMLLoader(getClass().getResource("/fxml/footer.fxml"));
         javafx.scene.layout.HBox footer = footerLoader.load();
         FooterController footerController = footerLoader.getController();
         dashboardService.addBatchListener(footerController);
-        missionsPane.setBottom(footer);
+        footerContainer.getChildren().add(footer);
     }
 
     private void createMissionPanel() throws IOException {
@@ -119,11 +131,11 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     }
 
     private void createMiningPanel() throws IOException {
-        // Pour l'instant, onglet vide
-        // TODO: Ajouter les composants de mining ici
-        VBox miningContent = new VBox();
-        miningContent.getStyleClass().add("mining-content");
-        miningPane.setCenter(miningContent);
+        // Charger le panneau de mining
+        FXMLLoader miningLoader = new FXMLLoader(getClass().getResource("/fxml/mining-panel.fxml"));
+        VBox miningPanel = miningLoader.load();
+        MiningController miningController = miningLoader.getController();
+        miningPane.setCenter(miningPanel);
     }
 
     private void loadMissions() {

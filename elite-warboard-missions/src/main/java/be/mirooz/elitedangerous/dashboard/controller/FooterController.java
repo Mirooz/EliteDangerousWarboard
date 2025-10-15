@@ -31,8 +31,6 @@ public class FooterController implements Initializable, IRefreshable, IBatchList
 
     // Constantes pour garantir l'alignement
 
-    @FXML
-    private FactionStatsComponent factionStats;
 
     @FXML
     private Label commanderLabel;
@@ -52,17 +50,7 @@ public class FooterController implements Initializable, IRefreshable, IBatchList
     @FXML
     private Label stationHeaderLabel;
 
-    @FXML
-    private Label targetHeaderLabel;
 
-    @FXML
-    private Label targetFactionHeaderLabel;
-
-    @FXML
-    private Label sourceFactionHeaderLabel;
-
-    @FXML
-    private Label killsHeaderLabel;
 
     private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
@@ -76,7 +64,6 @@ public class FooterController implements Initializable, IRefreshable, IBatchList
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> {
             updateTranslations();
-            updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
         });
     }
 
@@ -84,12 +71,7 @@ public class FooterController implements Initializable, IRefreshable, IBatchList
         commanderHeaderLabel.setText(localizationService.getString("footer.commander"));
         systemHeaderLabel.setText(localizationService.getString("footer.system"));
         stationHeaderLabel.setText(localizationService.getString("footer.station"));
-        
-        // En-têtes du tableau des factions
-        targetHeaderLabel.setText(localizationService.getString("footer.target"));
-        targetFactionHeaderLabel.setText(localizationService.getString("footer.target_faction"));
-        sourceFactionHeaderLabel.setText(localizationService.getString("footer.source_faction"));
-        killsHeaderLabel.setText(localizationService.getString("footer.kills"));
+
     }
     @Override
     public void onBatchStart(){
@@ -103,45 +85,11 @@ public class FooterController implements Initializable, IRefreshable, IBatchList
         stationLabel.textProperty().bind(commanderStatusComponent.getCurrentStationName());
         systemLabel.textProperty().bind(commanderStatusComponent.getCurrentStarSystem());
         commanderLabel.textProperty().bind(commanderStatusComponent.getCommanderName());
-        dashboardContext.addFilterListener(this::updateFactionStats);
-        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
     }
 
-    private void updateFactionStats(MissionStatus currentStatus, MissionType currentType) {
-        // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
-        List<Mission> massacreMissions = missionsRegistry.getGlobalMissionMap().values().stream()
-                .filter(Mission::isShipMassacreActive)
-                .filter(mission -> currentType == null || currentType.equals(mission.getType()))
-                .collect(Collectors.toList());
-        Map<TargetType, CibleStats> stats = computeFactionStats(massacreMissions);
-
-        // Supprimer toutes les lignes après l'en-tête
-        if (factionStats.getChildren().size() > 1) {
-            factionStats.getChildren().remove(1, factionStats.getChildren().size());
-        }
-        factionStats.displayStats(stats);
-
-    }
-
-
-    private Map<TargetType, CibleStats> computeFactionStats(List<Mission> massacreMissions) {
-        Map<TargetType, CibleStats> stats = new HashMap<>();
-
-        for (Mission mission : massacreMissions) {
-            if (mission.getTargetFaction() == null || mission.getTargetType() == null) continue;
-
-            CibleStats cibleStats = stats.computeIfAbsent(mission.getTargetType(), c -> new CibleStats(mission.getTargetType()));
-
-            TargetFactionStats targetStats = cibleStats.getOrCreateFaction(mission.getTargetFaction());
-
-            targetStats.addSource(new SourceFactionStats(mission.getFaction(), mission.getTargetCountLeft()));
-        }
-        return stats;
-    }
 
 
     @Override
     public void refreshUI() {
-        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
     }
 }

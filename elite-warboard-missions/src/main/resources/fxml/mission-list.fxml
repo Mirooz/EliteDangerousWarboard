@@ -6,6 +6,7 @@
 
 <?import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView?>
 <?import be.mirooz.elitedangerous.dashboard.model.Mission?>
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.TargetPanelComponent?>
 <VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.MissionListController">
@@ -25,13 +26,26 @@
       </HBox>
    </HBox>
 
-   <StackPane VBox.vgrow="ALWAYS">
-      <NotSelectableListView fx:id="missionListView"
-                             styleClass="missions-scroll"/>
+   <!-- Layout principal avec missions à gauche et cibles à droite -->
+   <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+      <!-- Section des missions (gauche) -->
+      <VBox HBox.hgrow="ALWAYS" spacing="10.0">
+         <StackPane VBox.vgrow="ALWAYS">
+            <NotSelectableListView fx:id="missionListView"
+                                   styleClass="missions-scroll"/>
 
-      <ProgressIndicator fx:id="loadingIndicator"
-                         maxWidth="100" maxHeight="100"
-                         visible="false" />
-   </StackPane>
+            <ProgressIndicator fx:id="loadingIndicator"
+                               maxWidth="100" maxHeight="100"
+                               visible="false" />
+         </StackPane>
+      </VBox>
+
+      <!-- Section des cibles (droite) -->
+      <TargetPanelComponent fx:id="targetPanel"
+                            styleClass="target-panel-container"
+                            maxWidth="450"
+                            minWidth="300"
+                            HBox.hgrow="ALWAYS"/>
+   </HBox>
 
 </VBox>

@@ -36,6 +36,9 @@
                         <BorderPane fx:id="miningPane" styleClass="main-content" />
                     </Tab>
                 </TabPane>
+                
+                <!-- Footer -->
+                <HBox fx:id="footerContainer" styleClass="footer-container" />
             </VBox>
         </StackPane>
     </center>
