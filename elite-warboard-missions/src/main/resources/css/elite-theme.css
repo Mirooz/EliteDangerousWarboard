@@ -210,24 +210,28 @@
 
 .mineral-card {
     -fx-background-color: -fx-elite-darker;
-    -fx-padding: 8px 12px;
+    -fx-padding: 12px 16px;
     -fx-border-color: -fx-elite-light-gray;
     -fx-border-width: 1px;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
     -fx-alignment: center-left;
+    -fx-spacing: 10px;
 }
 
 .mineral-name {
-    -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 12px;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
 }
 
 .mineral-quantity {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 12px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
+    -fx-min-width: 50px;
+    -fx-alignment: center-right;
 }
 
 .no-minerals-label {
@@ -1968,4 +1972,369 @@
     -fx-background-color: transparent;
     -fx-padding: 0px;
     -fx-spacing: 0px;
+}
+
+/* ====== STYLES POUR LES ASTÉROÏDES PROSPECTÉS ELITE DANGEROUS ====== */
+
+/* Cartes d'astéroïdes */
+.elite-prospector-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 12px;
+    -fx-spacing: 8px;
+}
+
+.elite-prospector-card-large {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 16px;
+    -fx-spacing: 10px;
+}
+
+/* Icône d'astéroïde */
+.asteroid-icon {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.core-asteroid {
+    -fx-text-fill: -fx-elite-warning !important;
+    -fx-font-size: 18px !important;
+}
+
+/* Indicateur de core */
+.core-indicator {
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 170, 0, 0.2);
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 6px;
+}
+
+/* Noms de minéraux */
+.elite-mineral-name {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.elite-mineral-name-large {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Contenu */
+.elite-content {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.elite-content-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+}
+
+
+/* Conteneur des matériaux */
+.elite-materials-container {
+    -fx-spacing: 4px;
+    -fx-padding: 8px 0 0 0;
+}
+
+/* Titre des matériaux */
+.elite-materials-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.elite-materials-title-large {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Noms des matériaux */
+.elite-material-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-min-width: 100px;
+}
+
+.elite-material-name-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 14px;
+    -fx-min-width: 120px;
+}
+
+/* Pourcentages des matériaux */
+.elite-material-percent {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-min-width: 45px;
+    -fx-alignment: center-right;
+}
+
+.elite-material-percent-large {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-min-width: 50px;
+    -fx-alignment: center-right;
+}
+
+/* ====== STYLES POUR LA SECTION DE PRÉPARATION ====== */
+
+/* Section de préparation */
+.mining-preparation-section {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 12px;
+}
+
+/* Section cargo */
+.mining-cargo-section {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 12px;
+}
+
+/* Informations de préparation */
+.preparation-info {
+    -fx-spacing: 15px;
+}
+
+.preparation-item {
+    -fx-spacing: 5px;
+}
+
+/* Labels de préparation */
+.preparation-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.preparation-value {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.preparation-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* ====== STYLES POUR LE HEADER DE RECHERCHE DE MINAGE ====== */
+
+/* Header de recherche */
+.mining-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-spacing: 10px;
+}
+
+/* Titre du header */
+.mining-header-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-alignment: center;
+}
+
+/* Conteneur de recherche */
+.mining-search-container {
+    -fx-spacing: 20px;
+    -fx-alignment: center-left;
+}
+
+/* Éléments de recherche */
+.search-item {
+    -fx-spacing: 5px;
+}
+
+/* Labels de recherche */
+.search-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Valeurs de recherche */
+.search-value {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 200px;
+}
+
+/* Prix de recherche */
+.search-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+}
+
+/* Prix de recherche large */
+.search-price-large {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 150px;
+}
+
+/* Conteneurs pour les locations */
+.ring-container,
+.station-container {
+    -fx-spacing: 2px;
+}
+
+/* Noms de locations en grand */
+.location-name-large {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Systèmes de locations */
+.location-system {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+/* Conteneur de la flèche */
+.arrow-container {
+    -fx-spacing: 5px;
+    -fx-padding: 0 10px;
+}
+
+/* Label de distance */
+.distance-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+/* Symbole de flèche */
+.arrow-symbol {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+/* ComboBox des minéraux */
+.mineral-combo-box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-pref-width: 150px;
+}
+
+.mineral-combo-box .list-cell {
+    -fx-background-color: -fx-elite-dark;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-padding: 5px;
+}
+
+.mineral-combo-box .list-cell:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.mineral-combo-box .list-cell {
+    -fx-padding: 8px 12px;
+}
+
+.mineral-combo-box .list-cell:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+/* Label de prix */
+.price-label {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 100px;
+    -fx-alignment: center;
+}
+
+/* Champs de texte */
+.source-system-field,
+.distance-field,
+.demand-field {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-pref-width: 80px;
+    -fx-padding: 5px;
+}
+
+/* Bouton de recherche */
+.search-button {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 16px;
+    -fx-pref-width: 120px;
+}
+
+.search-button:hover {
+    -fx-background-color: -fx-elite-warning;
+}
+
+.search-button:disabled {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-text-dim;
 }
