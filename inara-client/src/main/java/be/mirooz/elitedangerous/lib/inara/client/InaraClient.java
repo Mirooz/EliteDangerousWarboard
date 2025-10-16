@@ -136,9 +136,9 @@ public class InaraClient {
 
         // Station name + system
         Element stationElement = cols.get(0);
-        String stationText = stationElement.text().trim();
+        String stationText = stationElement.text().replace("|","").trim();
         Element stationNameElement = stationElement.selectFirst("span.standardcase");
-        stats.setStationName(stationNameElement != null ? stationNameElement.text().trim() : stationText);
+        stats.setStationName(stationNameElement != null ? stationNameElement.text().replace("|","").trim() : stationText);
 
         Element systemNameElement = stationElement.selectFirst("span.uppercase.nowrap");
         if (systemNameElement != null) {

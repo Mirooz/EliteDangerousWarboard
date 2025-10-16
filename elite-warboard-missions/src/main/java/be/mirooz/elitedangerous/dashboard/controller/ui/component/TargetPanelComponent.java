@@ -9,10 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 
 import java.util.Map;
 
@@ -42,7 +39,9 @@ public class TargetPanelComponent extends VBox {
         // Section Pirates
         pirateTitle = new Label();
         pirateTitle.getStyleClass().addAll("target-section-title", "pirate-title");
-
+        HBox pirateTitleContainer = new HBox();
+        pirateTitleContainer.setAlignment(Pos.CENTER);
+        pirateTitleContainer.getChildren().add(pirateTitle);
         pirateGrid = createStatsGrid();
 
         // Séparateur
@@ -53,15 +52,18 @@ public class TargetPanelComponent extends VBox {
         conflictTitle = new Label();
         conflictTitle.getStyleClass().addAll("target-section-title", "conflict-title");
 
+        HBox conflictTitleContainer = new HBox();
+        conflictTitleContainer.setAlignment(Pos.CENTER);
+        conflictTitleContainer.getChildren().add(conflictTitle);
         conflictGrid = createStatsGrid();
 
         // Layout global
         this.getChildren().addAll(
                 mainTitle,
-                pirateTitle,
+                pirateTitleContainer,
                 pirateGrid,
                 separator,
-                conflictTitle,
+                conflictTitleContainer,
                 conflictGrid
         );
         this.setSpacing(10);
