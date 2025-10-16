@@ -1,8 +1,10 @@
 package be.mirooz.elitedangerous.lib.inara.client;
 
-import be.mirooz.elitedangerous.lib.inara.model.commodities.InaraCommoditiesStats;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -17,9 +19,14 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class InaraClient {
+
+    private final Cache<String, List<InaraCommoditiesStats>> minerMarketCache = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
 
     private static final String BASE_URL = "https://inara.cz";
     private static final HttpClient httpClient = HttpClient.newHttpClient();
@@ -70,6 +77,8 @@ public class InaraClient {
     // ─────────────────────────────────────────────
     // 💰 FETCH COMMODITIES
     // ─────────────────────────────────────────────
+
+
     public List<InaraCommoditiesStats> fetchCommoditiesAllArgs(CoreMineralType coreMineral, String sourceSystem,
                                                                int maxSystemDistance, boolean largePad,
                                                                int maxStationDistance, int maxPriceAge,
@@ -214,7 +223,19 @@ public class InaraClient {
         return text.replaceAll("[^a-zA-Z0-9\\s\\-.,()\\[\\]|+\\s]", "").trim();
     }
 
+    private String buildCacheKey(CoreMineralType coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) {
+        return coreMineral.name() + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad;
+    }
+
     public List<InaraCommoditiesStats> fetchMinerMarket(CoreMineralType coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) throws IOException {
-        return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, 15000, 48, supplyDemand);
+        String cacheKey = buildCacheKey(coreMineral, sourceSystem, distance, supplyDemand, largePad);
+        return minerMarketCache.get(cacheKey, k -> {
+            try {
+                System.out.println("🆕 Cache miss " + coreMineral.getCargoJsonName());
+                return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, 15000, 48, supplyDemand);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

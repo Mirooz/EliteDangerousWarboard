@@ -4,6 +4,8 @@ package be.mirooz.elitedangerous.lib.edtools.client;
 import be.mirooz.elitedangerous.lib.edtools.model.EdtoolResponse;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,9 +21,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class EdToolsClient {
 
+    private final Cache<String, List<MiningHotspot>> miningHotspotCache =
+            Caffeine.newBuilder()
+                    .expireAfterWrite(5, TimeUnit.MINUTES)
+                    .maximumSize(500)
+                    .build();
     private final HttpClient httpClient = HttpClient.newHttpClient();
     public EdtoolResponse sendTargetSystemSearch(String referenceSystem) throws IllegalArgumentException, IOException, InterruptedException {
         String s = URLEncoder.encode(referenceSystem, StandardCharsets.UTF_8);
@@ -151,23 +160,30 @@ public class EdToolsClient {
             throw new IOException("HTTP " + response.statusCode() + " calling " + url);
         }
         
-        return parseMiningHotspots(response.body(), mineralName);
+        return parseMiningHotspots(response.body());
     }
-    
+
     /**
      * Méthode simplifiée avec des paramètres par défaut
-     * 
+     *
      * @param referenceSystem Système de référence
      * @param mineralName Nom du minéral
      * @return Liste des hotspots trouvés
      * @throws IOException en cas d'erreur de connexion
      */
     public List<MiningHotspot> fetchMiningHotspots(String referenceSystem, String mineralName) throws IOException {
-        return fetchMiningHotspots(referenceSystem, mineralName, 1, false);
+        String key = referenceSystem + "|" + mineralName;
+        return miningHotspotCache.get(key, value -> {
+            try {
+                return fetchMiningHotspots(referenceSystem, mineralName, 1, false);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
+
     
-    
-    private List<MiningHotspot> parseMiningHotspots(String html, String mineralName) {
+    private List<MiningHotspot> parseMiningHotspots(String html) {
         Document doc = Jsoup.parse(html);
         List<MiningHotspot> hotspots = new ArrayList<>();
         
@@ -226,8 +242,6 @@ public class EdToolsClient {
                 Element tooltip = ringElement.selectFirst("span.ttip");
                 if (tooltip != null) {
                     String tooltipHtml = tooltip.html().trim();
-                    System.out.println("🔍 Tooltip HTML: " + tooltipHtml);
-                    
                     // Parser le format "MineralName:Count" avec <br> comme séparateur
                     String[] mineralEntries = tooltipHtml.split("<br>");
                     for (String entry : mineralEntries) {
@@ -239,7 +253,6 @@ public class EdToolsClient {
                                     String mineral = parts[0].trim();
                                     int count = Integer.parseInt(parts[1].trim());
                                     hotspot.addMineral(mineral, count);
-                                    System.out.println("✅ Minéral ajouté: " + mineral + " = " + count);
                                 } catch (NumberFormatException e) {
                                     System.err.println("❌ Erreur parsing minéral: " + entry);
                                 }

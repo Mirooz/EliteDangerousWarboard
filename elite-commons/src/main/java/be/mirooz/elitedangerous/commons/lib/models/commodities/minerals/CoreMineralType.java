@@ -1,6 +1,5 @@
-package be.mirooz.elitedangerous.lib.inara.model.commodities.minerals;
+package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
-import be.mirooz.elitedangerous.lib.inara.model.commodities.ICommodity;
 import org.reflections.Reflections;
 
 import java.util.*;

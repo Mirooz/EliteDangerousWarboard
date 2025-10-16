@@ -3,11 +3,9 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.lib.edtools.client.EdToolsClient;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
-
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 public class EdToolsService {
 
     private static final EdToolsService INSTANCE = new EdToolsService();
@@ -45,7 +43,7 @@ public class EdToolsService {
     public CompletableFuture<List<MiningHotspot>> findMiningHotspots(String referenceSystem, CoreMineralType coreMineral) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return client.fetchMiningHotspots(referenceSystem, coreMineral.getEdToolName(), 1,false);
+                return client.fetchMiningHotspots(referenceSystem, coreMineral.getEdToolName());
             } catch (Exception e) {
                 throw new RuntimeException("Erreur lors de la récupération des hotspots de minage", e);
             }

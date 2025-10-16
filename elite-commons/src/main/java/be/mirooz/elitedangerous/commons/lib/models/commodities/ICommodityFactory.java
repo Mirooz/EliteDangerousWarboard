@@ -1,6 +1,6 @@
-package be.mirooz.elitedangerous.lib.inara.model.commodities;
+package be.mirooz.elitedangerous.commons.lib.models.commodities;
 
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
 
 import java.util.Optional;
 

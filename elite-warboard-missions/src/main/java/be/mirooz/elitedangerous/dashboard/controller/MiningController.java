@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
@@ -7,11 +9,8 @@ import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidReg
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.InaraCommoditiesStats;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.ICommodity;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.LimpetType;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -28,7 +27,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 
-import static be.mirooz.elitedangerous.lib.inara.model.commodities.LimpetType.LIMPET;
+import static be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType.LIMPET;
 
 /**
  * Contrôleur pour le panneau de mining
@@ -246,9 +245,9 @@ public class MiningController implements Initializable, IRefreshable {
 
                 // Utiliser le nom du core mineral en majuscules si c'est un minéral
                 String displayName;
-                if (commodity instanceof be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType) {
-                    be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType coreMineral =
-                            (be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType) commodity;
+                if (commodity instanceof be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType) {
+                    be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType coreMineral =
+                            (be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType) commodity;
                     displayName = coreMineral.getInaraName().toUpperCase();
                 } else {
                     displayName = commodity.toString().toUpperCase();
@@ -452,7 +451,7 @@ public class MiningController implements Initializable, IRefreshable {
                     // Prendre le meilleur marché (le plus proche avec le meilleur prix)
                     InaraCommoditiesStats bestMarket = commodities.stream()
                             .filter(commodity -> commodity.getSystemDistance() <= maxDistance)
-                            .max((c1, c2) -> Double.compare(c1.getPrice(), c2.getPrice()))
+                            .max(Comparator.comparingDouble(InaraCommoditiesStats::getPrice))
                             .orElse(commodities.get(0));
 
                     // Mettre à jour le prix et la station
@@ -501,18 +500,6 @@ public class MiningController implements Initializable, IRefreshable {
                 });
     }
 
-
-    /**
-     * Méthode utilitaire pour parser un entier avec une valeur par défaut
-     */
-    private int getIntValue(String text, int defaultValue) {
-        try {
-            return Integer.parseInt(text);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
     /**
      * Formate un prix avec des séparateurs de milliers
      */
@@ -524,11 +511,6 @@ public class MiningController implements Initializable, IRefreshable {
     public void refreshUI() {
         updateProspectors();
         updateCargo();
-        // Recharger les informations si un minéral est sélectionné
-        CoreMineralType selectedMineral = mineralComboBox.getSelectionModel().getSelectedItem();
-        if (selectedMineral != null) {
-            searchMiningRouteForMineral(selectedMineral);
-        }
     }
 }
 

@@ -37,6 +37,11 @@
             <artifactId>inara-client</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous.lib</groupId>
+            <artifactId>elite-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 <!--        &lt;!&ndash; JavaFX Controls &ndash;&gt;-->
 <!--        <dependency>-->
 <!--            <groupId>org.openjfx</groupId>-->
@@ -197,14 +202,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <!-- jpackage déjà ajouté ci-dessus -->
                     <execution>
                         <id>inno-setup</id>
                         <phase>deploy</phase>

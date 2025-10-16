@@ -2,10 +2,10 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidRegistry;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.Mineral;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.MineralFactory;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.UnknownMineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralFactory;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.UnknownMineral;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.lib.inara.model.commodities;
+package be.mirooz.elitedangerous.commons.lib.models.commodities;
 
 /**
  * Interface représentant une commodité dans Elite Dangerous

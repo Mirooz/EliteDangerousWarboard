@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 
 import java.util.Comparator;
 import java.util.List;

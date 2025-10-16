@@ -1,8 +1,6 @@
-package be.mirooz.elitedangerous.lib.inara.model.commodities.minerals;
+package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
-import be.mirooz.elitedangerous.lib.inara.model.commodities.ICommodity;
-
-import java.util.Optional;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 
 /**
  * Interface représentant un minéral dans Elite Dangerous

@@ -1,10 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.LimpetType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import static be.mirooz.elitedangerous.lib.inara.model.commodities.LimpetType.LIMPET;
+import static be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType.LIMPET;
 
 /**
  * Handler pour l'événement BuyDrones du journal Elite Dangerous

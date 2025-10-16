@@ -4,7 +4,7 @@ import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.service.InaraService;
 import be.mirooz.elitedangerous.dashboard.service.RouteService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

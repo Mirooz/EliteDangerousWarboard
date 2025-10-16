@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.lib.inara.model.commodities.minerals;
+package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
 public enum SurfaceMineralType implements Mineral{
     UNKOWN;

@@ -1,9 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.ICommodityFactory;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.Mineral;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.MineralFactory;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Optional;

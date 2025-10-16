@@ -1,8 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.events;
 
-import be.mirooz.elitedangerous.lib.inara.model.commodities.ICommodity;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import lombok.Data;
 import java.util.List;
 

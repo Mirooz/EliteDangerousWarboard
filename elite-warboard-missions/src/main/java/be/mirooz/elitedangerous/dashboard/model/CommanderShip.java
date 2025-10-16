@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model;
 
-import be.mirooz.elitedangerous.lib.inara.model.commodities.ICommodity;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import lombok.Builder;
 import lombok.Data;
 

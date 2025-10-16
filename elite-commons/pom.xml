@@ -10,33 +10,17 @@
     </parent>
 
     <groupId>be.mirooz.elitedangerous.lib</groupId>
-    <artifactId>inara-client</artifactId>
-
+    <artifactId>elite-commons</artifactId>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.17.2</version>
-        </dependency>
 
-        <dependency>
-            <groupId>be.mirooz.elitedangerous.lib</groupId>
-            <artifactId>elite-commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-            <version>3.2.2</version>
         </dependency>
 
         <dependency>
@@ -44,9 +28,6 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
     </dependencies>
+
 </project>

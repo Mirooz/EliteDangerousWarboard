@@ -1,9 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.InaraCommoditiesStats;
+
+import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
-import be.mirooz.elitedangerous.lib.inara.model.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
 
 import java.io.IOException;
 import java.util.ArrayList;
