@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
-import be.mirooz.elitedangerous.dashboard.model.*;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;

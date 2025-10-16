@@ -1,7 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.util.comparator;
 
-import be.mirooz.elitedangerous.dashboard.model.Mission;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 
 import java.util.Comparator;
 

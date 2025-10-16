@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
-import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;

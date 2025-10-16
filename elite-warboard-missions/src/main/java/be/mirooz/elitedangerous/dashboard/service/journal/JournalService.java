@@ -2,9 +2,8 @@ package be.mirooz.elitedangerous.dashboard.service.journal;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.CargoFile;
-import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -296,28 +295,5 @@ public class JournalService {
         });
     }
 
-    /**
-     * Lit et parse le fichier cargo.json d'Elite Dangerous
-     * @return CargoFile contenant les données de cargo ou null en cas d'erreur
-     */
-    public CargoFile readCargoFile() {
-        try {
-            String journalPath = preferencesService.getJournalFolder();
-            Path cargoFilePath = Paths.get(journalPath, CARGO_FILE);
-            
-            if (!Files.exists(cargoFilePath)) {
-                System.out.println("Fichier cargo.json introuvable: " + cargoFilePath);
-                return null;
-            }
-            
-            System.out.println("Lecture du fichier cargo.json: " + cargoFilePath);
-            return objectMapper.readValue(cargoFilePath.toFile(), CargoFile.class);
-            
-        } catch (IOException e) {
-            System.err.println("Erreur lors de la lecture du fichier cargo.json: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
 
 }

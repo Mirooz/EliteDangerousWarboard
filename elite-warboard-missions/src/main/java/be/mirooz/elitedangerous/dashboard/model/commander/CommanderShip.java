@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model;
+package be.mirooz.elitedangerous.dashboard.model.commander;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import lombok.Builder;

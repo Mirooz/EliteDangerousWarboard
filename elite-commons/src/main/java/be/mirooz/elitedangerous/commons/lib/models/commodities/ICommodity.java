@@ -6,6 +6,9 @@ package be.mirooz.elitedangerous.commons.lib.models.commodities;
 public interface ICommodity {
     String getInaraId();
     String getInaraName();
+    default String getVisibleName(){
+        return getInaraName();
+    }
     String getEdToolName() ;
     /**
      * Retourne le nom utilisé dans le cargo JSON

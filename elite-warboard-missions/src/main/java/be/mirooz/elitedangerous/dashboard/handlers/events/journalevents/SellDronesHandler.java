@@ -1,7 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import static be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType.LIMPET;

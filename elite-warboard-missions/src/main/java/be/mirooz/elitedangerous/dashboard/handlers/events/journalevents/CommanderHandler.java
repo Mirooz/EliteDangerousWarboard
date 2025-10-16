@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;

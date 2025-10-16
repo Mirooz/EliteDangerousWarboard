@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class ShutDownHandler implements JournalEventHandler {

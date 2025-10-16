@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 

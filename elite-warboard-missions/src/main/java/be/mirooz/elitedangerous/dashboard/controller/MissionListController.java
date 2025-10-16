@@ -8,7 +8,7 @@ import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
 import be.mirooz.elitedangerous.dashboard.util.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
-import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;

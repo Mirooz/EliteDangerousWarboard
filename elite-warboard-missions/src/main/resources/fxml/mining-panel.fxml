@@ -12,24 +12,24 @@
 
         <!-- Header avec filtre de recherche -->
         <VBox spacing="10" styleClass="mining-header">
-            <Label text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>
+            <Label fx:id="miningTitleLabel" text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>
             
             <HBox spacing="30" styleClass="mining-search-container" alignment="CENTER_LEFT">
                 <!-- Minéral Cible -->
                 <VBox spacing="5" styleClass="search-item">
-                    <Label text="MINÉRAL CIBLE" styleClass="search-label"/>
-                    <ComboBox fx:id="mineralComboBox" styleClass="mineral-combo-box" promptText="Sélectionner un minéral..."/>
+                    <Label fx:id="mineralTargetLabel" text="MINÉRAL CIBLE" styleClass="search-label"/>
+                    <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="200" minWidth="200" promptText="Sélectionner un minéral..."/>
                 </VBox>
                 
                 <!-- Prix -->
                 <VBox spacing="5" styleClass="search-item">
-                    <Label text="PRIX" styleClass="search-label"/>
+                    <Label fx:id="priceLabel" text="PRIX" styleClass="search-label"/>
                     <Label fx:id="headerPriceLabel" text="--" styleClass="search-price-large"/>
                 </VBox>
                 
                 <!-- Ring to Mine -->
                 <VBox spacing="5" styleClass="search-item">
-                    <Label text="RING TO MINE" styleClass="search-label"/>
+                    <Label fx:id="ringToMineLabel" text="RING TO MINE" styleClass="search-label"/>
                     <VBox spacing="2" styleClass="ring-container">
                         <Label fx:id="headerRingNameLabel" text="Non défini" styleClass="location-name-large"/>
                         <Label fx:id="headerRingSystemLabel" text="" styleClass="location-system"/>
@@ -44,7 +44,7 @@
                 
                 <!-- Station to Sell -->
                 <VBox spacing="5" styleClass="search-item">
-                    <Label text="STATION TO SELL" styleClass="search-label"/>
+                    <Label fx:id="stationToSellLabel" text="STATION TO SELL" styleClass="search-label"/>
                     <VBox spacing="2" styleClass="station-container">
                         <Label fx:id="headerStationNameLabel" text="Non définie" styleClass="location-name-large"/>
                         <Label fx:id="headerStationSystemLabel" text="" styleClass="location-system"/>
@@ -57,11 +57,11 @@
         <HBox spacing="20" styleClass="mining-content">
             <!-- Colonne gauche : Derniers prospecteurs -->
             <VBox spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS">
-                <Label text="DERNIERS PROSPECTEURS" styleClass="mining-section-title"/>
+                <Label fx:id="lastProspectorsLabel" text="DERNIERS PROSPECTEURS" styleClass="mining-section-title"/>
                 
                 <!-- Dernier prospecteur (plus visible) -->
                 <VBox fx:id="lastProspectorContainer" styleClass="last-prospector-container" visible="false">
-                    <Label text="DERNIER PROSPECTEUR" styleClass="last-prospector-title"/>
+                    <Label fx:id="lastProspectorLabel" text="DERNIER PROSPECTEUR" styleClass="last-prospector-title"/>
                     <VBox fx:id="lastProspectorContent" styleClass="last-prospector-content"/>
                 </VBox>
                 
@@ -71,17 +71,17 @@
             
             <!-- Colonne droite : Cargo actuel -->
             <VBox spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS">
-                <Label text="CARGO ACTUEL" styleClass="mining-section-title"/>
+                <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>
                 
                 <!-- Informations du cargo -->
                 <HBox spacing="20" styleClass="cargo-info">
                     <VBox alignment="CENTER" spacing="5">
                         <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number"/>
-                        <Label text="CARGO" styleClass="cargo-stat-label"/>
+                        <Label fx:id="cargoLabel" text="CARGO" styleClass="cargo-stat-label"/>
                     </VBox>
                     <VBox alignment="CENTER" spacing="5">
                         <Label fx:id="limpetsCountLabel" text="0" styleClass="cargo-stat-number"/>
-                        <Label text="LIMPETS" styleClass="cargo-stat-label"/>
+                        <Label fx:id="limpetsLabel" text="LIMPETS" styleClass="cargo-stat-label"/>
                     </VBox>
                 </HBox>
                 

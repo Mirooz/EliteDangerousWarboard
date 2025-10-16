@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderShip;
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.events.Loadout;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

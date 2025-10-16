@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
