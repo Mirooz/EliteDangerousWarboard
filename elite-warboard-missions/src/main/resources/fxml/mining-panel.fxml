@@ -57,9 +57,6 @@
                           <VBox spacing="2" styleClass="station-container,clickable-container"
                               onMouseClicked="#onStationContainerClicked">
                             <Label fx:id="headerStationNameLabel" text="Non définie" styleClass="location-name-large">
-                                <tooltip>
-                                    <Tooltip text="Système de vente" showDelay="300ms"/>
-                                </tooltip>
                             </Label>
                             <Label fx:id="headerStationSystemLabel" text="" styleClass="location-system"/>
                         </VBox>
