@@ -23,6 +23,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -106,6 +107,12 @@ public class MiningController implements Initializable, IRefreshable {
     private Label estimatedCreditsLabel;
     @FXML
     private Label estimatedCreditsTitleLabel;
+    @FXML
+    private ProgressIndicator loadingIndicator;
+    @FXML
+    private HBox searchContentHBox;
+    @FXML
+    private VBox mineralTargetContainer;
 
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -355,81 +362,6 @@ public class MiningController implements Initializable, IRefreshable {
     private void initializeClickHandlers() {
         // Les gestionnaires de clic sont maintenant définis directement dans le FXML
         // via onMouseClicked="#onRingContainerClicked" et onMouseClicked="#onStationContainerClicked"
-        
-        // Ajouter les gestionnaires de hover pour les conteneurs
-        addHoverHandlers();
-    }
-    
-    /**
-     * Ajoute les gestionnaires de hover pour les conteneurs cliquables
-     */
-    private void addHoverHandlers() {
-        // Trouver les conteneurs par leur styleClass
-        Platform.runLater(() -> {
-            // Gestionnaire pour le conteneur de l'anneau
-            VBox ringContainer = (VBox) headerRingNameLabel.getParent();
-            ringContainer.setCursor(javafx.scene.Cursor.HAND);
-            
-            // Tooltip pour l'anneau
-            Tooltip ringTooltip = new Tooltip();
-            ringTooltip.setShowDelay(javafx.util.Duration.millis(300));
-            Tooltip.install(ringContainer, ringTooltip);
-            
-            ringContainer.setOnMouseEntered(e -> {
-                ringContainer.setStyle(
-                    "-fx-background-color: rgba(255, 107, 0, 0.2); " +
-                    "-fx-border-color: rgba(255, 107, 0, 0.5); " +
-                    "-fx-border-width: 1px; " +
-                    "-fx-border-radius: 4px; " +
-                    "-fx-background-radius: 4px;"
-                );
-                // Mettre à jour le tooltip
-                String systemName = headerRingSystemLabel.getText();
-                if (systemName != null && !systemName.isEmpty()) {
-                    ringTooltip.setText(getTranslation("mining.mining_system_hint", systemName));
-                }
-            });
-            
-            ringContainer.setOnMouseExited(e -> {
-                ringContainer.setStyle(
-                    "-fx-background-color: transparent; " +
-                    "-fx-border-color: transparent; " +
-                    "-fx-border-width: 1px;"
-                );
-            });
-            
-            // Gestionnaire pour le conteneur de la station
-            VBox stationContainer = (VBox) headerStationNameLabel.getParent();
-            stationContainer.setCursor(javafx.scene.Cursor.HAND);
-            
-            // Tooltip pour la station
-            Tooltip stationTooltip = new Tooltip();
-            stationTooltip.setShowDelay(javafx.util.Duration.millis(300));
-            Tooltip.install(stationContainer, stationTooltip);
-            
-            stationContainer.setOnMouseEntered(e -> {
-                stationContainer.setStyle(
-                    "-fx-background-color: rgba(255, 107, 0, 0.2); " +
-                    "-fx-border-color: rgba(255, 107, 0, 0.5); " +
-                    "-fx-border-width: 1px; " +
-                    "-fx-border-radius: 4px; " +
-                    "-fx-background-radius: 4px;"
-                );
-                // Mettre à jour le tooltip
-                String systemName = headerStationSystemLabel.getText();
-                if (systemName != null && !systemName.isEmpty()) {
-                    stationTooltip.setText(getTranslation("mining.selling_system_hint", systemName));
-                }
-            });
-            
-            stationContainer.setOnMouseExited(e -> {
-                stationContainer.setStyle(
-                    "-fx-background-color: transparent; " +
-                    "-fx-border-color: transparent; " +
-                    "-fx-border-width: 1px;"
-                );
-            });
-        });
     }
     
     /**
@@ -472,6 +404,32 @@ public class MiningController implements Initializable, IRefreshable {
             headerStationSystemLabel.setText("");
             // Effacer l'image de la station
             stationTypeImageView.setImage(null);
+        });
+    }
+    
+    /**
+     * Gère la visibilité de l'indicateur de chargement
+     */
+    private void setLoadingVisible(boolean visible) {
+        Platform.runLater(() -> {
+            loadingIndicator.setVisible(visible);
+            loadingIndicator.setManaged(visible);
+            
+            if (visible) {
+                // Pendant le chargement : masquer tout sauf la ComboBox
+                searchContentHBox.getChildren().forEach(child -> {
+                    if (child != mineralTargetContainer) {
+                        child.setVisible(false);
+                        child.setManaged(false);
+                    }
+                });
+            } else {
+                // Après le chargement : tout réafficher
+                searchContentHBox.getChildren().forEach(child -> {
+                    child.setVisible(true);
+                    child.setManaged(true);
+                });
+            }
         });
     }
     
@@ -542,6 +500,8 @@ public class MiningController implements Initializable, IRefreshable {
             protected void updateItem(MineralListWrapper item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(null);
+                setStyle("");
+                setGraphic(null);
                 if (empty || item == null || item.isSeparator()) {
                     setText(null);
                     setGraphic(null);
@@ -602,14 +562,12 @@ public class MiningController implements Initializable, IRefreshable {
      * Recherche une route de minage pour un minéral spécifique
      */
     private void searchMiningRouteForMineral(Mineral mineral) {
-        headerPriceLabel.setText(getTranslation("mining.searching"));
-        headerDemandLabel.setText(getTranslation("mining.searching"));
-        headerRingNameLabel.setText(getTranslation("mining.searching"));
-        headerRingSystemLabel.setText("");
-        headerDistanceLabel.setText("--");
-        headerStationNameLabel.setText(getTranslation("mining.searching"));
-        headerStationSystemLabel.setText("");
-        stationTypeImageView.setImage(null);
+        // Afficher l'indicateur de chargement
+        setLoadingVisible(true);
+        
+        // Effacer les labels
+        clearHeaderLabels();
+        
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = MAX_DISTANCE;
         int minDemand = miningService.getCurrentCargoCapacity();
@@ -622,8 +580,11 @@ public class MiningController implements Initializable, IRefreshable {
                         // Rechercher les hotspots de minage
                         miningService.getEdToolsService().findMiningHotspots(bestMarket.getSystemName(), mineral)
                                 .thenAccept(hotspots -> Platform.runLater(() -> {
-                                    headerPriceLabel.setText(String.format("%s Cr", miningService.formatPrice(bestMarket.getPrice())));
-                                    headerDemandLabel.setText(String.format("%d", bestMarket.getDemand()));
+                                    // Masquer l'indicateur de chargement
+                                    setLoadingVisible(false);
+                                    
+                                    headerPriceLabel.setText(String.format("%s Cr ", miningService.formatPrice(bestMarket.getPrice())));
+                                    headerDemandLabel.setText(String.format("%d T", bestMarket.getDemand()));
                                     headerStationNameLabel.setText(bestMarket.getStationName());
                                     headerStationSystemLabel.setText(bestMarket.getSystemName());
                                     // Mettre à jour l'image du type de station
@@ -646,6 +607,9 @@ public class MiningController implements Initializable, IRefreshable {
                                 }));
                     } else {
                         Platform.runLater(() -> {
+                            // Masquer l'indicateur de chargement
+                            setLoadingVisible(false);
+                            
                             headerPriceLabel.setText(getTranslation("mining.price_not_available"));
                             headerDemandLabel.setText("--");
                             headerRingNameLabel.setText(getTranslation("mining.no_market_found"));
@@ -658,6 +622,9 @@ public class MiningController implements Initializable, IRefreshable {
                 })
                 .exceptionally(throwable -> {
                     Platform.runLater(() -> {
+                        // Masquer l'indicateur de chargement
+                        setLoadingVisible(false);
+                        
                         headerPriceLabel.setText(getTranslation("mining.price_error"));
                         headerDemandLabel.setText("--");
                         headerRingNameLabel.setText(getTranslation("mining.search_error"));

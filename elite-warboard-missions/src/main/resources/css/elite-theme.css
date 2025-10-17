@@ -2492,17 +2492,9 @@
 /* Prix de recherche large */
 .search-price-large {
     -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 20px;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
-    -fx-pref-width: 150px;
-    -fx-translate-y: 4px;
-}
-
-.search-demand-large {
-    -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-pref-width: 150px;
+    -fx-pref-width: 120px;
     -fx-translate-y: 4px;
 }
 
@@ -2512,37 +2504,20 @@
     -fx-spacing: 2px;
 }
 
-/* ✅ Conteneurs cliquables */
+/* ✅ Conteneurs cliquables - Style simple et propre */
 .clickable-container {
     -fx-cursor: hand;
     -fx-padding: 4px;
     -fx-background-radius: 4px;
     -fx-border-radius: 4px;
-}
-
-/* Styles spécifiques pour les conteneurs d'anneau et de station */
-.ring-container.clickable-container {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 1px;
 }
 
-.ring-container.clickable-container:hover {
-    -fx-background-color: rgba(255, 107, 0, 0.2);
-    -fx-border-color: rgba(255, 107, 0, 0.5);
-    -fx-border-width: 1px;
-}
-
-.station-container.clickable-container {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-border-width: 1px;
-}
-
-.station-container.clickable-container:hover {
-    -fx-background-color: rgba(255, 107, 0, 0.2);
-    -fx-border-color: rgba(255, 107, 0, 0.5);
-    -fx-border-width: 1px;
+.clickable-container:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: rgba(255, 107, 0, 0.3);
 }
 
 /* Noms de locations en grand */
@@ -2551,6 +2526,7 @@
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-cursor: hand;
 }
 
 /* Systèmes de locations */
@@ -2558,6 +2534,7 @@
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
+    -fx-cursor: hand;
 }
 
 /* Conteneur de la flèche */
@@ -2585,6 +2562,24 @@
 /* ✅ Style pour l'icône du type de station */
 .station-type-icon {
     -fx-opacity: 0.9;
+}
+
+/* ✅ Style pour l'indicateur de chargement */
+.progress-indicator {
+    -fx-progress-color: -fx-elite-success;
+}
+
+/* ✅ Fixer la taille du header pour éviter le redimensionnement */
+.mining-header {
+    -fx-min-height: 140px;
+    -fx-pref-height: 140px;
+    -fx-max-height: 140px;
+}
+
+.mining-search-container {
+    -fx-min-height: 100px;
+    -fx-pref-height: 100px;
+    -fx-max-height: 100px;
 }
 
 /* ComboBox des minéraux */

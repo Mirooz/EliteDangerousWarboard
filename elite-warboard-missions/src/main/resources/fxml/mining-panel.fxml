@@ -3,71 +3,87 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-
 <?import javafx.scene.image.ImageView?>
+
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.MiningController"
       styleClass="mining-panel">
-
 
     <!-- Header avec filtre de recherche -->
     <VBox spacing="10" styleClass="mining-header">
         <Label fx:id="miningTitleLabel" text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>
 
-        <HBox spacing="30" styleClass="mining-search-container" alignment="CENTER_LEFT">
-            <!-- Minéral Cible -->
-            <VBox spacing="5" styleClass="search-item">
-                <Label fx:id="mineralTargetLabel" text="MINÉRAL CIBLE" styleClass="search-label"/>
-                <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="235" minWidth="235"
-                          promptText="Sélectionner un minéral..."/>
-            </VBox>
+        <StackPane>
+            <HBox fx:id="searchContentHBox" spacing="30" styleClass="mining-search-container" alignment="CENTER_LEFT">
+                <!-- Minéral Cible -->
+                <VBox fx:id="mineralTargetContainer" spacing="5" styleClass="search-item">
+                    <Label fx:id="mineralTargetLabel" text="MINÉRAL CIBLE" styleClass="search-label"/>
+                    <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="235" minWidth="235"
+                              promptText="Sélectionner un minerais..."/>
+                </VBox>
 
-             <!-- Prix -->
-             <VBox spacing="5" styleClass="search-item">
-                 <Label fx:id="priceLabel" text="PRIX" styleClass="search-label"/>
-                 <Label fx:id="headerPriceLabel" text="--" styleClass="search-price-large"/>
-                 <Label fx:id="demandLabel" text="DEMANDE" styleClass="search-label"/>
-                 <Label fx:id="headerDemandLabel" text="--" styleClass="search-price-large"/>
-             </VBox>
+                <!-- Prix -->
+                <HBox spacing="5" styleClass="search-item" translateY="10">
+                    <VBox>
+                        <Label fx:id="priceLabel" text="PRIX" styleClass="search-label"/>
+                        <Label fx:id="headerPriceLabel" text="--" styleClass="search-price-large"/>
+                    </VBox>
+                    <VBox>
+                        <Label fx:id="demandLabel" text="DEMANDE" styleClass="search-label"/>
+                        <Label fx:id="headerDemandLabel" text="--" styleClass="search-price-large"/>
+                    </VBox>
+                </HBox>
 
-             <!-- Ring to Mine -->
-             <VBox spacing="5" styleClass="search-item">
-                 <Label fx:id="ringToMineLabel" text="RING TO MINE" styleClass="search-label"/>
-                 <VBox spacing="2" styleClass="ring-container clickable-container" onMouseClicked="#onRingContainerClicked">
-                     <Label fx:id="headerRingNameLabel" text="Non défini" styleClass="location-name-large"/>
-                     <Label fx:id="headerRingSystemLabel" text="" styleClass="location-system"/>
-                 </VBox>
-             </VBox>
+                <!-- Ring to Mine -->
+                <VBox spacing="5" styleClass="search-item">
+                    <Label fx:id="ringToMineLabel" text="RING TO MINE" styleClass="search-label"/>
+                      <VBox spacing="2" styleClass="ring-container,clickable-container"
+                          onMouseClicked="#onRingContainerClicked">
+                        <Label fx:id="headerRingNameLabel" text="Non défini" styleClass="location-name-large"/>
+                        <Label fx:id="headerRingSystemLabel" text="" styleClass="location-system"/>
+                    </VBox>
+                </VBox>
 
-            <!-- Flèche avec distance -->
-            <VBox spacing="5" styleClass="arrow-container" alignment="CENTER" translateY="-20">
-                <Label fx:id="headerDistanceLabel" text="--" styleClass="distance-label"/>
-                <Label text="➤" styleClass="arrow-symbol"/>
-            </VBox>
+                <!-- Flèche avec distance -->
+                <VBox spacing="5" styleClass="arrow-container" alignment="CENTER" translateY="-20">
+                    <Label fx:id="headerDistanceLabel" text="--" styleClass="distance-label"/>
+                    <Label text="➤" styleClass="arrow-symbol"/>
+                </VBox>
 
-             <!-- Station to Sell -->
-             <HBox>
-                 <VBox spacing="5" styleClass="search-item">
-                     <Label fx:id="stationToSellLabel" text="STATION TO SELL" styleClass="search-label"/>
-                     <VBox spacing="2" styleClass="station-container clickable-container" onMouseClicked="#onStationContainerClicked">
-                         <Label fx:id="headerStationNameLabel" text="Non définie" styleClass="location-name-large"/>
-                         <Label fx:id="headerStationSystemLabel" text="" styleClass="location-system"/>
-                     </VBox>
-                 </VBox>
-                 <ImageView fx:id="stationTypeImageView" styleClass="station-type-icon" translateY="-20" fitWidth="100" fitHeight="100"
-                            preserveRatio="true"/>
-             </HBox>
-        </HBox>
+                <!-- Station to Sell -->
+                <HBox>
+                    <VBox spacing="5" styleClass="search-item">
+                        <Label fx:id="stationToSellLabel" text="STATION TO SELL" styleClass="search-label"/>
+                          <VBox spacing="2" styleClass="station-container,clickable-container"
+                              onMouseClicked="#onStationContainerClicked">
+                            <Label fx:id="headerStationNameLabel" text="Non définie" styleClass="location-name-large">
+                                <tooltip>
+                                    <Tooltip text="Système de vente" showDelay="300ms"/>
+                                </tooltip>
+                            </Label>
+                            <Label fx:id="headerStationSystemLabel" text="" styleClass="location-system"/>
+                        </VBox>
+                    </VBox>
+                    <ImageView fx:id="stationTypeImageView" styleClass="station-type-icon" translateY="-20"
+                               fitWidth="100" fitHeight="100"
+                               preserveRatio="true"/>
+                </HBox>
+            </HBox>
+
+            <ProgressIndicator fx:id="loadingIndicator" 
+                               maxWidth="80" maxHeight="80"
+                               visible="false"
+                               translateX="-200"
+                               translateY="-20"/>
+        </StackPane>
     </VBox>
 
     <!-- Contenu principal en deux colonnes -->
     <HBox spacing="20" styleClass="mining-content">
         <!-- Colonne gauche : Prospecteur actuel avec navigation -->
         <VBox spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" minHeight="450" prefHeight="450">
-
             <HBox spacing="15" styleClass="prospector-navigation-header" alignment="CENTER_LEFT">
-                <Label fx:id="currentProspectorLabel" text="PROSPECTEUR ACTUEL"
-                       styleClass="mining-section-title"/>
+                <Label fx:id="currentProspectorLabel" text="PROSPECTEUR ACTUEL" styleClass="mining-section-title"/>
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <!-- Navigation -->
@@ -79,47 +95,39 @@
                             onAction="#showNextProspector"/>
                 </HBox>
             </HBox>
-            <VBox fx:id="currentProspectorContent" styleClass="current-prospector-content"
-                  VBox.vgrow="ALWAYS"/>
 
+            <VBox fx:id="currentProspectorContent" styleClass="current-prospector-content" VBox.vgrow="ALWAYS"/>
 
             <!-- Message quand aucun prospecteur -->
             <VBox fx:id="noProspectorContainer" styleClass="no-prospector-container" alignment="CENTER"
                   VBox.vgrow="ALWAYS">
                 <Label text="Aucun prospecteur disponible" styleClass="no-prospector-message"/>
             </VBox>
-
         </VBox>
-        <HBox>
 
-            <VBox spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS">
-                <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>
+        <!-- Colonne droite : Cargo -->
+        <VBox spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS">
+            <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>
 
-                <!-- Informations du cargo -->
-                <HBox spacing="20" styleClass="cargo-info">
-                    <VBox alignment="CENTER" spacing="5">
-                        <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number"/>
-                        <Label fx:id="cargoLabel" text="CARGO" styleClass="cargo-stat-label"/>
-                    </VBox>
-                    <VBox alignment="CENTER" spacing="5">
-                        <Label fx:id="limpetsCountLabel" text="0" styleClass="cargo-stat-number"/>
-                        <Label fx:id="limpetsLabel" text="LIMPETS" styleClass="cargo-stat-label"/>
-                    </VBox>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <VBox alignment="CENTER_RIGHT" spacing="5">
-                        <Label fx:id="estimatedCreditsLabel" text="0" styleClass="cargo-stat-price-number"/>
-                        <Label fx:id="estimatedCreditsTitleLabel" text="CR ESTIMÉS" styleClass="cargo-stat-price"/>
-                    </VBox>
-                </HBox>
+            <!-- Informations du cargo -->
+            <HBox spacing="20" styleClass="cargo-info">
+                <VBox alignment="CENTER" spacing="5">
+                    <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number"/>
+                    <Label fx:id="cargoLabel" text="CARGO" styleClass="cargo-stat-label"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="5">
+                    <Label fx:id="limpetsCountLabel" text="0" styleClass="cargo-stat-number"/>
+                    <Label fx:id="limpetsLabel" text="LIMPETS" styleClass="cargo-stat-label"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <VBox alignment="CENTER_RIGHT" spacing="5">
+                    <Label fx:id="estimatedCreditsLabel" text="0" styleClass="cargo-stat-price-number"/>
+                    <Label fx:id="estimatedCreditsTitleLabel" text="CR ESTIMÉS" styleClass="cargo-stat-price"/>
+                </VBox>
+            </HBox>
 
-                <!-- Liste des minéraux dans le cargo -->
-                <VBox spacing="5" fx:id="cargoMineralsList" styleClass="cargo-minerals-list"
-                      VBox.vgrow="ALWAYS"/>
-            </VBox>
-        </HBox>
-
-        <!-- Colonne droite : Cargo intégré dans le cadre principal -->
-
+            <!-- Liste des minéraux dans le cargo -->
+            <VBox spacing="5" fx:id="cargoMineralsList" styleClass="cargo-minerals-list" VBox.vgrow="ALWAYS"/>
+        </VBox>
     </HBox>
 </VBox>
-
