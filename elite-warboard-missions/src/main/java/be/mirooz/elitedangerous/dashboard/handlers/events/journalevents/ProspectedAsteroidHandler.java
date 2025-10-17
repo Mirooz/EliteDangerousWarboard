@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidRegistry;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralFactory;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.UnknownMineral;
@@ -29,7 +29,7 @@ public class ProspectedAsteroidHandler implements JournalEventHandler {
                              prospectedAsteroid.getRemaining() + "%)");
             Optional<Mineral> mineral = MineralFactory.fromCoreMineralName(prospectedAsteroid.getMotherlodeMaterial());
             mineral.ifPresent(m -> {
-                if (m instanceof CoreMineralType coreMineral) {
+                if (m instanceof MineralType coreMineral) {
                     prospectedAsteroid.setCoreMineral(coreMineral);
                 }
             });
@@ -84,7 +84,7 @@ public class ProspectedAsteroidHandler implements JournalEventHandler {
 
         if (rawName != null) {
             material.setName(
-                    MineralFactory.fromCoreMineralName(rawName)
+                    MineralFactory.fromCargoJsonName(rawName)
                             .orElseGet(() -> new UnknownMineral(rawName))
             );
         }

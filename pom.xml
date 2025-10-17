@@ -15,8 +15,8 @@
     <modules>
         <module>edtools-client</module>
         <module>inara-client</module>
-        <module>elite-warboard-missions</module>
         <module>elite-commons</module>
+        <module>elite-warboard-missions</module>
     </modules>
 
     <properties>

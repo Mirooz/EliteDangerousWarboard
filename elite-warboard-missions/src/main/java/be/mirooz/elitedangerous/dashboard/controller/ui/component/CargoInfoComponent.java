@@ -1,9 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -27,14 +27,14 @@ public class CargoInfoComponent {
     /**
      * Crée la liste des minéraux dans le cargo
      */
-    public static VBox createMineralsList(Map<ICommodity, Integer> minerals) {
+    public static VBox createMineralsList(Map<Mineral, Integer> minerals) {
         VBox mineralsList = new VBox(5);
         mineralsList.getStyleClass().add("cargo-minerals-list");
         
         if (minerals.isEmpty()) {
             mineralsList.getChildren().add(createNoMineralsLabel());
         } else {
-            for (Map.Entry<ICommodity, Integer> entry : minerals.entrySet()) {
+            for (Map.Entry<Mineral, Integer> entry : minerals.entrySet()) {
                 HBox mineralCard = createMineralCard(entry.getKey(), entry.getValue());
                 mineralsList.getChildren().add(mineralCard);
             }
@@ -53,8 +53,8 @@ public class CargoInfoComponent {
 
         // Utiliser le nom du core mineral en majuscules si c'est un minéral
         String displayName;
-        if (commodity instanceof CoreMineralType) {
-            CoreMineralType coreMineral = (CoreMineralType) commodity;
+        if (commodity instanceof MineralType) {
+            MineralType coreMineral = (MineralType) commodity;
             displayName = coreMineral.getInaraName().toUpperCase();
         } else {
             displayName = commodity.toString().toUpperCase();

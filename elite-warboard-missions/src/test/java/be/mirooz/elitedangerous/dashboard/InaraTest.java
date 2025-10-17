@@ -39,13 +39,13 @@ public class InaraTest {
         // Log de debug
         System.out.println("✅ " + commodities.size() + " commodities trouvées autour de " + sourceSystem);
         commodities
-                .forEach(c -> System.out.println(c.getCoreMineral().getInaraName() + " - " + c.getPrice() + " Cr @ " + c.getStationName() + " @ " + c.getSystemDistance() + " supply : " + c.getSupply()));
+                .forEach(c -> System.out.println(c.getMineral().getInaraName() + " - " + c.getPrice() + " Cr @ " + c.getStationName() + " @ " + c.getSystemDistance() + " supply : " + c.getSupply()));
 
         System.out.println("Best InaraCommoditiesStats : ");
         InaraCommoditiesStats bestMinerInaraCommoditiesStats = routeService.findBestMinerCommodity(commodities,demand);
         System.out.println(bestMinerInaraCommoditiesStats);
 
-        CompletableFuture<List<MiningHotspot>> futureEdtool = edtoolsService.findMiningHotspots(bestMinerInaraCommoditiesStats.getSystemName(), bestMinerInaraCommoditiesStats.getCoreMineral());
+        CompletableFuture<List<MiningHotspot>> futureEdtool = edtoolsService.findMiningHotspots(bestMinerInaraCommoditiesStats.getSystemName(), bestMinerInaraCommoditiesStats.getMineral());
 
         // Attendre max 30 secondes pour la complétion
         List<MiningHotspot> miningHotspots = futureEdtool.get(30, TimeUnit.SECONDS);
@@ -53,7 +53,7 @@ public class InaraTest {
         System.out.println(bestHotspot);
 
         System.out.println("Mining route : ");
-        System.out.println(bestMinerInaraCommoditiesStats.getCoreMineral().getInaraName()
+        System.out.println(bestMinerInaraCommoditiesStats.getMineral().getInaraName()
                 +"("+ bestMinerInaraCommoditiesStats.getPrice()+")"
                 + " : " +bestHotspot.getSystemName()
                 + " |" + bestHotspot.getRingName() + " -- " + bestHotspot.getDistanceFromReference() + " AL " + "-> " + bestMinerInaraCommoditiesStats.getSystemName()

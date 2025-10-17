@@ -8,13 +8,23 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 public record UnknownMineral(String rawName) implements Mineral {
 
     @Override
-    public MineralType getMineralType() {
-        return null; // ou MineralType.SURFACE_MINERAL si tu veux une valeur par défaut
+    public MiningMethod getMiningMethod() {
+        return MiningMethod.LASER;
     }
 
     @Override
     public String getMiningRefinedName() {
         return rawName;
+    }
+
+    @Override
+    public int getPrice() {
+        return 0;
+    }
+
+    @Override
+    public void setPrice(int price) {
+
     }
 
     @Override

@@ -1,7 +1,6 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities;
 
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
-
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import java.util.Optional;
 
 /**
@@ -39,7 +38,7 @@ public class ICommodityFactory {
      * Recherche dans les core minerals
      */
     private static Optional<ICommodity> searchInCoreMinerals(String key) {
-        return CoreMineralType.fromCargoJsonName(key)
+        return MineralType.fromCargoJsonName(key)
                 .map(ICommodity.class::cast);
     }
 

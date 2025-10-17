@@ -1,8 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
@@ -20,30 +18,31 @@ import static be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType
  * Service pour gérer la logique métier du mining
  */
 public class MiningService {
-    
+
     private static MiningService instance;
-    
+
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final ProspectedAsteroidRegistry prospectedRegistry = ProspectedAsteroidRegistry.getInstance();
     private final InaraClient inaraClient = new InaraClient();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
-    
-    private MiningService() {}
-    
+
+    private MiningService() {
+    }
+
     public static MiningService getInstance() {
         if (instance == null) {
             instance = new MiningService();
         }
         return instance;
     }
-    
+
     /**
      * Récupère tous les prospecteurs
      */
     public Deque<ProspectedAsteroid> getAllProspectors() {
         return prospectedRegistry.getAll();
     }
-    
+
     /**
      * Récupère le dernier prospecteur
      */
@@ -51,7 +50,7 @@ public class MiningService {
         Deque<ProspectedAsteroid> prospectors = getAllProspectors();
         return prospectors.isEmpty() ? Optional.empty() : Optional.of(prospectors.peekLast());
     }
-    
+
     /**
      * Récupère le cargo actuel
      */
@@ -61,7 +60,7 @@ public class MiningService {
         }
         return commanderStatus.getShip().getShipCargo();
     }
-    
+
     /**
      * Récupère le nombre de limpets dans le cargo
      */
@@ -72,46 +71,51 @@ public class MiningService {
         }
         return cargo.getCommodities().getOrDefault(LIMPET, 0);
     }
-    
+
     /**
      * Récupère les minéraux du cargo (exclut les limpets)
      */
-    public Map<ICommodity, Integer> getMinerals() {
+    public Map<Mineral, Integer> getMinerals() {
         ShipCargo cargo = getCargo();
         if (cargo == null) {
             return Collections.emptyMap();
         }
-        
+
         return cargo.getCommodities().entrySet().stream()
-                .filter(entry -> !(entry.getKey() instanceof LimpetType))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .filter(entry -> entry.getKey() instanceof Mineral)
+                .collect(Collectors.toMap(
+                        entry -> (Mineral) entry.getKey(),
+                        Map.Entry::getValue
+                ));
     }
-    
+
     /**
      * Recherche le prix d'un minéral
      */
-    public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(CoreMineralType mineral,String sourceSystem,int maxDistance,int minDemand) {
+    public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 List<InaraCommoditiesStats> commodities = inaraClient.fetchMinerMarket(
                         mineral, sourceSystem, maxDistance, minDemand, false);
-                
+
                 if (commodities == null || commodities.isEmpty()) {
                     return Optional.empty();
                 }
-                
-                // Prendre le meilleur prix dans un rayon de 100 AL
-                return commodities.stream()
-                        .filter(commodity -> commodity.getSystemDistance() <= 100)
+                Optional<InaraCommoditiesStats> bestOpt = commodities.stream()
+                        .filter(c -> c.getSystemDistance() <= 100)
                         .max(Comparator.comparingDouble(InaraCommoditiesStats::getPrice));
-                        
+
+                bestOpt.ifPresent(best -> mineral.setPrice(best.getPrice()));
+
+                return bestOpt;
+
             } catch (Exception e) {
                 return Optional.empty();
             }
         });
     }
-    
-    
+
+
     /**
      * Récupère le système actuel du commandant
      */
@@ -121,14 +125,14 @@ public class MiningService {
         }
         return "Sol"; // Fallback
     }
-    
+
     /**
      * Récupère le service EdTools
      */
     public EdToolsService getEdToolsService() {
         return edToolsService;
     }
-    
+
     /**
      * Récupère la capacité de cargo actuelle
      */
@@ -138,12 +142,14 @@ public class MiningService {
         }
         return 0; // Fallback
     }
-    
+
     /**
      * Formate un prix avec des séparateurs de milliers
      */
     public String formatPrice(int price) {
+        return formatPrice((long) price);
+    }
+    public String formatPrice(long price) {
         return String.format("%,d", price).replace(",", ".");
     }
-    
 }

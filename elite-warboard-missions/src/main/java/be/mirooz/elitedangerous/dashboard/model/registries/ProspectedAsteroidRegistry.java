@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public class ProspectedAsteroidRegistry {
 
-    private static final int MAX_SIZE = 5;
+    private static final int MAX_SIZE = 50;
     private final Deque<ProspectedAsteroid> registry = new LinkedList<>();
     private ProspectedAsteroidRegistry() {}
     private static class Holder {

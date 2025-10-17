@@ -1,11 +1,11 @@
 package be.mirooz.elitedangerous.lib.inara.model;
 
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import lombok.Data;
 
 @Data
 public class InaraCommoditiesStats {
-    private CoreMineralType coreMineral;
+    private Mineral mineral;
     private String stationName;
     private String systemName;
     private String landingPadSize;
@@ -18,4 +18,5 @@ public class InaraCommoditiesStats {
     private int priceMax;
     private String lastUpdate;
     private boolean fleetCarrier;
+    private StationType stationType;
 }

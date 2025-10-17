@@ -4,7 +4,7 @@ import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
 
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,12 +44,12 @@ public class InaraService {
                                                                                int supplyDemand, boolean largePad) {
 
         // Récupérer tous les minéraux de core mining
-        List<CoreMineralType> allMinerals = CoreMineralType.all();
+        List<MineralType> allMinerals = MineralType.all();
 
         // Lancer une requête par minéral en parallèle
         List<CompletableFuture<List<InaraCommoditiesStats>>> futures = new ArrayList<>();
         long start = System.currentTimeMillis();
-        for (CoreMineralType mineral : allMinerals) {
+        for (MineralType mineral : allMinerals) {
             CompletableFuture<List<InaraCommoditiesStats>> future = CompletableFuture.supplyAsync(() -> {
                 try {
                     System.out.println("🔍 Recherche du marché pour: " + mineral.getInaraName());

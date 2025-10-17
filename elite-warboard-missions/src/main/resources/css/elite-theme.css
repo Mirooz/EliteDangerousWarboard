@@ -83,15 +83,34 @@
 
 .mining-content {
     -fx-spacing: 20px;
+    -fx-fill-height: true;
 }
 
-.mining-left-panel, .mining-right-panel {
+.mining-left-panel {
     -fx-background-color: -fx-elite-gray;
     -fx-padding: 15px;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
+    -fx-fill-height: true;
+    -fx-max-width: 450px;
+}
+
+.mining-right-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-fill-height: true;
+    -fx-min-width: 380px;
+    -fx-pref-width: 380px;
+    -fx-max-width: 380px;
+    -fx-min-height: 400px;
+    -fx-pref-height: 400px;
+    -fx-max-height: 400px;
 }
 
 .mining-section-title {
@@ -101,60 +120,191 @@
     -fx-padding: 0 0 10px 0;
 }
 
-/* Styles pour les prospecteurs */
-.last-prospector-container {
+/* ✅ Styles pour la navigation des prospecteurs */
+.prospector-navigation-header {
     -fx-background-color: -fx-elite-darker;
-    -fx-padding: 15px;
+    -fx-padding: 10px 15px;
     -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 2px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-spacing: 10px;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
 }
 
-.last-prospector-title {
+.prospector-navigation {
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER;
+}
+
+.elite-nav-button {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
     -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-pref-width: 30px;
+    -fx-pref-height: 30px;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+    -fx-cursor: hand;
+}
+
+.elite-nav-button:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.elite-nav-button:disabled {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-gray;
+    -fx-cursor: default;
+}
+
+.prospector-counter {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
     -fx-font-size: 12px;
+    -fx-min-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-max-width: 40px;
+    -fx-alignment: CENTER;
+}
+
+/* ✅ Styles pour le prospecteur actuel */
+.current-prospector-container {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 20px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-spacing: 15px;
+    -fx-min-height: 400px;
+    -fx-pref-height: 400px;
+    -fx-max-height: 400px;
+}
+
+.current-prospector-content {
+    -fx-spacing: 10px;
+    -fx-min-height: 350px;
+    -fx-pref-height: 350px;
+    -fx-max-height: 350px;
+    -fx-alignment: TOP_LEFT;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-padding: 0px;
+}
+
+/* ✅ Message quand aucun prospecteur */
+.no-prospector-container {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 40px;
+    -fx-border-color: -fx-elite-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-min-height: 400px;
+    -fx-pref-height: 400px;
+    -fx-max-height: 400px;
+}
+
+.no-prospector-message {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+}
+
+/* ✅ Styles pour les cartes de prospecteurs (refaites) */
+.elite-prospector-card {
+    -fx-background-color: rgba(255, 107, 0, 0.05);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 12px;
+    -fx-spacing: 8px;
+}
+
+
+
+.asteroid-icon {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
 
-.last-prospector-content {
-    -fx-spacing: 5px;
+.asteroid-icon.core-asteroid {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 18px;
 }
 
-.last-prospector-mineral {
+.elite-mineral-name {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.elite-mineral-name-large {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+
+.elite-materials-container {
+    -fx-spacing: 4px;
+    -fx-padding: 8px 0 0 0;
+}
+
+.elite-materials-title {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.elite-materials-title-large {
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
 
-.last-prospector-content {
+.elite-material-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 13px;
+}
+
+.elite-material-name-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 16px;
+}
+
+.elite-material-percent {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.elite-material-percent-large {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.elite-content {
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 14px;
 }
 
-.last-prospector-remaining {
-    -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 12px;
-}
-
-.last-prospector-material {
-    -fx-text-fill: -fx-elite-text-dim;
-    -fx-font-size: 11px;
-}
-
-.prospectors-list {
-    -fx-spacing: 8px;
-}
-
-.prospector-card {
-    -fx-background-color: -fx-elite-darker;
-    -fx-padding: 10px;
-    -fx-border-color: -fx-elite-light-gray;
-    -fx-border-width: 1px;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
-    -fx-spacing: 5px;
+.elite-content-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 16px;
 }
 
 .prospector-mineral {
@@ -183,9 +333,9 @@
     -fx-padding: 5px 0 0 10px;
 }
 
-/* Styles pour le cargo */
+/* ✅ Styles pour le cargo (refaits) */
 .cargo-info {
-    -fx-background-color: -fx-elite-darker;
+    -fx-background-color: rgba(0, 255, 255, 0.05);
     -fx-padding: 15px;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1px;
@@ -198,36 +348,61 @@
     -fx-font-size: 18px;
     -fx-font-weight: bold;
 }
+.cargo-stat-price-number {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
 
 .cargo-stat-label {
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.cargo-stat-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.cargo-stat-price-number {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_RIGHT;
 }
 
 .cargo-minerals-list {
-    -fx-spacing: 5px;
+    -fx-spacing: 8px;
+    -fx-padding: 10px 0 0 0;
+    -fx-fill-height: true;
 }
 
 .mineral-card {
-    -fx-background-color: -fx-elite-darker;
+    -fx-background-color: rgba(0, 255, 255, 0.03);
     -fx-padding: 12px 16px;
-    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
     -fx-alignment: center-left;
     -fx-spacing: 10px;
 }
 
+.mineral-card:hover {
+    -fx-background-color: rgba(0, 255, 255, 0.08);
+    -fx-border-color: -fx-elite-success;
+}
+
 .mineral-name {
-    -fx-text-fill: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-orange;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-font-family: "Arial Black", "Arial", sans-serif;
 }
 
 .mineral-quantity {
-    -fx-text-fill: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-green;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-min-width: 50px;
@@ -1347,8 +1522,8 @@
     -fx-border-width: 1;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
-    -fx-font-size: 12px;
-    -fx-border-radius: 2;
+    -fx-font-size: 15px;   /* 🔸 Augmenté */
+    -fx-pref-height: 26px; /* 🔸 Taille verticale plus grande */
 }
 
 .elite-combobox:hover {
@@ -1378,7 +1553,7 @@
 .elite-combobox .text {
     -fx-fill: -fx-elite-cyan;
     -fx-font-weight: bold;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
 }
 
 .elite-combobox:hover .text {
@@ -1484,6 +1659,22 @@
     -fx-pref-height: 0;
     -fx-min-height: 0;
     -fx-max-height: 0;
+}
+
+/* ✅ Styles pour les séparateurs dans la ComboBox */
+.elite-combobox .list-cell:disabled {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 12px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1px 0;
+    -fx-opacity: 1.0;
+}
+
+.elite-combobox .list-cell:disabled:hover {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-orange;
 }
 .config-spinner {
     -fx-background-color: -fx-elite-dark;
@@ -1976,6 +2167,7 @@
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
     -fx-padding: 5px;
+
 }
 
 /* Panneau de cibles principal */
@@ -2073,7 +2265,7 @@
 }
 
 .elite-prospector-card-large {
-    -fx-background-color: -fx-elite-darker;
+    -fx-background-color: -fx-elite-gray;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 2px;
     -fx-border-radius: 8px;
@@ -2105,6 +2297,8 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
     -fx-padding: 2px 6px;
+    -fx-pref-width: 40;
+    -fx-min-width: 40;
 }
 
 /* Noms de minéraux */
@@ -2242,7 +2436,7 @@
 
 /* Header de recherche */
 .mining-header {
-    -fx-background-color: -fx-elite-darker;
+    -fx-background-color: -fx-elite-gray;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 2px;
     -fx-border-radius: 8px;
@@ -2298,15 +2492,57 @@
 /* Prix de recherche large */
 .search-price-large {
     -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 16px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
     -fx-pref-width: 150px;
+    -fx-translate-y: 4px;
+}
+
+.search-demand-large {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 150px;
+    -fx-translate-y: 4px;
 }
 
 /* Conteneurs pour les locations */
 .ring-container,
 .station-container {
     -fx-spacing: 2px;
+}
+
+/* ✅ Conteneurs cliquables */
+.clickable-container {
+    -fx-cursor: hand;
+    -fx-padding: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+}
+
+/* Styles spécifiques pour les conteneurs d'anneau et de station */
+.ring-container.clickable-container {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+.ring-container.clickable-container:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.2);
+    -fx-border-color: rgba(255, 107, 0, 0.5);
+    -fx-border-width: 1px;
+}
+
+.station-container.clickable-container {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+.station-container.clickable-container:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.2);
+    -fx-border-color: rgba(255, 107, 0, 0.5);
+    -fx-border-width: 1px;
 }
 
 /* Noms de locations en grand */
@@ -2320,8 +2556,8 @@
 /* Systèmes de locations */
 .location-system {
     -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 12px;
-    -fx-font-style: italic;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
 }
 
 /* Conteneur de la flèche */
@@ -2333,7 +2569,7 @@
 /* Label de distance */
 .distance-label {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 11px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-alignment: center;
 }
@@ -2341,9 +2577,14 @@
 /* Symbole de flèche */
 .arrow-symbol {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 20px;
+    -fx-font-size: 25px;
     -fx-font-weight: bold;
     -fx-alignment: center;
+}
+
+/* ✅ Style pour l'icône du type de station */
+.station-type-icon {
+    -fx-opacity: 0.9;
 }
 
 /* ComboBox des minéraux */

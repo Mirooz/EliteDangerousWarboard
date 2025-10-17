@@ -11,15 +11,10 @@ public interface Mineral extends ICommodity {
      * Retourne le type de minéral
      * @return Le type de minéral
      */
-    MineralType getMineralType();
+    MiningMethod getMiningMethod();
 
     String getMiningRefinedName();
-    
-    /**
-     * Enum représentant les types de minéraux disponibles
-     */
-    enum MineralType {
-        CORE_MINERAL,
-        SURFACE_MINERAL
-    }
+
+    int getPrice();
+    void setPrice(int price);
 }

@@ -1,7 +1,8 @@
 package be.mirooz.elitedangerous.lib.inara.client;
 
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.CoreMineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.StationType;
 import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -79,7 +80,7 @@ public class InaraClient {
     // ─────────────────────────────────────────────
 
 
-    public List<InaraCommoditiesStats> fetchCommoditiesAllArgs(CoreMineralType coreMineral, String sourceSystem,
+    public List<InaraCommoditiesStats> fetchCommoditiesAllArgs(Mineral coreMineral, String sourceSystem,
                                                                int maxSystemDistance, boolean largePad,
                                                                int maxStationDistance, int maxPriceAge,
                                                                int minSupplyDemand) throws IOException {
@@ -140,7 +141,7 @@ public class InaraClient {
         return commodities;
     }
 
-    private InaraCommoditiesStats parseCommoditiesRow(Elements cols, CoreMineralType coreMineral) {
+    private InaraCommoditiesStats parseCommoditiesRow(Elements cols, Mineral mineral) {
         InaraCommoditiesStats stats = new InaraCommoditiesStats();
 
         // Station name + system
@@ -148,7 +149,24 @@ public class InaraClient {
         String stationText = stationElement.text().replace("|","").trim();
         Element stationNameElement = stationElement.selectFirst("span.standardcase");
         stats.setStationName(stationNameElement != null ? stationNameElement.text().replace("|","").trim() : stationText);
+        boolean isFleetCarrier = false;
+        Elements stationIcons = stationElement.select(".stationicon");
+        StationType stationType = StationType.CORIOLIS;
+        for (Element icon : stationIcons) {
+            String style = icon.attr("style");
+            if (style.contains("background-position: -507px")) {
+                isFleetCarrier = true;
+                stationType=StationType.FLEET;
+                break;
+            }
+            else if (style.contains("background-position: -26px")) {
+                stationType=StationType.PORT;
+                break;
+            }
+        }
 
+        stats.setFleetCarrier(isFleetCarrier);
+        stats.setStationType(stationType);
         Element systemNameElement = stationElement.selectFirst("span.uppercase.nowrap");
         if (systemNameElement != null) {
             stats.setSystemName(cleanSpecialSymbols(systemNameElement.text().trim()));
@@ -168,6 +186,7 @@ public class InaraClient {
         String demandText = cleanSpecialSymbols(cols.get(4).text()).replace(",", "").trim();
         stats.setDemand(Integer.parseInt(demandText));
 
+
         // Price
         String priceText = cols.get(5).text().replace("Cr", "").replace(",", "").trim();
         if (priceText.contains(" - ")) {
@@ -184,7 +203,7 @@ public class InaraClient {
             stats.setLastUpdate(cols.get(6).text().trim());
         }
 
-        stats.setCoreMineral(coreMineral);
+        stats.setMineral(mineral);
         return stats;
     }
 
@@ -223,11 +242,11 @@ public class InaraClient {
         return text.replaceAll("[^a-zA-Z0-9\\s\\-.,()\\[\\]|+\\s]", "").trim();
     }
 
-    private String buildCacheKey(CoreMineralType coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) {
-        return coreMineral.name() + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad;
+    private String buildCacheKey(Mineral mineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) {
+        return mineral.getInaraName() + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad;
     }
 
-    public List<InaraCommoditiesStats> fetchMinerMarket(CoreMineralType coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) throws IOException {
+    public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) throws IOException {
         String cacheKey = buildCacheKey(coreMineral, sourceSystem, distance, supplyDemand, largePad);
         return minerMarketCache.get(cacheKey, k -> {
             try {

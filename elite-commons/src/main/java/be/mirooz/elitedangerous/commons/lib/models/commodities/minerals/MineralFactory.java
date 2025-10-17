@@ -18,7 +18,7 @@ public class MineralFactory {
         if (name == null || name.isBlank()) return Optional.empty();
 
         // Core Minerals
-        for (CoreMineralType type : CoreMineralType.values()) {
+        for (MineralType type : MineralType.values()) {
             if (type.getMiningRefinedName().equalsIgnoreCase(name)) return Optional.of(type);
         }
 
@@ -38,15 +38,9 @@ public class MineralFactory {
      */
     public static Optional<Mineral> fromCargoJsonName(String name) {
         if (name == null || name.isBlank()) return Optional.empty();
-
-        // Core Minerals
-        for (CoreMineralType type : CoreMineralType.values()) {
+        for (MineralType type : MineralType.values()) {
             if (type.getCargoJsonName().equalsIgnoreCase(name)) return Optional.of(type);
         }
-
-        // Surface Minerals
-        // for (SurfaceMineralType type : SurfaceMineralType.values()) { ... }
-
         return Optional.empty();
     }
 
@@ -59,7 +53,7 @@ public class MineralFactory {
         if (name == null || name.isBlank()) return Optional.empty();
 
         // Core Minerals
-        for (CoreMineralType type : CoreMineralType.values()) {
+        for (MineralType type : MineralType.values()) {
             if (type.getEdToolName().equalsIgnoreCase(name)) return Optional.of(type);
         }
 
