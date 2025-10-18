@@ -20,8 +20,12 @@
                     <Label fx:id="mineralTargetLabel" text="MINÉRAL CIBLE" styleClass="search-label"/>
                     <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="235" minWidth="235"
                               promptText="Sélectionner un minerais..."/>
-                    <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="true"
-                              onAction="#onFleetCarrierToggle"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="true"
+                                  onAction="#onFleetCarrierToggle"/>
+                        <CheckBox fx:id="padsCheckBox" styleClass="pads-checkbox" selected="false"
+                                  onAction="#onPadsToggle"/>
+                    </HBox>
                     <HBox spacing="5" alignment="CENTER_LEFT">
                         <Label fx:id="maxDistanceLabel" text="DISTANCE MAX" styleClass="search-label"/>
                         <TextField fx:id="maxDistanceTextField" styleClass="elite-textfield" prefWidth="60" minWidth="60"
@@ -87,10 +91,10 @@
         </StackPane>
     </VBox>
 
-    <!-- Contenu principal en deux colonnes -->
+    <!-- Contenu principal en trois colonnes -->
     <HBox spacing="20" styleClass="mining-content">
         <!-- Colonne gauche : Prospecteur actuel avec navigation -->
-        <VBox spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" minHeight="450" prefHeight="450">
+        <VBox spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
             <HBox spacing="15" styleClass="prospector-navigation-header" alignment="CENTER_LEFT">
                 <Label fx:id="currentProspectorLabel" text="PROSPECTEUR ACTUEL" styleClass="mining-section-title"/>
                 <Region HBox.hgrow="ALWAYS"/>
@@ -114,8 +118,8 @@
             </VBox>
         </VBox>
 
-        <!-- Colonne droite : Cargo -->
-        <VBox spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS">
+        <!-- Colonne centrale : Cargo -->
+        <VBox spacing="10" styleClass="mining-center-panel" HBox.hgrow="ALWAYS">
             <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>
 
             <!-- Informations du cargo -->
@@ -137,6 +141,33 @@
 
             <!-- Liste des minéraux dans le cargo -->
             <VBox spacing="5" fx:id="cargoMineralsList" styleClass="cargo-minerals-list" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <!-- Colonne droite : Historique des sessions de minage -->
+        <VBox spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="400" prefWidth="400">
+            <Label fx:id="miningHistoryLabel" text="HISTORIQUE DES SESSIONS" styleClass="mining-section-title"/>
+            
+            <!-- Statistiques globales -->
+            <VBox spacing="5" styleClass="mining-stats-summary">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="totalSessionsLabel" text="0" styleClass="mining-stat-number"/>
+                    <Label fx:id="totalSessionsTitleLabel" text="Sessions" styleClass="mining-stat-label"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="totalDurationLabel" text="0h 0m" styleClass="mining-stat-number"/>
+                    <Label fx:id="totalDurationTitleLabel" text="Durée totale" styleClass="mining-stat-label"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="totalValueLabel" text="0 Cr" styleClass="mining-stat-number"/>
+                    <Label fx:id="totalValueTitleLabel" text="Valeur totale" styleClass="mining-stat-label"/>
+                </HBox>
+            </VBox>
+
+            <!-- Liste des sessions de minage -->
+            <ScrollPane fx:id="miningHistoryScrollPane" styleClass="mining-history-scroll" VBox.vgrow="ALWAYS" 
+                       fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                <VBox fx:id="miningHistoryList" spacing="8" styleClass="mining-history-list"/>
+            </ScrollPane>
         </VBox>
     </HBox>
 </VBox>

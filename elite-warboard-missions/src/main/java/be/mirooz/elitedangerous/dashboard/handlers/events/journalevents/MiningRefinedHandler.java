@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,7 +21,9 @@ import java.util.Optional;
  */
 public class MiningRefinedHandler implements JournalEventHandler {
 
-    CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
+    
     @Override
     public void handle(JsonNode event) {
         try {
@@ -31,7 +34,16 @@ public class MiningRefinedHandler implements JournalEventHandler {
             System.out.printf("⛏️ MiningRefined: %s (%s) at %s%n", typeLocalised, type, timestamp);
 
             Optional<Mineral> mineral = MineralFactory.fromMiningRefinedName(type);
-            mineral.ifPresent(m -> commanderStatus.getShip().addCommodity(m));
+            if (mineral.isPresent()) {
+                Mineral m = mineral.get();
+                commanderStatus.getShip().addCommodity(m);
+                
+                // Ajouter aux statistiques de minage si une session est en cours
+                if (miningStatsService.isMiningInProgress()) {
+                    miningStatsService.addRefinedMineral(m, 1, timestamp);
+                    System.out.printf("📊 Ajouté aux statistiques de minage: %s%n", m.getVisibleName());
+                }
+            }
             
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement MiningRefined: " + e.getMessage());

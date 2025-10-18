@@ -62,6 +62,8 @@
 .mining-panel {
     -fx-background-color: -fx-elite-dark;
     -fx-spacing: 15px;
+    -fx-padding: 15px;
+    -fx-z-index: 10;
 }
 
 .mining-title-bar {
@@ -94,7 +96,19 @@
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
     -fx-fill-height: true;
+    -fx-min-width: 450px;
+    -fx-pref-width: 450px;
     -fx-max-width: 450px;
+}
+
+.mining-center-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-fill-height: true;
 }
 
 .mining-right-panel {
@@ -105,12 +119,9 @@
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
     -fx-fill-height: true;
-    -fx-min-width: 380px;
-    -fx-pref-width: 380px;
-    -fx-max-width: 380px;
-    -fx-min-height: 400px;
-    -fx-pref-height: 400px;
-    -fx-max-height: 400px;
+    -fx-min-width: 480px;
+    -fx-pref-width: 480px;
+    -fx-max-width: 480px;
 }
 
 .mining-section-title {
@@ -185,16 +196,13 @@
     -fx-border-radius: 6px;
     -fx-background-radius: 6px;
     -fx-spacing: 15px;
-    -fx-min-height: 400px;
-    -fx-pref-height: 400px;
-    -fx-max-height: 400px;
+    -fx-min-width: 420px;
+    -fx-pref-width: 420px;
+    -fx-max-width: 420px;
 }
 
 .current-prospector-content {
     -fx-spacing: 10px;
-    -fx-min-height: 350px;
-    -fx-pref-height: 350px;
-    -fx-max-height: 350px;
     -fx-alignment: TOP_LEFT;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -210,9 +218,6 @@
     -fx-border-width: 1px;
     -fx-border-radius: 6px;
     -fx-background-radius: 6px;
-    -fx-min-height: 400px;
-    -fx-pref-height: 400px;
-    -fx-max-height: 400px;
 }
 
 .no-prospector-message {
@@ -929,6 +934,7 @@
 
 /* Pied de page */
 .footer-panel {
+    -fx-z-index: 1;
 }
 
 .footer-text {
@@ -1524,6 +1530,7 @@
     -fx-font-weight: bold;
     -fx-font-size: 15px;   /* 🔸 Augmenté */
     -fx-pref-height: 26px; /* 🔸 Taille verticale plus grande */
+    -fx-max-height: 26px;  /* Limite la hauteur maximale */
 }
 
 .elite-combobox:hover {
@@ -1567,6 +1574,7 @@
     -fx-border-radius: 2;
     -fx-background-radius: 2;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 10, 0, 0, 2);
+    -fx-max-height: 200px; /* Limite la hauteur de la liste déroulante */
 }
 
 
@@ -2553,6 +2561,23 @@
     -fx-padding: 2px;
 }
 
+/* Checkbox Pads */
+.pads-checkbox {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.pads-checkbox .box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-padding: 2px;
+}
+
 /* TextField Elite Dangerous */
 .elite-textfield {
     -fx-background-color: -fx-elite-dark;
@@ -2645,7 +2670,6 @@
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-cursor: hand;
 }
 
 /* Conteneur de la flèche */
@@ -2752,6 +2776,241 @@
 
 .search-button:hover {
     -fx-background-color: -fx-elite-warning;
+}
+
+/* Styles pour l'historique des sessions de minage */
+.mining-history-scroll {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.mining-history-list {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 10px;
+}
+
+.mining-session-card {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.mining-session-card:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+/* Style pour les sessions de minage actives */
+.mining-session-card-current {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 2px;
+}
+
+.mining-session-card-current:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-warning;
+}
+
+/* Indicateur de session actuelle */
+.session-current {
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 170, 0, 0.2);
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 6px;
+}
+
+.session-system {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.session-ring {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.session-info {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+}
+
+.session-value {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.session-date {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 10px;
+    -fx-font-style: italic;
+}
+
+.no-sessions-message {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-alignment: center;
+}
+
+/* Styles pour les statistiques globales */
+.mining-stats-summary {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.mining-stat-number {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.mining-stat-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+}
+
+/* Style pour le tooltip des sessions de minage */
+.mining-session-tooltip {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-family: "Consolas", "Monaco", monospace;
+    -fx-padding: 8px;
+    -fx-max-width: 300px;
+}
+
+/* Styles pour les scrollbars du panneau de mining */
+.mining-history-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.mining-history-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.mining-history-scroll .scroll-bar:vertical .increment-button,
+.mining-history-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .increment-button:hover,
+.mining-history-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.mining-history-scroll .scroll-bar:vertical .increment-arrow,
+.mining-history-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .increment-arrow:hover,
+.mining-history-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Masquer la scrollbar horizontale */
+.mining-history-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* Styles pour les images de prospecteurs (carrées) */
+.prospector-image {
+    -fx-fit-width: 60px;
+    -fx-fit-height: 60px;
+    -fx-preserve-ratio: false;
+}
+
+.prospector-image-large {
+    -fx-fit-width: 80px;
+    -fx-fit-height: 80px;
+    -fx-preserve-ratio: false;
+}
+
+/* Styles pour les cartes de minéraux agrandies */
+.elite-prospector-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 15px;
+    -fx-spacing: 10px;
+    -fx-min-width: 350px;
+    -fx-pref-width: 350px;
+    -fx-max-width: 350px;
+}
+
+.elite-prospector-card-large {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+    -fx-spacing: 12px;
+    -fx-min-width: 400px;
+    -fx-pref-width: 400px;
+    -fx-max-width: 400px;
+}
+
+/* Nombre de minéraux en orange */
+.mineral-count {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
 }
 
 .search-button:disabled {
