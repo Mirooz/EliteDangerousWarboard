@@ -5,7 +5,7 @@ import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidRegistry;
-import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
+import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 
 import java.util.*;
@@ -16,6 +16,14 @@ import static be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType
 
 /**
  * Service pour gérer la logique métier du mining
+ * 
+ * Cette classe contient toute la logique métier liée au mining :
+ * - Calculs de crédits estimés
+ * - Recherche de routes de minage complètes
+ * - Validation et formatage des données
+ * - Gestion des minéraux et du cargo
+ * 
+ * Refactorisé depuis MiningController pour séparer la logique métier de l'interface utilisateur.
  */
 public class MiningService {
 
@@ -23,7 +31,7 @@ public class MiningService {
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final ProspectedAsteroidRegistry prospectedRegistry = ProspectedAsteroidRegistry.getInstance();
-    private final InaraClient inaraClient = new InaraClient();
+    private final InaraService inaraService = InaraService.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
 
     private MiningService() {
@@ -97,28 +105,10 @@ public class MiningService {
      * Recherche le prix d'un minéral avec option Fleet Carrier
      */
     public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad,boolean includeFleetCarrier) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                List<InaraCommoditiesStats> commodities = inaraClient.fetchMinerMarket(
-                        mineral, sourceSystem, maxDistance, minDemand, largePad,includeFleetCarrier);
-
-                if (commodities == null || commodities.isEmpty()) {
-                    return Optional.empty();
-                }
-                Optional<InaraCommoditiesStats> bestOpt = commodities.stream()
-                        .filter(c -> c.getSystemDistance() <= maxDistance)
-                        .filter(c -> c.isFleetCarrier() ? minDemand<= c.getDemand() : minDemand*4 <= c.getDemand())
-                        .max(Comparator.comparingDouble(InaraCommoditiesStats::getPrice));
-
-                bestOpt.ifPresent(best -> mineral.setPrice(best.getPrice()));
-
-                return bestOpt;
-
-            } catch (Exception e) {
-                return Optional.empty();
-            }
-        });
+        return inaraService.fetchMinerMarket(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
     }
+
+
 
 
     /**
@@ -149,6 +139,77 @@ public class MiningService {
     }
 
     /**
+     * Calcule les CR estimés basés sur les minéraux dans le cargo
+     */
+    public long calculateEstimatedCredits() {
+        try {
+            long totalCredits = 0;
+            Map<Mineral, Integer> minerals = getMinerals();
+            if (minerals != null && !minerals.isEmpty()) {
+                for (Map.Entry<Mineral, Integer> entry : minerals.entrySet()) {
+                    Mineral mineralName = entry.getKey();
+                    Integer quantity = entry.getValue();
+
+                    if (quantity != null && quantity > 0) {
+                        totalCredits += (long) mineralName.getPrice() * quantity;
+                    }
+                }
+            }
+            return totalCredits;
+        } catch (Exception e) {
+            // En cas d'erreur, retourner 0
+            return 0;
+        }
+    }
+
+    /**
+     * Recherche une route de minage complète pour un minéral spécifique
+     */
+    public CompletableFuture<MiningRouteResult> searchMiningRoute(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
+        return findMineralPrice(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier)
+                .thenCompose(priceOpt -> {
+                    if (priceOpt.isPresent()) {
+                        InaraCommoditiesStats bestMarket = priceOpt.get();
+                        return getEdToolsService().findMiningHotspots(bestMarket.getSystemName(), mineral)
+                                .thenApply(hotspots -> {
+                                    MiningHotspot bestHotspot = null;
+                                    if (hotspots != null && !hotspots.isEmpty()) {
+                                        bestHotspot = hotspots.stream()
+                                                .min(Comparator.comparingDouble(MiningHotspot::getDistanceFromReference))
+                                                .orElse(hotspots.get(0));
+                                    }
+                                    return new MiningRouteResult(bestMarket, bestHotspot);
+                                });
+                    } else {
+                        return CompletableFuture.completedFuture(new MiningRouteResult(null, null));
+                    }
+                });
+    }
+
+    /**
+     * Récupère la distance maximale depuis un champ de saisie avec validation
+     */
+    public int getMaxDistanceFromField(String distanceText, int defaultDistance) {
+        if (distanceText != null && !distanceText.isEmpty()) {
+            try {
+                int distance = Integer.parseInt(distanceText);
+                return Math.max(1, Math.min(distance, 1000)); // Limiter entre 1 et 1000
+            } catch (NumberFormatException e) {
+                return defaultDistance; // Valeur par défaut
+            }
+        }
+        return defaultDistance; // Valeur par défaut
+    }
+
+    /**
+     * Valide et nettoie le texte de distance pour ne garder que les chiffres
+     */
+    public String validateDistanceText(String text) {
+        if (text == null) return "";
+        return text.replaceAll("[^\\d]", "");
+    }
+
+    /**
      * Formate un prix avec des séparateurs de milliers
      */
     public String formatPrice(int price) {
@@ -156,5 +217,34 @@ public class MiningService {
     }
     public String formatPrice(long price) {
         return String.format("%,d", price).replace(",", ".");
+    }
+
+    /**
+     * Classe interne pour encapsuler le résultat d'une recherche de route de minage
+     */
+    public static class MiningRouteResult {
+        private final InaraCommoditiesStats market;
+        private final MiningHotspot hotspot;
+
+        public MiningRouteResult(InaraCommoditiesStats market, MiningHotspot hotspot) {
+            this.market = market;
+            this.hotspot = hotspot;
+        }
+
+        public InaraCommoditiesStats getMarket() {
+            return market;
+        }
+
+        public MiningHotspot getHotspot() {
+            return hotspot;
+        }
+
+        public boolean hasMarket() {
+            return market != null;
+        }
+
+        public boolean hasHotspot() {
+            return hotspot != null;
+        }
     }
 }

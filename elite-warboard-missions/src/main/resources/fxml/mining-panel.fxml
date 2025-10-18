@@ -25,9 +25,9 @@
                     <HBox spacing="5" alignment="CENTER_LEFT">
                         <Label fx:id="maxDistanceLabel" text="DISTANCE MAX" styleClass="search-label"/>
                         <TextField fx:id="maxDistanceTextField" styleClass="elite-textfield" prefWidth="60" minWidth="60"
-                                   text="100" onAction="#onMaxDistanceChanged"/>
+                                   text="100"/>
                         <Label fx:id="distanceUnitLabel" text="AL" styleClass="search-label"/>
-                    </HBox>
+                    </HBox> 
                 </VBox>
 
                 <!-- Prix -->
@@ -72,6 +72,10 @@
                     <ImageView fx:id="stationTypeImageView" styleClass="station-type-icon" translateY="-20"
                                fitWidth="100" fitHeight="100"
                                preserveRatio="true"/>
+                    <VBox spacing="2" alignment="CENTER_LEFT" translateY="-20">
+                        <Label fx:id="headerStationDistanceTitleLabel" text="Distance" styleClass="search-label"/>
+                        <Label fx:id="headerStationDistanceLabel" text="--" styleClass="location-system"/>
+                    </VBox>
                 </HBox>
             </HBox>
 

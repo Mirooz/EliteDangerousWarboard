@@ -17,7 +17,6 @@ import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationType;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -32,7 +31,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -41,6 +39,10 @@ import java.util.*;
 
 /**
  * Contrôleur pour le panneau de mining - Refactorisé
+ * 
+ * Cette classe a été refactorisée pour séparer la logique métier de la logique d'interface utilisateur.
+ * La logique métier (calculs, recherches de routes, etc.) a été déplacée vers MiningService.
+ * Ce contrôleur se concentre maintenant uniquement sur la gestion de l'interface utilisateur.
  */
 public class MiningController implements Initializable, IRefreshable {
 
@@ -84,6 +86,10 @@ public class MiningController implements Initializable, IRefreshable {
     private Label headerStationNameLabel;
     @FXML
     private Label headerStationSystemLabel;
+    @FXML
+    private Label headerStationDistanceLabel;
+    @FXML
+    private Label headerStationDistanceTitleLabel;
     @FXML
     private ImageView stationTypeImageView;
 
@@ -328,7 +334,7 @@ public class MiningController implements Initializable, IRefreshable {
             limpetsCountLabel.setText(String.valueOf(miningService.getLimpetsCount()));
 
             // Calculer et afficher les CR estimés
-            long estimatedCredits = calculateEstimatedCredits();
+            long estimatedCredits = miningService.calculateEstimatedCredits();
             estimatedCreditsLabel.setText(miningService.formatPrice(estimatedCredits));
 
             // Afficher les minéraux en utilisant le composant
@@ -338,29 +344,6 @@ public class MiningController implements Initializable, IRefreshable {
         });
     }
 
-    /**
-     * Calcule les CR estimés basés sur les minéraux dans le cargo
-     */
-    private long calculateEstimatedCredits() {
-        try {
-            long totalCredits = 0;
-            Map<Mineral, Integer> minerals = miningService.getMinerals();
-            if (minerals != null && !minerals.isEmpty()) {
-                for (Map.Entry<Mineral, Integer> entry : minerals.entrySet()) {
-                    Mineral mineralName = entry.getKey();
-                    Integer quantity = entry.getValue();
-
-                    if (quantity != null && quantity > 0) {
-                        totalCredits += (long) mineralName.getPrice() * quantity;
-                    }
-                }
-            }
-            return totalCredits;
-        } catch (Exception e) {
-            // En cas d'erreur, retourner 0
-            return 0;
-        }
-    }
 
     /**
      * Initialise les labels du header
@@ -415,6 +398,7 @@ public class MiningController implements Initializable, IRefreshable {
             headerDistanceLabel.setText("--");
             headerStationNameLabel.setText(getTranslation("mining.undefined_female"));
             headerStationSystemLabel.setText("");
+            headerStationDistanceLabel.setText("--");
             // Effacer l'image de la station
             stationTypeImageView.setImage(null);
         });
@@ -592,54 +576,43 @@ public class MiningController implements Initializable, IRefreshable {
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
 
-        // Rechercher le prix et les informations de route
-        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,true,includeFleetCarrier)
-                .thenAccept(priceOpt -> {
-                    if (priceOpt.isPresent()) {
-                        InaraCommoditiesStats bestMarket = priceOpt.get();
-                        // Rechercher les hotspots de minage
-                        miningService.getEdToolsService().findMiningHotspots(bestMarket.getSystemName(), mineral)
-                                .thenAccept(hotspots -> Platform.runLater(() -> {
-                                    // Masquer l'indicateur de chargement
-                                    setLoadingVisible(false);
-                                    
-                                    headerPriceLabel.setText(String.format("%s Cr ", miningService.formatPrice(bestMarket.getPrice())));
-                                    headerDemandLabel.setText(String.format("%d T", bestMarket.getDemand()));
-                                    headerStationNameLabel.setText(bestMarket.getStationName());
-                                    headerStationSystemLabel.setText(bestMarket.getSystemName());
-                                    // Mettre à jour l'image du type de station
-                                    updateStationTypeImage(bestMarket.getStationType());
-                                    if (hotspots != null && !hotspots.isEmpty()) {
-                                        // Prendre le hotspot le plus proche
-                                        MiningHotspot bestHotspot = hotspots.stream()
-                                                .min(Comparator.comparingDouble(MiningHotspot::getDistanceFromReference))
-                                                .orElse(hotspots.get(0));
-
-                                        headerRingNameLabel.setText(bestHotspot.getRingName());
-                                        headerRingSystemLabel.setText(bestHotspot.getSystemName());
-                                        headerDistanceLabel.setText(String.format("%.1f %s", bestHotspot.getDistanceFromReference(), getTranslation("search.distance.unit")));
-
-                                    } else {
-                                        headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
-                                        headerRingSystemLabel.setText("");
-                                        headerDistanceLabel.setText("--");
-                                    }
-                                }));
-                    } else {
-                        Platform.runLater(() -> {
-                            // Masquer l'indicateur de chargement
-                            setLoadingVisible(false);
-                            
-                            headerPriceLabel.setText(getTranslation("mining.price_not_available"));
-                            headerDemandLabel.setText("--");
-                            headerRingNameLabel.setText(getTranslation("mining.no_market_found"));
+        // Utiliser la nouvelle méthode du service pour rechercher la route complète
+        miningService.searchMiningRoute(mineral, sourceSystem, maxDistance, minDemand, true, includeFleetCarrier)
+                .thenAccept(routeResult -> Platform.runLater(() -> {
+                    // Masquer l'indicateur de chargement
+                    setLoadingVisible(false);
+                    
+                    if (routeResult.hasMarket()) {
+                        InaraCommoditiesStats bestMarket = routeResult.getMarket();
+                        headerPriceLabel.setText(String.format("%s Cr ", miningService.formatPrice(bestMarket.getPrice())));
+                        headerDemandLabel.setText(String.format("%d T", bestMarket.getDemand()));
+                        headerStationNameLabel.setText(bestMarket.getStationName());
+                        headerStationSystemLabel.setText(bestMarket.getSystemName());
+                        // Afficher la distance de la station depuis le système actuel
+                        headerStationDistanceLabel.setText(String.format("%.1f %s", bestMarket.getSystemDistance(), getTranslation("search.distance.unit")));
+                        // Mettre à jour l'image du type de station
+                        updateStationTypeImage(bestMarket.getStationType());
+                        
+                        if (routeResult.hasHotspot()) {
+                            MiningHotspot bestHotspot = routeResult.getHotspot();
+                            headerRingNameLabel.setText(bestHotspot.getRingName());
+                            headerRingSystemLabel.setText(bestHotspot.getSystemName());
+                            headerDistanceLabel.setText(String.format("%.1f %s", bestHotspot.getDistanceFromReference(), getTranslation("search.distance.unit")));
+                        } else {
+                            headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
                             headerRingSystemLabel.setText("");
                             headerDistanceLabel.setText("--");
-                            headerStationNameLabel.setText(getTranslation("mining.no_station_found"));
-                            headerStationSystemLabel.setText("");
-                        });
+                        }
+                    } else {
+                        headerPriceLabel.setText(getTranslation("mining.price_not_available"));
+                        headerDemandLabel.setText("--");
+                        headerRingNameLabel.setText(getTranslation("mining.no_market_found"));
+                        headerRingSystemLabel.setText("");
+                        headerDistanceLabel.setText("--");
+                        headerStationNameLabel.setText(getTranslation("mining.no_station_found"));
+                        headerStationSystemLabel.setText("");
                     }
-                })
+                }))
                 .exceptionally(throwable -> {
                     Platform.runLater(() -> {
                         // Masquer l'indicateur de chargement
@@ -712,24 +685,44 @@ public class MiningController implements Initializable, IRefreshable {
         if (distanceUnitLabel != null) {
             distanceUnitLabel.setText(getTranslation("mining.distance_unit"));
         }
+        if (headerStationDistanceTitleLabel != null) {
+            headerStationDistanceTitleLabel.setText(getTranslation("mining.station_distance_from_system"));
+        }
+        
+        // Mettre à jour les unités de distance dans les labels existants
+        updateDistanceUnits();
     }
-
+    
+    /**
+     * Met à jour les unités de distance dans les labels qui contiennent déjà des valeurs
+     */
+    private void updateDistanceUnits() {
+        // Mettre à jour la distance de l'anneau
+        if (headerDistanceLabel != null && !headerDistanceLabel.getText().equals("--")) {
+            String currentText = headerDistanceLabel.getText();
+            if (currentText.contains("AL") || currentText.contains("LY")) {
+                // Remplacer simplement l'unité sans toucher au nombre
+                String newText = currentText.replaceAll("AL|LY", getTranslation("search.distance.unit"));
+                headerDistanceLabel.setText(newText);
+            }
+        }
+        
+        // Mettre à jour la distance de la station
+        if (headerStationDistanceLabel != null && !headerStationDistanceLabel.getText().equals("--")) {
+            String currentText = headerStationDistanceLabel.getText();
+            if (currentText.contains("AL") || currentText.contains("LY")) {
+                // Remplacer simplement l'unité sans toucher au nombre
+                String newText = currentText.replaceAll("AL|LY", getTranslation("search.distance.unit"));
+                headerStationDistanceLabel.setText(newText);
+            }
+        }
+    }
+    
     /**
      * Récupère une traduction depuis le LocalizationService
      */
     private String getTranslation(String key) {
         return localizationService.getString(key);
-    }
-    
-    /**
-     * Récupère une traduction avec paramètres depuis le LocalizationService
-     */
-    private String getTranslation(String key, String... params) {
-        String translation = localizationService.getString(key);
-        for (int i = 0; i < params.length; i++) {
-            translation = translation.replace("{" + i + "}", params[i]);
-        }
-        return translation;
     }
 
     /**
@@ -765,15 +758,8 @@ public class MiningController implements Initializable, IRefreshable {
      * Récupère la distance maximale depuis le champ de saisie
      */
     private int getMaxDistanceFromField() {
-        if (maxDistanceTextField != null && !maxDistanceTextField.getText().isEmpty()) {
-            try {
-                int distance = Integer.parseInt(maxDistanceTextField.getText());
-                return Math.max(1, Math.min(distance, 1000)); // Limiter entre 1 et 1000
-            } catch (NumberFormatException e) {
-                return MAX_DISTANCE; // Valeur par défaut
-            }
-        }
-        return MAX_DISTANCE; // Valeur par défaut
+        String distanceText = maxDistanceTextField != null ? maxDistanceTextField.getText() : "";
+        return miningService.getMaxDistanceFromField(distanceText, MAX_DISTANCE);
     }
 
     /**
@@ -783,26 +769,25 @@ public class MiningController implements Initializable, IRefreshable {
         if (maxDistanceTextField != null) {
             // Valider que la valeur est numérique
             maxDistanceTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-                if (!newValue.matches("\\d*")) {
-                    maxDistanceTextField.setText(newValue.replaceAll("[^\\d]", ""));
+                String validatedText = miningService.validateDistanceText(newValue);
+                if (!validatedText.equals(newValue)) {
+                    maxDistanceTextField.setText(validatedText);
+                }
+            });
+            
+            // Écouter la perte de focus pour recharger le minéral
+            maxDistanceTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue && mineralComboBox.getValue() != null) {
+                    // Perte de focus : recharger le minéral sélectionné
+                    MineralListWrapper selectedWrapper = mineralComboBox.getValue();
+                    if (selectedWrapper.getMineral() != null) {
+                        searchMiningRouteForMineral(selectedWrapper.getMineral(), fleetCarrierCheckBox.isSelected());
+                    }
                 }
             });
         }
     }
 
-    /**
-     * Gère le changement de distance maximale
-     */
-    @FXML
-    private void onMaxDistanceChanged() {
-        if (mineralComboBox.getValue() != null) {
-            // Rechercher pour le minéral sélectionné avec la nouvelle distance
-            MineralListWrapper selectedWrapper = mineralComboBox.getValue();
-            if (selectedWrapper.getMineral() != null) {
-                searchMiningRouteForMineral(selectedWrapper.getMineral(), fleetCarrierCheckBox.isSelected());
-            }
-        }
-    }
 
     /**
      * Gère le toggle du checkbox Fleet Carrier
