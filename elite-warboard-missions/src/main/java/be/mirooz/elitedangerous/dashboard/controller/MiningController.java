@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMethod;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CargoInfoComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.ProspectorCardComponent;
@@ -15,6 +16,7 @@ import be.mirooz.elitedangerous.dashboard.model.mining.MiningStat;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationType;
@@ -42,7 +44,7 @@ import java.util.*;
 
 /**
  * Contrôleur pour le panneau de mining - Refactorisé
- * 
+ * <p>
  * Cette classe a été refactorisée pour séparer la logique métier de la logique d'interface utilisateur.
  * La logique métier (calculs, recherches de routes, etc.) a été déplacée vers MiningService.
  * Ce contrôleur se concentre maintenant uniquement sur la gestion de l'interface utilisateur.
@@ -162,6 +164,8 @@ public class MiningController implements Initializable, IRefreshable {
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
 
+
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
     // Images pour les icônes
     private Image laserImage;
     private Image coreImage;
@@ -172,6 +176,7 @@ public class MiningController implements Initializable, IRefreshable {
         loadImages();
 
         updateProspectors();
+        initializePricePreference();
         initializeMineralComboBox();
         initializeFleetCarrierCheckBox();
         initializeMaxDistanceField();
@@ -186,6 +191,22 @@ public class MiningController implements Initializable, IRefreshable {
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }
 
+    private void initializePricePreference() {
+        System.out.println("📊 Chargement des prix des minéraux depuis les préférences...");
+        for (MineralType mineralType : MineralType.values()) {
+            String priceStr = preferencesService.getPreference("mineral.price." + mineralType.getCargoJsonName(), null);
+            if (priceStr != null) {
+                try {
+                    int price = Integer.parseInt(priceStr);
+                    mineralType.setPrice(price);
+                    System.out.printf("💰 Prix chargé pour %s: %d Cr (cache pré-chargé)%n", mineralType.getVisibleName(), price);
+                } catch (NumberFormatException e) {
+                    System.err.printf("❌ Erreur lors du parsing du prix pour %s: %s%n", mineralType.getCargoJsonName(), priceStr);
+                }
+            }
+        }
+    }
+
     /**
      * Charge les images pour les icônes
      */
@@ -195,7 +216,7 @@ public class MiningController implements Initializable, IRefreshable {
             coreImage = new Image(getClass().getResourceAsStream("/images/core.png"));
         } catch (Exception e) {
             laserImage = null;
-            coreImage=null;
+            coreImage = null;
         }
     }
 
@@ -380,7 +401,7 @@ public class MiningController implements Initializable, IRefreshable {
     private void initializeHeaderLabels() {
         clearHeaderLabels();
     }
-    
+
     /**
      * Initialise les gestionnaires de clic pour copier les noms de systèmes
      */
@@ -388,7 +409,7 @@ public class MiningController implements Initializable, IRefreshable {
         // Les gestionnaires de clic sont maintenant définis directement dans le FXML
         // via onMouseClicked="#onRingContainerClicked" et onMouseClicked="#onStationContainerClicked"
     }
-    
+
     /**
      * Gestionnaire de clic pour le conteneur de l'anneau (nom + système)
      */
@@ -401,7 +422,7 @@ public class MiningController implements Initializable, IRefreshable {
             popupManager.showPopup(getTranslation("system.copied"), event.getSceneX(), event.getSceneY(), stage);
         }
     }
-    
+
     /**
      * Gestionnaire de clic pour le conteneur de la station (nom + système)
      */
@@ -432,7 +453,7 @@ public class MiningController implements Initializable, IRefreshable {
             stationTypeImageView.setImage(null);
         });
     }
-    
+
     /**
      * Gère la visibilité de l'indicateur de chargement
      */
@@ -440,7 +461,7 @@ public class MiningController implements Initializable, IRefreshable {
         Platform.runLater(() -> {
             loadingIndicator.setVisible(visible);
             loadingIndicator.setManaged(visible);
-            
+
             if (visible) {
                 // Pendant le chargement : masquer tout sauf la ComboBox
                 searchContentHBox.getChildren().forEach(child -> {
@@ -458,7 +479,7 @@ public class MiningController implements Initializable, IRefreshable {
             }
         });
     }
-    
+
     /**
      * Met à jour l'image du type de station
      */
@@ -483,20 +504,22 @@ public class MiningController implements Initializable, IRefreshable {
      * Initialise le ComboBox avec tous les minéraux organisés par catégorie
      */
     private void initializeMineralComboBox() {
-        mineralComboBox.setItems(MineralListWrapper.createOrganizedMineralsList());
+        var items = MineralListWrapper.createOrganizedMineralsList();
+        mineralComboBox.setItems(items);
         mineralComboBox.setPromptText(getTranslation("mining.mineral_placeholder"));
 
+        // 1️⃣ Préchargement des prix une seule fois
+        items.stream()
+                .filter(i -> !i.isSeparator())
+                .forEach(this::loadMineralPriceSafe); // null car pas besoin de cellule
         mineralComboBox.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(MineralListWrapper item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(null);
                 setGraphic(null);
-                setStyle("");
-                if (empty || item == null) {
-                    setDisable(false);
-                    return;
-                }
+
+                if (empty || item == null) return;
 
                 if (item.isSeparator()) {
                     Object icon = createCategoryIcon(item.getMiningMethod());
@@ -511,15 +534,17 @@ public class MiningController implements Initializable, IRefreshable {
                     return;
                 }
 
-                // Élément minéral
                 setDisable(false);
-                // Texte provisoire (au cas où l'async arrive plus tard)
-                setText(item.getMineral().getTitleName());
-
-                loadMineralPriceSafe(item, this);
+                // 🔹 On affiche le texte initial
+                setText(item.getMineral().getTitleName() + " - " + item.getDisplayPriceFormatted());
+                item.displayPriceProperty().addListener((obs, oldV, newV) -> {
+                    // ⚠️ On vérifie que la cellule affiche encore le bon item (sinon, cellule recyclée)
+                    if (getItem() == item) {
+                        setText(item.getMineral().getTitleName() + " - " + newV);
+                    }
+                });
             }
         });
-
         // Bouton (valeur sélectionnée)
         mineralComboBox.setButtonCell(new ListCell<>() {
             @Override
@@ -552,37 +577,36 @@ public class MiningController implements Initializable, IRefreshable {
         });
     }
 
-    /** Empêche l'async d'écrire dans une cellule réutilisée. */
-    private void loadMineralPriceSafe(MineralListWrapper owningItem, ListCell<MineralListWrapper> cell) {
-        Mineral mineral = owningItem.getMineral();
+    /**
+     * Empêche l'async d'écrire dans une cellule réutilisée.
+     */
+    private void loadMineralPriceSafe(MineralListWrapper item) {
+        Mineral mineral = item.getMineral();
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
+        if (item.getMineral().getPrice()==0) {
+            miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
+                            padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
+                    .thenAccept(priceOpt -> Platform.runLater(() -> {
+                        // 🔹 On ne touche pas à la cellule ici !
+                        priceOpt.ifPresentOrElse(
+                                price -> item.setDisplayPrice(price.getPrice()),
+                                () -> item.setDisplayPriceError(getTranslation("mining.price_error"))
+                        );
+                        // 🔁 Demande à la ComboBox de se redessiner
+                    }))
+                    .exceptionally(ex -> {
+                        Platform.runLater(() -> {
+                            item.setDisplayPriceError(getTranslation("mining.price_error"));
 
-        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand, padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
-                .thenAccept(priceOpt -> Platform.runLater(() -> {
-                    // Si la cellule a été recyclée, on ne touche à rien
-                    if (cell.getItem() != owningItem || owningItem.isSeparator()) return;
-
-                    if (priceOpt.isPresent()) {
-                        var best = priceOpt.get();
-                        cell.setGraphic(null);
-                        cell.setText(mineral.getTitleName() + " - " + miningService.formatPrice(best.getPrice()) + " Cr");
-                        updateCargo();
-                        updateMiningHistory();
-                    } else {
-                        cell.setGraphic(null);
-                        cell.setText(mineral.getTitleName() + " - " + getTranslation("mining.price_not_available"));
-                    }
-                }))
-                .exceptionally(ex -> {
-                    Platform.runLater(() -> {
-                        if (cell.getItem() != owningItem || owningItem.isSeparator()) return;
-                        cell.setGraphic(null);
-                        cell.setText(mineral.getTitleName() + " - " + getTranslation("mining.price_error"));
+                        });
+                        return null;
                     });
-                    return null;
-                });
+        }
+        else{
+            item.setDisplayPrice(item.getMineral().getPrice());
+        }
     }
 
     /**
@@ -591,20 +615,20 @@ public class MiningController implements Initializable, IRefreshable {
     private void searchMiningRouteForMineral(Mineral mineral) {
         // Afficher l'indicateur de chargement
         setLoadingVisible(true);
-        
+
         // Effacer les labels
         clearHeaderLabels();
-        
+
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
 
         // Utiliser la nouvelle méthode du service pour rechercher la route complète
-        miningService.searchMiningRoute(mineral, sourceSystem, maxDistance, minDemand,  padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
+        miningService.searchMiningRoute(mineral, sourceSystem, maxDistance, minDemand, padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
                 .thenAccept(routeResult -> Platform.runLater(() -> {
                     // Masquer l'indicateur de chargement
                     setLoadingVisible(false);
-                    
+
                     if (routeResult.hasMarket()) {
                         InaraCommoditiesStats bestMarket = routeResult.getMarket();
                         headerPriceLabel.setText(String.format("%s Cr ", miningService.formatPrice(bestMarket.getPrice())));
@@ -641,7 +665,7 @@ public class MiningController implements Initializable, IRefreshable {
                     Platform.runLater(() -> {
                         // Masquer l'indicateur de chargement
                         setLoadingVisible(false);
-                        
+
                         headerPriceLabel.setText(getTranslation("mining.price_error"));
                         headerDemandLabel.setText("--");
                         headerRingNameLabel.setText(getTranslation("mining.search_error"));
@@ -712,7 +736,7 @@ public class MiningController implements Initializable, IRefreshable {
         if (headerStationDistanceTitleLabel != null) {
             headerStationDistanceTitleLabel.setText(getTranslation("mining.station_distance_from_system"));
         }
-        
+
         // Mettre à jour les labels de l'historique des sessions
         if (miningHistoryLabel != null) {
             miningHistoryLabel.setText(getTranslation("mining.history_sessions"));
@@ -726,11 +750,11 @@ public class MiningController implements Initializable, IRefreshable {
         if (totalValueTitleLabel != null) {
             totalValueTitleLabel.setText(getTranslation("mining.total_value"));
         }
-        
+
         // Mettre à jour les unités de distance dans les labels existants
         updateDistanceUnits();
     }
-    
+
     /**
      * Met à jour les unités de distance dans les labels qui contiennent déjà des valeurs
      */
@@ -744,7 +768,7 @@ public class MiningController implements Initializable, IRefreshable {
                 headerDistanceLabel.setText(newText);
             }
         }
-        
+
         // Mettre à jour la distance de la station
         if (headerStationDistanceLabel != null && !headerStationDistanceLabel.getText().equals("--")) {
             String currentText = headerStationDistanceLabel.getText();
@@ -755,7 +779,7 @@ public class MiningController implements Initializable, IRefreshable {
             }
         }
     }
-    
+
     /**
      * Récupère une traduction depuis le LocalizationService
      */
@@ -775,12 +799,12 @@ public class MiningController implements Initializable, IRefreshable {
                 fleetImageView.setFitWidth(16);
                 fleetImageView.setFitHeight(16);
                 fleetImageView.setPreserveRatio(true);
-                
+
                 // Créer un HBox pour contenir l'image et le texte
                 HBox contentBox = new HBox(5);
                 contentBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                 contentBox.getChildren().addAll(fleetImageView, new Label("Fleet Carrier"));
-                
+
                 // Définir le contenu du checkbox
                 fleetCarrierCheckBox.setGraphic(contentBox);
                 fleetCarrierCheckBox.setTooltip(new TooltipComponent(getTranslation("mining.fleet_carrier_hint")));
@@ -790,7 +814,7 @@ public class MiningController implements Initializable, IRefreshable {
                 fleetCarrierCheckBox.setTooltip(new TooltipComponent(getTranslation("mining.fleet_carrier_hint")));
             }
         }
-        
+
         // Initialiser le checkbox Pads
         if (padsCheckBox != null) {
             padsCheckBox.setText("Large pads");
@@ -818,7 +842,7 @@ public class MiningController implements Initializable, IRefreshable {
                     maxDistanceTextField.setText(validatedText);
                 }
             });
-            
+
             // Écouter la perte de focus pour recharger le minéral
             maxDistanceTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
                 if (!newValue && mineralComboBox.getValue() != null) {
@@ -846,7 +870,7 @@ public class MiningController implements Initializable, IRefreshable {
             }
         }
     }
-    
+
     /**
      * Gère le toggle du checkbox Pads
      */
@@ -867,7 +891,7 @@ public class MiningController implements Initializable, IRefreshable {
     private void initializeMiningHistory() {
         updateMiningHistory();
     }
-    
+
     /**
      * Met à jour l'historique des sessions de minage
      */
@@ -878,41 +902,41 @@ public class MiningController implements Initializable, IRefreshable {
             totalSessionsLabel.setText(String.valueOf(globalStats.getTotalSessions()));
             totalDurationLabel.setText(formatDuration(globalStats.getTotalDurationMinutes()));
             totalValueLabel.setText(miningService.formatPrice(globalStats.getTotalValue()) + " Cr");
-            
+
             // Mettre à jour la liste des sessions
             updateMiningHistoryList();
         });
     }
-    
+
     /**
      * Met à jour la liste des sessions de minage
      */
     private void updateMiningHistoryList() {
         miningHistoryList.getChildren().clear();
-        
-        List<be.mirooz.elitedangerous.dashboard.model.mining.MiningStat> completedStats = 
+
+        List<be.mirooz.elitedangerous.dashboard.model.mining.MiningStat> completedStats =
                 miningStatsService.getCompletedMiningStats();
-        
+
         if (completedStats.isEmpty()) {
             Label noSessionsLabel = new Label("Aucune session terminée");
             noSessionsLabel.getStyleClass().add("no-sessions-message");
             miningHistoryList.getChildren().add(noSessionsLabel);
             return;
         }
-        
+
         // Créer une nouvelle liste mutable pour pouvoir trier
-        List<be.mirooz.elitedangerous.dashboard.model.mining.MiningStat> sortedStats = 
+        List<be.mirooz.elitedangerous.dashboard.model.mining.MiningStat> sortedStats =
                 new ArrayList<>(completedStats);
-        
+
         // Trier par date de début (plus récent en premier)
         sortedStats.sort((a, b) -> b.getStartDate().compareTo(a.getStartDate()));
-        
+
         for (MiningStat stat : sortedStats) {
             VBox sessionCard = createMiningSessionCard(stat);
             miningHistoryList.getChildren().add(sessionCard);
         }
     }
-    
+
     /**
      * Crée une carte pour une session de minage
      */
@@ -923,17 +947,17 @@ public class MiningController implements Initializable, IRefreshable {
         } else {
             card.getStyleClass().add("mining-session-card");
         }
-        
+
         // En-tête avec système et anneau
         HBox header = new HBox(10);
         header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        
+
         Label systemLabel = new Label(stat.getSystemName());
         systemLabel.getStyleClass().add("session-system");
-        
+
         Label ringLabel = new Label(shortenRingName(stat.getRingName(), stat.getSystemName()));
         ringLabel.getStyleClass().add("session-ring");
-        
+
         // Ajouter un indicateur "CURRENT" si la session est active
         if (stat.isActive()) {
             Label currentLabel = new Label(getTranslation("mining.current_session"));
@@ -942,74 +966,74 @@ public class MiningController implements Initializable, IRefreshable {
         } else {
             header.getChildren().addAll(systemLabel, ringLabel);
         }
-        
+
         // Informations de la session
         VBox info = new VBox(3);
-        
+
         // Durée
         Label durationLabel = new Label("Durée: " + formatDuration(stat.getDurationInMinutes()));
         durationLabel.getStyleClass().add("session-info");
-        
+
         // Nombre de minéraux
         int totalMinerals = stat.getRefinedMinerals().size();
         Label mineralsLabel = new Label("Minéraux: " + totalMinerals);
         mineralsLabel.getStyleClass().add("session-info");
-        
+
         // Valeur
         Label valueLabel = new Label("Valeur: " + miningService.formatPrice(stat.getTotalValue()) + " Cr");
         valueLabel.getStyleClass().add("session-value");
-        
+
         info.getChildren().addAll(durationLabel, mineralsLabel, valueLabel);
-        
+
         // Date
         Label dateLabel = new Label(formatDate(stat.getStartDate()));
         dateLabel.getStyleClass().add("session-date");
-        
+
         card.getChildren().addAll(header, info, dateLabel);
-        
+
         // Ajouter un tooltip avec le détail des minéraux
         Tooltip tooltip = createMineralsTooltip(stat);
         Tooltip.install(card, tooltip);
-        
+
         return card;
     }
-    
+
     /**
      * Crée un tooltip avec le détail des minéraux raffinés
      */
     private Tooltip createMineralsTooltip(be.mirooz.elitedangerous.dashboard.model.mining.MiningStat stat) {
         StringBuilder tooltipText = new StringBuilder();
         tooltipText.append("Minéraux raffinés:\n");
-        
+
         Map<Mineral, Integer> minerals = stat.getTotalRefinedMinerals();
-        
+
         if (minerals.isEmpty()) {
             tooltipText.append("Aucun minéral raffiné");
         } else {
             minerals.entrySet().stream()
-                .sorted(Map.Entry.<Mineral, Integer>comparingByValue().reversed())
-                .forEach(entry -> {
-                    tooltipText.append("• ")
-                             .append(entry.getKey().getVisibleName())
-                             .append(": ")
-                             .append(entry.getValue())
-                             .append(" unités\n");
-                });
-            
+                    .sorted(Map.Entry.<Mineral, Integer>comparingByValue().reversed())
+                    .forEach(entry -> {
+                        tooltipText.append("• ")
+                                .append(entry.getKey().getVisibleName())
+                                .append(": ")
+                                .append(entry.getValue())
+                                .append(" unités\n");
+                    });
+
             // Supprimer le dernier \n
             if (tooltipText.length() > 0) {
                 tooltipText.setLength(tooltipText.length() - 1);
             }
         }
-        
+
         Tooltip tooltip = new TooltipComponent(tooltipText.toString());
         tooltip.getStyleClass().add("mining-session-tooltip");
         tooltip.setShowDelay(javafx.util.Duration.millis(500));
         tooltip.setHideDelay(javafx.util.Duration.millis(200));
-        
+
         return tooltip;
     }
-    
+
     /**
      * Formate une durée en minutes en heures et minutes
      */
@@ -1018,14 +1042,14 @@ public class MiningController implements Initializable, IRefreshable {
         long remainingMinutes = minutes % 60;
         return String.format("%dh %dm", hours, remainingMinutes);
     }
-    
+
     /**
      * Formate une date pour l'affichage
      */
     private String formatDate(java.time.LocalDateTime date) {
         return date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
-    
+
     /**
      * Raccourcit le nom de l'anneau en supprimant la répétition du nom du système
      */
@@ -1033,7 +1057,7 @@ public class MiningController implements Initializable, IRefreshable {
         if (ringName == null || systemName == null) {
             return ringName;
         }
-        
+
         // Si le nom de l'anneau commence par le nom du système, le supprimer
         if (ringName.startsWith(systemName)) {
             String shortened = ringName.substring(systemName.length()).trim();
@@ -1043,7 +1067,7 @@ public class MiningController implements Initializable, IRefreshable {
             }
             return shortened.isEmpty() ? ringName : shortened;
         }
-        
+
         return ringName;
     }
 

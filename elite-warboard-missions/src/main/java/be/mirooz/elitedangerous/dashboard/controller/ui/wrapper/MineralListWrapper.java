@@ -1,13 +1,15 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.wrapper;
+
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMethod;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -22,8 +24,12 @@ public class MineralListWrapper {
     }
 
     private final Type type;
-    private final MiningMethod miningMethod;   // utilisé si SEPARATOR
-    private final Mineral mineral;   // utilisé si MINERAL
+    private final MiningMethod miningMethod; // utilisé si SEPARATOR
+    private final Mineral mineral;           // utilisé si MINERAL
+
+    // 🧠 Nouvelles propriétés observables pour l’affichage
+    private final StringProperty displayPrice = new SimpleStringProperty("");
+    private final StringProperty displayError = new SimpleStringProperty("");
 
     // Constructeur pour un séparateur
     public static MineralListWrapper separator(MiningMethod miningMethod) {
@@ -41,10 +47,39 @@ public class MineralListWrapper {
         this.mineral = mineral;
     }
 
-
     public boolean isSeparator() {
         return type == Type.SEPARATOR;
     }
+
+    // 🔹 Méthodes utilitaires pour simplifier l’usage
+    public void setDisplayPrice(double price) {
+        this.displayPrice.set(String.format("%,.0f Cr", price));
+        this.displayError.set("");
+    }
+
+    public void setDisplayPriceError(String message) {
+        this.displayError.set(message);
+        this.displayPrice.set("");
+    }
+
+    public boolean hasDisplayPrice() {
+        return !displayPrice.get().isEmpty();
+    }
+
+    public StringProperty displayPriceProperty() {
+        return displayPrice;
+    }
+    public boolean hasDisplayError() {
+        return !displayError.get().isEmpty();
+    }
+    public String getDisplayPriceError(){
+        return displayError.get();
+    }
+
+    public String getDisplayPriceFormatted() {
+        return displayPrice.get();
+    }
+
     /**
      * 🔸 Construit une liste organisée avec séparateurs par catégorie et minéraux associés.
      */
@@ -55,10 +90,8 @@ public class MineralListWrapper {
         List<MiningMethod> orderedMethods = List.of(MiningMethod.CORE, MiningMethod.LASER);
 
         for (MiningMethod method : orderedMethods) {
-            // Ajout du séparateur
             items.add(MineralListWrapper.separator(method));
 
-            // Filtrer et trier les minéraux pour cette méthode
             List<MineralType> minerals = MineralType.all().stream()
                     .filter(m -> m.getMiningMethod() == method)
                     .toList();

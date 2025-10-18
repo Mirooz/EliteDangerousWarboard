@@ -4,8 +4,6 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationType;
 import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,14 +18,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 public class InaraClient {
 
-    private final Cache<String, List<InaraCommoditiesStats>> minerMarketCache = Caffeine.newBuilder()
-            .expireAfterWrite(5, TimeUnit.MINUTES)
-            .maximumSize(1000)
-            .build();
 
     private static final String BASE_URL = "https://inara.cz";
     private static final HttpClient httpClient = HttpClient.newHttpClient();
@@ -97,7 +89,7 @@ public class InaraClient {
                 + "&pi3=" + (largePad ? "3" : "2")
                 + "&pi9=" + maxStationDistance
                 + "&pi4=0"
-                + "&pi8=" + (fleetCarrier?"0":"1")
+                + "&pi8=" + (fleetCarrier ? "0" : "1")
                 + "&pi13=0"
                 + "&pi5=" + maxPriceAge
                 + "&pi12=50"
@@ -146,9 +138,9 @@ public class InaraClient {
 
         // Station name + system
         Element stationElement = cols.get(0);
-        String stationText = stationElement.text().replace("|","").trim();
+        String stationText = stationElement.text().replace("|", "").trim();
         Element stationNameElement = stationElement.selectFirst("span.standardcase");
-        stats.setStationName(stationNameElement != null ? stationNameElement.text().replace("|","").trim() : stationText);
+        stats.setStationName(stationNameElement != null ? stationNameElement.text().replace("|", "").trim() : stationText);
         boolean isFleetCarrier = false;
         Elements stationIcons = stationElement.select(".stationicon");
         StationType stationType = StationType.CORIOLIS;
@@ -156,11 +148,10 @@ public class InaraClient {
             String style = icon.attr("style");
             if (style.contains("background-position: -507px")) {
                 isFleetCarrier = true;
-                stationType=StationType.FLEET;
+                stationType = StationType.FLEET;
                 break;
-            }
-            else if (style.contains("background-position: -26px")) {
-                stationType=StationType.PORT;
+            } else if (style.contains("background-position: -26px")) {
+                stationType = StationType.PORT;
                 break;
             }
         }
@@ -242,19 +233,8 @@ public class InaraClient {
         return text.replaceAll("[^a-zA-Z0-9\\s\\-.,()\\[\\]|+\\s]", "").trim();
     }
 
-    private String buildCacheKey(Mineral mineral, String sourceSystem, int distance, int supplyDemand, boolean largePad,boolean fleetCarrier) {
-        return mineral.getInaraName() + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad + "|" + fleetCarrier;
-    }
 
     public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad, boolean fleetCarrier) throws IOException {
-        String cacheKey = buildCacheKey(coreMineral, sourceSystem, distance, supplyDemand, largePad,fleetCarrier);
-        return minerMarketCache.get(cacheKey, k -> {
-            try {
-                System.out.println("🆕 Cache miss " + coreMineral.getCargoJsonName());
-                return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, fleetCarrier,15000, 48, supplyDemand);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, fleetCarrier, 15000, 48, supplyDemand);
     }
 }
