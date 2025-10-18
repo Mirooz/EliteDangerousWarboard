@@ -10,6 +10,11 @@ public class InaraMain {
 
         InaraClient client = new InaraClient();
         System.out.println(client.fetchConflictSystems("LP 908-11"));
-        System.out.println(client.fetchMinerMarket(MineralType.fromCargoJsonName("benitoite").get(),"Sol",100,500,false));
+        System.out.println(client.fetchMinerMarket(MineralType.fromCargoJsonName("benitoite").get(),
+                "Sol",
+                100,
+                500,
+                false,
+                true));
     }
 }

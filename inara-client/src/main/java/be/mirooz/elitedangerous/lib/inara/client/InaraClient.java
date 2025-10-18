@@ -81,7 +81,7 @@ public class InaraClient {
 
 
     public List<InaraCommoditiesStats> fetchCommoditiesAllArgs(Mineral coreMineral, String sourceSystem,
-                                                               int maxSystemDistance, boolean largePad,
+                                                               int maxSystemDistance, boolean largePad, boolean fleetCarrier,
                                                                int maxStationDistance, int maxPriceAge,
                                                                int minSupplyDemand) throws IOException {
 
@@ -97,7 +97,7 @@ public class InaraClient {
                 + "&pi3=" + (largePad ? "3" : "2")
                 + "&pi9=" + maxStationDistance
                 + "&pi4=0"
-                + "&pi8=0"
+                + "&pi8=" + (fleetCarrier?"0":"1")
                 + "&pi13=0"
                 + "&pi5=" + maxPriceAge
                 + "&pi12=50"
@@ -242,16 +242,16 @@ public class InaraClient {
         return text.replaceAll("[^a-zA-Z0-9\\s\\-.,()\\[\\]|+\\s]", "").trim();
     }
 
-    private String buildCacheKey(Mineral mineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) {
-        return mineral.getInaraName() + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad;
+    private String buildCacheKey(Mineral mineral, String sourceSystem, int distance, int supplyDemand, boolean largePad,boolean fleetCarrier) {
+        return mineral.getInaraName() + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad + "|" + fleetCarrier;
     }
 
-    public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad) throws IOException {
-        String cacheKey = buildCacheKey(coreMineral, sourceSystem, distance, supplyDemand, largePad);
+    public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad, boolean fleetCarrier) throws IOException {
+        String cacheKey = buildCacheKey(coreMineral, sourceSystem, distance, supplyDemand, largePad,fleetCarrier);
         return minerMarketCache.get(cacheKey, k -> {
             try {
                 System.out.println("🆕 Cache miss " + coreMineral.getCargoJsonName());
-                return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, 15000, 48, supplyDemand);
+                return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, fleetCarrier,15000, 48, supplyDemand);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

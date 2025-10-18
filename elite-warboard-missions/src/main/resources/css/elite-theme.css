@@ -2177,9 +2177,6 @@
     -fx-background-color: transparent;
     -fx-spacing: 8px;
     -fx-padding: 12px;
-    -fx-pref-height: -1;
-    -fx-max-height: -1;
-    -fx-min-height: -1;
 }
 
 /* Titre principal du panneau - Style intégré */
@@ -2205,10 +2202,9 @@
     -fx-padding: 4px 12px;
     -fx-border-radius: 0px;
     -fx-background-radius: 0px;
-    -fx-alignment: center-left;
-    -fx-pref-width: infinity;
     -fx-min-width: 100px;
     -fx-border-width: 0 0 0 3px;
+    -fx-alignment: CENTER;
 }
 
 /* Titre section Pirates - Style moderne */
@@ -2374,8 +2370,6 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
     -fx-padding: 2px 6px;
-    -fx-pref-width: 40;
-    -fx-min-width: 40;
 }
 
 /* Noms de minéraux */
@@ -2542,6 +2536,46 @@
     -fx-spacing: 5px;
 }
 
+/* Checkbox Fleet Carrier */
+.fleet-carrier-checkbox {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.fleet-carrier-checkbox .box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-padding: 2px;
+}
+
+/* TextField Elite Dangerous */
+.elite-textfield {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 4px 6px;
+}
+
+.elite-textfield:focused {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px;
+}
+
+.elite-textfield:hover {
+    -fx-border-color: -fx-elite-cyan;
+}
+
 /* Labels de recherche */
 .search-label {
     -fx-text-fill: -fx-elite-orange;
@@ -2646,18 +2680,6 @@
     -fx-progress-color: -fx-elite-success;
 }
 
-/* ✅ Fixer la taille du header pour éviter le redimensionnement */
-.mining-header {
-    -fx-min-height: 140px;
-    -fx-pref-height: 140px;
-    -fx-max-height: 140px;
-}
-
-.mining-search-container {
-    -fx-min-height: 100px;
-    -fx-pref-height: 100px;
-    -fx-max-height: 100px;
-}
 
 /* ComboBox des minéraux */
 .mineral-combo-box {

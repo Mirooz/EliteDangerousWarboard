@@ -20,6 +20,14 @@
                     <Label fx:id="mineralTargetLabel" text="MINÉRAL CIBLE" styleClass="search-label"/>
                     <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="235" minWidth="235"
                               promptText="Sélectionner un minerais..."/>
+                    <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="true"
+                              onAction="#onFleetCarrierToggle"/>
+                    <HBox spacing="5" alignment="CENTER_LEFT">
+                        <Label fx:id="maxDistanceLabel" text="DISTANCE MAX" styleClass="search-label"/>
+                        <TextField fx:id="maxDistanceTextField" styleClass="elite-textfield" prefWidth="60" minWidth="60"
+                                   text="100" onAction="#onMaxDistanceChanged"/>
+                        <Label fx:id="distanceUnitLabel" text="AL" styleClass="search-label"/>
+                    </HBox>
                 </VBox>
 
                 <!-- Prix -->

@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMethod;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CargoInfoComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.ProspectorCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
@@ -20,10 +21,12 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -113,6 +116,14 @@ public class MiningController implements Initializable, IRefreshable {
     private HBox searchContentHBox;
     @FXML
     private VBox mineralTargetContainer;
+    @FXML
+    private CheckBox fleetCarrierCheckBox;
+    @FXML
+    private Label maxDistanceLabel;
+    @FXML
+    private TextField maxDistanceTextField;
+    @FXML
+    private Label distanceUnitLabel;
 
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -130,6 +141,8 @@ public class MiningController implements Initializable, IRefreshable {
 
         updateProspectors();
         initializeMineralComboBox();
+        initializeFleetCarrierCheckBox();
+        initializeMaxDistanceField();
         updateCargo();
         initializeHeaderLabels();
         initializeClickHandlers();
@@ -530,10 +543,10 @@ public class MiningController implements Initializable, IRefreshable {
     private void loadMineralPriceSafe(MineralListWrapper owningItem, ListCell<MineralListWrapper> cell) {
         Mineral mineral = owningItem.getMineral();
         String sourceSystem = miningService.getCurrentSystem();
-        int maxDistance = MAX_DISTANCE;
+        int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
 
-        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand)
+        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,true,fleetCarrierCheckBox.isSelected())
                 .thenAccept(priceOpt -> Platform.runLater(() -> {
                     // Si la cellule a été recyclée, on ne touche à rien
                     if (cell.getItem() != owningItem || owningItem.isSeparator()) return;
@@ -562,6 +575,13 @@ public class MiningController implements Initializable, IRefreshable {
      * Recherche une route de minage pour un minéral spécifique
      */
     private void searchMiningRouteForMineral(Mineral mineral) {
+        searchMiningRouteForMineral(mineral, fleetCarrierCheckBox.isSelected());
+    }
+
+    /**
+     * Recherche une route de minage pour un minéral spécifique avec option Fleet Carrier
+     */
+    private void searchMiningRouteForMineral(Mineral mineral, boolean includeFleetCarrier) {
         // Afficher l'indicateur de chargement
         setLoadingVisible(true);
         
@@ -569,11 +589,11 @@ public class MiningController implements Initializable, IRefreshable {
         clearHeaderLabels();
         
         String sourceSystem = miningService.getCurrentSystem();
-        int maxDistance = MAX_DISTANCE;
+        int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
 
         // Rechercher le prix et les informations de route
-        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand)
+        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,true,includeFleetCarrier)
                 .thenAccept(priceOpt -> {
                     if (priceOpt.isPresent()) {
                         InaraCommoditiesStats bestMarket = priceOpt.get();
@@ -679,6 +699,19 @@ public class MiningController implements Initializable, IRefreshable {
         if (mineralComboBox != null) {
             mineralComboBox.setPromptText(getTranslation("mining.mineral_placeholder"));
         }
+
+        // Mettre à jour le tooltip du Fleet Carrier checkbox
+        if (fleetCarrierCheckBox != null) {
+            fleetCarrierCheckBox.setTooltip(new TooltipComponent(getTranslation("mining.fleet_carrier_hint")));
+        }
+
+        // Mettre à jour les labels de distance
+        if (maxDistanceLabel != null) {
+            maxDistanceLabel.setText(getTranslation("mining.max_distance"));
+        }
+        if (distanceUnitLabel != null) {
+            distanceUnitLabel.setText(getTranslation("mining.distance_unit"));
+        }
     }
 
     /**
@@ -697,6 +730,92 @@ public class MiningController implements Initializable, IRefreshable {
             translation = translation.replace("{" + i + "}", params[i]);
         }
         return translation;
+    }
+
+    /**
+     * Initialise le checkbox Fleet Carrier avec l'image
+     */
+    private void initializeFleetCarrierCheckBox() {
+        if (fleetCarrierCheckBox != null) {
+            try {
+                // Charger l'image fleet.png
+                Image fleetImage = new Image(getClass().getResourceAsStream("/images/fleet.png"));
+                ImageView fleetImageView = new ImageView(fleetImage);
+                fleetImageView.setFitWidth(16);
+                fleetImageView.setFitHeight(16);
+                fleetImageView.setPreserveRatio(true);
+                
+                // Créer un HBox pour contenir l'image et le texte
+                HBox contentBox = new HBox(5);
+                contentBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                contentBox.getChildren().addAll(fleetImageView, new Label("Fleet Carrier"));
+                
+                // Définir le contenu du checkbox
+                fleetCarrierCheckBox.setGraphic(contentBox);
+                fleetCarrierCheckBox.setTooltip(new Tooltip(getTranslation("mining.fleet_carrier_hint")));
+            } catch (Exception e) {
+                // Si l'image n'est pas trouvée, utiliser juste le texte
+                fleetCarrierCheckBox.setText("Fleet Carrier");
+                fleetCarrierCheckBox.setTooltip(new Tooltip(getTranslation("mining.fleet_carrier_hint")));
+            }
+        }
+    }
+
+    /**
+     * Récupère la distance maximale depuis le champ de saisie
+     */
+    private int getMaxDistanceFromField() {
+        if (maxDistanceTextField != null && !maxDistanceTextField.getText().isEmpty()) {
+            try {
+                int distance = Integer.parseInt(maxDistanceTextField.getText());
+                return Math.max(1, Math.min(distance, 1000)); // Limiter entre 1 et 1000
+            } catch (NumberFormatException e) {
+                return MAX_DISTANCE; // Valeur par défaut
+            }
+        }
+        return MAX_DISTANCE; // Valeur par défaut
+    }
+
+    /**
+     * Initialise le champ de distance maximale
+     */
+    private void initializeMaxDistanceField() {
+        if (maxDistanceTextField != null) {
+            // Valider que la valeur est numérique
+            maxDistanceTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue.matches("\\d*")) {
+                    maxDistanceTextField.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            });
+        }
+    }
+
+    /**
+     * Gère le changement de distance maximale
+     */
+    @FXML
+    private void onMaxDistanceChanged() {
+        if (mineralComboBox.getValue() != null) {
+            // Rechercher pour le minéral sélectionné avec la nouvelle distance
+            MineralListWrapper selectedWrapper = mineralComboBox.getValue();
+            if (selectedWrapper.getMineral() != null) {
+                searchMiningRouteForMineral(selectedWrapper.getMineral(), fleetCarrierCheckBox.isSelected());
+            }
+        }
+    }
+
+    /**
+     * Gère le toggle du checkbox Fleet Carrier
+     */
+    @FXML
+    private void onFleetCarrierToggle() {
+        if (mineralComboBox.getValue() != null) {
+            // Rechercher pour le minéral sélectionné avec Fleet Carrier
+            MineralListWrapper selectedWrapper = mineralComboBox.getValue();
+            if (selectedWrapper.getMineral() != null) {
+                searchMiningRouteForMineral(selectedWrapper.getMineral(), fleetCarrierCheckBox.isSelected());
+            }
+        }
     }
 
     @Override

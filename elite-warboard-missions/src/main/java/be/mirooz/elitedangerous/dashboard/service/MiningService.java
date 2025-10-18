@@ -92,17 +92,22 @@ public class MiningService {
     /**
      * Recherche le prix d'un minéral
      */
-    public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand) {
+
+    /**
+     * Recherche le prix d'un minéral avec option Fleet Carrier
+     */
+    public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad,boolean includeFleetCarrier) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 List<InaraCommoditiesStats> commodities = inaraClient.fetchMinerMarket(
-                        mineral, sourceSystem, maxDistance, minDemand, false);
+                        mineral, sourceSystem, maxDistance, minDemand, largePad,includeFleetCarrier);
 
                 if (commodities == null || commodities.isEmpty()) {
                     return Optional.empty();
                 }
                 Optional<InaraCommoditiesStats> bestOpt = commodities.stream()
-                        .filter(c -> c.getSystemDistance() <= 100)
+                        .filter(c -> c.getSystemDistance() <= maxDistance)
+                        .filter(c -> c.isFleetCarrier() ? minDemand<= c.getDemand() : minDemand*4 <= c.getDemand())
                         .max(Comparator.comparingDouble(InaraCommoditiesStats::getPrice));
 
                 bestOpt.ifPresent(best -> mineral.setPrice(best.getPrice()));

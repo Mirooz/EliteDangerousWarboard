@@ -40,47 +40,4 @@ public class InaraService {
             }
         });
     }
-    public CompletableFuture<List<InaraCommoditiesStats>> fetchAllMinerMarkets(String sourceSystem, int distance,
-                                                                               int supplyDemand, boolean largePad) {
-
-        // Récupérer tous les minéraux de core mining
-        List<MineralType> allMinerals = MineralType.all();
-
-        // Lancer une requête par minéral en parallèle
-        List<CompletableFuture<List<InaraCommoditiesStats>>> futures = new ArrayList<>();
-        long start = System.currentTimeMillis();
-        for (MineralType mineral : allMinerals) {
-            CompletableFuture<List<InaraCommoditiesStats>> future = CompletableFuture.supplyAsync(() -> {
-                try {
-                    System.out.println("🔍 Recherche du marché pour: " + mineral.getInaraName());
-                    return client.fetchMinerMarket(mineral, sourceSystem, distance, supplyDemand, largePad).stream()
-                            .filter(commodity -> commodity.getSystemDistance() <= distance)
-                            .collect(Collectors.toList());
-                } catch (IOException e) {
-                    System.err.println("❌ Erreur lors de la recherche pour " + mineral.getInaraName() + ": " + e.getMessage());
-                    return new ArrayList<>();
-                }
-            }, executorService);
-
-            futures.add(future);
-        }
-
-        // Combiner toutes les futures en une seule
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> {
-                    List<InaraCommoditiesStats> allCommodities = new ArrayList<>();
-                    for (CompletableFuture<List<InaraCommoditiesStats>> future : futures) {
-                        try {
-                            allCommodities.addAll(future.get());
-                        } catch (InterruptedException | ExecutionException e) {
-                            System.err.println("⚠️ Erreur dans une future: " + e.getMessage());
-                        }
-                    }
-                    System.out.println("✅ Recherche terminée. Total de " + allCommodities.size() + " commodités trouvées.");
-                    long durationCall = System.currentTimeMillis() - start;
-                    System.out.println("INARA total calls duration: " + durationCall + " ms");
-                    return allCommodities;
-                });
-    }
-
 }
