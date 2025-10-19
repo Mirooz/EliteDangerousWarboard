@@ -324,15 +324,6 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
             overlayComponent.clearContent();
         }
     }
-
-    /**
-     * Callback appelé quand une session de minage se termine
-     */
-    @Override
-    public void onMiningSessionEnd() {
-        System.out.println("🔄 CurrentProspectorComponent: Fin de session de minage détectée");
-        clearAllProspectors();
-    }
     
     // Implémentation de ProspectedAsteroidListener
     

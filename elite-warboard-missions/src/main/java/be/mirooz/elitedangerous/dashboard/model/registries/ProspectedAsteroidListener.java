@@ -17,5 +17,4 @@ public interface ProspectedAsteroidListener {
      * Appelé quand le registre est vidé
      */
     void onRegistryCleared();
-    void onMiningSessionEnd();
 }

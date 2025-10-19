@@ -89,13 +89,7 @@ public class ProspectedAsteroidRegistry {
         }
     }
     private void notifyEndMiningSession() {
-        for (ProspectedAsteroidListener listener : listeners) {
-            try {
-                listener.onMiningSessionEnd();
-            } catch (Exception e) {
-                System.err.println("❌ Erreur lors de la notification de fin de mining session: " + e.getMessage());
-            }
-        }
+        this.clear();
     }
 
     /**
