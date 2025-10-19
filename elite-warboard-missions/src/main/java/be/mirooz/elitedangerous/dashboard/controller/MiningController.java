@@ -42,11 +42,8 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
     private VBox miningHistoryContainer;
 
     // Labels pour les traductions
-    @FXML
-    private Label miningTitleLabel;
 
     // Services
-    private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
 
     // Composants
@@ -60,11 +57,7 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
         initializePricePreference();
         initializeComponents();
         setupComponentCallbacks();
-        updateTranslations();
         UIManager.getInstance().register(this);
-
-        // Écouter les changements de langue
-        localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }
 
     @Override
@@ -185,18 +178,11 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
     /**
      * Met à jour toutes les traductions de l'interface
      */
-    private void updateTranslations() {
-        if (miningTitleLabel != null) {
-            miningTitleLabel.setText(getTranslation("mining.title"));
-        }
-    }
 
     /**
      * Récupère une traduction depuis le LocalizationService
      */
-    private String getTranslation(String key) {
-        return localizationService.getString(key);
-    }
+
 
     @Override
     public void refreshUI() {
@@ -212,85 +198,5 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
         if (miningHistory != null) {
             miningHistory.refresh();
         }
-    }
-
-    // Méthodes pour maintenir la compatibilité avec le fichier FXML existant
-    // Ces méthodes délèguent maintenant aux composants appropriés
-
-    /**
-     * Gère le toggle du checkbox Fleet Carrier
-     */
-    @FXML
-    public void onFleetCarrierToggle() {
-        if (miningSearchPanel != null) {
-            miningSearchPanel.onFleetCarrierToggle();
-        }
-    }
-
-    /**
-     * Gère le toggle du checkbox Pads
-     */
-    @FXML
-    public void onPadsToggle() {
-        if (miningSearchPanel != null) {
-            miningSearchPanel.onPadsToggle();
-        }
-    }
-
-    /**
-     * Affiche le prospecteur précédent
-     */
-    @FXML
-    public void showPreviousProspector() {
-        if (currentProspector != null) {
-            currentProspector.showPreviousProspector();
-        }
-    }
-
-    /**
-     * Affiche le prospecteur suivant
-     */
-    @FXML
-    public void showNextProspector() {
-        if (currentProspector != null) {
-            currentProspector.showNextProspector();
-        }
-    }
-
-    /**
-     * Gestionnaire de clic pour le conteneur de l'anneau
-     */
-    @FXML
-    public void onRingContainerClicked(MouseEvent event) {
-        if (miningSearchPanel != null) {
-            miningSearchPanel.onRingContainerClicked(event);
-        }
-    }
-
-    /**
-     * Gestionnaire de clic pour le conteneur de la station
-     */
-    @FXML
-    public void onStationContainerClicked(MouseEvent event) {
-        if (miningSearchPanel != null) {
-            miningSearchPanel.onStationContainerClicked(event);
-        }
-    }
-
-    // Getters pour accéder aux composants depuis l'extérieur
-    public MiningSearchPanelComponent getMiningSearchPanel() {
-        return miningSearchPanel;
-    }
-
-    public CurrentProspectorComponent getCurrentProspector() {
-        return currentProspector;
-    }
-
-    public CurrentCargoComponent getCurrentCargo() {
-        return currentCargo;
-    }
-
-    public MiningHistoryComponent getMiningHistory() {
-        return miningHistory;
     }
 }

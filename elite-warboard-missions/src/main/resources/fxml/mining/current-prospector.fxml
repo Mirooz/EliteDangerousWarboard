@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentProspectorComponent"
-      styleClass="mining-left-panel" spacing="10" VBox.vgrow="ALWAYS">
+      spacing="10" VBox.vgrow="ALWAYS">
 
     <HBox spacing="15" styleClass="prospector-navigation-header" alignment="CENTER_LEFT">
         <Label fx:id="currentProspectorLabel" text="PROSPECTEUR ACTUEL" styleClass="mining-section-title"/>
@@ -22,11 +22,11 @@
         </HBox>
     </HBox>
 
-    <VBox fx:id="currentProspectorContent" styleClass="current-prospector-content" VBox.vgrow="ALWAYS"/>
+    <VBox fx:id="currentProspectorContent" styleClass="current-prospector-content"/>
 
     <!-- Message quand aucun prospecteur -->
-    <VBox fx:id="noProspectorContainer" styleClass="no-prospector-container" alignment="CENTER"
-          VBox.vgrow="ALWAYS">
+    <VBox fx:id="noProspectorContainer" alignment="CENTER"
+          >
         <Label text="Aucun prospecteur disponible" styleClass="no-prospector-message"/>
     </VBox>
 </VBox>

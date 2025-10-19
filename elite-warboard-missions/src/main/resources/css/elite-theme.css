@@ -85,7 +85,6 @@
 
 .mining-content {
     -fx-spacing: 20px;
-    -fx-fill-height: true;
 }
 
 .mining-left-panel {
@@ -95,10 +94,6 @@
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
-    -fx-fill-height: true;
-    -fx-min-width: 450px;
-    -fx-pref-width: 450px;
-    -fx-max-width: 450px;
 }
 
 .mining-center-panel {
@@ -108,7 +103,6 @@
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
-    -fx-fill-height: true;
 }
 
 .mining-right-panel {
@@ -118,10 +112,6 @@
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
-    -fx-fill-height: true;
-    -fx-min-width: 480px;
-    -fx-pref-width: 480px;
-    -fx-max-width: 480px;
 }
 
 .mining-section-title {
@@ -226,16 +216,7 @@
     -fx-font-style: italic;
 }
 
-/* ✅ Styles pour les cartes de prospecteurs (refaites) */
-.elite-prospector-card {
-    -fx-background-color: rgba(255, 107, 0, 0.05);
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1px;
-    -fx-border-radius: 4px;
-    -fx-background-radius: 4px;
-    -fx-padding: 12px;
-    -fx-spacing: 8px;
-}
+
 
 
 
@@ -2334,26 +2315,8 @@
 
 /* ====== STYLES POUR LES ASTÉROÏDES PROSPECTÉS ELITE DANGEROUS ====== */
 
-/* Cartes d'astéroïdes */
-.elite-prospector-card {
-    -fx-background-color: -fx-elite-darker;
-    -fx-border-color: -fx-elite-light-gray;
-    -fx-border-width: 1px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-padding: 12px;
-    -fx-spacing: 8px;
-}
 
-.elite-prospector-card-large {
-    -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 2px;
-    -fx-border-radius: 8px;
-    -fx-background-radius: 8px;
-    -fx-padding: 16px;
-    -fx-spacing: 10px;
-}
+
 
 /* Icône d'astéroïde */
 .asteroid-icon {
@@ -2988,9 +2951,6 @@
     -fx-background-radius: 5px;
     -fx-padding: 15px;
     -fx-spacing: 10px;
-    -fx-min-width: 350px;
-    -fx-pref-width: 350px;
-    -fx-max-width: 350px;
 }
 
 .elite-prospector-card-large {
@@ -3001,9 +2961,6 @@
     -fx-background-radius: 8px;
     -fx-padding: 20px;
     -fx-spacing: 12px;
-    -fx-min-width: 400px;
-    -fx-pref-width: 400px;
-    -fx-max-width: 400px;
 }
 
 /* Nombre de minéraux en orange */

@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentCargoComponent"
-      styleClass="mining-center-panel" spacing="10" HBox.hgrow="ALWAYS">
+      spacing="10" HBox.hgrow="ALWAYS">
 
     <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>
 

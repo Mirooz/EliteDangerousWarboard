@@ -97,6 +97,8 @@ public class CurrentProspectorComponent implements Initializable {
         }
 
         noProspectorContainer.setVisible(false);
+        noProspectorContainer.setManaged(false);
+
 
         // Vider le contenu actuel
         currentProspectorContent.getChildren().clear();
@@ -106,11 +108,8 @@ public class CurrentProspectorComponent implements Initializable {
         VBox card = ProspectorCardComponent.createProspectorCard(currentProspector, true);
 
         // Fixer la taille pour éviter les changements de layout
-        card.setMinHeight(350);
-        card.setPrefHeight(350);
-        card.setMaxHeight(350);
-        card.setMinWidth(400);
-        card.setPrefWidth(400);
+        card.setMinSize(400, 350);
+        card.setPrefSize(400, 350);
 
         currentProspectorContent.getChildren().add(card);
 
@@ -128,6 +127,7 @@ public class CurrentProspectorComponent implements Initializable {
      */
     private void showNoProspector() {
         noProspectorContainer.setVisible(false);
+        noProspectorContainer.setManaged(false);
         updateNavigationButtons();
     }
 

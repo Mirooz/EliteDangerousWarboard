@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.MiningHistoryComponent"
-      styleClass="mining-right-panel" spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="400" prefWidth="400">
+       spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="400" prefWidth="400">
 
     <Label fx:id="miningHistoryLabel" text="HISTORIQUE DES SESSIONS" styleClass="mining-section-title"/>
     

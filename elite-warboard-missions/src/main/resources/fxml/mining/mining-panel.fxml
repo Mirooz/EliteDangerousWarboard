@@ -17,9 +17,9 @@
         <VBox fx:id="currentProspectorContainer" spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
 
         <!-- Colonne centrale : Cargo -->
-        <VBox fx:id="currentCargoContainer" spacing="10" styleClass="mining-center-panel" HBox.hgrow="ALWAYS"/>
+        <VBox fx:id="currentCargoContainer" spacing="10" styleClass="mining-center-panel" HBox.hgrow="ALWAYS"  VBox.vgrow="ALWAYS" minWidth="300" maxWidth="400"/>
 
         <!-- Colonne droite : Historique des sessions de minage -->
-        <VBox fx:id="miningHistoryContainer" spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="400" prefWidth="400"/>
+        <VBox fx:id="miningHistoryContainer" spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
     </HBox>
 </VBox>

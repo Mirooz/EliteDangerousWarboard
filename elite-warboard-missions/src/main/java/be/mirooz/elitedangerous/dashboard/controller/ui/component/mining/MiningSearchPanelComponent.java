@@ -77,6 +77,10 @@ public class MiningSearchPanelComponent implements Initializable {
     private ProgressIndicator loadingIndicator;
     @FXML
     private HBox searchContentHBox;
+
+    @FXML
+    private Label miningTitleLabel;
+
     @FXML
     private VBox mineralTargetContainer;
     @FXML
@@ -115,7 +119,7 @@ public class MiningSearchPanelComponent implements Initializable {
         initializeHeaderLabels();
         initializeClickHandlers();
         updateTranslations();
-        
+
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }
@@ -251,7 +255,7 @@ public class MiningSearchPanelComponent implements Initializable {
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
-        
+
         if (item.getMineral().getPrice() == 0) {
             miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
                             padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
@@ -283,8 +287,8 @@ public class MiningSearchPanelComponent implements Initializable {
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
 
-        miningService.searchMiningRoute(mineral, sourceSystem, maxDistance, minDemand, 
-                padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
+        miningService.searchMiningRoute(mineral, sourceSystem, maxDistance, minDemand,
+                        padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
                 .thenAccept(routeResult -> Platform.runLater(() -> {
                     setLoadingVisible(false);
 
@@ -294,7 +298,7 @@ public class MiningSearchPanelComponent implements Initializable {
                         headerDemandLabel.setText(String.format("%d T", bestMarket.getDemand()));
                         headerStationNameLabel.setText(bestMarket.getStationName());
                         headerStationSystemLabel.setText(bestMarket.getSystemName());
-                        headerStationDistanceLabel.setText(String.format("%.1f %s", 
+                        headerStationDistanceLabel.setText(String.format("%.1f %s",
                                 bestMarket.getSystemDistance(), getTranslation("search.distance.unit")));
                         updateStationTypeImage(bestMarket.getStationType());
 
@@ -302,7 +306,7 @@ public class MiningSearchPanelComponent implements Initializable {
                             MiningHotspot bestHotspot = routeResult.getHotspot();
                             headerRingNameLabel.setText(bestHotspot.getRingName());
                             headerRingSystemLabel.setText(bestHotspot.getSystemName());
-                            headerDistanceLabel.setText(String.format("%.1f %s", 
+                            headerDistanceLabel.setText(String.format("%.1f %s",
                                     bestHotspot.getDistanceFromReference(), getTranslation("search.distance.unit")));
                         } else {
                             headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
@@ -562,7 +566,9 @@ public class MiningSearchPanelComponent implements Initializable {
         if (headerStationDistanceTitleLabel != null) {
             headerStationDistanceTitleLabel.setText(getTranslation("mining.station_distance_from_system"));
         }
-
+        if (miningTitleLabel != null) {
+            miningTitleLabel.setText(getTranslation("mining.title"));
+        }
         updateDistanceUnits();
     }
 
