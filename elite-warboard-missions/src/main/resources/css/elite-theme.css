@@ -199,8 +199,8 @@
 .current-prospector-container {
     -fx-background-color: -fx-elite-darker;
     -fx-padding: 20px;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
     -fx-border-radius: 6px;
     -fx-background-radius: 6px;
     -fx-spacing: 15px;
@@ -3053,8 +3053,8 @@
 
 .elite-prospector-card-large {
     -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
     -fx-padding: 20px;
@@ -3071,4 +3071,66 @@
 .search-button:disabled {
     -fx-background-color: -fx-elite-gray;
     -fx-text-fill: -fx-elite-text-dim;
+}
+.mirror-overlay {
+    -fx-background-color: rgba(255, 255, 255, 0); /* invisible mais capte la souris */
+    -fx-border-color: transparent;
+    -fx-effect: none;
+}
+
+.mirror-overlay:hover {
+    -fx-border-color: rgba(255, 107, 0, 0.8);
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.3), 20, 0, 0, 0);
+}
+
+/* Indicateur de redimensionnement pour l'overlay */
+.mirror-overlay .resize-handle {
+    -fx-background-color: rgba(255, 215, 0, 0.3);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-cursor: se-resize;
+    -fx-pref-width: 25px;
+    -fx-pref-height: 25px;
+    -fx-min-width: 25px;
+    -fx-min-height: 25px;
+    -fx-max-width: 25px;
+    -fx-max-height: 25px;
+}
+
+.mirror-overlay .resize-handle:hover {
+    -fx-background-color: rgba(255, 215, 0, 0.6);
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow(gaussian, gold, 8, 0.8, 0, 0);
+}
+
+/* Curseur de transparence pour l'overlay */
+.mirror-overlay .opacity-slider {
+    -fx-background-color: rgba(255, 215, 0, 0.2);
+    -fx-border-color: rgba(255, 215, 0, 0.6);
+    -fx-border-width: 1px;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-pref-width: 20px;
+    -fx-pref-height: 80px;
+}
+
+.mirror-overlay .opacity-slider .track {
+    -fx-background-color: rgba(255, 215, 0, 0.3);
+    -fx-background-radius: 2;
+}
+
+.mirror-overlay .opacity-slider .thumb {
+    -fx-background-color: gold;
+    -fx-background-radius: 3;
+    -fx-pref-width: 8px;
+    -fx-pref-height: 8px;
+}
+
+.mirror-overlay .opacity-slider:hover {
+    -fx-background-color: rgba(255, 215, 0, 0.4);
+    -fx-border-color: gold;
+    -fx-effect: dropshadow(gaussian, gold, 5, 0.5, 0, 0);
 }
