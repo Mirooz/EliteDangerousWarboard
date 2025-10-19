@@ -116,11 +116,6 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
      */
     private void setupComponentCallbacks() {
         if (miningSearchPanel != null) {
-            // Quand un minéral est sélectionné, mettre à jour les autres composants
-            miningSearchPanel.setOnMineralSelected(mineral -> {
-                // Le composant de recherche gère déjà la recherche
-                // On peut ajouter d'autres actions ici si nécessaire
-            });
 
             // Quand une recherche est terminée, mettre à jour le cargo et l'historique
             miningSearchPanel.setOnSearchCompleted(() -> {
@@ -130,29 +125,6 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
                 if (miningHistory != null) {
                     miningHistory.refresh();
                 }
-            });
-        }
-
-        if (currentProspector != null) {
-            // Quand le prospecteur change, mettre à jour le cargo
-            currentProspector.setOnProspectorChanged(() -> {
-                if (currentCargo != null) {
-                    currentCargo.refresh();
-                }
-            });
-        }
-
-        if (currentCargo != null) {
-            // Quand le cargo est mis à jour, on peut déclencher d'autres actions
-            currentCargo.setOnCargoUpdated(() -> {
-                // Actions supplémentaires si nécessaire
-            });
-        }
-
-        if (miningHistory != null) {
-            // Quand l'historique est mis à jour
-            miningHistory.setOnHistoryUpdated(() -> {
-                // Actions supplémentaires si nécessaire
             });
         }
     }

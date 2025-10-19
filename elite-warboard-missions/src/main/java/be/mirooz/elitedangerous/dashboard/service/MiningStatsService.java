@@ -15,7 +15,8 @@ public class MiningStatsService {
     
     private static MiningStatsService instance;
     private final MiningStatRegistry miningStatRegistry;
-    
+
+    private final MiningSessionNotificationService notificationService = MiningSessionNotificationService.getInstance();
     private MiningStatsService() {
         this.miningStatRegistry = MiningStatRegistry.getInstance();
     }
@@ -46,6 +47,8 @@ public class MiningStatsService {
      */
     public void endCurrentMiningSession(String timestamp) {
         miningStatRegistry.endCurrentMiningSession(timestamp);
+        // Notifier tous les composants UI de la fin de session
+        notificationService.notifySessionEnd();
     }
     
     /**

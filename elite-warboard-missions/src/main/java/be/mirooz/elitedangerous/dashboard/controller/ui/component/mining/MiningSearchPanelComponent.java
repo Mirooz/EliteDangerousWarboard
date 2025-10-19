@@ -618,29 +618,9 @@ public class MiningSearchPanelComponent implements Initializable {
         return localizationService.getString(key);
     }
 
-    // Getters et setters pour les callbacks
-    public void setOnMineralSelected(Consumer<Mineral> onMineralSelected) {
-        this.onMineralSelected = onMineralSelected;
-    }
+
 
     public void setOnSearchCompleted(Runnable onSearchCompleted) {
         this.onSearchCompleted = onSearchCompleted;
-    }
-
-    // Getters pour accéder aux composants depuis l'extérieur
-    public ComboBox<MineralListWrapper> getMineralComboBox() {
-        return mineralComboBox;
-    }
-
-    public CheckBox getFleetCarrierCheckBox() {
-        return fleetCarrierCheckBox;
-    }
-
-    public CheckBox getPadsCheckBox() {
-        return padsCheckBox;
-    }
-
-    public TextField getMaxDistanceTextField() {
-        return maxDistanceTextField;
     }
 }

@@ -24,28 +24,27 @@ import java.util.Locale;
  * - La sauvegarde/restauration des préférences
  */
 public class OverlayComponent {
-    
+
     private final PreferencesService preferencesService = PreferencesService.getInstance();
-    
+
     // Clés pour les préférences de l'overlay
     private static final String OVERLAY_WIDTH_KEY = "overlay.width";
     private static final String OVERLAY_HEIGHT_KEY = "overlay.height";
     private static final String OVERLAY_OPACITY_KEY = "overlay.opacity";
-    
+
     private Stage overlayStage;
     private double overlayOpacity;
     private Slider opacitySlider;
     private StackPane stackPane;
-    
+
     /**
      * Affiche l'overlay pour le prospecteur donné
      */
     public void showOverlay(ProspectedAsteroid prospector) {
         if (prospector == null) {
             System.out.println("⚠️ Aucun prospecteur à afficher dans l'overlay.");
-            return;
         }
-        
+
         // Si la fenêtre est déjà ouverte, on la ferme
         if (overlayStage != null && overlayStage.isShowing()) {
             saveOverlayPreferences();
@@ -53,10 +52,10 @@ public class OverlayComponent {
             overlayStage = null;
             return;
         }
-        
+
         createOverlayStage(prospector);
     }
-    
+
     /**
      * Ferme l'overlay s'il est ouvert
      */
@@ -67,7 +66,7 @@ public class OverlayComponent {
             overlayStage = null;
         }
     }
-    
+
     /**
      * Met à jour le contenu de l'overlay avec un nouveau prospecteur
      */
@@ -77,14 +76,24 @@ public class OverlayComponent {
             stackPane.getChildren().set(0, newCard);
         }
     }
-    
+
+    /**
+     * Vide le contenu de l'overlay (affiche une carte vide)
+     */
+    public void clearContent() {
+        if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
+            VBox emptyCard = createEmptyCard();
+            stackPane.getChildren().set(0, emptyCard);
+        }
+    }
+
     /**
      * Vérifie si l'overlay est actuellement affiché
      */
     public boolean isShowing() {
         return overlayStage != null && overlayStage.isShowing();
     }
-    
+
     /**
      * Crée la fenêtre overlay
      */
@@ -95,46 +104,46 @@ public class OverlayComponent {
         overlayStage.setAlwaysOnTop(true);
         overlayStage.setTitle("Prospector Overlay");
         overlayStage.setResizable(true);
-        
+
         // Définir la taille par défaut et minimale
         overlayStage.setMinWidth(200);
         overlayStage.setMinHeight(150);
-        
+
         // Restaurer les préférences sauvegardées
         restoreOverlayPreferences();
-        
+
         // Créer le contenu de l'overlay
         createOverlayContent(prospector);
-        
+
         // Configurer la scène
         Scene scene = new Scene(stackPane);
         scene.setFill(Color.TRANSPARENT);
         overlayStage.setScene(scene);
         overlayStage.setOpacity(1.0);
-        
+
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-        
+
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
-        
+
         // Afficher l'overlay
         overlayStage.show();
     }
-    
+
     /**
      * Crée le contenu de l'overlay
      */
     private void createOverlayContent(ProspectedAsteroid prospector) {
         // Créer la carte du prospecteur
         VBox mirrorCard = createOverlayCard(prospector);
-        
+
         // Créer l'icône de redimensionnement
         Label resizeHandle = createResizeHandle();
-        
+
         // Créer le curseur de transparence
         opacitySlider = createOpacitySlider();
-        
+
         // Créer le conteneur principal
         stackPane = new StackPane();
         stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider);
@@ -142,23 +151,37 @@ public class OverlayComponent {
         StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(opacitySlider, new Insets(0, 30, 0, 0));
         stackPane.setPickOnBounds(true);
-        
+
         // Appliquer le style initial
         updatePaneStyle(overlayOpacity, stackPane);
-        
+
         // Configurer le listener du curseur
         setupOpacitySliderListener();
     }
-    
+
     /**
      * Crée une carte de prospecteur avec le style d'overlay
      */
     private VBox createOverlayCard(ProspectedAsteroid prospector) {
-        VBox card = ProspectorCardComponent.createProspectorCard(prospector, true);
+        VBox card;
+        if (prospector == null) {
+            card = createEmptyCard();
+        } else {
+            card = ProspectorCardComponent.createProspectorCard(prospector, true);
+        }
         card.getStyleClass().add("mirror-overlay");
         return card;
     }
-    
+
+    /**
+     * Crée une carte vide pour l'overlay
+     */
+    private VBox createEmptyCard() {
+        VBox card = new VBox();
+        card.getStyleClass().add("mirror-overlay");
+        return card;
+    }
+
     /**
      * Crée l'icône de redimensionnement
      */
@@ -169,7 +192,7 @@ public class OverlayComponent {
         resizeHandle.setOpacity(0.0); // Masquer par défaut
         return resizeHandle;
     }
-    
+
     /**
      * Crée le curseur de transparence
      */
@@ -180,17 +203,17 @@ public class OverlayComponent {
         slider.setPrefHeight(80);
         slider.setOpacity(0.0); // Masquer par défaut
         slider.getStyleClass().add("opacity-slider");
-        
+
         // Configuration pour des valeurs plus précises
         slider.setMajorTickUnit(0.2);
         slider.setMinorTickCount(1);
         slider.setShowTickLabels(false);
         slider.setShowTickMarks(false);
         slider.setSnapToTicks(false);
-        
+
         return slider;
     }
-    
+
     /**
      * Configure le listener du curseur de transparence
      */
@@ -201,7 +224,7 @@ public class OverlayComponent {
             overlayOpacity = opacity;
         });
     }
-    
+
     /**
      * Met à jour le style du StackPane
      */
@@ -215,7 +238,7 @@ public class OverlayComponent {
         );
         stackPane.setStyle(style);
     }
-    
+
     /**
      * Configure les interactions (déplacement, redimensionnement, survol)
      */
@@ -223,21 +246,21 @@ public class OverlayComponent {
         final double[] offset = new double[2];
         final double[] resizeOffset = new double[2];
         final boolean[] isResizing = {false};
-        
+
         Scene scene = overlayStage.getScene();
-        
+
         // Gestion du clic et du glisser
         scene.setOnMousePressed(e -> {
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 offset[0] = e.getScreenX() - overlayStage.getX();
                 offset[1] = e.getScreenY() - overlayStage.getY();
-                
+
                 // Vérifier si on est dans la zone de redimensionnement
                 double sceneWidth = scene.getWidth();
                 double sceneHeight = scene.getHeight();
                 double mouseX = e.getSceneX();
                 double mouseY = e.getSceneY();
-                
+
                 if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                     isResizing[0] = true;
                     resizeOffset[0] = e.getScreenX();
@@ -245,24 +268,24 @@ public class OverlayComponent {
                 }
             }
         });
-        
+
         scene.setOnMouseDragged(e -> {
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 if (isResizing[0]) {
                     // Redimensionnement
                     double deltaX = e.getScreenX() - resizeOffset[0];
                     double deltaY = e.getScreenY() - resizeOffset[1];
-                    
+
                     double newWidth = overlayStage.getWidth() + deltaX;
                     double newHeight = overlayStage.getHeight() + deltaY;
-                    
+
                     if (newWidth >= overlayStage.getMinWidth()) {
                         overlayStage.setWidth(newWidth);
                     }
                     if (newHeight >= overlayStage.getMinHeight()) {
                         overlayStage.setHeight(newHeight);
                     }
-                    
+
                     resizeOffset[0] = e.getScreenX();
                     resizeOffset[1] = e.getScreenY();
                 } else {
@@ -272,18 +295,18 @@ public class OverlayComponent {
                 }
             }
         });
-        
+
         scene.setOnMouseReleased(e -> {
             isResizing[0] = false;
         });
-        
+
         // Gestion du curseur et de la visibilité des contrôles
         scene.setOnMouseMoved(e -> {
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
             double mouseY = e.getSceneY();
-            
+
             // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
@@ -299,7 +322,7 @@ public class OverlayComponent {
                 }
             }
         });
-        
+
         // Masquer les contrôles quand la souris quitte la scène
         scene.setOnMouseExited(e -> {
             if (stackPane.getChildren().size() > 1) {
@@ -307,7 +330,7 @@ public class OverlayComponent {
                 ((Slider) stackPane.getChildren().get(2)).setOpacity(0.0); // opacitySlider
             }
         });
-        
+
         // Afficher les contrôles quand la souris entre dans la scène
         scene.setOnMouseEntered(e -> {
             if (stackPane.getChildren().size() > 1) {
@@ -315,14 +338,14 @@ public class OverlayComponent {
                 ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8); // opacitySlider
             }
         });
-        
+
         // Listener pour la fermeture de la fenêtre
         overlayStage.setOnCloseRequest(event -> {
             saveOverlayPreferences();
             overlayStage = null;
         });
     }
-    
+
     /**
      * Restaure les préférences de l'overlay
      */
@@ -330,26 +353,26 @@ public class OverlayComponent {
         String savedWidthStr = preferencesService.getPreference(OVERLAY_WIDTH_KEY, "600");
         String savedHeightStr = preferencesService.getPreference(OVERLAY_HEIGHT_KEY, "500");
         String savedOpacityStr = preferencesService.getPreference(OVERLAY_OPACITY_KEY, "0.92");
-        
+
         double savedWidth = Double.parseDouble(savedWidthStr);
         double savedHeight = Double.parseDouble(savedHeightStr);
         overlayOpacity = Double.parseDouble(savedOpacityStr);
-        
+
         overlayStage.setWidth(Math.max(savedWidth, overlayStage.getMinWidth()));
         overlayStage.setHeight(Math.max(savedHeight, overlayStage.getMinHeight()));
     }
-    
+
     /**
      * Sauvegarde les préférences de l'overlay
      */
     private void saveOverlayPreferences() {
         if (overlayStage != null && overlayStage.isShowing()) {
-            preferencesService.setPreference(OVERLAY_WIDTH_KEY, String.valueOf((int)overlayStage.getWidth()));
-            preferencesService.setPreference(OVERLAY_HEIGHT_KEY, String.valueOf((int)overlayStage.getHeight()));
+            preferencesService.setPreference(OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
+            preferencesService.setPreference(OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
             preferencesService.setPreference(OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
-            System.out.println("💾 Préférences overlay sauvegardées: " + 
-                (int)overlayStage.getWidth() + "x" + (int)overlayStage.getHeight() + 
-                " (opacité: " + String.format("%.2f", overlayOpacity) + ")");
+            System.out.println("💾 Préférences overlay sauvegardées: " +
+                    (int) overlayStage.getWidth() + "x" + (int) overlayStage.getHeight() +
+                    " (opacité: " + String.format("%.2f", overlayOpacity) + ")");
         }
     }
 }

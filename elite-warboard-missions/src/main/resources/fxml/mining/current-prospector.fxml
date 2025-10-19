@@ -29,9 +29,4 @@
 
     <VBox fx:id="currentProspectorContent" styleClass="current-prospector-content"/>
 
-    <!-- Message quand aucun prospecteur -->
-    <VBox fx:id="noProspectorContainer" alignment="CENTER"
-          >
-        <Label text="Aucun prospecteur disponible" styleClass="no-prospector-message"/>
-    </VBox>
 </VBox>

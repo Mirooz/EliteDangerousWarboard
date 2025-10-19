@@ -1,8 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
+import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidListener;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
+import be.mirooz.elitedangerous.dashboard.service.MiningSessionNotificationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -22,17 +25,16 @@ import java.util.*;
  * - Le compteur de prospecteurs
  * - L'affichage du message "aucun prospecteur"
  */
-public class CurrentProspectorComponent implements Initializable {
+public class CurrentProspectorComponent implements Initializable, ProspectedAsteroidListener {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final MiningSessionNotificationService notificationService = MiningSessionNotificationService.getInstance();
 
     // Composants FXML
     @FXML
     private VBox currentProspectorContent;
-    @FXML
-    private VBox noProspectorContainer;
     @FXML
     private Button lastProspectorButton;
     @FXML
@@ -52,53 +54,55 @@ public class CurrentProspectorComponent implements Initializable {
     private List<ProspectedAsteroid> allProspectors = new ArrayList<>();
     private int currentProspectorIndex = 0;
 
-    // Callback pour notifier le parent des changements
-    private Runnable onProspectorChanged;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialiser le composant overlay
         overlayComponent = new OverlayComponent();
-        
+
         updateProspectors();
         updateTranslations();
-        
+
         // S'assurer que le bouton overlay est initialisé avec le bon texte
         Platform.runLater(() -> {
             updateOverlayButtonText();
         });
-        
+
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
+
+        // S'enregistrer comme listener du registre des prospecteurs
+        miningService.getProspectedRegistry().addListener(this);
     }
 
     /**
      * Met à jour l'affichage des prospecteurs avec navigation
      */
     public void updateProspectors() {
-        Platform.runLater(() -> {
-            Deque<ProspectedAsteroid> prospectors = miningService.getAllProspectors();
+        if (!DashboardContext.getInstance().isBatchLoading()) {
+            Platform.runLater(() -> {
+                Deque<ProspectedAsteroid> prospectors = miningService.getAllProspectors();
 
-            // Convertir en liste pour faciliter la navigation et inverser l'ordre
-            allProspectors.clear();
-            allProspectors.addAll(prospectors);
-            
-            // Inverser la liste pour que le dernier soit en premier
-            java.util.Collections.reverse(allProspectors);
+                // Convertir en liste pour faciliter la navigation et inverser l'ordre
+                allProspectors.clear();
+                allProspectors.addAll(prospectors);
 
-            if (allProspectors.isEmpty()) {
-                showNoProspector();
-                return;
-            }
+                // Inverser la liste pour que le dernier soit en premier
+                java.util.Collections.reverse(allProspectors);
 
-            // S'assurer que l'index est valide
-            if (currentProspectorIndex >= allProspectors.size()) {
-                currentProspectorIndex = 0;
-            }
+                if (allProspectors.isEmpty()) {
+                    showNoProspector();
+                    return;
+                }
 
-            showCurrentProspector();
-            updateNavigationButtons();
-        });
+                // S'assurer que l'index est valide
+                if (currentProspectorIndex >= allProspectors.size()) {
+                    currentProspectorIndex = 0;
+                }
+
+                showCurrentProspector();
+                updateNavigationButtons();
+            });
+        }
     }
 
     /**
@@ -109,10 +113,6 @@ public class CurrentProspectorComponent implements Initializable {
             showNoProspector();
             return;
         }
-
-        noProspectorContainer.setVisible(false);
-        noProspectorContainer.setManaged(false);
-
 
         // Vider le contenu actuel
         currentProspectorContent.getChildren().clear();
@@ -130,11 +130,6 @@ public class CurrentProspectorComponent implements Initializable {
         // Mettre à jour le compteur
         updateProspectorCounter();
 
-        // Notifier le parent du changement
-        if (onProspectorChanged != null) {
-            onProspectorChanged.run();
-        }
-        
         // Mettre à jour l'overlay si il est ouvert
         updateOverlayContent();
     }
@@ -143,9 +138,17 @@ public class CurrentProspectorComponent implements Initializable {
      * Affiche le message "aucun prospecteur"
      */
     private void showNoProspector() {
-        noProspectorContainer.setVisible(false);
-        noProspectorContainer.setManaged(false);
+        // Vider le contenu actuel
+        currentProspectorContent.getChildren().clear();
+
+        // Réinitialiser l'index
+        currentProspectorIndex = 0;
+
+        // Mettre à jour les boutons de navigation
         updateNavigationButtons();
+
+        // Vider l'overlay si il est ouvert
+        updateOverlayContent();
     }
 
     /**
@@ -233,7 +236,7 @@ public class CurrentProspectorComponent implements Initializable {
         if (overlayButton != null) {
             String text;
             String icon;
-            
+
             if (overlayComponent != null && overlayComponent.isShowing()) {
                 text = getTranslation("mining.overlay_close");
                 icon = "✖"; // Croix pour fermer
@@ -241,7 +244,7 @@ public class CurrentProspectorComponent implements Initializable {
                 text = getTranslation("mining.overlay_open");
                 icon = "🗔"; // Icône de fenêtre pour ouvrir
             }
-            
+
             // Vérifier si la traduction a fonctionné, sinon utiliser un texte par défaut
             if (text == null || text.startsWith("mining.")) {
                 if (overlayComponent != null && overlayComponent.isShowing()) {
@@ -250,7 +253,7 @@ public class CurrentProspectorComponent implements Initializable {
                     text = "Ouvrir Overlay";
                 }
             }
-            
+
             // Combiner l'icône et le texte
             overlayButton.setText(icon + " " + text);
         }
@@ -266,11 +269,6 @@ public class CurrentProspectorComponent implements Initializable {
             return key; // Retourner la clé si la traduction n'est pas trouvée
         }
         return translation;
-    }
-
-    // Getters et setters
-    public void setOnProspectorChanged(Runnable onProspectorChanged) {
-        this.onProspectorChanged = onProspectorChanged;
     }
 
     /**
@@ -311,6 +309,51 @@ public class CurrentProspectorComponent implements Initializable {
         updateProspectors();
     }
 
+    /**
+     * Nettoie tous les prospecteurs et vide l'overlay (utilisé lors de la fin de session de minage)
+     */
+    public void clearAllProspectors() {
+        // Nettoyer les prospecteurs dans le service
+        miningService.clearAllProspectors();
+
+        // Mettre à jour l'affichage
+        updateProspectors();
+
+        // Vider l'overlay si il est ouvert
+        if (overlayComponent != null && overlayComponent.isShowing()) {
+            overlayComponent.clearContent();
+        }
+    }
+
+    /**
+     * Callback appelé quand une session de minage se termine
+     */
+    @Override
+    public void onMiningSessionEnd() {
+        System.out.println("🔄 CurrentProspectorComponent: Fin de session de minage détectée");
+        clearAllProspectors();
+    }
+    
+    // Implémentation de ProspectedAsteroidListener
+    
+    @Override
+    public void onProspectorAdded(ProspectedAsteroid prospector) {
+        Platform.runLater(() -> {
+            System.out.println("🔄 CurrentProspectorComponent: Nouveau prospecteur ajouté - " + 
+                (prospector != null ? prospector.toString() : "null"));
+            // Afficher automatiquement le dernier prospecteur (qui est maintenant le premier dans la liste inversée)
+            showLastProspector();
+        });
+    }
+    
+    @Override
+    public void onRegistryCleared() {
+        Platform.runLater(() -> {
+            System.out.println("🔄 CurrentProspectorComponent: Registre des prospecteurs vidé");
+            showNoProspector();
+        });
+    }
+
     @FXML
     public void showProspectorOverlay() {
         if (overlayComponent != null) {
@@ -324,7 +367,13 @@ public class CurrentProspectorComponent implements Initializable {
      */
     private void updateOverlayContent() {
         if (overlayComponent != null && overlayComponent.isShowing()) {
-            overlayComponent.updateContent(getCurrentProspector());
+            ProspectedAsteroid currentProspector = getCurrentProspector();
+            if (currentProspector != null) {
+                overlayComponent.updateContent(currentProspector);
+            } else {
+                // Si aucun prospecteur, vider l'overlay
+                overlayComponent.clearContent();
+            }
         }
     }
 

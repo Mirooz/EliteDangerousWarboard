@@ -50,6 +50,21 @@ public class MiningService {
     public Deque<ProspectedAsteroid> getAllProspectors() {
         return prospectedRegistry.getAll();
     }
+    
+    /**
+     * Nettoie tous les prospecteurs (utilisé lors de la fin de session de minage)
+     */
+    public void clearAllProspectors() {
+        prospectedRegistry.clear();
+        System.out.println("🗑️ Tous les prospecteurs ont été nettoyés");
+    }
+    
+    /**
+     * Récupère le registre des prospecteurs
+     */
+    public ProspectedAsteroidRegistry getProspectedRegistry() {
+        return prospectedRegistry;
+    }
 
     /**
      * Récupère le dernier prospecteur
