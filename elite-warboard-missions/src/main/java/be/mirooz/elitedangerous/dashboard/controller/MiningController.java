@@ -1,188 +1,65 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMethod;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.CargoInfoComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.ProspectorCardComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
-import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.CurrentCargoComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.CurrentProspectorComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.MiningHistoryComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.MiningSearchPanelComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
-import be.mirooz.elitedangerous.dashboard.controller.ui.wrapper.MineralListWrapper;
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip;
-import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.model.mining.MiningStat;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.dashboard.service.MiningService;
-import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
-import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
-import be.mirooz.elitedangerous.lib.inara.model.StationType;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ResourceBundle;
 
 /**
- * Contrôleur pour le panneau de mining - Refactorisé
+ * Contrôleur pour le panneau de mining - Refactorisé avec composants
  * <p>
- * Cette classe a été refactorisée pour séparer la logique métier de la logique d'interface utilisateur.
- * La logique métier (calculs, recherches de routes, etc.) a été déplacée vers MiningService.
- * Ce contrôleur se concentre maintenant uniquement sur la gestion de l'interface utilisateur.
+ * Cette classe a été refactorisée pour utiliser des composants séparés :
+ * - MiningSearchPanelComponent : gestion de la recherche de routes
+ * - CurrentProspectorComponent : affichage et navigation des prospecteurs
+ * - CurrentCargoComponent : affichage du cargo actuel
+ * - MiningHistoryComponent : historique des sessions de minage
+ * <p>
+ * Le contrôleur principal coordonne maintenant ces composants et gère les interactions entre eux.
  */
-public class MiningController implements Initializable, IRefreshable,IBatchListener {
+public class MiningController implements Initializable, IRefreshable, IBatchListener {
 
-    public static final int MAX_DISTANCE = 100;
-
+    // Conteneurs pour les composants
     @FXML
-    private VBox currentProspectorContent;
+    private VBox miningSearchPanelContainer;
     @FXML
-    private VBox noProspectorContainer;
+    private VBox currentProspectorContainer;
     @FXML
-    private Button previousProspectorButton;
+    private VBox currentCargoContainer;
     @FXML
-    private Button nextProspectorButton;
-    @FXML
-    private Label prospectorCounterLabel;
-
-    // Variables pour la navigation
-    private List<ProspectedAsteroid> allProspectors = new ArrayList<>();
-    private int currentProspectorIndex = 0;
-    @FXML
-    private Label cargoUsedLabel;
-    @FXML
-    private Label limpetsCountLabel;
-    @FXML
-    private VBox cargoMineralsList;
-    @FXML
-    private ComboBox<MineralListWrapper> mineralComboBox;
-    @FXML
-    private Label headerPriceLabel;
-    @FXML
-    private Label demandLabel;
-    @FXML
-    private Label headerDemandLabel;
-    @FXML
-    private Label headerRingNameLabel;
-    @FXML
-    private Label headerRingSystemLabel;
-    @FXML
-    private Label headerDistanceLabel;
-    @FXML
-    private Label headerStationNameLabel;
-    @FXML
-    private Label headerStationSystemLabel;
-    @FXML
-    private Label headerStationDistanceLabel;
-    @FXML
-    private Label headerStationDistanceTitleLabel;
-    @FXML
-    private ImageView stationTypeImageView;
+    private VBox miningHistoryContainer;
 
     // Labels pour les traductions
     @FXML
     private Label miningTitleLabel;
-    @FXML
-    private Label mineralTargetLabel;
-    @FXML
-    private Label priceLabel;
-    @FXML
-    private Label ringToMineLabel;
-    @FXML
-    private Label stationToSellLabel;
-    @FXML
-    private Label currentProspectorLabel;
-    @FXML
-    private Label currentCargoLabel;
-    @FXML
-    private Label cargoLabel;
-    @FXML
-    private Label limpetsLabel;
-    @FXML
-    private Label estimatedCreditsLabel;
-    @FXML
-    private Label estimatedCreditsTitleLabel;
-    @FXML
-    private ProgressIndicator loadingIndicator;
-    @FXML
-    private HBox searchContentHBox;
-    @FXML
-    private VBox mineralTargetContainer;
-    @FXML
-    private CheckBox fleetCarrierCheckBox;
-    @FXML
-    private CheckBox padsCheckBox;
-    @FXML
-    private Label maxDistanceLabel;
-    @FXML
-    private TextField maxDistanceTextField;
-    @FXML
-    private Label distanceUnitLabel;
 
-    // Labels pour l'historique des sessions de minage
-    @FXML
-    private Label miningHistoryLabel;
-    @FXML
-    private Label totalSessionsLabel;
-    @FXML
-    private Label totalSessionsTitleLabel;
-    @FXML
-    private Label totalDurationLabel;
-    @FXML
-    private Label totalDurationTitleLabel;
-    @FXML
-    private Label totalValueLabel;
-    @FXML
-    private Label totalValueTitleLabel;
-    @FXML
-    private ScrollPane miningHistoryScrollPane;
-    @FXML
-    private VBox miningHistoryList;
-
-    private final MiningService miningService = MiningService.getInstance();
-    private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
+    // Services
     private final LocalizationService localizationService = LocalizationService.getInstance();
-    private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
-    private final PopupManager popupManager = PopupManager.getInstance();
-
-
     private final PreferencesService preferencesService = PreferencesService.getInstance();
-    // Images pour les icônes
-    private Image laserImage;
-    private Image coreImage;
+
+    // Composants
+    private MiningSearchPanelComponent miningSearchPanel;
+    private CurrentProspectorComponent currentProspector;
+    private CurrentCargoComponent currentCargo;
+    private MiningHistoryComponent miningHistory;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Charger les images
-        loadImages();
-
-        updateProspectors();
         initializePricePreference();
-        initializeFleetCarrierCheckBox();
-        initializeMaxDistanceField();
-        updateCargo();
-        initializeHeaderLabels();
-        initializeClickHandlers();
-        initializeMiningHistory();
+        initializeComponents();
+        setupComponentCallbacks();
         updateTranslations();
         UIManager.getInstance().register(this);
 
@@ -191,9 +68,104 @@ public class MiningController implements Initializable, IRefreshable,IBatchListe
     }
 
     @Override
-    public void onBatchEnd(){
-        initializeMineralComboBox();
+    public void onBatchEnd() {
+        if (miningSearchPanel != null) {
+            miningSearchPanel.initializeMineralComboBox();
+        }
     }
+
+    /**
+     * Initialise les composants en les chargeant depuis leurs fichiers FXML
+     */
+    private void initializeComponents() {
+        try {
+            // Charger le composant de recherche de minage
+            FXMLLoader searchLoader = new FXMLLoader(getClass().getResource("/fxml/mining/mining-search-panel.fxml"));
+            VBox searchPanel = searchLoader.load();
+            miningSearchPanel = searchLoader.getController();
+            if (miningSearchPanelContainer != null) {
+                miningSearchPanelContainer.getChildren().add(searchPanel);
+            }
+
+            // Charger le composant de prospecteur actuel
+            FXMLLoader prospectorLoader = new FXMLLoader(getClass().getResource("/fxml/mining/current-prospector.fxml"));
+            VBox prospectorPanel = prospectorLoader.load();
+            currentProspector = prospectorLoader.getController();
+            if (currentProspectorContainer != null) {
+                currentProspectorContainer.getChildren().add(prospectorPanel);
+            }
+
+            // Charger le composant de cargo actuel
+            FXMLLoader cargoLoader = new FXMLLoader(getClass().getResource("/fxml/mining/current-cargo.fxml"));
+            VBox cargoPanel = cargoLoader.load();
+            currentCargo = cargoLoader.getController();
+            if (currentCargoContainer != null) {
+                currentCargoContainer.getChildren().add(cargoPanel);
+            }
+
+            // Charger le composant d'historique de minage
+            FXMLLoader historyLoader = new FXMLLoader(getClass().getResource("/fxml/mining/mining-history.fxml"));
+            VBox historyPanel = historyLoader.load();
+            miningHistory = historyLoader.getController();
+            if (miningHistoryContainer != null) {
+                miningHistoryContainer.getChildren().add(historyPanel);
+            }
+
+            System.out.println("✅ Composants mining chargés avec succès depuis leurs fichiers FXML");
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors du chargement des composants mining: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Configure les callbacks entre les composants
+     */
+    private void setupComponentCallbacks() {
+        if (miningSearchPanel != null) {
+            // Quand un minéral est sélectionné, mettre à jour les autres composants
+            miningSearchPanel.setOnMineralSelected(mineral -> {
+                // Le composant de recherche gère déjà la recherche
+                // On peut ajouter d'autres actions ici si nécessaire
+            });
+
+            // Quand une recherche est terminée, mettre à jour le cargo et l'historique
+            miningSearchPanel.setOnSearchCompleted(() -> {
+                if (currentCargo != null) {
+                    currentCargo.refresh();
+                }
+                if (miningHistory != null) {
+                    miningHistory.refresh();
+                }
+            });
+        }
+
+        if (currentProspector != null) {
+            // Quand le prospecteur change, mettre à jour le cargo
+            currentProspector.setOnProspectorChanged(() -> {
+                if (currentCargo != null) {
+                    currentCargo.refresh();
+                }
+            });
+        }
+
+        if (currentCargo != null) {
+            // Quand le cargo est mis à jour, on peut déclencher d'autres actions
+            currentCargo.setOnCargoUpdated(() -> {
+                // Actions supplémentaires si nécessaire
+            });
+        }
+
+        if (miningHistory != null) {
+            // Quand l'historique est mis à jour
+            miningHistory.setOnHistoryUpdated(() -> {
+                // Actions supplémentaires si nécessaire
+            });
+        }
+    }
+    /**
+     * Initialise les préférences de prix des minéraux
+     */
     private void initializePricePreference() {
         System.out.println("📊 Chargement des prix des minéraux depuis les préférences...");
         for (MineralType mineralType : MineralType.values()) {
@@ -211,575 +183,11 @@ public class MiningController implements Initializable, IRefreshable,IBatchListe
     }
 
     /**
-     * Charge les images pour les icônes
-     */
-    private void loadImages() {
-        try {
-            laserImage = new Image(getClass().getResourceAsStream("/images/laser.png"));
-            coreImage = new Image(getClass().getResourceAsStream("/images/core.png"));
-        } catch (Exception e) {
-            laserImage = null;
-            coreImage = null;
-        }
-    }
-
-    /**
-     * Crée une icône pour une catégorie de minéraux (séparateur)
-     */
-    private Object createCategoryIcon(MiningMethod miningMethod) {
-        if (MiningMethod.CORE.equals(miningMethod)) {
-            if (coreImage != null) {
-                ImageView imageView = new ImageView(coreImage);
-                imageView.setFitWidth(25);
-                imageView.setFitHeight(25);
-                imageView.setPreserveRatio(true);
-                return imageView;
-            } else {
-                return "🧭";
-            }
-        } else {
-            if (laserImage != null) {
-                ImageView imageView = new ImageView(laserImage);
-                imageView.setFitWidth(25);
-                imageView.setFitHeight(25);
-                imageView.setPreserveRatio(true);
-                return imageView;
-            } else {
-                return "🔫";
-            }
-        }
-    }
-
-    /**
-     * Met à jour l'affichage des prospecteurs avec navigation
-     */
-    public void updateProspectors() {
-        Platform.runLater(() -> {
-            Deque<ProspectedAsteroid> prospectors = miningService.getAllProspectors();
-
-            // Convertir en liste pour faciliter la navigation
-            allProspectors.clear();
-            allProspectors.addAll(prospectors);
-
-            if (allProspectors.isEmpty()) {
-                showNoProspector();
-                return;
-            }
-
-            // S'assurer que l'index est valide
-            if (currentProspectorIndex >= allProspectors.size()) {
-                currentProspectorIndex = 0;
-            }
-
-            showCurrentProspector();
-            updateNavigationButtons();
-        });
-    }
-
-    /**
-     * Affiche le prospecteur actuel
-     */
-    private void showCurrentProspector() {
-        if (allProspectors.isEmpty() || currentProspectorIndex >= allProspectors.size()) {
-            showNoProspector();
-            return;
-        }
-
-        noProspectorContainer.setVisible(false);
-
-        // Vider le contenu actuel
-        currentProspectorContent.getChildren().clear();
-
-        // Afficher le prospecteur actuel (toujours en grand format)
-        ProspectedAsteroid currentProspector = allProspectors.get(currentProspectorIndex);
-        VBox card = ProspectorCardComponent.createProspectorCard(currentProspector, true);
-
-        // Fixer la taille pour éviter les changements de layout
-        card.setMinHeight(350);
-        card.setPrefHeight(350);
-        card.setMaxHeight(350);
-        card.setMinWidth(400);
-        card.setPrefWidth(400);
-
-        currentProspectorContent.getChildren().add(card);
-
-        // Mettre à jour le compteur
-        updateProspectorCounter();
-    }
-
-    /**
-     * Affiche le message "aucun prospecteur"
-     */
-    private void showNoProspector() {
-        noProspectorContainer.setVisible(false);
-        updateNavigationButtons();
-    }
-
-    /**
-     * Met à jour les boutons de navigation
-     */
-    private void updateNavigationButtons() {
-        boolean hasProspectors = !allProspectors.isEmpty();
-        boolean canGoPrevious = hasProspectors && currentProspectorIndex > 0;
-        boolean canGoNext = hasProspectors && currentProspectorIndex < allProspectors.size() - 1;
-
-        previousProspectorButton.setDisable(!canGoPrevious);
-        nextProspectorButton.setDisable(!canGoNext);
-
-        if (hasProspectors) {
-            updateProspectorCounter();
-        } else {
-            prospectorCounterLabel.setText("0/0");
-        }
-    }
-
-    /**
-     * Met à jour le compteur de prospecteurs
-     */
-    private void updateProspectorCounter() {
-        if (!allProspectors.isEmpty()) {
-            prospectorCounterLabel.setText(String.format("%d/%d", currentProspectorIndex + 1, allProspectors.size()));
-        }
-    }
-
-    /**
-     * Affiche le prospecteur précédent
-     */
-    @FXML
-    public void showPreviousProspector() {
-        if (currentProspectorIndex > 0) {
-            currentProspectorIndex--;
-            showCurrentProspector();
-            updateNavigationButtons();
-        }
-    }
-
-    /**
-     * Affiche le prospecteur suivant
-     */
-    @FXML
-    public void showNextProspector() {
-        if (currentProspectorIndex < allProspectors.size() - 1) {
-            currentProspectorIndex++;
-            showCurrentProspector();
-            updateNavigationButtons();
-        }
-    }
-
-    /**
-     * Met à jour l'affichage du cargo
-     */
-    public void updateCargo() {
-        Platform.runLater(() -> {
-            CommanderShip.ShipCargo cargo = miningService.getCargo();
-
-            if (cargo == null) {
-                cargoUsedLabel.setText("0/0");
-                limpetsCountLabel.setText("0");
-                estimatedCreditsLabel.setText("0");
-                cargoMineralsList.getChildren().clear();
-                cargoMineralsList.getChildren().add(CargoInfoComponent.createNoMineralsLabel());
-                return;
-            }
-
-            // Mettre à jour les statistiques du cargo
-            cargoUsedLabel.setText(String.format("%d/%d", cargo.getCurrentUsed(), cargo.getMaxCapacity()));
-            limpetsCountLabel.setText(String.valueOf(miningService.getLimpetsCount()));
-
-            // Calculer et afficher les CR estimés
-            long estimatedCredits = miningService.calculateEstimatedCredits();
-            estimatedCreditsLabel.setText(miningService.formatPrice(estimatedCredits));
-
-            // Afficher les minéraux en utilisant le composant
-            cargoMineralsList.getChildren().clear();
-            VBox mineralsList = CargoInfoComponent.createMineralsList(miningService.getMinerals());
-            cargoMineralsList.getChildren().add(mineralsList);
-        });
-    }
-
-
-    /**
-     * Initialise les labels du header
-     */
-    private void initializeHeaderLabels() {
-        clearHeaderLabels();
-    }
-
-    /**
-     * Initialise les gestionnaires de clic pour copier les noms de systèmes
-     */
-    private void initializeClickHandlers() {
-        // Les gestionnaires de clic sont maintenant définis directement dans le FXML
-        // via onMouseClicked="#onRingContainerClicked" et onMouseClicked="#onStationContainerClicked"
-    }
-
-    /**
-     * Gestionnaire de clic pour le conteneur de l'anneau (nom + système)
-     */
-    @FXML
-    private void onRingContainerClicked(MouseEvent event) {
-        String systemName = headerRingSystemLabel.getText();
-        if (systemName != null && !systemName.isEmpty()) {
-            copyClipboardManager.copyToClipboard(systemName);
-            Stage stage = (Stage) headerRingSystemLabel.getScene().getWindow();
-            popupManager.showPopup(getTranslation("system.copied"), event.getSceneX(), event.getSceneY(), stage);
-        }
-    }
-
-    /**
-     * Gestionnaire de clic pour le conteneur de la station (nom + système)
-     */
-    @FXML
-    private void onStationContainerClicked(MouseEvent event) {
-        String systemName = headerStationSystemLabel.getText();
-        if (systemName != null && !systemName.isEmpty()) {
-            copyClipboardManager.copyToClipboard(systemName);
-            Stage stage = (Stage) headerStationSystemLabel.getScene().getWindow();
-            popupManager.showPopup(getTranslation("system.copied"), event.getSceneX(), event.getSceneY(), stage);
-        }
-    }
-
-    /**
-     * Efface les labels du header
-     */
-    private void clearHeaderLabels() {
-        Platform.runLater(() -> {
-            headerPriceLabel.setText("--");
-            headerDemandLabel.setText("--");
-            headerRingNameLabel.setText(getTranslation("mining.undefined"));
-            headerRingSystemLabel.setText("");
-            headerDistanceLabel.setText("--");
-            headerStationNameLabel.setText(getTranslation("mining.undefined_female"));
-            headerStationSystemLabel.setText("");
-            headerStationDistanceLabel.setText("--");
-            // Effacer l'image de la station
-            stationTypeImageView.setImage(null);
-        });
-    }
-
-    /**
-     * Gère la visibilité de l'indicateur de chargement
-     */
-    private void setLoadingVisible(boolean visible) {
-        Platform.runLater(() -> {
-            loadingIndicator.setVisible(visible);
-            loadingIndicator.setManaged(visible);
-
-            if (visible) {
-                // Pendant le chargement : masquer tout sauf la ComboBox
-                searchContentHBox.getChildren().forEach(child -> {
-                    if (child != mineralTargetContainer) {
-                        child.setVisible(false);
-                        child.setManaged(false);
-                    }
-                });
-            } else {
-                // Après le chargement : tout réafficher
-                searchContentHBox.getChildren().forEach(child -> {
-                    child.setVisible(true);
-                    child.setManaged(true);
-                });
-            }
-        });
-    }
-
-    /**
-     * Met à jour l'image du type de station
-     */
-    private void updateStationTypeImage(StationType stationType) {
-        Platform.runLater(() -> {
-            if (stationType != null) {
-                try {
-                    String imagePath = "/images/stations/" + stationType.getImage();
-                    Image stationImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath)));
-                    stationTypeImageView.setImage(stationImage);
-                } catch (Exception e) {
-                    // En cas d'erreur, ne pas afficher d'image
-                    stationTypeImageView.setImage(null);
-                }
-            } else {
-                stationTypeImageView.setImage(null);
-            }
-        });
-    }
-
-    /**
-     * Initialise le ComboBox avec tous les minéraux organisés par catégorie
-     */
-    private void initializeMineralComboBox() {
-        var items = MineralListWrapper.createOrganizedMineralsList();
-        mineralComboBox.setItems(items);
-        mineralComboBox.setPromptText(getTranslation("mining.mineral_placeholder"));
-
-        // 1️⃣ Préchargement des prix une seule fois
-        items.stream()
-                .filter(i -> !i.isSeparator())
-                .forEach(this::loadMineralPriceSafe); // null car pas besoin de cellule
-        mineralComboBox.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(MineralListWrapper item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(null);
-                setGraphic(null);
-
-                if (empty || item == null) return;
-
-                if (item.isSeparator()) {
-                    Object icon = createCategoryIcon(item.getMiningMethod());
-                    Label label = new Label(item.getMiningMethod().getMining());
-                    if (icon instanceof ImageView iv) {
-                        setGraphic(new HBox(5, iv, label));
-                    } else {
-                        setGraphic(null);
-                        setText(icon + " " + label.getText());
-                    }
-                    setDisable(true);
-                    return;
-                }
-
-                setDisable(false);
-                // 🔹 On affiche le texte initial
-                setText(item.getMineral().getTitleName() + " - " + item.getDisplayPriceFormatted());
-                item.displayPriceProperty().addListener((obs, oldV, newV) -> {
-                    // ⚠️ On vérifie que la cellule affiche encore le bon item (sinon, cellule recyclée)
-                    if (getItem() == item) {
-                        setText(item.getMineral().getTitleName() + " - " + newV);
-                    }
-                });
-            }
-        });
-        // Bouton (valeur sélectionnée)
-        mineralComboBox.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(MineralListWrapper item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(null);
-                setStyle("");
-                setGraphic(null);
-                if (empty || item == null || item.isSeparator()) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    setGraphic(null);
-                    Object icon = createCategoryIcon(item.getMiningMethod());
-                    Label label = new Label();
-                    if (icon instanceof ImageView iv) {
-                        setGraphic(new HBox(5, iv, label));
-                        setText(item.getMineral().getVisibleName());
-                    } else {
-                        setGraphic(null);
-                        setText(icon + " " + label.getText());
-                    }
-                }
-            }
-        });
-
-        mineralComboBox.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
-            if (n != null && !n.isSeparator()) searchMiningRouteForMineral(n.getMineral());
-            else clearHeaderLabels();
-        });
-    }
-
-    /**
-     * Empêche l'async d'écrire dans une cellule réutilisée.
-     */
-    private void loadMineralPriceSafe(MineralListWrapper item) {
-        Mineral mineral = item.getMineral();
-        String sourceSystem = miningService.getCurrentSystem();
-        int maxDistance = getMaxDistanceFromField();
-        int minDemand = miningService.getCurrentCargoCapacity();
-            if (item.getMineral().getPrice() == 0) {
-            miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
-                            padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
-                    .thenAccept(priceOpt -> Platform.runLater(() -> {
-                        // 🔹 On ne touche pas à la cellule ici !
-                        priceOpt.ifPresentOrElse(
-                                price -> {
-                                    item.getMineral().setPrice(price.getPrice());
-                                    refreshUI();
-                                },
-                                () -> item.setDisplayPriceError(getTranslation("mining.price_error"))
-                        );
-                        // 🔁 Demande à la ComboBox de se redessiner
-                    }))
-                    .exceptionally(ex -> {
-                        Platform.runLater(() -> {
-                            item.setDisplayPriceError(getTranslation("mining.price_error"));
-
-                        });
-                        return null;
-                    });
-        }
-    }
-
-    /**
-     * Recherche une route de minage pour un minéral spécifique avec option Fleet Carrier
-     */
-    private void searchMiningRouteForMineral(Mineral mineral) {
-        // Afficher l'indicateur de chargement
-        setLoadingVisible(true);
-
-        // Effacer les labels
-        clearHeaderLabels();
-
-        String sourceSystem = miningService.getCurrentSystem();
-        int maxDistance = getMaxDistanceFromField();
-        int minDemand = miningService.getCurrentCargoCapacity();
-
-        // Utiliser la nouvelle méthode du service pour rechercher la route complète
-        miningService.searchMiningRoute(mineral, sourceSystem, maxDistance, minDemand, padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
-                .thenAccept(routeResult -> Platform.runLater(() -> {
-                    // Masquer l'indicateur de chargement
-                    setLoadingVisible(false);
-
-                    if (routeResult.hasMarket()) {
-                        InaraCommoditiesStats bestMarket = routeResult.getMarket();
-                        headerPriceLabel.setText(String.format("%s Cr ", miningService.formatPrice(bestMarket.getPrice())));
-                        headerDemandLabel.setText(String.format("%d T", bestMarket.getDemand()));
-                        headerStationNameLabel.setText(bestMarket.getStationName());
-                        headerStationSystemLabel.setText(bestMarket.getSystemName());
-                        // Afficher la distance de la station depuis le système actuel
-                        headerStationDistanceLabel.setText(String.format("%.1f %s", bestMarket.getSystemDistance(), getTranslation("search.distance.unit")));
-                        // Mettre à jour l'image du type de station
-                        updateStationTypeImage(bestMarket.getStationType());
-                        updateCargo();
-                        updateMiningHistory();
-                        if (routeResult.hasHotspot()) {
-                            MiningHotspot bestHotspot = routeResult.getHotspot();
-                            headerRingNameLabel.setText(bestHotspot.getRingName());
-                            headerRingSystemLabel.setText(bestHotspot.getSystemName());
-                            headerDistanceLabel.setText(String.format("%.1f %s", bestHotspot.getDistanceFromReference(), getTranslation("search.distance.unit")));
-                        } else {
-                            headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
-                            headerRingSystemLabel.setText("");
-                            headerDistanceLabel.setText("--");
-                        }
-                    } else {
-                        headerPriceLabel.setText(getTranslation("mining.price_not_available"));
-                        headerDemandLabel.setText("--");
-                        headerRingNameLabel.setText(getTranslation("mining.no_market_found"));
-                        headerRingSystemLabel.setText("");
-                        headerDistanceLabel.setText("--");
-                        headerStationNameLabel.setText(getTranslation("mining.no_station_found"));
-                        headerStationSystemLabel.setText("");
-                    }
-                }))
-                .exceptionally(throwable -> {
-                    Platform.runLater(() -> {
-                        // Masquer l'indicateur de chargement
-                        setLoadingVisible(false);
-
-                        headerPriceLabel.setText(getTranslation("mining.price_error"));
-                        headerDemandLabel.setText("--");
-                        headerRingNameLabel.setText(getTranslation("mining.search_error"));
-                        headerRingSystemLabel.setText("");
-                        headerDistanceLabel.setText("--");
-                        headerStationNameLabel.setText(getTranslation("mining.search_error"));
-                        headerStationSystemLabel.setText("");
-                    });
-                    return null;
-                });
-    }
-
-    /**
      * Met à jour toutes les traductions de l'interface
      */
     private void updateTranslations() {
         if (miningTitleLabel != null) {
             miningTitleLabel.setText(getTranslation("mining.title"));
-        }
-        if (mineralTargetLabel != null) {
-            mineralTargetLabel.setText(getTranslation("mining.mineral_target"));
-        }
-        if (priceLabel != null) {
-            priceLabel.setText(getTranslation("mining.price"));
-        }
-        if (demandLabel != null) {
-            demandLabel.setText(getTranslation("mining.demand"));
-        }
-        if (ringToMineLabel != null) {
-            ringToMineLabel.setText(getTranslation("mining.ring_to_mine"));
-        }
-        if (stationToSellLabel != null) {
-            stationToSellLabel.setText(getTranslation("mining.station_to_sell"));
-        }
-        if (currentProspectorLabel != null) {
-            currentProspectorLabel.setText(getTranslation("mining.current_prospector"));
-        }
-        if (currentCargoLabel != null) {
-            currentCargoLabel.setText(getTranslation("mining.current_cargo"));
-        }
-        if (cargoLabel != null) {
-            cargoLabel.setText(getTranslation("mining.cargo"));
-        }
-        if (limpetsLabel != null) {
-            limpetsLabel.setText(getTranslation("mining.limpets"));
-        }
-        if (estimatedCreditsTitleLabel != null) {
-            estimatedCreditsTitleLabel.setText(getTranslation("mining.estimated_credits"));
-        }
-
-        // Mettre à jour le promptText du ComboBox
-        if (mineralComboBox != null) {
-            mineralComboBox.setPromptText(getTranslation("mining.mineral_placeholder"));
-        }
-
-        // Mettre à jour le tooltip du Fleet Carrier checkbox
-        if (fleetCarrierCheckBox != null) {
-            fleetCarrierCheckBox.setTooltip(new TooltipComponent(getTranslation("mining.fleet_carrier_hint")));
-        }
-
-        // Mettre à jour les labels de distance
-        if (maxDistanceLabel != null) {
-            maxDistanceLabel.setText(getTranslation("mining.max_distance"));
-        }
-        if (distanceUnitLabel != null) {
-            distanceUnitLabel.setText(getTranslation("mining.distance_unit"));
-        }
-        if (headerStationDistanceTitleLabel != null) {
-            headerStationDistanceTitleLabel.setText(getTranslation("mining.station_distance_from_system"));
-        }
-
-        // Mettre à jour les labels de l'historique des sessions
-        if (miningHistoryLabel != null) {
-            miningHistoryLabel.setText(getTranslation("mining.history_sessions"));
-        }
-        if (totalSessionsTitleLabel != null) {
-            totalSessionsTitleLabel.setText(getTranslation("mining.total_sessions"));
-        }
-        if (totalDurationTitleLabel != null) {
-            totalDurationTitleLabel.setText(getTranslation("mining.total_duration"));
-        }
-        if (totalValueTitleLabel != null) {
-            totalValueTitleLabel.setText(getTranslation("mining.total_value"));
-        }
-
-        // Mettre à jour les unités de distance dans les labels existants
-        updateDistanceUnits();
-    }
-
-    /**
-     * Met à jour les unités de distance dans les labels qui contiennent déjà des valeurs
-     */
-    private void updateDistanceUnits() {
-        // Mettre à jour la distance de l'anneau
-        if (headerDistanceLabel != null && !headerDistanceLabel.getText().equals("--")) {
-            String currentText = headerDistanceLabel.getText();
-            if (currentText.contains("AL") || currentText.contains("LY")) {
-                // Remplacer simplement l'unité sans toucher au nombre
-                String newText = currentText.replaceAll("AL|LY", getTranslation("search.distance.unit"));
-                headerDistanceLabel.setText(newText);
-            }
-        }
-
-        // Mettre à jour la distance de la station
-        if (headerStationDistanceLabel != null && !headerStationDistanceLabel.getText().equals("--")) {
-            String currentText = headerStationDistanceLabel.getText();
-            if (currentText.contains("AL") || currentText.contains("LY")) {
-                // Remplacer simplement l'unité sans toucher au nombre
-                String newText = currentText.replaceAll("AL|LY", getTranslation("search.distance.unit"));
-                headerStationDistanceLabel.setText(newText);
-            }
         }
     }
 
@@ -790,87 +198,32 @@ public class MiningController implements Initializable, IRefreshable,IBatchListe
         return localizationService.getString(key);
     }
 
-    /**
-     * Initialise le checkbox Fleet Carrier avec l'image
-     */
-    private void initializeFleetCarrierCheckBox() {
-        if (fleetCarrierCheckBox != null) {
-            try {
-                // Charger l'image fleet.png
-                Image fleetImage = new Image(getClass().getResourceAsStream("/images/fleet.png"));
-                ImageView fleetImageView = new ImageView(fleetImage);
-                fleetImageView.setFitWidth(16);
-                fleetImageView.setFitHeight(16);
-                fleetImageView.setPreserveRatio(true);
-
-                // Créer un HBox pour contenir l'image et le texte
-                HBox contentBox = new HBox(5);
-                contentBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                contentBox.getChildren().addAll(fleetImageView, new Label("Fleet Carrier"));
-
-                // Définir le contenu du checkbox
-                fleetCarrierCheckBox.setGraphic(contentBox);
-                fleetCarrierCheckBox.setTooltip(new TooltipComponent(getTranslation("mining.fleet_carrier_hint")));
-            } catch (Exception e) {
-                // Si l'image n'est pas trouvée, utiliser juste le texte
-                fleetCarrierCheckBox.setText("Fleet Carrier");
-                fleetCarrierCheckBox.setTooltip(new TooltipComponent(getTranslation("mining.fleet_carrier_hint")));
-            }
+    @Override
+    public void refreshUI() {
+        if (miningSearchPanel != null) {
+            // Le composant de recherche se met à jour automatiquement
         }
-
-        // Initialiser le checkbox Pads
-        if (padsCheckBox != null) {
-            padsCheckBox.setText("Large pads");
-            padsCheckBox.setTooltip(new TooltipComponent(getTranslation("mining.pads_hint")));
+        if (currentProspector != null) {
+            currentProspector.refresh();
+        }
+        if (currentCargo != null) {
+            currentCargo.refresh();
+        }
+        if (miningHistory != null) {
+            miningHistory.refresh();
         }
     }
 
-    /**
-     * Récupère la distance maximale depuis le champ de saisie
-     */
-    private int getMaxDistanceFromField() {
-        String distanceText = maxDistanceTextField != null ? maxDistanceTextField.getText() : "";
-        return miningService.getMaxDistanceFromField(distanceText, MAX_DISTANCE);
-    }
-
-    /**
-     * Initialise le champ de distance maximale
-     */
-    private void initializeMaxDistanceField() {
-        if (maxDistanceTextField != null) {
-            // Valider que la valeur est numérique
-            maxDistanceTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-                String validatedText = miningService.validateDistanceText(newValue);
-                if (!validatedText.equals(newValue)) {
-                    maxDistanceTextField.setText(validatedText);
-                }
-            });
-
-            // Écouter la perte de focus pour recharger le minéral
-            maxDistanceTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
-                if (!newValue && mineralComboBox.getValue() != null) {
-                    // Perte de focus : recharger le minéral sélectionné
-                    MineralListWrapper selectedWrapper = mineralComboBox.getValue();
-                    if (selectedWrapper.getMineral() != null) {
-                        searchMiningRouteForMineral(selectedWrapper.getMineral());
-                    }
-                }
-            });
-        }
-    }
-
+    // Méthodes pour maintenir la compatibilité avec le fichier FXML existant
+    // Ces méthodes délèguent maintenant aux composants appropriés
 
     /**
      * Gère le toggle du checkbox Fleet Carrier
      */
     @FXML
-    private void onFleetCarrierToggle() {
-        if (mineralComboBox.getValue() != null) {
-            // Rechercher pour le minéral sélectionné avec Fleet Carrier
-            MineralListWrapper selectedWrapper = mineralComboBox.getValue();
-            if (selectedWrapper.getMineral() != null) {
-                searchMiningRouteForMineral(selectedWrapper.getMineral());
-            }
+    public void onFleetCarrierToggle() {
+        if (miningSearchPanel != null) {
+            miningSearchPanel.onFleetCarrierToggle();
         }
     }
 
@@ -878,206 +231,66 @@ public class MiningController implements Initializable, IRefreshable,IBatchListe
      * Gère le toggle du checkbox Pads
      */
     @FXML
-    private void onPadsToggle() {
-        if (mineralComboBox.getValue() != null) {
-            // Rechercher pour le minéral sélectionné avec Pads
-            MineralListWrapper selectedWrapper = mineralComboBox.getValue();
-            if (selectedWrapper.getMineral() != null) {
-                searchMiningRouteForMineral(selectedWrapper.getMineral());
-            }
+    public void onPadsToggle() {
+        if (miningSearchPanel != null) {
+            miningSearchPanel.onPadsToggle();
         }
     }
 
     /**
-     * Initialise l'historique des sessions de minage
+     * Affiche le prospecteur précédent
      */
-    private void initializeMiningHistory() {
-        updateMiningHistory();
-    }
-
-    /**
-     * Met à jour l'historique des sessions de minage
-     */
-    private void updateMiningHistory() {
-        Platform.runLater(() -> {
-            // Mettre à jour les statistiques globales
-            MiningStatsService.MiningGlobalStats globalStats = miningStatsService.getGlobalStats();
-            totalSessionsLabel.setText(String.valueOf(globalStats.getTotalSessions()));
-            totalDurationLabel.setText(formatDuration(globalStats.getTotalDurationMinutes()));
-            totalValueLabel.setText(miningService.formatPrice(globalStats.getTotalValue()) + " Cr");
-
-            // Mettre à jour la liste des sessions
-            updateMiningHistoryList();
-        });
-    }
-
-    /**
-     * Met à jour la liste des sessions de minage
-     */
-    private void updateMiningHistoryList() {
-        miningHistoryList.getChildren().clear();
-
-        List<be.mirooz.elitedangerous.dashboard.model.mining.MiningStat> completedStats =
-                miningStatsService.getCompletedMiningStats();
-
-        if (completedStats.isEmpty()) {
-            Label noSessionsLabel = new Label("Aucune session terminée");
-            noSessionsLabel.getStyleClass().add("no-sessions-message");
-            miningHistoryList.getChildren().add(noSessionsLabel);
-            return;
-        }
-
-        // Créer une nouvelle liste mutable pour pouvoir trier
-        List<be.mirooz.elitedangerous.dashboard.model.mining.MiningStat> sortedStats =
-                new ArrayList<>(completedStats);
-
-        // Trier par date de début (plus récent en premier)
-        sortedStats.sort((a, b) -> b.getStartDate().compareTo(a.getStartDate()));
-
-        for (MiningStat stat : sortedStats) {
-            VBox sessionCard = createMiningSessionCard(stat);
-            miningHistoryList.getChildren().add(sessionCard);
+    @FXML
+    public void showPreviousProspector() {
+        if (currentProspector != null) {
+            currentProspector.showPreviousProspector();
         }
     }
 
     /**
-     * Crée une carte pour une session de minage
+     * Affiche le prospecteur suivant
      */
-    private VBox createMiningSessionCard(be.mirooz.elitedangerous.dashboard.model.mining.MiningStat stat) {
-        VBox card = new VBox(5);
-        if (stat.isActive()) {
-            card.getStyleClass().addAll("mining-session-card", "mining-session-card-current");
-        } else {
-            card.getStyleClass().add("mining-session-card");
+    @FXML
+    public void showNextProspector() {
+        if (currentProspector != null) {
+            currentProspector.showNextProspector();
         }
-
-        // En-tête avec système et anneau
-        HBox header = new HBox(10);
-        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-        Label systemLabel = new Label(stat.getSystemName());
-        systemLabel.getStyleClass().add("session-system");
-
-        Label ringLabel = new Label(shortenRingName(stat.getRingName(), stat.getSystemName()));
-        ringLabel.getStyleClass().add("session-ring");
-
-        // Ajouter un indicateur "CURRENT" si la session est active
-        if (stat.isActive()) {
-            Label currentLabel = new Label(getTranslation("mining.current_session"));
-            currentLabel.getStyleClass().add("session-current");
-            header.getChildren().addAll(systemLabel, ringLabel, currentLabel);
-        } else {
-            header.getChildren().addAll(systemLabel, ringLabel);
-        }
-
-        // Informations de la session
-        VBox info = new VBox(3);
-
-        // Durée
-        Label durationLabel = new Label("Durée: " + formatDuration(stat.getDurationInMinutes()));
-        durationLabel.getStyleClass().add("session-info");
-
-        // Nombre de minéraux
-        int totalMinerals = stat.getRefinedMinerals().size();
-        Label mineralsLabel = new Label("Minéraux: " + totalMinerals);
-        mineralsLabel.getStyleClass().add("session-info");
-
-        // Valeur
-        Label valueLabel = new Label("Valeur: " + miningService.formatPrice(stat.getTotalValue()) + " Cr");
-        valueLabel.getStyleClass().add("session-value");
-
-        info.getChildren().addAll(durationLabel, mineralsLabel, valueLabel);
-
-        // Date
-        Label dateLabel = new Label(formatDate(stat.getStartDate()));
-        dateLabel.getStyleClass().add("session-date");
-
-        card.getChildren().addAll(header, info, dateLabel);
-
-        // Ajouter un tooltip avec le détail des minéraux
-        Tooltip tooltip = createMineralsTooltip(stat);
-        Tooltip.install(card, tooltip);
-
-        return card;
     }
 
     /**
-     * Crée un tooltip avec le détail des minéraux raffinés
+     * Gestionnaire de clic pour le conteneur de l'anneau
      */
-    private Tooltip createMineralsTooltip(be.mirooz.elitedangerous.dashboard.model.mining.MiningStat stat) {
-        StringBuilder tooltipText = new StringBuilder();
-        tooltipText.append("Minéraux raffinés:\n");
-
-        Map<Mineral, Integer> minerals = stat.getTotalRefinedMinerals();
-
-        if (minerals.isEmpty()) {
-            tooltipText.append("Aucun minéral raffiné");
-        } else {
-            minerals.entrySet().stream()
-                    .sorted(Map.Entry.<Mineral, Integer>comparingByValue().reversed())
-                    .forEach(entry -> {
-                        tooltipText.append("• ")
-                                .append(entry.getKey().getVisibleName())
-                                .append(": ")
-                                .append(entry.getValue())
-                                .append(" unités\n");
-                    });
-
-            // Supprimer le dernier \n
-            if (tooltipText.length() > 0) {
-                tooltipText.setLength(tooltipText.length() - 1);
-            }
+    @FXML
+    public void onRingContainerClicked(MouseEvent event) {
+        if (miningSearchPanel != null) {
+            miningSearchPanel.onRingContainerClicked(event);
         }
-
-        Tooltip tooltip = new TooltipComponent(tooltipText.toString());
-        tooltip.getStyleClass().add("mining-session-tooltip");
-        tooltip.setShowDelay(javafx.util.Duration.millis(500));
-        tooltip.setHideDelay(javafx.util.Duration.millis(200));
-
-        return tooltip;
     }
 
     /**
-     * Formate une durée en minutes en heures et minutes
+     * Gestionnaire de clic pour le conteneur de la station
      */
-    private String formatDuration(long minutes) {
-        long hours = minutes / 60;
-        long remainingMinutes = minutes % 60;
-        return String.format("%dh %dm", hours, remainingMinutes);
-    }
-
-    /**
-     * Formate une date pour l'affichage
-     */
-    private String formatDate(java.time.LocalDateTime date) {
-        return date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-    }
-
-    /**
-     * Raccourcit le nom de l'anneau en supprimant la répétition du nom du système
-     */
-    private String shortenRingName(String ringName, String systemName) {
-        if (ringName == null || systemName == null) {
-            return ringName;
+    @FXML
+    public void onStationContainerClicked(MouseEvent event) {
+        if (miningSearchPanel != null) {
+            miningSearchPanel.onStationContainerClicked(event);
         }
-
-        // Si le nom de l'anneau commence par le nom du système, le supprimer
-        if (ringName.startsWith(systemName)) {
-            String shortened = ringName.substring(systemName.length()).trim();
-            // Supprimer les espaces en début et les caractères de séparation comme " - " ou " "
-            if (shortened.startsWith(" - ") || shortened.startsWith(" ")) {
-                shortened = shortened.replaceFirst("^\\s*-?\\s*", "");
-            }
-            return shortened.isEmpty() ? ringName : shortened;
-        }
-
-        return ringName;
     }
 
-    @Override
-    public void refreshUI() {
-        updateProspectors();
-        updateCargo();
-        updateMiningHistory();
+    // Getters pour accéder aux composants depuis l'extérieur
+    public MiningSearchPanelComponent getMiningSearchPanel() {
+        return miningSearchPanel;
+    }
+
+    public CurrentProspectorComponent getCurrentProspector() {
+        return currentProspector;
+    }
+
+    public CurrentCargoComponent getCurrentCargo() {
+        return currentCargo;
+    }
+
+    public MiningHistoryComponent getMiningHistory() {
+        return miningHistory;
     }
 }

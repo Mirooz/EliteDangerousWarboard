@@ -2,15 +2,12 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.dashboard.service.MissionService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -100,7 +97,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         }
     }
     private void createHeaderPanel() throws IOException {
-        FXMLLoader headerLoader = new FXMLLoader(getClass().getResource("/fxml/header.fxml"));
+        FXMLLoader headerLoader = new FXMLLoader(getClass().getResource("/fxml/combat/header.fxml"));
         VBox header = headerLoader.load();
         HeaderController headerController = headerLoader.getController();
         missionsPane.setTop(header);
@@ -115,7 +112,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     }
 
     private void createMissionPanel() throws IOException {
-        FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/mission-list.fxml"));
+        FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/combat/mission-list.fxml"));
         VBox missionList = missionListLoader.load();
         MissionListController missionListController = missionListLoader.getController();
         dashboardService.addBatchListener(missionListController);
@@ -123,7 +120,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     }
 
     private void createDestroyedShipsPanel() throws IOException {
-        FXMLLoader destroyedShipsLoader = new FXMLLoader(getClass().getResource("/fxml/destroyed-ships.fxml"));
+        FXMLLoader destroyedShipsLoader = new FXMLLoader(getClass().getResource("/fxml/combat/destroyed-ships.fxml"));
         VBox destroyedShipsPanel = destroyedShipsLoader.load();
         DestroyedShipsController destroyedShipsController = destroyedShipsLoader.getController();
         dashboardService.addBatchListener(destroyedShipsController);
@@ -132,7 +129,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
     private void createMiningPanel() throws IOException {
         // Charger le panneau de mining
-        FXMLLoader miningLoader = new FXMLLoader(getClass().getResource("/fxml/mining-panel.fxml"));
+        FXMLLoader miningLoader = new FXMLLoader(getClass().getResource("/fxml/mining/mining-panel.fxml"));
         VBox miningPanel = miningLoader.load();
         MiningController miningController = miningLoader.getController();
         dashboardService.addBatchListener(miningController);
@@ -176,7 +173,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void openConfigDialog() {
         Stage primaryStage = (Stage) configButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
+        DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
 
         dialog.init(primaryStage);
         dialog.showAndWait();

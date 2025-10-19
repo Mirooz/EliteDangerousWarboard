@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.MiningController"
+      styleClass="mining-panel">
+
+    <!-- Header avec filtre de recherche -->
+    <VBox fx:id="miningSearchPanelContainer" spacing="10" styleClass="mining-header"/>
+
+    <!-- Contenu principal en trois colonnes -->
+    <HBox spacing="20" styleClass="mining-content">
+        <!-- Colonne gauche : Prospecteur actuel avec navigation -->
+        <VBox fx:id="currentProspectorContainer" spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
+
+        <!-- Colonne centrale : Cargo -->
+        <VBox fx:id="currentCargoContainer" spacing="10" styleClass="mining-center-panel" HBox.hgrow="ALWAYS"/>
+
+        <!-- Colonne droite : Historique des sessions de minage -->
+        <VBox fx:id="miningHistoryContainer" spacing="10" styleClass="mining-right-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="400" prefWidth="400"/>
+    </HBox>
+</VBox>

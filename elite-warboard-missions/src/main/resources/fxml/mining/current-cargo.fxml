@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.CurrentCargoComponent"
+      styleClass="mining-center-panel" spacing="10" HBox.hgrow="ALWAYS">
+
+    <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>
+
+    <!-- Informations du cargo -->
+    <HBox spacing="20" styleClass="cargo-info">
+        <VBox alignment="CENTER" spacing="5">
+            <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number"/>
+            <Label fx:id="cargoLabel" text="CARGO" styleClass="cargo-stat-label"/>
+        </VBox>
+        <VBox alignment="CENTER" spacing="5">
+            <Label fx:id="limpetsCountLabel" text="0" styleClass="cargo-stat-number"/>
+            <Label fx:id="limpetsLabel" text="LIMPETS" styleClass="cargo-stat-label"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <VBox alignment="CENTER_RIGHT" spacing="5">
+            <Label fx:id="estimatedCreditsLabel" text="0" styleClass="cargo-stat-price-number"/>
+            <Label fx:id="estimatedCreditsTitleLabel" text="CR ESTIMÉS" styleClass="cargo-stat-price"/>
+        </VBox>
+    </HBox>
+
+    <!-- Liste des minéraux dans le cargo -->
+    <VBox spacing="5" fx:id="cargoMineralsList" styleClass="cargo-minerals-list" VBox.vgrow="ALWAYS"/>
+</VBox>

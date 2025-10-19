@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.MiningHistoryComponent"
+      styleClass="mining-right-panel" spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="400" prefWidth="400">
+
+    <Label fx:id="miningHistoryLabel" text="HISTORIQUE DES SESSIONS" styleClass="mining-section-title"/>
+    
+    <!-- Statistiques globales -->
+    <VBox spacing="5" styleClass="mining-stats-summary">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label fx:id="totalSessionsLabel" text="0" styleClass="mining-stat-number"/>
+            <Label fx:id="totalSessionsTitleLabel" text="Sessions" styleClass="mining-stat-label"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label fx:id="totalDurationLabel" text="0h 0m" styleClass="mining-stat-number"/>
+            <Label fx:id="totalDurationTitleLabel" text="Durée totale" styleClass="mining-stat-label"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label fx:id="totalValueLabel" text="0 Cr" styleClass="mining-stat-number"/>
+            <Label fx:id="totalValueTitleLabel" text="Valeur totale" styleClass="mining-stat-label"/>
+        </HBox>
+    </VBox>
+
+    <!-- Liste des sessions de minage -->
+    <ScrollPane fx:id="miningHistoryScrollPane" styleClass="mining-history-scroll" VBox.vgrow="ALWAYS" 
+               fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+        <VBox fx:id="miningHistoryList" spacing="8" styleClass="mining-history-list"/>
+    </ScrollPane>
+</VBox>

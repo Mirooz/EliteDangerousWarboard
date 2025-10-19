@@ -183,7 +183,7 @@ public class HeaderController implements Initializable, IRefreshable {
     private void openMassacreSearchDialog() {
         Stage primaryStage = (Stage) massacreSearchButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/massacre-search-dialog.fxml", "/css/elite-theme.css", "Recherche de Systèmes Massacre", 1000, 700);
+        DialogComponent dialog = new DialogComponent("/fxml/combat/massacre-search-dialog.fxml", "/css/elite-theme.css", "Recherche de Systèmes Massacre", 1000, 700);
 
         dialog.init(primaryStage);
         dialog.showAndWait();
