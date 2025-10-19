@@ -1,6 +1,7 @@
-package be.mirooz.elitedangerous.dashboard.controller.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.model.mining.MiningStat;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;

@@ -6,7 +6,7 @@
 
 <?import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView?>
 <?import be.mirooz.elitedangerous.dashboard.model.commander.Mission?>
-<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.TargetPanelComponent?>
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent?>
 <VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.MissionListController">
@@ -46,7 +46,7 @@
                             maxWidth="450"
                             minWidth="300"
                             HBox.hgrow="ALWAYS"
-      VBox.vgrow="NEVER"/>
+                            VBox.vgrow="NEVER"/>
    </HBox>
 
 </VBox>

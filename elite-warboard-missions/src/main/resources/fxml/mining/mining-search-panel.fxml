@@ -6,7 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.MiningSearchPanelComponent"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.MiningSearchPanelComponent"
       styleClass="mining-search-panel" spacing="10">
 
     <!-- Header avec filtre de recherche -->

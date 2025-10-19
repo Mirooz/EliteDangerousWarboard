@@ -1,5 +1,6 @@
-package be.mirooz.elitedangerous.dashboard.controller.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.CargoInfoComponent;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;

@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.TargetPanelComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
@@ -13,7 +13,7 @@ import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.MissionCardComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

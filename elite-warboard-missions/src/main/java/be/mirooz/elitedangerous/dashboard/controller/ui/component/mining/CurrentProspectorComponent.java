@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.controller.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;

@@ -1,10 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.CurrentCargoComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.CurrentProspectorComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.MiningHistoryComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.MiningSearchPanelComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentCargoComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentProspectorComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.MiningHistoryComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.MiningSearchPanelComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;

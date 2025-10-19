@@ -5,7 +5,7 @@
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.CurrentProspectorComponent"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentProspectorComponent"
       styleClass="mining-left-panel" spacing="10" VBox.vgrow="ALWAYS">
 
     <HBox spacing="15" styleClass="prospector-navigation-header" alignment="CENTER_LEFT">

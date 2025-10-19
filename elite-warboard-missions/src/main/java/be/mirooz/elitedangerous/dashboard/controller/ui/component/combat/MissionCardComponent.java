@@ -1,5 +1,6 @@
-package be.mirooz.elitedangerous.dashboard.controller.ui.component;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component.combat;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
