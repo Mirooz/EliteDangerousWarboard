@@ -33,10 +33,13 @@ public class OverlayComponent {
     private static final String OVERLAY_OPACITY_KEY = "overlay.opacity";
     private static final String OVERLAY_X_KEY = "overlay.x";
     private static final String OVERLAY_Y_KEY = "overlay.y";
+    private static final String OVERLAY_TEXT_SCALE_KEY = "overlay.text_scale";
 
     private Stage overlayStage;
     private double overlayOpacity;
     private Slider opacitySlider;
+    private Slider textScaleSlider;
+    private double textScale = 1.0;
     private StackPane stackPane;
 
     /**
@@ -76,6 +79,8 @@ public class OverlayComponent {
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
             VBox newCard = createOverlayCard(prospector);
             stackPane.getChildren().set(0, newCard);
+            // Appliquer le scaling actuel à la nouvelle carte
+            applyTextScaleToNode(newCard, textScale);
         }
     }
 
@@ -86,6 +91,8 @@ public class OverlayComponent {
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
             VBox emptyCard = createEmptyCard();
             stackPane.getChildren().set(0, emptyCard);
+            // Appliquer le scaling actuel à la carte vide
+            applyTextScaleToNode(emptyCard, textScale);
         }
     }
 
@@ -145,20 +152,29 @@ public class OverlayComponent {
 
         // Créer le curseur de transparence
         opacitySlider = createOpacitySlider();
+        
+        // Créer le curseur de scaling du texte
+        textScaleSlider = createTextScaleSlider();
 
         // Créer le conteneur principal
         stackPane = new StackPane();
-        stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider);
+        stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider, textScaleSlider);
         StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
+        StackPane.setAlignment(textScaleSlider, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(opacitySlider, new Insets(0, 30, 0, 0));
+        StackPane.setMargin(textScaleSlider, new Insets(0, 60, 20, 0));
         stackPane.setPickOnBounds(true);
 
         // Appliquer le style initial
         updatePaneStyle(overlayOpacity, stackPane);
+        
+        // Appliquer le scaling initial du texte
+        applyTextScaleToNode(mirrorCard, textScale);
 
         // Configurer le listener du curseur
         setupOpacitySliderListener();
+        setupTextScaleSliderListener();
     }
 
     /**
@@ -215,6 +231,26 @@ public class OverlayComponent {
 
         return slider;
     }
+    
+    /**
+     * Crée le curseur de scaling du texte
+     */
+    private Slider createTextScaleSlider() {
+        Slider slider = new Slider(0.5, 3.0, textScale);
+        slider.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+        slider.setPrefWidth(100);
+        slider.setOpacity(0.0); // Masquer par défaut
+        slider.getStyleClass().add("text-scale-slider");
+        
+        // Configuration pour des valeurs précises
+        slider.setMajorTickUnit(0.5);
+        slider.setMinorTickCount(1);
+        slider.setShowTickLabels(false);
+        slider.setShowTickMarks(false);
+        slider.setSnapToTicks(false);
+        
+        return slider;
+    }
 
     /**
      * Configure le listener du curseur de transparence
@@ -224,6 +260,16 @@ public class OverlayComponent {
             double opacity = Math.max(newVal.doubleValue(), 0.01);
             updatePaneStyle(opacity, stackPane);
             overlayOpacity = opacity;
+        });
+    }
+    
+    /**
+     * Configure le listener du curseur de scaling du texte
+     */
+    private void setupTextScaleSliderListener() {
+        textScaleSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            textScale = newVal.doubleValue();
+            updateTextScale(textScale);
         });
     }
 
@@ -239,6 +285,33 @@ public class OverlayComponent {
                 stackPaneOpacity
         );
         stackPane.setStyle(style);
+    }
+    
+    /**
+     * Met à jour le scaling du texte dans la carte
+     */
+    private void updateTextScale(double scale) {
+        if (stackPane != null && stackPane.getChildren().size() > 0) {
+            VBox card = (VBox) stackPane.getChildren().get(0);
+            applyTextScaleToNode(card, scale);
+        }
+    }
+    
+    /**
+     * Applique le scaling du texte récursivement à tous les nœuds de texte
+     */
+    private void applyTextScaleToNode(javafx.scene.Node node, double scale) {
+        if (node instanceof Label) {
+            Label label = (Label) node;
+            String scaleStyle = String.format(Locale.ENGLISH, 
+                "-fx-font-size: %.1fem;", scale);
+            label.setStyle(scaleStyle);
+        } else if (node instanceof javafx.scene.layout.Pane) {
+            javafx.scene.layout.Pane pane = (javafx.scene.layout.Pane) node;
+            for (javafx.scene.Node child : pane.getChildren()) {
+                applyTextScaleToNode(child, scale);
+            }
+        }
     }
 
     /**
@@ -315,32 +388,36 @@ public class OverlayComponent {
             // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                if (stackPane.getChildren().size() > 1) {
+                if (stackPane.getChildren().size() > 3) {
                     ((Label) stackPane.getChildren().get(1)).setOpacity(1.0); // resizeHandle
                     ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8); // opacitySlider
+                    ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8); // textScaleSlider
                 }
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                if (stackPane.getChildren().size() > 1) {
+                if (stackPane.getChildren().size() > 3) {
                     ((Label) stackPane.getChildren().get(1)).setOpacity(0.8); // resizeHandle
                     ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8); // opacitySlider
+                    ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8); // textScaleSlider
                 }
             }
         });
 
         // Masquer les contrôles quand la souris quitte la scène
         scene.setOnMouseExited(e -> {
-            if (stackPane.getChildren().size() > 1) {
+            if (stackPane.getChildren().size() > 3) {
                 ((Label) stackPane.getChildren().get(1)).setOpacity(0.0); // resizeHandle
                 ((Slider) stackPane.getChildren().get(2)).setOpacity(0.0); // opacitySlider
+                ((Slider) stackPane.getChildren().get(3)).setOpacity(0.0); // textScaleSlider
             }
         });
 
         // Afficher les contrôles quand la souris entre dans la scène
         scene.setOnMouseEntered(e -> {
-            if (stackPane.getChildren().size() > 1) {
+            if (stackPane.getChildren().size() > 3) {
                 ((Label) stackPane.getChildren().get(1)).setOpacity(0.8); // resizeHandle
                 ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8); // opacitySlider
+                ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8); // textScaleSlider
             }
         });
 
@@ -360,17 +437,24 @@ public class OverlayComponent {
         String savedOpacityStr = preferencesService.getPreference(OVERLAY_OPACITY_KEY, "0.92");
         String savedXStr = preferencesService.getPreference(OVERLAY_X_KEY, "100");
         String savedYStr = preferencesService.getPreference(OVERLAY_Y_KEY, "100");
+        String savedTextScaleStr = preferencesService.getPreference(OVERLAY_TEXT_SCALE_KEY, "1.0");
 
         double savedWidth = Double.parseDouble(savedWidthStr);
         double savedHeight = Double.parseDouble(savedHeightStr);
         double savedX = Double.parseDouble(savedXStr);
         double savedY = Double.parseDouble(savedYStr);
         overlayOpacity = Double.parseDouble(savedOpacityStr);
+        textScale = Double.parseDouble(savedTextScaleStr);
 
         overlayStage.setWidth(Math.max(savedWidth, overlayStage.getMinWidth()));
         overlayStage.setHeight(Math.max(savedHeight, overlayStage.getMinHeight()));
         overlayStage.setX(savedX);
         overlayStage.setY(savedY);
+        
+        // Appliquer le scaling du texte
+        if (textScaleSlider != null) {
+            textScaleSlider.setValue(textScale);
+        }
     }
 
     /**
@@ -383,10 +467,12 @@ public class OverlayComponent {
             preferencesService.setPreference(OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
             preferencesService.setPreference(OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
             preferencesService.setPreference(OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
+            preferencesService.setPreference(OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
             System.out.println("💾 Préférences overlay sauvegardées: " +
                     (int) overlayStage.getWidth() + "x" + (int) overlayStage.getHeight() +
                     " (opacité: " + String.format("%.2f", overlayOpacity) + 
-                    ", position: " + (int) overlayStage.getX() + "," + (int) overlayStage.getY() + ")");
+                    ", position: " + (int) overlayStage.getX() + "," + (int) overlayStage.getY() +
+                    ", scaling: " + String.format("%.2f", textScale) + ")");
         }
     }
     
