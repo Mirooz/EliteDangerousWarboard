@@ -31,6 +31,8 @@ public class OverlayComponent {
     private static final String OVERLAY_WIDTH_KEY = "overlay.width";
     private static final String OVERLAY_HEIGHT_KEY = "overlay.height";
     private static final String OVERLAY_OPACITY_KEY = "overlay.opacity";
+    private static final String OVERLAY_X_KEY = "overlay.x";
+    private static final String OVERLAY_Y_KEY = "overlay.y";
 
     private Stage overlayStage;
     private double overlayOpacity;
@@ -292,6 +294,9 @@ public class OverlayComponent {
                     // Déplacement
                     overlayStage.setX(e.getScreenX() - offset[0]);
                     overlayStage.setY(e.getScreenY() - offset[1]);
+                    
+                    // Sauvegarder la position en temps réel
+                    saveOverlayPosition();
                 }
             }
         });
@@ -353,13 +358,19 @@ public class OverlayComponent {
         String savedWidthStr = preferencesService.getPreference(OVERLAY_WIDTH_KEY, "600");
         String savedHeightStr = preferencesService.getPreference(OVERLAY_HEIGHT_KEY, "500");
         String savedOpacityStr = preferencesService.getPreference(OVERLAY_OPACITY_KEY, "0.92");
+        String savedXStr = preferencesService.getPreference(OVERLAY_X_KEY, "100");
+        String savedYStr = preferencesService.getPreference(OVERLAY_Y_KEY, "100");
 
         double savedWidth = Double.parseDouble(savedWidthStr);
         double savedHeight = Double.parseDouble(savedHeightStr);
+        double savedX = Double.parseDouble(savedXStr);
+        double savedY = Double.parseDouble(savedYStr);
         overlayOpacity = Double.parseDouble(savedOpacityStr);
 
         overlayStage.setWidth(Math.max(savedWidth, overlayStage.getMinWidth()));
         overlayStage.setHeight(Math.max(savedHeight, overlayStage.getMinHeight()));
+        overlayStage.setX(savedX);
+        overlayStage.setY(savedY);
     }
 
     /**
@@ -370,9 +381,22 @@ public class OverlayComponent {
             preferencesService.setPreference(OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
             preferencesService.setPreference(OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
             preferencesService.setPreference(OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
+            preferencesService.setPreference(OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
+            preferencesService.setPreference(OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
             System.out.println("💾 Préférences overlay sauvegardées: " +
                     (int) overlayStage.getWidth() + "x" + (int) overlayStage.getHeight() +
-                    " (opacité: " + String.format("%.2f", overlayOpacity) + ")");
+                    " (opacité: " + String.format("%.2f", overlayOpacity) + 
+                    ", position: " + (int) overlayStage.getX() + "," + (int) overlayStage.getY() + ")");
+        }
+    }
+    
+    /**
+     * Sauvegarde uniquement la position de l'overlay (pour les déplacements en temps réel)
+     */
+    private void saveOverlayPosition() {
+        if (overlayStage != null && overlayStage.isShowing()) {
+            preferencesService.setPreference(OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
+            preferencesService.setPreference(OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
         }
     }
 }
