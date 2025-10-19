@@ -119,7 +119,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
 
         // Afficher le prospecteur actuel (toujours en grand format)
         ProspectedAsteroid currentProspector = allProspectors.get(currentProspectorIndex);
-        VBox card = ProspectorCardComponent.createProspectorCard(currentProspector, true);
+        VBox card = ProspectorCardComponent.createProspectorCard(currentProspector);
 
         // Fixer la taille pour éviter les changements de layout
         card.setMinSize(500, 450);

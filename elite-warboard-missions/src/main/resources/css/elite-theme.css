@@ -255,17 +255,6 @@
     -fx-font-weight: bold;
 }
 
-.elite-mineral-name-large {
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 22px;
-    -fx-font-weight: bold;
-}
-
-
-.elite-materials-container {
-    -fx-spacing: 4px;
-    -fx-padding: 8px 0 0 0;
-}
 
 .elite-materials-title {
     -fx-text-fill: -fx-elite-cyan;
@@ -273,21 +262,12 @@
     -fx-font-weight: bold;
 }
 
-.elite-materials-title-large {
-    -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-}
 
 .elite-material-name {
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 13px;
 }
 
-.elite-material-name-large {
-    -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 16px;
-}
 
 .elite-material-percent {
     -fx-text-fill: -fx-elite-green;
@@ -295,21 +275,12 @@
     -fx-font-weight: bold;
 }
 
-.elite-material-percent-large {
-    -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-}
 
 .elite-content {
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 14px;
 }
 
-.elite-content-large {
-    -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 16px;
-}
 
 .prospector-mineral {
     -fx-text-fill: -fx-elite-cyan;
@@ -2431,7 +2402,7 @@
 /* Indicateur de core */
 .core-indicator {
     -fx-text-fill: -fx-elite-warning;
-    -fx-font-size: 10px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-background-color: rgba(255, 170, 0, 0.2);
     -fx-border-color: -fx-elite-warning;
@@ -2451,7 +2422,7 @@
 
 .elite-mineral-name-large {
     -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 18px;
+    -fx-font-size: 22px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
 }
@@ -2465,7 +2436,7 @@
 
 .elite-content-large {
     -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 14px;
+    -fx-font-size: 17px;
     -fx-font-style: italic;
 }
 
@@ -2486,7 +2457,7 @@
 
 .elite-materials-title-large {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 14px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
 }
@@ -2500,27 +2471,31 @@
 
 .elite-material-name-large {
     -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 14px;
+    -fx-font-size: 17px;
     -fx-min-width: 120px;
 }
 
-/* Pourcentages des matériaux */
-.elite-material-percent {
-    -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-min-width: 45px;
-    -fx-alignment: center-right;
-}
 
 .elite-material-percent-large {
     -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 14px;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
     -fx-min-width: 50px;
     -fx-alignment: center-right;
 }
+.elite-material-percent-large.low {
+     -fx-text-fill: -fx-elite-text;
+ }
 
+.elite-material-percent-large.medium {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 19px;
+}
+
+.elite-material-percent-large.high {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 19px;
+}
 /* ====== STYLES POUR LA SECTION DE PRÉPARATION ====== */
 
 /* Section de préparation */

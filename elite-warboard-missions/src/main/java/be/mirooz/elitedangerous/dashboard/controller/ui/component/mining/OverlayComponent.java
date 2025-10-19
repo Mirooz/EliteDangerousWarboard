@@ -169,7 +169,7 @@ public class OverlayComponent {
         if (prospector == null) {
             card = createEmptyCard();
         } else {
-            card = ProspectorCardComponent.createProspectorCard(prospector, true);
+            card = ProspectorCardComponent.createProspectorCard(prospector);
         }
         card.getStyleClass().add("mirror-overlay");
         return card;
