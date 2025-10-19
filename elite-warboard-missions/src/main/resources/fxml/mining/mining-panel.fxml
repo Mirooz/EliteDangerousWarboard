@@ -14,7 +14,7 @@
     <!-- Contenu principal en trois colonnes -->
     <HBox spacing="20" styleClass="mining-content">
         <!-- Colonne gauche : Prospecteur actuel avec navigation -->
-        <VBox fx:id="currentProspectorContainer" spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
+        <VBox fx:id="currentProspectorContainer" spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" maxWidth="550"/>
 
         <!-- Colonne centrale : Cargo -->
         <VBox fx:id="currentCargoContainer" spacing="10" styleClass="mining-center-panel" HBox.hgrow="ALWAYS"  VBox.vgrow="ALWAYS" minWidth="400" maxWidth="500"/>

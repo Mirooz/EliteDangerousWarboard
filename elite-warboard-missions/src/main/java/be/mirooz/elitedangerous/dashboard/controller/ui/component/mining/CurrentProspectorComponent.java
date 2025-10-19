@@ -3,19 +3,12 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
-import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.util.*;
@@ -34,12 +27,6 @@ public class CurrentProspectorComponent implements Initializable {
     // Services
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
-    private final PreferencesService preferencesService = PreferencesService.getInstance();
-    
-    // Clés pour les préférences de l'overlay
-    private static final String OVERLAY_WIDTH_KEY = "overlay.width";
-    private static final String OVERLAY_HEIGHT_KEY = "overlay.height";
-    private static final String OVERLAY_OPACITY_KEY = "overlay.opacity";
 
     // Composants FXML
     @FXML
@@ -59,8 +46,7 @@ public class CurrentProspectorComponent implements Initializable {
     @FXML
     private Button overlayButton;
 
-    private Stage overlayStage;
-    private double overlayOpacity;
+    private OverlayComponent overlayComponent;
 
     // Variables pour la navigation
     private List<ProspectedAsteroid> allProspectors = new ArrayList<>();
@@ -71,6 +57,9 @@ public class CurrentProspectorComponent implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Initialiser le composant overlay
+        overlayComponent = new OverlayComponent();
+        
         updateProspectors();
         updateTranslations();
         
@@ -145,6 +134,9 @@ public class CurrentProspectorComponent implements Initializable {
         if (onProspectorChanged != null) {
             onProspectorChanged.run();
         }
+        
+        // Mettre à jour l'overlay si il est ouvert
+        updateOverlayContent();
     }
 
     /**
@@ -242,7 +234,7 @@ public class CurrentProspectorComponent implements Initializable {
             String text;
             String icon;
             
-            if (overlayStage != null && overlayStage.isShowing()) {
+            if (overlayComponent != null && overlayComponent.isShowing()) {
                 text = getTranslation("mining.overlay_close");
                 icon = "✖"; // Croix pour fermer
             } else {
@@ -252,7 +244,7 @@ public class CurrentProspectorComponent implements Initializable {
             
             // Vérifier si la traduction a fonctionné, sinon utiliser un texte par défaut
             if (text == null || text.startsWith("mining.")) {
-                if (overlayStage != null && overlayStage.isShowing()) {
+                if (overlayComponent != null && overlayComponent.isShowing()) {
                     text = "Fermer Overlay";
                 } else {
                     text = "Ouvrir Overlay";
@@ -261,31 +253,6 @@ public class CurrentProspectorComponent implements Initializable {
             
             // Combiner l'icône et le texte
             overlayButton.setText(icon + " " + text);
-        }
-    }
-
-    /**
-     * Crée une carte de prospecteur avec le style d'overlay et la transparence appropriée
-     */
-    private VBox createOverlayCard(ProspectedAsteroid prospector) {
-        VBox card = ProspectorCardComponent.createProspectorCard(prospector, true);
-        card.getStyleClass().add("mirror-overlay");
-
-        
-        return card;
-    }
-
-    /**
-     * Sauvegarde la taille et la transparence du background de l'overlay dans les préférences
-     */
-    private void saveOverlaySize() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            preferencesService.setPreference(OVERLAY_WIDTH_KEY, String.valueOf((int)overlayStage.getWidth()));
-            preferencesService.setPreference(OVERLAY_HEIGHT_KEY, String.valueOf((int)overlayStage.getHeight()));
-            preferencesService.setPreference(OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
-            System.out.println("💾 Taille et transparence de l'overlay sauvegardées: " + 
-                (int)overlayStage.getWidth() + "x" + (int)overlayStage.getHeight() + 
-                " (opacité overlay: " + String.format("%.2f", overlayOpacity) + ")");
         }
     }
 
@@ -346,218 +313,19 @@ public class CurrentProspectorComponent implements Initializable {
 
     @FXML
     public void showProspectorOverlay() {
-        // Rien à afficher si pas de prospecteur
-        if (getCurrentProspector() == null) {
-            System.out.println("⚠️ Aucun prospecteur à afficher dans l'overlay.");
-            return;
-        }
-
-        // Si la fenêtre est déjà ouverte, on la ferme
-        if (overlayStage != null && overlayStage.isShowing()) {
-            // Sauvegarder la taille actuelle avant de fermer
-            saveOverlaySize();
-            overlayStage.close();
-            overlayStage = null;
+        if (overlayComponent != null) {
+            overlayComponent.showOverlay(getCurrentProspector());
             updateOverlayButtonText();
-            return;
         }
-
-        // --- Création de la fenêtre overlay ---
-        overlayStage = new Stage();
-        overlayStage.initStyle(StageStyle.TRANSPARENT);
-        overlayStage.setAlwaysOnTop(true);
-        overlayStage.setTitle("Prospector Overlay");
-        overlayStage.setResizable(true);
-
-        // Définir la taille par défaut et minimale
-        overlayStage.setMinWidth(200);
-        overlayStage.setMinHeight(150);
-        
-        // Restaurer la taille sauvegardée ou utiliser les valeurs par défaut
-        String savedWidthStr = preferencesService.getPreference(OVERLAY_WIDTH_KEY, "600");
-        String savedHeightStr = preferencesService.getPreference(OVERLAY_HEIGHT_KEY, "500");
-        String savedOpacityStr = preferencesService.getPreference(OVERLAY_OPACITY_KEY, "0.92");
-        
-        double savedWidth = Double.parseDouble(savedWidthStr);
-        double savedHeight = Double.parseDouble(savedHeightStr);
-        double savedBackgroundOpacity = Double.parseDouble(savedOpacityStr);
-        
-        // S'assurer que la taille sauvegardée respecte les tailles minimales
-        overlayStage.setWidth(Math.max(savedWidth, overlayStage.getMinWidth()));
-        overlayStage.setHeight(Math.max(savedHeight, overlayStage.getMinHeight()));
-        overlayStage.setOpacity(1.0); // Overlay toujours opaque
-
-        // On crée une carte identique au panel principal (clone visuel)
-        VBox mirrorCard = createOverlayCard(getCurrentProspector());
-        
-        // Ajouter un indicateur de redimensionnement dans le coin inférieur droit
-        javafx.scene.control.Label resizeHandle = new javafx.scene.control.Label("⤡");
-        resizeHandle.getStyleClass().add("resize-handle");
-        resizeHandle.setStyle("-fx-text-fill: gold; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: center;");
-        resizeHandle.setOpacity(0.0); // Masquer par défaut
-        
-        // Ajouter un curseur de transparence en bas à droite
-        Slider opacitySlider = new Slider(0.05, 1.0, savedBackgroundOpacity);
-        opacitySlider.setOrientation(javafx.geometry.Orientation.VERTICAL);
-        opacitySlider.setPrefWidth(20);
-        opacitySlider.setPrefHeight(80);
-        opacitySlider.setOpacity(0.0); // Masquer par défaut
-        opacitySlider.getStyleClass().add("opacity-slider");
-        
-        // Configuration pour des valeurs plus précises
-        opacitySlider.setMajorTickUnit(0.2);
-        opacitySlider.setMinorTickCount(1);
-        opacitySlider.setShowTickLabels(false);
-        opacitySlider.setShowTickMarks(false);
-        opacitySlider.setSnapToTicks(false); // Permettre des valeurs intermédiaires
-
-        // Positionner les éléments dans le coin inférieur droit
-        javafx.scene.layout.StackPane stackPane = new javafx.scene.layout.StackPane();
-        stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider);
-        StackPane.setAlignment(resizeHandle, javafx.geometry.Pos.BOTTOM_RIGHT);
-        StackPane.setAlignment(opacitySlider, javafx.geometry.Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(opacitySlider, new javafx.geometry.Insets(0, 30, 0, 0)); // Décaler vers la gauche
-        stackPane.setPickOnBounds(true);
-        
-        // Appliquer la transparence initiale du StackPane
-        updatePaneStyle(savedBackgroundOpacity, stackPane);
-
-        // Écouter les changements de transparence
-        opacitySlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            double opacity = Math.max(newVal.doubleValue(), 0.01);
-            updatePaneStyle(opacity, stackPane);
-            this.overlayOpacity = opacity;
-        });
-        Scene scene = new Scene(stackPane);
-        overlayStage.setScene(scene);
-        scene.setFill(Color.TRANSPARENT);
-        overlayStage.setOpacity(1.0); // Overlay toujours opaque
-
-        // Appliquer les mêmes styles CSS que le reste de l’app
-        scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-
-        // Permettre le déplacement et le redimensionnement de la fenêtre
-        final double[] offset = new double[2];
-        final double[] resizeOffset = new double[2];
-        final boolean[] isResizing = {false};
-        
-        scene.setOnMousePressed(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                offset[0] = e.getScreenX() - overlayStage.getX();
-                offset[1] = e.getScreenY() - overlayStage.getY();
-                
-                // Vérifier si on est dans une zone de redimensionnement (coin inférieur droit)
-                double sceneWidth = scene.getWidth();
-                double sceneHeight = scene.getHeight();
-                double mouseX = e.getSceneX();
-                double mouseY = e.getSceneY();
-                
-                // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
-                if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
-                    isResizing[0] = true;
-                    resizeOffset[0] = e.getScreenX();
-                    resizeOffset[1] = e.getScreenY();
-                }
-            }
-        });
-        
-        scene.setOnMouseDragged(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                if (isResizing[0]) {
-                    // Redimensionnement
-                    double deltaX = e.getScreenX() - resizeOffset[0];
-                    double deltaY = e.getScreenY() - resizeOffset[1];
-                    
-                    double newWidth = overlayStage.getWidth() + deltaX;
-                    double newHeight = overlayStage.getHeight() + deltaY;
-                    
-                    // Respecter les tailles minimales
-                    if (newWidth >= overlayStage.getMinWidth()) {
-                        overlayStage.setWidth(newWidth);
-                    }
-                    if (newHeight >= overlayStage.getMinHeight()) {
-                        overlayStage.setHeight(newHeight);
-                    }
-                    
-                    resizeOffset[0] = e.getScreenX();
-                    resizeOffset[1] = e.getScreenY();
-                } else {
-                    // Déplacement
-                    overlayStage.setX(e.getScreenX() - offset[0]);
-                    overlayStage.setY(e.getScreenY() - offset[1]);
-                }
-            }
-        });
-        
-        scene.setOnMouseReleased(e -> {
-            isResizing[0] = false;
-        });
-        
-        // Gestion du curseur et de la visibilité des contrôles
-        scene.setOnMouseMoved(e -> {
-            double sceneWidth = scene.getWidth();
-            double sceneHeight = scene.getHeight();
-            double mouseX = e.getSceneX();
-            double mouseY = e.getSceneY();
-            
-            // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
-            if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
-                scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                resizeHandle.setOpacity(1.0); // Afficher l'icône de redimensionnement
-                opacitySlider.setOpacity(0.8); // Afficher le curseur de transparence
-            } else {
-                scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                resizeHandle.setOpacity(0.8); // Afficher l'icône partout dans l'overlay
-                opacitySlider.setOpacity(0.8); // Afficher le curseur de transparence
-            }
-        });
-        
-        // Masquer les contrôles quand la souris quitte la scène
-        scene.setOnMouseExited(e -> {
-            resizeHandle.setOpacity(0.0);
-            opacitySlider.setOpacity(0.0);
-        });
-        
-        // Afficher les contrôles quand la souris entre dans la scène
-        scene.setOnMouseEntered(e -> {
-            resizeHandle.setOpacity(0.8); // Afficher l'icône dès l'entrée
-            opacitySlider.setOpacity(0.8); // Afficher le curseur dès l'entrée
-        });
-
-        // Ajouter un listener pour détecter la fermeture de la fenêtre
-        overlayStage.setOnCloseRequest(event -> {
-            // Sauvegarder la taille actuelle de la fenêtre
-            saveOverlaySize();
-            overlayStage = null;
-            updateOverlayButtonText();
-        });
-
-        overlayStage.show();
-        updateOverlayButtonText();
-
-        // --- Synchronisation automatique ---
-        // À chaque changement de prospecteur → mise à jour de l'overlay
-        setOnProspectorChanged(() -> {
-            if (overlayStage != null && overlayStage.isShowing()) {
-                Platform.runLater(() -> {
-                    // Utiliser la même méthode que l'initialisation
-                    VBox newCard = createOverlayCard(getCurrentProspector());
-                    StackPane rootStackPane = (StackPane) overlayStage.getScene().getRoot();
-                    rootStackPane.getChildren().set(0, newCard);
-                });
-            }
-        });
     }
 
-    private void updatePaneStyle(double savedBackgroundOpacity, StackPane stackPane) {
-        double initialStackPaneOpacity = Math.max(0.05, savedBackgroundOpacity);
-        overlayOpacity = initialStackPaneOpacity;
-        String initialStackPaneStyle = String.format(
-                Locale.US,
-                "-fx-background-color: rgba(0, 0, 0, %.2f);",
-                initialStackPaneOpacity
-        );
-        stackPane.setStyle(initialStackPaneStyle);
+    /**
+     * Met à jour le contenu de l'overlay lors du changement de prospecteur
+     */
+    private void updateOverlayContent() {
+        if (overlayComponent != null && overlayComponent.isShowing()) {
+            overlayComponent.updateContent(getCurrentProspector());
+        }
     }
 
 }
