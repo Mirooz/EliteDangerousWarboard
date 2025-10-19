@@ -2554,6 +2554,40 @@
     -fx-text-fill: -fx-elite-success;
     -fx-font-size: 19px;
 }
+
+.elite-material-estimation-large {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-min-width: 100px;
+    -fx-alignment: center-right;
+}
+
+.core-estimation-large {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-min-width: 120px;
+    -fx-alignment: center-right;
+}
+
+.elite-total-label-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.elite-total-value-large {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.asteroid-total-estimation {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
 /* ====== STYLES POUR LA SECTION DE PRÉPARATION ====== */
 
 /* Section de préparation */

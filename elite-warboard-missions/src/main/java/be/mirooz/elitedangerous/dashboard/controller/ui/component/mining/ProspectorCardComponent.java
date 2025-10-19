@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -20,6 +21,35 @@ public class ProspectorCardComponent {
     }
 
     /**
+     * Calcule l'estimation de valeur d'un matériau basé sur son pourcentage
+     * Formule: 0.28 × pourcentage × prix_du_minéral
+     */
+    private static long calculateMaterialEstimation(double percentage, be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral mineral) {
+        if (mineral == null || mineral.getPrice() == 0) {
+            return 0;
+        }
+        
+        // Calculer la quantité extraite en tonnes: 0.28 × pourcentage
+        double extractedTons = 0.28 * percentage;
+        
+        // Multiplier par le prix du minéral
+        return Math.round(extractedTons * mineral.getPrice());
+    }
+
+    /**
+     * Calcule l'estimation de valeur d'un core
+     * Formule: 18 × prix_du_minéral
+     */
+    private static long calculateCoreEstimation(be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType coreMineral) {
+        if (coreMineral == null || coreMineral.getPrice() == 0) {
+            return 0;
+        }
+        
+        // Pour un core: 18 tonnes × prix du minéral
+        return Math.round(18 * coreMineral.getPrice());
+    }
+
+    /**
      * Crée une carte de prospecteur avec design Elite Dangerous
      */
     public static VBox createProspectorCard(ProspectedAsteroid prospector) {
@@ -31,32 +61,55 @@ public class ProspectorCardComponent {
         cardContainer.setFillWidth(true);
 
 
-        // En-tête avec indicateur de core
-        HBox headerContainer = new HBox(10);
+        // En-tête avec estimation totale en haut à droite
+        HBox headerContainer = new HBox();
         headerContainer.setAlignment(Pos.CENTER_LEFT);
-
-        // Icône d'astéroïde
-        Label asteroidIcon = new Label("●");
-        asteroidIcon.getStyleClass().add("asteroid-icon");
-        if (prospector.getCoreMineral() != null) {
-            asteroidIcon.getStyleClass().add("core-asteroid");
-        }
-
-        // Nom du minéral principal
-        String mineralName = prospector.getCoreMineral() != null ?
-                prospector.getCoreMineral().getVisibleName() :
-                (prospector.getMotherlodeMaterial() != null ? prospector.getMotherlodeMaterial().toUpperCase() : getTranslation("mining.asteroid"));
-
-        Label mineralLabel = new Label(mineralName);
-        mineralLabel.getStyleClass().add("elite-mineral-name-large");
+        headerContainer.setSpacing(10);
 
         // Indicateur de core si présent
         if (prospector.getCoreMineral() != null) {
+            // Icône d'astéroïde core
+            Label asteroidIcon = new Label("●");
+            asteroidIcon.getStyleClass().add("asteroid-icon");
+            asteroidIcon.getStyleClass().add("core-asteroid");
+            
+            // Nom du minéral core
+            String mineralName = prospector.getCoreMineral().getVisibleName();
+            Label mineralLabel = new Label(mineralName);
+            mineralLabel.getStyleClass().add("elite-mineral-name-large");
+            
             Label coreIndicator = new Label(getTranslation("mining.core"));
             coreIndicator.getStyleClass().add("core-indicator");
+            
             headerContainer.getChildren().addAll(asteroidIcon, mineralLabel, coreIndicator);
-        } else {
-            //headerContainer.getChildren().addAll(asteroidIcon, mineralLabel);
+        }
+        // Pas de core, ne rien afficher dans l'en-tête
+
+        // Calculer l'estimation totale
+        long totalEstimation = 0;
+        if (prospector.getMaterials() != null) {
+            for (ProspectedAsteroid.Material material : prospector.getMaterials()) {
+                if (material.getProportion() != null) {
+                    long estimation = calculateMaterialEstimation(material.getProportion(), material.getName());
+                    totalEstimation += estimation;
+                }
+            }
+        }
+        if (prospector.getCoreMineral() != null) {
+            long coreEstimation = calculateCoreEstimation(prospector.getCoreMineral());
+            totalEstimation += coreEstimation;
+        }
+
+        // Afficher l'estimation totale en haut à droite
+        if (totalEstimation > 0) {
+            Label totalEstimationLabel = new Label("~" + MiningService.getInstance().formatPrice(totalEstimation) + " Cr");
+            totalEstimationLabel.getStyleClass().add("asteroid-total-estimation");
+            
+            // Utiliser un spacer pour pousser l'estimation à droite
+            javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+            HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+            
+            headerContainer.getChildren().addAll(spacer, totalEstimationLabel);
         }
 
         // Contenu localisé
@@ -105,6 +158,12 @@ public class ProspectorCardComponent {
                     materialsContainer.getChildren().add(materialRow);
                 }
             }
+        }
+
+        // Ajouter l'estimation du core au total si présent
+        if (prospector.getCoreMineral() != null) {
+            long coreEstimation = calculateCoreEstimation(prospector.getCoreMineral());
+            totalEstimation += coreEstimation;
         }
 
         // Assemblage final

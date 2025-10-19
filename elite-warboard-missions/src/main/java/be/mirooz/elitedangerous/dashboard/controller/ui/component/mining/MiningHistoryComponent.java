@@ -187,11 +187,19 @@ public class MiningHistoryComponent implements Initializable {
         Label mineralsLabel = new Label("Minéraux: " + totalMinerals);
         mineralsLabel.getStyleClass().add("session-info");
 
-        // Valeur
-        Label valueLabel = new Label("Valeur: " + miningService.formatPrice(stat.getTotalValue()) + " Cr");
-        valueLabel.getStyleClass().add("session-value");
+        // Valeur avec texte et chiffre séparés
+        HBox valueContainer = new HBox(5);
+        valueContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        
+        Label valuePrefixLabel = new Label("Valeur: ");
+        valuePrefixLabel.getStyleClass().add("session-info");
+        
+        Label valueAmountLabel = new Label(miningService.formatPrice(stat.getTotalValue()) + " Cr");
+        valueAmountLabel.getStyleClass().add("session-value");
+        
+        valueContainer.getChildren().addAll(valuePrefixLabel, valueAmountLabel);
 
-        info.getChildren().addAll(durationContainer, mineralsLabel, valueLabel);
+        info.getChildren().addAll(durationContainer, mineralsLabel, valueContainer);
 
         // Détails des minéraux (droite)
         VBox mineralsDetails = createMineralsDetails(stat);
