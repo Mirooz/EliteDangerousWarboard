@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
+import javafx.beans.property.IntegerProperty;
 
 /**
  * Interface représentant un minéral dans Elite Dangerous
@@ -16,5 +17,6 @@ public interface Mineral extends ICommodity {
     String getMiningRefinedName();
 
     int getPrice();
+    IntegerProperty getPriceProperty();
     void setPrice(int price);
 }

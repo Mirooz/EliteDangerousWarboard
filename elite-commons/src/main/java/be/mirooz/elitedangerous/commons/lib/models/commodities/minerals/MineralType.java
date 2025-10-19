@@ -1,5 +1,9 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
 import java.util.*;
 
 public enum MineralType implements Mineral {
@@ -141,7 +145,7 @@ public enum MineralType implements Mineral {
     private final String miningRefinedName;
     private final MiningMethod miningMethod;
 
-    private volatile int price;
+    private final IntegerProperty price = new SimpleIntegerProperty();
 
     MineralType(
             String inaraId,
@@ -188,12 +192,16 @@ public enum MineralType implements Mineral {
 
     @Override
     public int getPrice() {
-        return price;
+        return price.get();
     }
 
     @Override
+    public IntegerProperty getPriceProperty(){
+        return price;
+    }
+    @Override
     public void setPrice(int price) {
-        this.price = price;
+        this.price.set(price);
     }
 
     @Override

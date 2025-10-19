@@ -21,7 +21,7 @@ public class InaraService {
 
     private static final InaraService INSTANCE = new InaraService();
     private final InaraClient client;
-    private final Cache<String, List<InaraCommoditiesStats>> minerMarketCache = Caffeine.newBuilder()
+    private final Cache<String, InaraCommoditiesStats> minerMarketCache = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .maximumSize(1000)
             .build();
@@ -62,54 +62,51 @@ public class InaraService {
         return name + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad + "|" + fleetCarrier;
     }
 
-    public CompletableFuture<Optional<InaraCommoditiesStats>> fetchMinerMarket(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
+    public Optional<InaraCommoditiesStats> fetchMinerMarket(
+            Mineral mineral,
+            String sourceSystem,
+            int maxDistance,
+            int minDemand,
+            boolean largePad,
+            boolean includeFleetCarrier) {
+
         String cacheKey = buildCacheKey(mineral.getInaraName(), sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
-        return CompletableFuture.supplyAsync(() -> {
+        InaraCommoditiesStats best = minerMarketCache.get(cacheKey, k -> {
+            System.out.println("🆕 Cache miss: " + mineral.getCargoJsonName());
             try {
-                List<InaraCommoditiesStats> commodities = fetchMinerMarketCache(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier, cacheKey);
+                List<InaraCommoditiesStats> commodities =
+                        fetchMinerMarketCache(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
+
                 if (commodities == null || commodities.isEmpty()) {
-                    return Optional.empty();
+                    return null;
                 }
-                Optional<InaraCommoditiesStats> bestOpt = commodities.stream()
+                return commodities.stream()
                         .filter(c -> c.getSystemDistance() <= maxDistance)
-                        .filter(c -> c.isFleetCarrier() ? minDemand <= c.getDemand() : minDemand * 4 <= c.getDemand())
-                        .max(Comparator.comparingDouble(InaraCommoditiesStats::getPrice));
-
-                bestOpt.ifPresent(best -> {
-                    mineral.setPrice(best.getPrice());
-                    // Sauvegarder le prix dans les préférences
-                    saveMineralPriceToPreferences(mineral, best.getPrice());
-                });
-
-                return bestOpt;
+                        .filter(c -> {
+                            int demand = c.getDemand();
+                            return c.isFleetCarrier() ? demand >= minDemand : demand >= minDemand * 4;
+                        })
+                        .max(Comparator.comparingDouble(InaraCommoditiesStats::getPrice))
+                        .map(bestOpt -> {
+                            mineral.setPrice(bestOpt.getPrice());
+                            return bestOpt;
+                        })
+                        .orElse(null);
 
             } catch (Exception e) {
-                return Optional.empty();
+                System.err.println("❌ Error while fetching miner market for " + mineral.getInaraName() + ": " + e.getMessage());
+                e.printStackTrace();
+                return null;
             }
         });
+        saveMineralPriceToPreferences(mineral, mineral.getPrice());
+        return Optional.ofNullable(best);
     }
 
-    private List<InaraCommoditiesStats> fetchMinerMarketCache(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier, String cacheKey) {
-        return minerMarketCache.get(cacheKey, k -> {
-            System.out.println("🆕 Cache miss " + mineral.getCargoJsonName());
-            try {
-                List<InaraCommoditiesStats> results = client.fetchMinerMarket(
-                        mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
-                
-                // Si aucun résultat trouvé, essayer avec les paramètres par défaut (fleet=true, largePad=false)
-                if (results.isEmpty() && mineral instanceof MineralType) {
-                    String defaultCacheKey = buildCacheKey(mineral.getInaraName(), "Sol", 100, 1000, false, true);
-                    List<InaraCommoditiesStats> defaultResults = minerMarketCache.getIfPresent(defaultCacheKey);
-                    if (defaultResults != null && !defaultResults.isEmpty()) {
-                        System.out.println("🔄 Utilisation du prix par défaut depuis le cache pour " + mineral.getCargoJsonName());
-                        return defaultResults;
-                    }
-                }
-                
-                return results;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+
+    private List<InaraCommoditiesStats> fetchMinerMarketCache(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) throws IOException {
+        return client.fetchMinerMarket(
+                mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
+
     }
 }

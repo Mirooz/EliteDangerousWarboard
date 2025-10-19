@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
+import javafx.beans.property.IntegerProperty;
 
 /**
  * Représente un minerai inconnu, utilisé comme fallback quand le nom ne correspond à aucun connu.
@@ -22,6 +23,10 @@ public record UnknownMineral(String rawName) implements Mineral {
         return 0;
     }
 
+    @Override
+    public IntegerProperty getPriceProperty(){
+        return null;
+    }
     @Override
     public void setPrice(int price) {
 

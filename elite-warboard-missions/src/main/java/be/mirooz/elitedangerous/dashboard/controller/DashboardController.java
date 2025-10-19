@@ -135,6 +135,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         FXMLLoader miningLoader = new FXMLLoader(getClass().getResource("/fxml/mining-panel.fxml"));
         VBox miningPanel = miningLoader.load();
         MiningController miningController = miningLoader.getController();
+        dashboardService.addBatchListener(miningController);
         miningPane.setCenter(miningPanel);
     }
 

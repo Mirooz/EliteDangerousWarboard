@@ -16,13 +16,13 @@ import static be.mirooz.elitedangerous.commons.lib.models.commodities.LimpetType
 
 /**
  * Service pour gérer la logique métier du mining
- * 
+ * <p>
  * Cette classe contient toute la logique métier liée au mining :
  * - Calculs de crédits estimés
  * - Recherche de routes de minage complètes
  * - Validation et formatage des données
  * - Gestion des minéraux et du cargo
- * 
+ * <p>
  * Refactorisé depuis MiningController pour séparer la logique métier de l'interface utilisateur.
  */
 public class MiningService {
@@ -104,11 +104,15 @@ public class MiningService {
     /**
      * Recherche le prix d'un minéral avec option Fleet Carrier
      */
-    public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad,boolean includeFleetCarrier) {
-        return inaraService.fetchMinerMarket(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
+    public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return inaraService.fetchMinerMarket(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
-
-
 
 
     /**
@@ -215,6 +219,7 @@ public class MiningService {
     public String formatPrice(int price) {
         return formatPrice((long) price);
     }
+
     public String formatPrice(long price) {
         return String.format("%,d", price).replace(",", ".");
     }

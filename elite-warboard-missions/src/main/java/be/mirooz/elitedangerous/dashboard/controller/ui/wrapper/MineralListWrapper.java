@@ -29,7 +29,6 @@ public class MineralListWrapper {
 
     // 🧠 Nouvelles propriétés observables pour l’affichage
     private final StringProperty displayPrice = new SimpleStringProperty("");
-    private final StringProperty displayError = new SimpleStringProperty("");
 
     // Constructeur pour un séparateur
     public static MineralListWrapper separator(MiningMethod miningMethod) {
@@ -45,6 +44,8 @@ public class MineralListWrapper {
         this.type = type;
         this.miningMethod = miningMethod;
         this.mineral = mineral;
+        if (mineral !=null)
+            displayPrice.bind(mineral.getPriceProperty().asString().concat(" Cr"));
     }
 
     public boolean isSeparator() {
@@ -52,14 +53,10 @@ public class MineralListWrapper {
     }
 
     // 🔹 Méthodes utilitaires pour simplifier l’usage
-    public void setDisplayPrice(double price) {
-        this.displayPrice.set(String.format("%,.0f Cr", price));
-        this.displayError.set("");
-    }
+
 
     public void setDisplayPriceError(String message) {
-        this.displayError.set(message);
-        this.displayPrice.set("");
+        this.displayPrice.set(message);
     }
 
     public boolean hasDisplayPrice() {
@@ -69,13 +66,6 @@ public class MineralListWrapper {
     public StringProperty displayPriceProperty() {
         return displayPrice;
     }
-    public boolean hasDisplayError() {
-        return !displayError.get().isEmpty();
-    }
-    public String getDisplayPriceError(){
-        return displayError.get();
-    }
-
     public String getDisplayPriceFormatted() {
         return displayPrice.get();
     }

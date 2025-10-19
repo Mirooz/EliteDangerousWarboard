@@ -49,7 +49,7 @@ import java.util.*;
  * La logique métier (calculs, recherches de routes, etc.) a été déplacée vers MiningService.
  * Ce contrôleur se concentre maintenant uniquement sur la gestion de l'interface utilisateur.
  */
-public class MiningController implements Initializable, IRefreshable {
+public class MiningController implements Initializable, IRefreshable,IBatchListener {
 
     public static final int MAX_DISTANCE = 100;
 
@@ -177,7 +177,6 @@ public class MiningController implements Initializable, IRefreshable {
 
         updateProspectors();
         initializePricePreference();
-        initializeMineralComboBox();
         initializeFleetCarrierCheckBox();
         initializeMaxDistanceField();
         updateCargo();
@@ -191,6 +190,10 @@ public class MiningController implements Initializable, IRefreshable {
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }
 
+    @Override
+    public void onBatchEnd(){
+        initializeMineralComboBox();
+    }
     private void initializePricePreference() {
         System.out.println("📊 Chargement des prix des minéraux depuis les préférences...");
         for (MineralType mineralType : MineralType.values()) {
@@ -585,13 +588,16 @@ public class MiningController implements Initializable, IRefreshable {
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
-        if (item.getMineral().getPrice()==0) {
+            if (item.getMineral().getPrice() == 0) {
             miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
                             padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
                     .thenAccept(priceOpt -> Platform.runLater(() -> {
                         // 🔹 On ne touche pas à la cellule ici !
                         priceOpt.ifPresentOrElse(
-                                price -> item.setDisplayPrice(price.getPrice()),
+                                price -> {
+                                    item.getMineral().setPrice(price.getPrice());
+                                    refreshUI();
+                                },
                                 () -> item.setDisplayPriceError(getTranslation("mining.price_error"))
                         );
                         // 🔁 Demande à la ComboBox de se redessiner
@@ -603,9 +609,6 @@ public class MiningController implements Initializable, IRefreshable {
                         });
                         return null;
                     });
-        }
-        else{
-            item.setDisplayPrice(item.getMineral().getPrice());
         }
     }
 
