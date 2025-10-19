@@ -59,6 +59,23 @@ public class MiningHistoryComponent implements Initializable {
 
     // Callback pour notifier le parent des changements
     private Runnable onHistoryUpdated;
+    
+    // Liste pour stocker les tooltips et leurs statistiques associées
+    private List<TooltipData> tooltipDataList = new ArrayList<>();
+    
+    // Classe interne pour stocker les données du tooltip
+    private static class TooltipData {
+        private Tooltip tooltip;
+        private MiningStat stat;
+        
+        public TooltipData(Tooltip tooltip, MiningStat stat) {
+            this.tooltip = tooltip;
+            this.stat = stat;
+        }
+        
+        public Tooltip getTooltip() { return tooltip; }
+        public MiningStat getStat() { return stat; }
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -102,6 +119,7 @@ public class MiningHistoryComponent implements Initializable {
      */
     private void updateMiningHistoryList() {
         miningHistoryList.getChildren().clear();
+        tooltipDataList.clear();
 
         List<MiningStat> completedStats = miningStatsService.getCompletedMiningStats();
 
@@ -178,47 +196,76 @@ public class MiningHistoryComponent implements Initializable {
 
         card.getChildren().addAll(header, info, dateLabel);
 
-        // Ajouter un tooltip avec le détail des minéraux
-        Tooltip tooltip = createMineralsTooltip(stat);
+        // Ajouter un tooltip avec le détail des minéraux (mis à jour dynamiquement)
+        Tooltip tooltip = new TooltipComponent("");
+        tooltip.getStyleClass().add("mining-session-tooltip");
+        tooltip.setShowDelay(javafx.util.Duration.millis(500));
+        tooltip.setHideDelay(javafx.util.Duration.millis(200));
+        
+        // Stocker les données du tooltip pour mise à jour ultérieure
+        tooltipDataList.add(new TooltipData(tooltip, stat));
+        
+        // Mettre à jour le texte du tooltip
+        updateTooltipText(tooltip, stat);
         Tooltip.install(card, tooltip);
 
         return card;
     }
 
     /**
-     * Crée un tooltip avec le détail des minéraux raffinés
+     * Met à jour le texte d'un tooltip avec le détail des minéraux raffinés
      */
-    private Tooltip createMineralsTooltip(MiningStat stat) {
+    private void updateTooltipText(Tooltip tooltip, MiningStat stat) {
         StringBuilder tooltipText = new StringBuilder();
-        tooltipText.append("Minéraux raffinés:\n");
+        tooltipText.append(getTranslation("mining.tooltip_minerals_refined")).append(":\n");
 
         Map<Mineral, Integer> minerals = stat.getTotalRefinedMinerals();
 
         if (minerals.isEmpty()) {
-            tooltipText.append("Aucun minéral raffiné");
+            tooltipText.append(getTranslation("mining.tooltip_no_minerals"));
         } else {
+            long totalPrice = 0;
+            
             minerals.entrySet().stream()
                     .sorted(Map.Entry.<Mineral, Integer>comparingByValue().reversed())
                     .forEach(entry -> {
+                        Mineral mineral = entry.getKey();
+                        Integer quantity = entry.getValue();
+                        long unitPrice = mineral.getPrice();
+                        long totalMineralPrice = unitPrice * quantity;
+                        
                         tooltipText.append("• ")
-                                .append(entry.getKey().getVisibleName())
+                                .append(mineral.getVisibleName())
                                 .append(": ")
-                                .append(entry.getValue())
-                                .append(" unités\n");
+                                .append(quantity)
+                                .append(" ")
+                                .append(getTranslation("mining.tooltip_units"))
+                                .append(" | ")
+                                .append(String.format("%,d Cr", totalMineralPrice))
+                                .append("\n");
                     });
 
-            // Supprimer le dernier \n
+            // Calculer le prix total
+            totalPrice = minerals.entrySet().stream()
+                    .mapToLong(entry -> entry.getKey().getPrice() * entry.getValue())
+                    .sum();
+
+            // Supprimer le dernier \n et ajouter le prix total
             if (tooltipText.length() > 0) {
                 tooltipText.setLength(tooltipText.length() - 1);
+                tooltipText.append("\n\n").append(getTranslation("mining.tooltip_total_price")).append(": ").append(String.format("%,d Cr", totalPrice));
             }
         }
 
-        Tooltip tooltip = new TooltipComponent(tooltipText.toString());
-        tooltip.getStyleClass().add("mining-session-tooltip");
-        tooltip.setShowDelay(javafx.util.Duration.millis(500));
-        tooltip.setHideDelay(javafx.util.Duration.millis(200));
+        // Mettre à jour le texte du tooltip
+        tooltip.setText(tooltipText.toString());
+    }
 
-        return tooltip;
+    /**
+     * Récupère une traduction depuis le LocalizationService
+     */
+    private String getTranslation(String key) {
+        return localizationService.getString(key);
     }
 
     /**
@@ -274,13 +321,11 @@ public class MiningHistoryComponent implements Initializable {
         if (totalValueTitleLabel != null) {
             totalValueTitleLabel.setText(getTranslation("mining.total_value"));
         }
-    }
-
-    /**
-     * Récupère une traduction depuis le LocalizationService
-     */
-    private String getTranslation(String key) {
-        return localizationService.getString(key);
+        
+        // Mettre à jour tous les tooltips existants
+        for (TooltipData tooltipData : tooltipDataList) {
+            updateTooltipText(tooltipData.getTooltip(), tooltipData.getStat());
+        }
     }
 
     // Getters et setters

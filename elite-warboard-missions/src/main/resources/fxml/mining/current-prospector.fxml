@@ -14,10 +14,12 @@
 
         <!-- Navigation -->
         <HBox spacing="10" styleClass="prospector-navigation" alignment="CENTER">
-            <Button fx:id="previousProspectorButton" styleClass="elite-nav-button" text="◀"
+            <Button fx:id="lastProspectorButton" styleClass="elite-nav-button"
+                    onAction="#showLastProspector"/>
+            <Button fx:id="previousProspectorButton" styleClass="elite-nav-button"  minWidth="30" maxWidth="30" text="◀"
                     onAction="#showPreviousProspector"/>
             <Label fx:id="prospectorCounterLabel" text="1/1" styleClass="prospector-counter"/>
-            <Button fx:id="nextProspectorButton" styleClass="elite-nav-button" text="▶"
+            <Button fx:id="nextProspectorButton" styleClass="elite-nav-button" minWidth="30" maxWidth="30"  text="▶"
                     onAction="#showNextProspector"/>
         </HBox>
     </HBox>

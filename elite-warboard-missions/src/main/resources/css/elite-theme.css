@@ -145,11 +145,8 @@
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
     -fx-font-size: 14px;
-    -fx-pref-width: 30px;
     -fx-pref-height: 30px;
-    -fx-min-width: 30px;
     -fx-min-height: 30px;
-    -fx-max-width: 30px;
     -fx-max-height: 30px;
     -fx-cursor: hand;
 }
@@ -165,6 +162,27 @@
     -fx-border-color: -fx-elite-gray;
     -fx-text-fill: -fx-elite-gray;
     -fx-cursor: default;
+}
+
+/* Style spécifique pour le bouton LAST qui doit être plus large */
+.elite-nav-button.last-button {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.elite-nav-button.last-button:hover {
+    -fx-background-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.elite-nav-button.last-button:disabled {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-gray;
 }
 
 .prospector-counter {
@@ -364,6 +382,87 @@
     -fx-padding: 10px 0 0 0;
     -fx-fill-height: true;
 }
+
+/* En-têtes des colonnes pour les minéraux */
+.cargo-minerals-header {
+    -fx-padding: 5px 0;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1px 0;
+    -fx-spacing: 10px;
+}
+
+.cargo-column-header {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+/* Lignes de minéraux */
+.cargo-mineral-row {
+    -fx-padding: 3px 0;
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.cargo-mineral-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 120px;
+}
+
+.cargo-mineral-quantity {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-pref-width: 60px;
+}
+
+.cargo-mineral-unit-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-total-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-pref-width: 100px;
+}
+
+/* Styles pour le GridPane des minéraux */
+.cargo-minerals-grid {
+    -fx-padding: 10px 0;
+    -fx-hgap: 10px;
+    -fx-vgap: 5px;
+}
+
+.cargo-minerals-grid .cargo-column-header {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 5px 0;
+}
+
+.cargo-minerals-grid .cargo-mineral-name {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 3px 0;
+    -fx-font-size: 13px;
+}
+
+.cargo-minerals-grid .cargo-mineral-quantity {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 3px 0;
+}
+
+.cargo-minerals-grid .cargo-mineral-unit-price {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 3px 0;
+}
+
 
 .mineral-card {
     -fx-background-color: rgba(0, 255, 255, 0.03);
@@ -905,7 +1004,6 @@
 /* Barre de progression */
 .progress-bar {
     -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
 }
 

@@ -2,15 +2,18 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CargoInfoComponent;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import javafx.scene.layout.GridPane;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.ProgressBar;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -34,7 +37,9 @@ public class CurrentCargoComponent implements Initializable {
     @FXML
     private Label limpetsCountLabel;
     @FXML
-    private VBox cargoMineralsList;
+    private ProgressBar cargoProgressBar;
+    @FXML
+    private GridPane mineralsGridPane;
     @FXML
     private Label estimatedCreditsLabel;
     @FXML
@@ -42,9 +47,15 @@ public class CurrentCargoComponent implements Initializable {
     @FXML
     private Label currentCargoLabel;
     @FXML
-    private Label cargoLabel;
-    @FXML
     private Label limpetsLabel;
+    @FXML
+    private Label mineralHeaderLabel;
+    @FXML
+    private Label quantityHeaderLabel;
+    @FXML
+    private Label unitPriceHeaderLabel;
+    @FXML
+    private Label totalPriceHeaderLabel;
 
     // Callback pour notifier le parent des changements
     private Runnable onCargoUpdated;
@@ -69,23 +80,26 @@ public class CurrentCargoComponent implements Initializable {
                 cargoUsedLabel.setText("0/0");
                 limpetsCountLabel.setText("0");
                 estimatedCreditsLabel.setText("0");
-                cargoMineralsList.getChildren().clear();
-                cargoMineralsList.getChildren().add(CargoInfoComponent.createNoMineralsLabel());
+                clearMineralRows();
+                mineralsGridPane.add(CargoInfoComponent.createNoMineralsLabel(), 0, 1, 4, 1);
                 return;
             }
 
             // Mettre à jour les statistiques du cargo
             cargoUsedLabel.setText(String.format("%d/%d", cargo.getCurrentUsed(), cargo.getMaxCapacity()));
             limpetsCountLabel.setText(String.valueOf(miningService.getLimpetsCount()));
+            
+            // Mettre à jour la barre de progression du cargo
+            double cargoPercentage = (double) cargo.getCurrentUsed() / cargo.getMaxCapacity();
+            cargoProgressBar.setProgress(cargoPercentage);
 
             // Calculer et afficher les CR estimés
             long estimatedCredits = miningService.calculateEstimatedCredits();
             estimatedCreditsLabel.setText(miningService.formatPrice(estimatedCredits));
 
-            // Afficher les minéraux en utilisant le composant
-            cargoMineralsList.getChildren().clear();
-            VBox mineralsList = CargoInfoComponent.createMineralsList(miningService.getMinerals());
-            cargoMineralsList.getChildren().add(mineralsList);
+            // Afficher les minéraux avec les prix (garder les en-têtes)
+            clearMineralRows();
+            createMineralsListWithPrices(miningService.getMinerals());
 
             // Notifier le parent du changement
             if (onCargoUpdated != null) {
@@ -101,14 +115,23 @@ public class CurrentCargoComponent implements Initializable {
         if (currentCargoLabel != null) {
             currentCargoLabel.setText(getTranslation("mining.current_cargo"));
         }
-        if (cargoLabel != null) {
-            cargoLabel.setText(getTranslation("mining.cargo"));
-        }
         if (limpetsLabel != null) {
             limpetsLabel.setText(getTranslation("mining.limpets"));
         }
         if (estimatedCreditsTitleLabel != null) {
             estimatedCreditsTitleLabel.setText(getTranslation("mining.estimated_credits"));
+        }
+        if (mineralHeaderLabel != null) {
+            mineralHeaderLabel.setText(getTranslation("mining.mineral"));
+        }
+        if (quantityHeaderLabel != null) {
+            quantityHeaderLabel.setText(getTranslation("mining.quantity"));
+        }
+        if (unitPriceHeaderLabel != null) {
+            unitPriceHeaderLabel.setText(getTranslation("mining.unit_price"));
+        }
+        if (totalPriceHeaderLabel != null) {
+            totalPriceHeaderLabel.setText(getTranslation("mining.total_price"));
         }
     }
 
@@ -165,7 +188,75 @@ public class CurrentCargoComponent implements Initializable {
         return estimatedCreditsLabel;
     }
 
-    public VBox getCargoMineralsList() {
-        return cargoMineralsList;
+    public GridPane getMineralsGridPane() {
+        return mineralsGridPane;
+    }
+
+    /**
+     * Nettoie seulement les lignes de minéraux (garde les en-têtes)
+     */
+    private void clearMineralRows() {
+        // Supprimer tous les enfants sauf les en-têtes (ligne 0)
+        mineralsGridPane.getChildren().removeIf(node -> {
+            Integer rowIndex = GridPane.getRowIndex(node);
+            return rowIndex != null && rowIndex > 0;
+        });
+    }
+
+    /**
+     * Crée la liste des minéraux avec les prix unitaires et totaux
+     */
+    private void createMineralsListWithPrices(Map<Mineral, Integer> minerals) {
+        if (minerals == null || minerals.isEmpty()) {
+            mineralsGridPane.add(CargoInfoComponent.createNoMineralsLabel(), 0, 1, 4, 1);
+            return;
+        }
+
+        int rowIndex = 1; // Commencer à la ligne 1 (après les en-têtes)
+        for (Map.Entry<Mineral, Integer> entry : minerals.entrySet()) {
+            Mineral mineral = entry.getKey();
+            Integer quantity = entry.getValue();
+
+            if (quantity != null && quantity > 0) {
+                createMineralRow(mineral, quantity, rowIndex);
+                rowIndex++;
+            }
+        }
+    }
+
+    /**
+     * Crée une ligne pour un minéral avec toutes les informations dans le GridPane
+     */
+    private void createMineralRow(Mineral mineral, Integer quantity, int rowIndex) {
+        // Nom du minéral
+        Label mineralNameLabel = new Label(mineral.getVisibleName().toUpperCase());
+        mineralNameLabel.getStyleClass().add("cargo-mineral-name");
+
+        // Quantité
+        Label quantityLabel = new Label(String.valueOf(quantity));
+        quantityLabel.getStyleClass().add("cargo-mineral-quantity");
+
+        // Prix unitaire
+        long unitPrice = mineral.getPrice();
+        Label unitPriceLabel = new Label(formatPriceWithCommas(unitPrice));
+        unitPriceLabel.getStyleClass().add("cargo-mineral-unit-price");
+
+        // Prix total
+        long totalPrice = unitPrice * quantity;
+        Label totalPriceLabel = new Label(formatPriceWithCommas(totalPrice));
+        totalPriceLabel.getStyleClass().add("cargo-mineral-total-price");
+
+        // Ajouter au GridPane
+        mineralsGridPane.add(mineralNameLabel, 0, rowIndex);
+        mineralsGridPane.add(quantityLabel, 1, rowIndex);
+        mineralsGridPane.add(unitPriceLabel, 2, rowIndex);
+        mineralsGridPane.add(totalPriceLabel, 3, rowIndex);
+    }
+
+    /**
+     * Formate un prix avec des virgules pour la lisibilité
+     */
+    private String formatPriceWithCommas(long price) {
+        return String.format("%,d Cr", price);
     }
 }

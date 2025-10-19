@@ -77,6 +77,8 @@ public class MiningSearchPanelComponent implements Initializable {
     private ProgressIndicator loadingIndicator;
     @FXML
     private HBox searchContentHBox;
+    @FXML
+    private HBox searchResultsContainer;
 
     @FXML
     private Label miningTitleLabel;
@@ -119,6 +121,7 @@ public class MiningSearchPanelComponent implements Initializable {
         initializeHeaderLabels();
         initializeClickHandlers();
         updateTranslations();
+        updateSearchResultsVisibility(); // Masquer les résultats par défaut
 
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
@@ -161,6 +164,19 @@ public class MiningSearchPanelComponent implements Initializable {
             } else {
                 return "🔫";
             }
+        }
+    }
+
+    /**
+     * Gère la visibilité des résultats de recherche
+     */
+    private void updateSearchResultsVisibility() {
+        boolean hasMineralSelected = mineralComboBox.getValue() != null && 
+                                   !mineralComboBox.getValue().isSeparator();
+        
+        if (searchResultsContainer != null) {
+            searchResultsContainer.setVisible(hasMineralSelected);
+            searchResultsContainer.setManaged(hasMineralSelected);
         }
     }
 
@@ -244,6 +260,8 @@ public class MiningSearchPanelComponent implements Initializable {
             } else {
                 clearHeaderLabels();
             }
+            // Mettre à jour la visibilité des résultats
+            updateSearchResultsVisibility();
         });
     }
 

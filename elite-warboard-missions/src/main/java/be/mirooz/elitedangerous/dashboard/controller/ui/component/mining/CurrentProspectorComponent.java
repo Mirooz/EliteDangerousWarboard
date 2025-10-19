@@ -37,6 +37,8 @@ public class CurrentProspectorComponent implements Initializable {
     @FXML
     private VBox noProspectorContainer;
     @FXML
+    private Button lastProspectorButton;
+    @FXML
     private Button previousProspectorButton;
     @FXML
     private Button nextProspectorButton;
@@ -68,9 +70,12 @@ public class CurrentProspectorComponent implements Initializable {
         Platform.runLater(() -> {
             Deque<ProspectedAsteroid> prospectors = miningService.getAllProspectors();
 
-            // Convertir en liste pour faciliter la navigation
+            // Convertir en liste pour faciliter la navigation et inverser l'ordre
             allProspectors.clear();
             allProspectors.addAll(prospectors);
+            
+            // Inverser la liste pour que le dernier soit en premier
+            java.util.Collections.reverse(allProspectors);
 
             if (allProspectors.isEmpty()) {
                 showNoProspector();
@@ -138,7 +143,9 @@ public class CurrentProspectorComponent implements Initializable {
         boolean hasProspectors = !allProspectors.isEmpty();
         boolean canGoPrevious = hasProspectors && currentProspectorIndex > 0;
         boolean canGoNext = hasProspectors && currentProspectorIndex < allProspectors.size() - 1;
+        boolean canGoLast = hasProspectors && currentProspectorIndex > 0; // Désactivé quand on est déjà au premier (dernier prospecteur)
 
+        lastProspectorButton.setDisable(!canGoLast);
         previousProspectorButton.setDisable(!canGoPrevious);
         nextProspectorButton.setDisable(!canGoNext);
 
@@ -155,6 +162,18 @@ public class CurrentProspectorComponent implements Initializable {
     private void updateProspectorCounter() {
         if (!allProspectors.isEmpty()) {
             prospectorCounterLabel.setText(String.format("%d/%d", currentProspectorIndex + 1, allProspectors.size()));
+        }
+    }
+
+    /**
+     * Affiche le dernier prospecteur (qui est maintenant le premier de la liste inversée)
+     */
+    @FXML
+    public void showLastProspector() {
+        if (!allProspectors.isEmpty()) {
+            currentProspectorIndex = 0; // Le premier élément est maintenant le dernier prospecteur
+            showCurrentProspector();
+            updateNavigationButtons();
         }
     }
 
@@ -188,6 +207,9 @@ public class CurrentProspectorComponent implements Initializable {
     private void updateTranslations() {
         if (currentProspectorLabel != null) {
             currentProspectorLabel.setText(getTranslation("mining.current_prospector"));
+        }
+        if (lastProspectorButton != null) {
+            lastProspectorButton.setText(getTranslation("mining.last"));
         }
     }
 
