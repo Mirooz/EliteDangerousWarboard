@@ -172,12 +172,15 @@ public class MiningHistoryComponent implements Initializable {
             header.getChildren().addAll(systemLabel, ringLabel);
         }
 
-        // Informations de la session
+        // Layout principal avec informations à gauche et minéraux à droite
+        HBox mainContent = new HBox(15);
+        mainContent.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        // Informations de la session (gauche)
         VBox info = new VBox(3);
 
-        // Durée
-        Label durationLabel = new Label("Durée: " + formatDuration(stat.getDurationInMinutes()));
-        durationLabel.getStyleClass().add("session-info");
+        // Durée avec style coloré
+        HBox durationContainer = createDurationLabel(stat.getDurationInMinutes());
 
         // Nombre de minéraux
         int totalMinerals = stat.getRefinedMinerals().size();
@@ -188,13 +191,18 @@ public class MiningHistoryComponent implements Initializable {
         Label valueLabel = new Label("Valeur: " + miningService.formatPrice(stat.getTotalValue()) + " Cr");
         valueLabel.getStyleClass().add("session-value");
 
-        info.getChildren().addAll(durationLabel, mineralsLabel, valueLabel);
+        info.getChildren().addAll(durationContainer, mineralsLabel, valueLabel);
+
+        // Détails des minéraux (droite)
+        VBox mineralsDetails = createMineralsDetails(stat);
+
+        mainContent.getChildren().addAll(info, mineralsDetails);
 
         // Date
         Label dateLabel = new Label(formatDate(stat.getStartDate()));
         dateLabel.getStyleClass().add("session-date");
 
-        card.getChildren().addAll(header, info, dateLabel);
+        card.getChildren().addAll(header, mainContent, dateLabel);
 
         // Ajouter un tooltip avec le détail des minéraux (mis à jour dynamiquement)
         Tooltip tooltip = new TooltipComponent("");
@@ -210,6 +218,105 @@ public class MiningHistoryComponent implements Initializable {
         Tooltip.install(card, tooltip);
 
         return card;
+    }
+
+    /**
+     * Crée le panneau des détails des minéraux pour une session
+     */
+    private VBox createMineralsDetails(MiningStat stat) {
+        VBox mineralsDetails = new VBox(2);
+        mineralsDetails.getStyleClass().add("minerals-details");
+        mineralsDetails.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        
+        Map<Mineral, Integer> totalMinerals = stat.getTotalRefinedMinerals();
+        
+        if (totalMinerals.isEmpty()) {
+            Label noMineralsLabel = new Label("Aucun minéral");
+            noMineralsLabel.getStyleClass().add("mineral-empty");
+            mineralsDetails.getChildren().add(noMineralsLabel);
+            return mineralsDetails;
+        }
+        
+        // Limiter à 3 minéraux pour éviter d'augmenter la hauteur
+        List<Map.Entry<Mineral, Integer>> sortedMinerals = totalMinerals.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getKey().getPrice() * b.getValue(), a.getKey().getPrice() * a.getValue()))
+                .limit(3)
+                .collect(java.util.stream.Collectors.toList());
+        
+        boolean hasMoreMinerals = totalMinerals.size() > 3;
+        
+        for (int i = 0; i < sortedMinerals.size(); i++) {
+            Map.Entry<Mineral, Integer> entry = sortedMinerals.get(i);
+            Mineral mineral = entry.getKey();
+            int quantity = entry.getValue();
+            long totalPrice = mineral.getPrice() * quantity;
+            
+            HBox mineralRow = new HBox(8);
+            mineralRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            
+            // Nom du minéral
+            Label nameLabel = new Label(mineral.getVisibleName());
+            nameLabel.getStyleClass().add("mineral-name");
+            nameLabel.setPrefWidth(100);
+            
+            // Quantité
+            Label quantityLabel = new Label(String.valueOf(quantity));
+            quantityLabel.getStyleClass().add("mineral-quantity");
+            quantityLabel.setPrefWidth(40);
+            
+            // Prix total
+            Label priceLabel = new Label(miningService.formatPrice(totalPrice) + " Cr");
+            priceLabel.getStyleClass().add("mineral-price");
+            priceLabel.setPrefWidth(100);
+            
+            mineralRow.getChildren().addAll(nameLabel, quantityLabel, priceLabel);
+            
+            // Si c'est le dernier minéral et qu'il y en a d'autres, ajouter l'indicateur sur la même ligne
+            if (i == sortedMinerals.size() - 1 && hasMoreMinerals) {
+                Label moreLabel = new Label("... +" + (totalMinerals.size() - 3) + " autres");
+                moreLabel.getStyleClass().add("mineral-more-inline");
+                mineralRow.getChildren().add(moreLabel);
+            }
+            
+            mineralsDetails.getChildren().add(mineralRow);
+        }
+        
+        return mineralsDetails;
+    }
+
+    /**
+     * Crée un label de durée avec des couleurs différentes pour les heures et minutes
+     */
+    private HBox createDurationLabel(long minutes) {
+        HBox durationContainer = new HBox(2);
+        durationContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        
+        long hours = minutes / 60;
+        long remainingMinutes = minutes % 60;
+        
+        // Label "Durée: "
+        Label durationPrefix = new Label("Durée: ");
+        durationPrefix.getStyleClass().add("session-info");
+        
+        durationContainer.getChildren().add(durationPrefix);
+        
+        // Si il y a des heures
+        if (hours > 0) {
+            Label hoursLabel = new Label(String.valueOf(hours) + "h");
+            hoursLabel.getStyleClass().add("session-duration-hours");
+            durationContainer.getChildren().add(hoursLabel);
+            
+            // Espace entre heures et minutes
+            Label spaceLabel = new Label(" ");
+            durationContainer.getChildren().add(spaceLabel);
+        }
+        
+        // Minutes (toujours en orange)
+        Label minutesLabel = new Label(String.valueOf(remainingMinutes) + "m");
+        minutesLabel.getStyleClass().add("session-duration-minutes");
+        durationContainer.getChildren().add(minutesLabel);
+        
+        return durationContainer;
     }
 
     /**

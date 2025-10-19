@@ -2930,31 +2930,43 @@
 
 .session-system {
     -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 14px;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
 }
 
 .session-ring {
     -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
     -fx-font-style: italic;
 }
 
 .session-info {
     -fx-text-fill: -fx-elite-text-dim;
-    -fx-font-size: 11px;
+    -fx-font-size: 13px;
 }
 
 .session-value {
     -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 
 .session-date {
     -fx-text-fill: -fx-elite-text-dim;
-    -fx-font-size: 10px;
+    -fx-font-size: 12px;
     -fx-font-style: italic;
+}
+
+.session-duration-hours {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.session-duration-minutes {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
 }
 
 .no-sessions-message {
@@ -2998,6 +3010,46 @@
     -fx-font-family: "Consolas", "Monaco", monospace;
     -fx-padding: 8px;
     -fx-max-width: 300px;
+}
+
+/* Styles pour les détails des minéraux dans les cartes de session */
+.minerals-details {
+    -fx-spacing: 2px;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.mineral-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.mineral-quantity {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+
+.mineral-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.mineral-empty {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.mineral-more-inline {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-padding: 0 0 0 5px;
 }
 
 /* Styles pour les scrollbars du panneau de mining */
