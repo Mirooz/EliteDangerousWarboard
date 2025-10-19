@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -27,12 +28,18 @@
                 <!-- Conteneur principal avec onglets -->
                 <TabPane fx:id="mainTabPane" styleClass="main-tab-pane" VBox.vgrow="ALWAYS">
                     <!-- Onglet Missions -->
-                    <Tab text="Missions" fx:id="missionsTab">
+                    <Tab fx:id="missionsTab">
+                        <graphic>
+                            <ImageView fx:id="missionsTabImage" styleClass="tab-image" />
+                        </graphic>
                         <BorderPane fx:id="missionsPane" styleClass="main-content" />
                     </Tab>
                     
                     <!-- Onglet Mining -->
-                    <Tab text="Mining" fx:id="miningTab">
+                    <Tab fx:id="miningTab">
+                        <graphic>
+                            <ImageView fx:id="miningTabImage" styleClass="tab-image" />
+                        </graphic>
                         <BorderPane fx:id="miningPane" styleClass="main-content" />
                     </Tab>
                 </TabPane>

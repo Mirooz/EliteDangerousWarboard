@@ -9,7 +9,7 @@
       styleClass="mining-panel">
 
     <!-- Header avec filtre de recherche -->
-    <VBox fx:id="miningSearchPanelContainer" spacing="10" styleClass="mining-header"/>
+    <VBox fx:id="miningSearchPanelContainer" spacing="10" styleClass="mining-header" />
 
     <!-- Contenu principal en trois colonnes -->
     <HBox spacing="20" styleClass="mining-content">

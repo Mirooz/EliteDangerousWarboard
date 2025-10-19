@@ -17,33 +17,65 @@
     -fx-elite-danger: #FF0000;
 }
 
-/* Styles pour les onglets */
+/* Design Elite Dangerous - Onglets carrés élégants */
 .main-tab-pane {
-    -fx-tab-min-width: 120px;
-    -fx-tab-max-width: 120px;
-    -fx-tab-min-height: 35px;
-    -fx-tab-max-height: 35px;
-    -fx-background-color: -fx-elite-dark;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1px;
+    -fx-tab-min-width: 80px;
+    -fx-tab-max-width: 80px;
+    -fx-tab-min-height: 80px;
+    -fx-tab-max-height: 80px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-padding: 10px;
 }
 
 .main-tab-pane .tab {
-    -fx-background-color: -fx-elite-gray;
-    -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1px;
+    -fx-background-color: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 0px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 10, 0.3, 0, 2);
 }
 
 .main-tab-pane .tab:selected {
-    -fx-background-color: -fx-elite-orange;
-    -fx-text-fill: -fx-elite-dark;
+    -fx-background-color: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+    -fx-border-color: #FFAA00;
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.8), 20, 0.6, 0, 4);
 }
 
 .main-tab-pane .tab:hover {
-    -fx-background-color: -fx-elite-light-gray;
+    -fx-background-color: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+    -fx-border-color: #FFAA00;
+    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.6), 15, 0.4, 0, 3);
+}
+
+/* Supprimer définitivement la croix de fermeture */
+.main-tab-pane .tab .tab-close-button {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+}
+
+.main-tab-pane .tab .tab-close-button:hover {
+    -fx-opacity: 0;
+}
+
+/* Masquer tous les éléments de fermeture des onglets */
+.main-tab-pane .tab .tab-close-button * {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+.main-tab-pane .tab .tab-close-button .graphic {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
 }
 
 .main-tab-pane .tab-header-area {
@@ -58,12 +90,81 @@
     -fx-background-color: -fx-elite-dark;
 }
 
+/* Images carrées élégantes Elite Dangerous */
+.tab-image {
+    -fx-cursor: hand;
+    -fx-fit-width: 76px;
+    -fx-fit-height: 76px;
+    -fx-preserve-ratio: true;
+    -fx-smooth: true;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 5, 0.2, 0, 1);
+}
+
+/* Système simple et cohérent */
+.tab-image {
+    -fx-transition: all 0.2s ease;
+}
+
+/* Hover : surbrillance légère */
+.tab-image:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.5), 8, 0.3, 0, 0);
+}
+
+/* Sélection : surbrillance forte */
+.tab-image-selected {
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.9), 15, 0.6, 0, 0);
+}
+
+/* Supprimer le focus indicator bleu par défaut */
+.main-tab-pane .tab:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.main-tab-pane .tab {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Supprimer tous les indicateurs de focus */
+.main-tab-pane .tab:selected:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.main-tab-pane .tab-header-area {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Empêcher la fermeture des onglets */
+.main-tab-pane .tab .tab-close-button {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+    -fx-min-width: 0;
+    -fx-min-height: 0;
+}
+
+.main-tab-pane .tab .tab-close-button:hover {
+    -fx-opacity: 0;
+}
+
+.main-tab-pane .tab .tab-close-button * {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
 /* Styles pour le panneau de mining */
 .mining-panel {
     -fx-background-color: -fx-elite-dark;
-    -fx-spacing: 15px;
-    -fx-padding: 15px;
     -fx-z-index: 10;
+    -fx-spacing: 15;
 }
 
 .mining-title-bar {
@@ -376,7 +477,7 @@
 
 .cargo-mineral-name {
     -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 12px;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
     -fx-alignment: CENTER_LEFT;
     -fx-pref-width: 120px;
@@ -384,7 +485,7 @@
 
 .cargo-mineral-quantity {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 12px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-alignment: CENTER;
     -fx-pref-width: 60px;
@@ -392,7 +493,7 @@
 
 .cargo-mineral-unit-price {
     -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 12px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-alignment: CENTER;
     -fx-pref-width: 100px;
@@ -400,7 +501,7 @@
 
 .cargo-mineral-total-price {
     -fx-text-fill: -fx-elite-green;
-    -fx-font-size: 12px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-alignment: CENTER;
     -fx-pref-width: 100px;
@@ -2165,50 +2266,7 @@
     -fx-cursor: hand;
 }
 
-/* Styles pour les onglets */
-.main-tab-pane {
-    -fx-background-color: -fx-elite-dark;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1;
-}
-
-.main-tab-pane .tab-header-area {
-    -fx-background-color: -fx-elite-darker;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 0 0 1 0;
-}
-
-.main-tab-pane .tab-header-background {
-    -fx-background-color: -fx-elite-darker;
-}
-
-.main-tab-pane .tab {
-    -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1 1 0 1;
-    -fx-border-radius: 4 4 0 0;
-    -fx-background-radius: 4 4 0 0;
-    -fx-padding: 8 15;
-}
-
-.main-tab-pane .tab:selected {
-    -fx-background-color: -fx-elite-dark;
-    -fx-text-fill: -fx-elite-orange;
-}
-
-.main-tab-pane .tab .tab-label {
-    -fx-text-fill: -fx-elite-text;
-    -fx-font-weight: bold;
-    -fx-font-size: 12px;
-}
-
-.main-tab-pane .tab:selected .tab-label {
-    -fx-text-fill: -fx-elite-orange;
-}
-
-.main-tab-pane .tab-content-area {
-    -fx-background-color: -fx-elite-dark;
-}
+/* Styles dupliqués supprimés - utilisent les styles circulaires définis plus haut */
 
 .massacre-search-content {
     -fx-background-color: -fx-elite-dark;
@@ -2586,6 +2644,7 @@
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 3px;
 }
 
 .fleet-carrier-checkbox .box {
@@ -2603,6 +2662,7 @@
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 3px;
 }
 
 .pads-checkbox .box {

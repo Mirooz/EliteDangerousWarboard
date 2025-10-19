@@ -15,6 +15,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -44,6 +46,12 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private Tab miningTab;
     
     @FXML
+    private ImageView missionsTabImage;
+    
+    @FXML
+    private ImageView miningTabImage;
+    
+    @FXML
     private BorderPane missionsPane;
     
     @FXML
@@ -64,6 +72,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     public void initialize(URL location, ResourceBundle resources) {
         loadComponents();
         loadMissions();
+        initializeTabImages();
         popupManager.attachToContainer(popupContainer);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Arrêt global : arrêt des services de journal...");
@@ -138,6 +147,76 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
     private void loadMissions() {
         dashboardService.initActiveMissions();
+    }
+    
+    /**
+     * Initialise les images des onglets avec design Elite Dangerous
+     */
+    private void initializeTabImages() {
+        try {
+            // Charger l'image pour l'onglet Missions (Empire)
+            Image empireImage = new Image(getClass().getResourceAsStream("/images/dashboard/elitewarboard.png"));
+            missionsTabImage.setImage(empireImage);
+            missionsTabImage.setFitWidth(76); // Taille carrée élégante
+            missionsTabImage.setFitHeight(76); // Taille carrée élégante
+            missionsTabImage.setPreserveRatio(true); // Conserver les proportions
+            missionsTabImage.setSmooth(true);
+            
+            // Charger l'image pour l'onglet Mining (Minageship)
+            Image minageshipImage = new Image(getClass().getResourceAsStream("/images/dashboard/mining.png"));
+            miningTabImage.setImage(minageshipImage);
+            miningTabImage.setFitWidth(76); // Taille carrée élégante
+            miningTabImage.setFitHeight(76); // Taille carrée élégante
+            miningTabImage.setPreserveRatio(true); // Conserver les proportions
+            miningTabImage.setSmooth(true);
+            
+            
+            // Configurer les effets élégants
+            setupEliteTabEffects();
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement des images des onglets: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Configure les effets simples et cohérents pour les onglets
+     */
+    private void setupEliteTabEffects() {
+        // Ajouter les classes CSS de base
+        missionsTabImage.getStyleClass().add("tab-image");
+        miningTabImage.getStyleClass().add("tab-image");
+        
+        // Gestion simple de la sélection des onglets
+        setupSimpleTabSelection();
+    }
+    
+    /**
+     * Configure la gestion simple de la sélection des onglets
+     */
+    private void setupSimpleTabSelection() {
+        // Écouter les changements de sélection des onglets
+        mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab == missionsTab) {
+                // Onglet Missions sélectionné
+                missionsTabImage.getStyleClass().add("tab-image-selected");
+                miningTabImage.getStyleClass().remove("tab-image-selected");
+                System.out.println("✅ Missions sélectionné");
+            } else if (newTab == miningTab) {
+                // Onglet Mining sélectionné
+                miningTabImage.getStyleClass().add("tab-image-selected");
+                missionsTabImage.getStyleClass().remove("tab-image-selected");
+                System.out.println("✅ Mining sélectionné");
+            }
+        });
+        
+        // Désactiver la fermeture des onglets
+        missionsTab.setClosable(false);
+        miningTab.setClosable(false);
+        
+        // Sélectionner l'onglet Missions par défaut
+        mainTabPane.getSelectionModel().select(missionsTab);
     }
 
     private void updateTranslations(){
