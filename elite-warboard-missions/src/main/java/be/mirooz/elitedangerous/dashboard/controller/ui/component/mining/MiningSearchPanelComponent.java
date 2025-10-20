@@ -171,12 +171,11 @@ public class MiningSearchPanelComponent implements Initializable {
      * Gère la visibilité des résultats de recherche
      */
     private void updateSearchResultsVisibility() {
-        boolean hasMineralSelected = mineralComboBox.getValue() != null && 
+        boolean hasMineralSelected = mineralComboBox.getValue() != null &&
                                    !mineralComboBox.getValue().isSeparator();
-        
+
         if (searchResultsContainer != null) {
             searchResultsContainer.setVisible(hasMineralSelected);
-            searchResultsContainer.setManaged(hasMineralSelected);
         }
     }
 
@@ -429,13 +428,11 @@ public class MiningSearchPanelComponent implements Initializable {
                 searchContentHBox.getChildren().forEach(child -> {
                     if (child != mineralTargetContainer) {
                         child.setVisible(false);
-                        child.setManaged(false);
                     }
                 });
             } else {
                 searchContentHBox.getChildren().forEach(child -> {
                     child.setVisible(true);
-                    child.setManaged(true);
                 });
             }
         });

@@ -1,6 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.CargoInfoComponent;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import javafx.scene.layout.GridPane;
@@ -57,6 +56,8 @@ public class CurrentCargoComponent implements Initializable {
     @FXML
     private Label totalPriceHeaderLabel;
 
+    Label noMineralsLabel;
+
     // Callback pour notifier le parent des changements
     private Runnable onCargoUpdated;
 
@@ -81,7 +82,7 @@ public class CurrentCargoComponent implements Initializable {
                 limpetsCountLabel.setText("0");
                 estimatedCreditsLabel.setText("0");
                 clearMineralRows();
-                mineralsGridPane.add(CargoInfoComponent.createNoMineralsLabel(), 0, 1, 4, 1);
+                mineralsGridPane.add(createNoMineralsLabel(), 0, 1, 4, 1);
                 return;
             }
 
@@ -133,6 +134,9 @@ public class CurrentCargoComponent implements Initializable {
         if (totalPriceHeaderLabel != null) {
             totalPriceHeaderLabel.setText(getTranslation("mining.total_price"));
         }
+        if (noMineralsLabel !=null){
+            noMineralsLabel.setText(getTranslation("mining.no_minerals"));
+        }
     }
 
     /**
@@ -174,6 +178,11 @@ public class CurrentCargoComponent implements Initializable {
     public void refresh() {
         updateCargo();
     }
+    private Label createNoMineralsLabel() {
+        noMineralsLabel = new Label(getTranslation("mining.no_minerals"));
+        noMineralsLabel.getStyleClass().add("no-minerals-label");
+        return noMineralsLabel;
+    }
 
     // Getters pour accéder aux composants depuis l'extérieur
     public Label getCargoUsedLabel() {
@@ -208,7 +217,7 @@ public class CurrentCargoComponent implements Initializable {
      */
     private void createMineralsListWithPrices(Map<Mineral, Integer> minerals) {
         if (minerals == null || minerals.isEmpty()) {
-            mineralsGridPane.add(CargoInfoComponent.createNoMineralsLabel(), 0, 1, 4, 1);
+            mineralsGridPane.add(createNoMineralsLabel(), 0, 1, 4, 1);
             return;
         }
 

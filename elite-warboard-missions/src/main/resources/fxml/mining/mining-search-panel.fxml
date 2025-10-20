@@ -9,7 +9,21 @@
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.MiningSearchPanelComponent"
       spacing="10">
 
-    <Label fx:id="miningTitleLabel" text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Label fx:id="miningTitleLabel" text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>
+        <HBox spacing="15" alignment="CENTER_LEFT">
+            <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="true"
+                      onAction="#onFleetCarrierToggle"/>
+            <CheckBox fx:id="padsCheckBox" styleClass="pads-checkbox" selected="false"
+                      onAction="#onPadsToggle"/>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label fx:id="maxDistanceLabel" text="DISTANCE MAX" styleClass="search-label"/>
+                <TextField fx:id="maxDistanceTextField" styleClass="elite-textfield" prefWidth="60" minWidth="60"
+                           text="100"/>
+                <Label fx:id="distanceUnitLabel" text="AL" styleClass="search-label"/>
+            </HBox>
+        </HBox>
+    </HBox>
 
     <StackPane>
         <HBox fx:id="searchContentHBox" spacing="30" styleClass="mining-search-container" alignment="CENTER_LEFT">
@@ -18,18 +32,7 @@
                 <Label fx:id="mineralTargetLabel" text="MINÉRAL CIBLE" styleClass="search-label"/>
                 <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="235" minWidth="235"
                           promptText="Sélectionner un minerais..."/>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="true"
-                              onAction="#onFleetCarrierToggle"/>
-                    <CheckBox fx:id="padsCheckBox" styleClass="pads-checkbox" selected="false"
-                              onAction="#onPadsToggle"/>
-                </HBox>
-                <HBox spacing="5" alignment="CENTER_LEFT">
-                    <Label fx:id="maxDistanceLabel" text="DISTANCE MAX" styleClass="search-label"/>
-                    <TextField fx:id="maxDistanceTextField" styleClass="elite-textfield" prefWidth="60" minWidth="60"
-                               text="100"/>
-                    <Label fx:id="distanceUnitLabel" text="AL" styleClass="search-label"/>
-                </HBox>
+                <!-- Filtres déplacés dans la barre de titre -->
             </VBox>
 
             <!-- Conteneur pour les résultats de recherche (masqué par défaut) -->
@@ -57,7 +60,7 @@
                 </VBox>
 
                 <!-- Flèche avec distance -->
-                <VBox spacing="5" styleClass="arrow-container" alignment="CENTER" translateY="-20">
+                <VBox spacing="5" styleClass="arrow-container" alignment="CENTER">
                     <Label fx:id="headerDistanceLabel" text="--" styleClass="distance-label"/>
                     <Label text="➤" styleClass="arrow-symbol"/>
                 </VBox>
@@ -73,10 +76,10 @@
                             <Label fx:id="headerStationSystemLabel" text="" styleClass="location-system"/>
                         </VBox>
                     </VBox>
-                    <ImageView fx:id="stationTypeImageView" styleClass="station-type-icon" translateY="-20"
-                               fitWidth="100" fitHeight="100"
+                    <ImageView fx:id="stationTypeImageView" styleClass="station-type-icon"
+                               fitWidth="80" fitHeight="80"
                                preserveRatio="true"/>
-                    <VBox spacing="2" alignment="CENTER_LEFT" translateY="-20">
+                    <VBox spacing="2" alignment="CENTER_LEFT" >
                         <Label fx:id="headerStationDistanceTitleLabel" text="Distance" styleClass="search-label"/>
                         <Label fx:id="headerStationDistanceLabel" text="--" styleClass="location-system"/>
                     </VBox>

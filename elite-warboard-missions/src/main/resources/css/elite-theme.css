@@ -93,8 +93,8 @@
 /* Images carrées élégantes Elite Dangerous */
 .tab-image {
     -fx-cursor: hand;
-    -fx-fit-width: 76px;
-    -fx-fit-height: 76px;
+    -fx-fit-width: 60px;
+    -fx-fit-height: 60px;
     -fx-preserve-ratio: true;
     -fx-smooth: true;
     -fx-border-radius: 6px;
@@ -164,7 +164,7 @@
 .mining-panel {
     -fx-background-color: -fx-elite-dark;
     -fx-z-index: 10;
-    -fx-spacing: 15;
+    -fx-spacing: 8;
 }
 
 .mining-title-bar {
@@ -185,7 +185,7 @@
 }
 
 .mining-content {
-    -fx-spacing: 20px;
+    -fx-spacing: 10px;
 }
 
 .mining-left-panel {
@@ -833,7 +833,7 @@
 /* Contenu principal */
 .main-content {
     -fx-background-color: -fx-elite-dark;
-    -fx-padding: 20;
+    -fx-padding: 10;
 }
 
 /* Panneau de statistiques */
@@ -2648,8 +2648,9 @@
     -fx-border-width: 2px;
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
-    -fx-padding: 15px;
-    -fx-spacing: 10px;
+    /* Réduire l'espace interne, surtout en bas */
+    -fx-padding: 10px 15px 6px 15px; /* top right bottom left */
+    -fx-spacing: 8px;
 }
 
 /* Titre du header */

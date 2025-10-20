@@ -157,16 +157,16 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             // Charger l'image pour l'onglet Missions (Empire)
             Image empireImage = new Image(getClass().getResourceAsStream("/images/dashboard/elitewarboard.png"));
             missionsTabImage.setImage(empireImage);
-            missionsTabImage.setFitWidth(76); // Taille carrée élégante
-            missionsTabImage.setFitHeight(76); // Taille carrée élégante
+            missionsTabImage.setFitWidth(60); // Taille carrée élégante
+            missionsTabImage.setFitHeight(60); // Taille carrée élégante
             missionsTabImage.setPreserveRatio(true); // Conserver les proportions
             missionsTabImage.setSmooth(true);
             
             // Charger l'image pour l'onglet Mining (Minageship)
             Image minageshipImage = new Image(getClass().getResourceAsStream("/images/dashboard/mining.png"));
             miningTabImage.setImage(minageshipImage);
-            miningTabImage.setFitWidth(76); // Taille carrée élégante
-            miningTabImage.setFitHeight(76); // Taille carrée élégante
+            miningTabImage.setFitWidth(60); // Taille carrée élégante
+            miningTabImage.setFitHeight(60); // Taille carrée élégante
             miningTabImage.setPreserveRatio(true); // Conserver les proportions
             miningTabImage.setSmooth(true);
             
