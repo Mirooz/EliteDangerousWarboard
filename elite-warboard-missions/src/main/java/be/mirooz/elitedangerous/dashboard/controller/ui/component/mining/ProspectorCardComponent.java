@@ -133,7 +133,7 @@ public class ProspectorCardComponent {
                     materialRow.setAlignment(Pos.CENTER_LEFT);
 
                     String materialName = material.getNameLocalised() != null ?
-                            material.getNameLocalised() :
+                            material.getNameLocalised().toUpperCase() :
                             (material.getName() != null ? material.getName().getVisibleName() : getTranslation("mining.unknown_material"));
 
                     Label materialLabel = new Label(materialName);
