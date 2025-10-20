@@ -131,7 +131,7 @@ public class ProspectorCardComponent {
 
             for (ProspectedAsteroid.Material material : prospector.getMaterials()) {
                 if (material.getProportion() != null) {
-                    HBox materialRow = new HBox(10);
+                    HBox materialRow = new HBox();
                     materialRow.setAlignment(Pos.CENTER_LEFT);
 
                     String materialName = material.getNameLocalised() != null ?
@@ -140,6 +140,10 @@ public class ProspectorCardComponent {
 
                     Label materialLabel = new Label(materialName);
                     materialLabel.getStyleClass().add("elite-material-name-large");
+
+                    // Espaceur qui s'adapte à la taille du texte
+                    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+                    HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
                     Label percentageLabel = new Label(String.format("%.1f%%", material.getProportion()));
                     percentageLabel.getStyleClass().add("elite-material-percent-large");
@@ -154,7 +158,7 @@ public class ProspectorCardComponent {
                         percentageLabel.getStyleClass().add("high");
                     }
 
-                    materialRow.getChildren().addAll(materialLabel, percentageLabel);
+                    materialRow.getChildren().addAll(materialLabel, spacer, percentageLabel);
                     materialsContainer.getChildren().add(materialRow);
                 }
             }
