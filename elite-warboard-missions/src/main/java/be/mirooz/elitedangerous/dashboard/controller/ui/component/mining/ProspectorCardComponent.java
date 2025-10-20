@@ -61,7 +61,7 @@ public class ProspectorCardComponent {
         cardContainer.setFillWidth(true);
 
 
-        // En-tête avec estimation totale en haut à droite
+        // En-tête d'informations (icône + éventuel core)
         HBox headerContainer = new HBox();
         headerContainer.setAlignment(Pos.CENTER_LEFT);
         headerContainer.setSpacing(10);
@@ -100,16 +100,14 @@ public class ProspectorCardComponent {
             totalEstimation += coreEstimation;
         }
 
-        // Afficher l'estimation totale en haut à droite
+        // Afficher l'estimation totale AU-DESSUS de l'astéroïde (aligné à gauche)
         if (totalEstimation > 0) {
+            HBox estimationBar = new HBox();
+            estimationBar.setAlignment(Pos.CENTER_LEFT);
             Label totalEstimationLabel = new Label("~" + MiningService.getInstance().formatPrice(totalEstimation) + " Cr");
             totalEstimationLabel.getStyleClass().add("asteroid-total-estimation");
-            
-            // Utiliser un spacer pour pousser l'estimation à droite
-            javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
-            HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
-            
-            headerContainer.getChildren().addAll(spacer, totalEstimationLabel);
+            estimationBar.getChildren().add(totalEstimationLabel);
+            cardContainer.getChildren().add(estimationBar);
         }
 
         // Contenu localisé
@@ -131,7 +129,7 @@ public class ProspectorCardComponent {
 
             for (ProspectedAsteroid.Material material : prospector.getMaterials()) {
                 if (material.getProportion() != null) {
-                    HBox materialRow = new HBox();
+                    HBox materialRow = new HBox(10);
                     materialRow.setAlignment(Pos.CENTER_LEFT);
 
                     String materialName = material.getNameLocalised() != null ?
@@ -140,10 +138,6 @@ public class ProspectorCardComponent {
 
                     Label materialLabel = new Label(materialName);
                     materialLabel.getStyleClass().add("elite-material-name-large");
-
-                    // Espaceur qui s'adapte à la taille du texte
-                    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
-                    HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
                     Label percentageLabel = new Label(String.format("%.1f%%", material.getProportion()));
                     percentageLabel.getStyleClass().add("elite-material-percent-large");
@@ -158,7 +152,7 @@ public class ProspectorCardComponent {
                         percentageLabel.getStyleClass().add("high");
                     }
 
-                    materialRow.getChildren().addAll(materialLabel, spacer, percentageLabel);
+                    materialRow.getChildren().addAll(materialLabel, percentageLabel);
                     materialsContainer.getChildren().add(materialRow);
                 }
             }

@@ -9,6 +9,7 @@ import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
@@ -184,14 +185,14 @@ public class MiningHistoryComponent implements Initializable {
 
         // Nombre de minéraux
         int totalMinerals = stat.getRefinedMinerals().size();
-        Label mineralsLabel = new Label("Minéraux: " + totalMinerals);
+        Label mineralsLabel = new Label(getTranslation("mining.minerals") + ": " + totalMinerals);
         mineralsLabel.getStyleClass().add("session-info");
 
         // Valeur avec texte et chiffre séparés
         HBox valueContainer = new HBox(5);
         valueContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
-        Label valuePrefixLabel = new Label("Valeur: ");
+        Label valuePrefixLabel = new Label(getTranslation("mining.value") + ": ");
         valuePrefixLabel.getStyleClass().add("session-info");
         
         Label valueAmountLabel = new Label(miningService.formatPrice(stat.getTotalValue()) + " Cr");
@@ -203,6 +204,8 @@ public class MiningHistoryComponent implements Initializable {
 
         // Détails des minéraux (droite)
         VBox mineralsDetails = createMineralsDetails(stat);
+        // Pousser le bloc de gauche pour que la colonne de droite ait de l'espace
+        javafx.scene.layout.HBox.setHgrow(info, javafx.scene.layout.Priority.ALWAYS);
 
         mainContent.getChildren().addAll(info, mineralsDetails);
 
@@ -235,11 +238,12 @@ public class MiningHistoryComponent implements Initializable {
         VBox mineralsDetails = new VBox(2);
         mineralsDetails.getStyleClass().add("minerals-details");
         mineralsDetails.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        mineralsDetails.setFillWidth(true);
         
         Map<Mineral, Integer> totalMinerals = stat.getTotalRefinedMinerals();
         
         if (totalMinerals.isEmpty()) {
-            Label noMineralsLabel = new Label("Aucun minéral");
+            Label noMineralsLabel = new Label(getTranslation("mining.no_mineral"));
             noMineralsLabel.getStyleClass().add("mineral-empty");
             mineralsDetails.getChildren().add(noMineralsLabel);
             return mineralsDetails;
@@ -260,7 +264,8 @@ public class MiningHistoryComponent implements Initializable {
             long totalPrice = mineral.getPrice() * quantity;
             
             HBox mineralRow = new HBox(8);
-            mineralRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            mineralRow.setAlignment(Pos.CENTER_RIGHT);
+            mineralRow.setMaxWidth(Double.MAX_VALUE);
             
             // Nom du minéral
             Label nameLabel = new Label(mineral.getVisibleName());
@@ -277,16 +282,18 @@ public class MiningHistoryComponent implements Initializable {
             priceLabel.getStyleClass().add("mineral-price");
             priceLabel.setPrefWidth(100);
             
-            mineralRow.getChildren().addAll(nameLabel, quantityLabel, priceLabel);
-            
-            // Si c'est le dernier minéral et qu'il y en a d'autres, ajouter l'indicateur sur la même ligne
-            if (i == sortedMinerals.size() - 1 && hasMoreMinerals) {
-                Label moreLabel = new Label("... +" + (totalMinerals.size() - 3) + " autres");
-                moreLabel.getStyleClass().add("mineral-more-inline");
-                mineralRow.getChildren().add(moreLabel);
-            }
-            
+            // Spacer extensible pour pousser les éléments à droite
+            javafx.scene.layout.Region rightSpacer = new javafx.scene.layout.Region();
+            javafx.scene.layout.HBox.setHgrow(rightSpacer, javafx.scene.layout.Priority.ALWAYS);
+
+            mineralRow.getChildren().addAll(rightSpacer, nameLabel, quantityLabel, priceLabel);
             mineralsDetails.getChildren().add(mineralRow);
+        }
+        // Afficher l'indicateur des minéraux supplémentaires sur une LIGNE SÉPARÉE sous la liste
+        if (hasMoreMinerals) {
+            Label moreLabel = new Label("... +" + (totalMinerals.size() - 3) + " " + getTranslation("mining.others"));
+            moreLabel.getStyleClass().add("mineral-more-inline");
+            mineralsDetails.getChildren().add(moreLabel);
         }
         
         return mineralsDetails;
@@ -303,7 +310,7 @@ public class MiningHistoryComponent implements Initializable {
         long remainingMinutes = minutes % 60;
         
         // Label "Durée: "
-        Label durationPrefix = new Label("Durée: ");
+        Label durationPrefix = new Label(getTranslation("mining.duration") + ": ");
         durationPrefix.getStyleClass().add("session-info");
         
         durationContainer.getChildren().add(durationPrefix);
@@ -436,11 +443,9 @@ public class MiningHistoryComponent implements Initializable {
         if (totalValueTitleLabel != null) {
             totalValueTitleLabel.setText(getTranslation("mining.total_value"));
         }
-        
-        // Mettre à jour tous les tooltips existants
-        for (TooltipData tooltipData : tooltipDataList) {
-            updateTooltipText(tooltipData.getTooltip(), tooltipData.getStat());
-        }
+
+        // Re-générer l'historique pour appliquer toutes les traductions (titres, labels, tooltips)
+        updateMiningHistory();
     }
 
     // Getters et setters

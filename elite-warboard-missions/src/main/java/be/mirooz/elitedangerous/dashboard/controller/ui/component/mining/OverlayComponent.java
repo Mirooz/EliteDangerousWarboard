@@ -132,6 +132,8 @@ public class OverlayComponent {
 
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
+        // Style racine pour cibler les scrollbars overlay
+        stackPane.getStyleClass().add("overlay-root");
 
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
@@ -218,8 +220,10 @@ public class OverlayComponent {
         Slider slider = new Slider(0.05, 1.0, overlayOpacity);
         slider.setOrientation(javafx.geometry.Orientation.VERTICAL);
         slider.setPrefWidth(20);
-        slider.setPrefHeight(80);
+        slider.setPrefHeight(120);
+        slider.setPrefWidth(12);
         slider.setOpacity(0.0); // Masquer par défaut
+        // Style dédié vertical (étroit) en plus de la classe par défaut "slider"
         slider.getStyleClass().add("opacity-slider");
 
         // Configuration pour des valeurs plus précises
@@ -238,7 +242,7 @@ public class OverlayComponent {
     private Slider createTextScaleSlider() {
         Slider slider = new Slider(0.5, 3.0, textScale);
         slider.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
-        slider.setPrefWidth(100);
+        slider.setPrefWidth(140);
         slider.setOpacity(0.0); // Masquer par défaut
         slider.getStyleClass().add("text-scale-slider");
         

@@ -2479,7 +2479,7 @@
 }
 
 .elite-mineral-name-large {
-    -fx-text-fill: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-success;
     -fx-font-size: 22px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
@@ -3227,31 +3227,110 @@
     -fx-effect: dropshadow(gaussian, gold, 8, 0.8, 0, 0);
 }
 
-/* Curseur de transparence pour l'overlay */
-.mirror-overlay .opacity-slider {
-    -fx-background-color: rgba(255, 215, 0, 0.2);
-    -fx-border-color: rgba(255, 215, 0, 0.6);
+/* Slider de scale de texte (overlay) - style Elite Dangerous */
+.opacity-slider {
+    -fx-background-color: rgba(26, 26, 26, 0.85);
+    -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1px;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-pref-width: 20px;
-    -fx-pref-height: 80px;
+    -fx-pref-width: 14px;
+    -fx-pref-height: 140px;
 }
 
-.mirror-overlay .opacity-slider .track {
-    -fx-background-color: rgba(255, 215, 0, 0.3);
+.opacity-slider .track {
+    -fx-background-color: linear-gradient(to right, #2a2a2a, #141414);
     -fx-background-radius: 2;
 }
 
-.mirror-overlay .opacity-slider .thumb {
-    -fx-background-color: gold;
+.opacity-slider .thumb {
+    -fx-background-color: -fx-elite-orange;
     -fx-background-radius: 3;
-    -fx-pref-width: 8px;
-    -fx-pref-height: 8px;
+    -fx-pref-width: 14px;
+    -fx-pref-height: 14px;
 }
 
-.mirror-overlay .opacity-slider:hover {
-    -fx-background-color: rgba(255, 215, 0, 0.4);
-    -fx-border-color: gold;
-    -fx-effect: dropshadow(gaussian, gold, 5, 0.5, 0, 0);
+.opacity-slider:hover .thumb {
+    -fx-background-color: -fx-elite-cyan;
+}
+/* Slider de scale de texte (overlay) - style Elite Dangerous */
+.text-scale-slider {
+    -fx-background-color: rgba(26, 26, 26, 0.85);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-pref-width: 140px;
+    -fx-pref-height: 14px;
+}
+
+.text-scale-slider .track {
+    -fx-background-color: linear-gradient(to right, #2a2a2a, #141414);
+    -fx-background-radius: 2;
+}
+
+.text-scale-slider .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 3;
+    -fx-pref-width: 14px;
+    -fx-pref-height: 14px;
+}
+
+.text-scale-slider:hover .thumb {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Scrollbars Elite Dangerous pour l'overlay */
+.overlay-root .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+}
+
+.overlay-root .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+}
+
+.overlay-root .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.overlay-root .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.overlay-root .scroll-bar:vertical .increment-button,
+.overlay-root .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.overlay-root .scroll-bar:vertical .increment-button:hover,
+.overlay-root .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.overlay-root .scroll-bar:vertical .increment-arrow,
+.overlay-root .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+}
+
+.overlay-root .scroll-bar:vertical .increment-arrow:hover,
+.overlay-root .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Scrollbar horizontale pour l'overlay (ex: slider de taille de texte) */
+.overlay-root .scroll-bar:horizontal {
+    -fx-opacity: 0.9;
+    -fx-pref-height: 6px;
+    -fx-background-color: -fx-elite-darker;
+}
+
+.overlay-root .scroll-bar:horizontal .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
 }

@@ -217,6 +217,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         
         // Sélectionner l'onglet Missions par défaut
         mainTabPane.getSelectionModel().select(missionsTab);
+
+        // Appliquer immédiatement le style "onglet cliqué" à l'image Missions
+        missionsTabImage.getStyleClass().add("tab-image-selected");
     }
 
     private void updateTranslations(){
