@@ -84,6 +84,7 @@ public class MineralListWrapper {
 
             List<MineralType> minerals = MineralType.all().stream()
                     .filter(m -> m.getMiningMethod() == method)
+                    .filter(m -> !m.isTrashValue())
                     .toList();
 
             for (Mineral mineral : minerals) {

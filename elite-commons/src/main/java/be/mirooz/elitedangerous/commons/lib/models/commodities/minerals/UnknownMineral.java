@@ -33,6 +33,16 @@ public record UnknownMineral(String rawName) implements Mineral {
     }
 
     @Override
+    public boolean isTrashValue() {
+        return true;
+    }
+
+    @Override
+    public void setTrashValue(boolean trashValue) {
+        // no-op for unknown mineral
+    }
+
+    @Override
     public String getInaraId() {
         return null;
     }

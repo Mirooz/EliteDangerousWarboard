@@ -19,4 +19,11 @@ public interface Mineral extends ICommodity {
     int getPrice();
     IntegerProperty getPriceProperty();
     void setPrice(int price);
+
+    /**
+     * Indique si la valeur de ce minéral doit être considérée comme négligeable (trash value)
+     * Par défaut: false
+     */
+    boolean isTrashValue();
+    void setTrashValue(boolean trashValue);
 }
