@@ -79,24 +79,31 @@ public class JournalService {
                 System.err.println("Aucun fichier journal trouvé");
                 return;
             }
-            // Le premier fichier est le plus récent (trié par date décroissante)
-            File latestJournal = journalFiles.get(0);
-            List<String> lines = Files.readAllLines(latestJournal.toPath());
-            for (String line : lines) {
-                try {
-                    JsonNode jsonNode = objectMapper.readTree(line);
-                    if ("Commander".equals(jsonNode.get("event").asText())) {
-                        dispatcher.dispatch(jsonNode);
-                        return;
+
+            // Parcourt tous les fichiers, du plus récent au plus ancien
+            for (File journal : journalFiles) {
+                List<String> lines = Files.readAllLines(journal.toPath());
+
+                for (String line : lines) {
+                    try {
+                        JsonNode jsonNode = objectMapper.readTree(line);
+                        if ("Commander".equals(jsonNode.path("event").asText())) {
+                            dispatcher.dispatch(jsonNode);
+                            return; // stop dès qu'on trouve
+                        }
+                    } catch (Exception e) {
+                        // Ignorer les lignes malformées
                     }
-                } catch (Exception e) {
-                    // Ignorer les lignes malformées
                 }
             }
+
+            System.err.println("Aucun event 'Commander' trouvé dans les journaux récents.");
+
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'extraction du nom du commandant: " + e.getMessage());
+            System.err.println("Erreur lors de l'extraction du nom du commandant : " + e.getMessage());
         }
     }
+
 
     /**
      * Vérifie si un fichier journal appartient au commandant identifié

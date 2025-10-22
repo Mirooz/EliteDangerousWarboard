@@ -367,6 +367,15 @@ public enum MineralType implements Mineral {
             "HydrogenPeroxide",
             "$hydrogenperoxide_name;",
             MiningMethod.LASER
+    ),
+    HAEMATITE(
+            "0",
+            "Haematite",
+            "haematite",
+            "haematite",
+            "haematite",
+            "$haematite_name;",
+            MiningMethod.LASER
     );
 
     private final String inaraId;
@@ -426,6 +435,7 @@ public enum MineralType implements Mineral {
         PALLADIUM.setPrice(52368);
         OSMIUM.setPrice(66991);
         COBALT.setPrice(5400);
+        HAEMATITE.setPrice(10044);
 
 
     }
@@ -457,6 +467,7 @@ public enum MineralType implements Mineral {
         PALLADIUM.setTrashValue(true);
         OSMIUM.setTrashValue(true);
         COBALT.setTrashValue(true);
+        HAEMATITE.setTrashValue(true);
     }
 
     @Override

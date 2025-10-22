@@ -3347,3 +3347,8 @@
     -fx-background-color: -fx-elite-orange;
     -fx-background-radius: 2px;
 }
+.overlay-root-bordered{
+    -fx-border-color: rgba(255, 107, 0, 0.8);
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.3), 20, 0, 0, 0);
+}

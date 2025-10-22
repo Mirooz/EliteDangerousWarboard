@@ -4,11 +4,13 @@ import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -25,6 +27,9 @@ import java.util.Locale;
  */
 public class OverlayComponent {
 
+    public static final double MIN_OPPACITY = 0.01;
+    public static final int MIN_WIDTH_OVERLAY = 200;
+    public static final int MIN_HEIGHT_OVERLAY = 150;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
 
     // Clés pour les préférences de l'overlay
@@ -115,8 +120,8 @@ public class OverlayComponent {
         overlayStage.setResizable(true);
 
         // Définir la taille par défaut et minimale
-        overlayStage.setMinWidth(200);
-        overlayStage.setMinHeight(150);
+        overlayStage.setMinWidth(MIN_WIDTH_OVERLAY);
+        overlayStage.setMinHeight(MIN_HEIGHT_OVERLAY);
 
         // Restaurer les préférences sauvegardées
         restoreOverlayPreferences();
@@ -133,8 +138,10 @@ public class OverlayComponent {
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
         // Style racine pour cibler les scrollbars overlay
-        stackPane.getStyleClass().add("overlay-root");
-
+        stackPane.getStyleClass().addAll("overlay-root","overlay-root-bordered");
+        stackPane.setOnMouseExited(event -> {
+            stackPane.getStyleClass().remove("overlay-root-bordered");
+        });
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
 
@@ -217,7 +224,7 @@ public class OverlayComponent {
      * Crée le curseur de transparence
      */
     private Slider createOpacitySlider() {
-        Slider slider = new Slider(0.05, 1.0, overlayOpacity);
+        Slider slider = new Slider(MIN_OPPACITY, 1.0, overlayOpacity);
         slider.setOrientation(javafx.geometry.Orientation.VERTICAL);
         slider.setPrefWidth(20);
         slider.setPrefHeight(120);
@@ -261,7 +268,7 @@ public class OverlayComponent {
      */
     private void setupOpacitySliderListener() {
         opacitySlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            double opacity = Math.max(newVal.doubleValue(), 0.01);
+            double opacity = Math.max(newVal.doubleValue(), MIN_OPPACITY);
             updatePaneStyle(opacity, stackPane);
             overlayOpacity = opacity;
         });
@@ -281,7 +288,7 @@ public class OverlayComponent {
      * Met à jour le style du StackPane
      */
     private void updatePaneStyle(double opacity, StackPane stackPane) {
-        double stackPaneOpacity = Math.max(0.05, opacity);
+        double stackPaneOpacity = Math.max(MIN_OPPACITY, opacity);
         overlayOpacity = stackPaneOpacity;
         String style = String.format(
                 Locale.US,
@@ -371,9 +378,6 @@ public class OverlayComponent {
                     // Déplacement
                     overlayStage.setX(e.getScreenX() - offset[0]);
                     overlayStage.setY(e.getScreenY() - offset[1]);
-                    
-                    // Sauvegarder la position en temps réel
-                    saveOverlayPosition();
                 }
             }
         });
@@ -450,10 +454,19 @@ public class OverlayComponent {
         overlayOpacity = Double.parseDouble(savedOpacityStr);
         textScale = Double.parseDouble(savedTextScaleStr);
 
-        overlayStage.setWidth(Math.max(savedWidth, overlayStage.getMinWidth()));
-        overlayStage.setHeight(Math.max(savedHeight, overlayStage.getMinHeight()));
-        overlayStage.setX(savedX);
-        overlayStage.setY(savedY);
+        double width = Math.max(savedWidth, overlayStage.getMinWidth());
+        overlayStage.setWidth(width);
+        double height = Math.max(savedHeight, overlayStage.getMinHeight());
+        overlayStage.setHeight(height);
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double screenWidth = screenBounds.getWidth();
+        double screenHeight = screenBounds.getHeight();
+        double finalX = Math.max(0, Math.min(savedX, screenWidth - width));
+        double finalY = Math.max(0, Math.min(savedY, screenHeight - height));
+
+// Applique la position
+        overlayStage.setX(finalX);
+        overlayStage.setY(finalY);
         
         // Appliquer le scaling du texte
         if (textScaleSlider != null) {
@@ -480,13 +493,5 @@ public class OverlayComponent {
         }
     }
     
-    /**
-     * Sauvegarde uniquement la position de l'overlay (pour les déplacements en temps réel)
-     */
-    private void saveOverlayPosition() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            preferencesService.setPreference(OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
-            preferencesService.setPreference(OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
-        }
-    }
+
 }

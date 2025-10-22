@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
@@ -24,13 +26,13 @@ public class ProspectorCardComponent {
      * Calcule l'estimation de valeur d'un matériau basé sur son pourcentage
      * Formule: 0.28 × pourcentage × prix_du_minéral
      */
-    private static long calculateMaterialEstimation(double percentage, be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral mineral) {
+    private static long calculateMaterialEstimation(double percentage, Mineral mineral) {
         if (mineral == null || mineral.getPrice() == 0) {
             return 0;
         }
         
         // Calculer la quantité extraite en tonnes: 0.28 × pourcentage
-        double extractedTons = 0.28 * percentage;
+        double extractedTons = 0.31 * percentage;
         
         // Multiplier par le prix du minéral
         return Math.round(extractedTons * mineral.getPrice());
@@ -40,13 +42,13 @@ public class ProspectorCardComponent {
      * Calcule l'estimation de valeur d'un core
      * Formule: 18 × prix_du_minéral
      */
-    private static long calculateCoreEstimation(be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType coreMineral) {
+    private static long calculateCoreEstimation(MineralType coreMineral) {
         if (coreMineral == null || coreMineral.getPrice() == 0) {
             return 0;
         }
         
         // Pour un core: 18 tonnes × prix du minéral
-        return Math.round(18 * coreMineral.getPrice());
+        return Math.round(16 * coreMineral.getPrice());
     }
 
     /**
