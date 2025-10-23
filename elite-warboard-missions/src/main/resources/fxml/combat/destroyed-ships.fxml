@@ -19,9 +19,12 @@
     <TableView fx:id="destroyedShipsTable"
                styleClass="destroyed-ships-table"
                prefHeight="250.0"
-               VBox.vgrow="NEVER">
+               VBox.vgrow="NEVER"
+               minWidth="300"
+               prefWidth="400"
+               maxWidth="400">
 
-        <columns>
+    <columns>
             <TableColumn fx:id="timeColumn"
                          text="HEURE"
                          prefWidth="90"
@@ -38,14 +41,14 @@
 
             <TableColumn fx:id="pilotNameColumn"
                          text="PILOTE"
-                         prefWidth="110"
+                         prefWidth="90"
                          sortable="false"
                          resizable="false"
                          reorderable="false"/>
 
             <TableColumn fx:id="bountyColumn"
                          text="BOUNTY"
-                         prefWidth="110"
+                         prefWidth="90"
                          sortable="false"
                          resizable="false"
                          reorderable="false"/>

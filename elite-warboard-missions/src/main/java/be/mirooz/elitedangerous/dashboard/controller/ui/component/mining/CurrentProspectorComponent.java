@@ -124,9 +124,6 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
         ProspectedAsteroid currentProspector = allProspectors.get(currentProspectorIndex);
         VBox card = ProspectorCardComponent.createProspectorCard(currentProspector);
 
-        // Fixer la taille pour éviter les changements de layout
-        card.setMinSize(500, 450);
-        card.setPrefSize(500, 450);
 
         currentProspectorContent.getChildren().add(card);
 

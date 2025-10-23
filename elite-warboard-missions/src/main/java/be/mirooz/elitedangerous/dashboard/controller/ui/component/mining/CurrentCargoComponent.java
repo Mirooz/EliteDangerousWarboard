@@ -62,10 +62,6 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
     @FXML
     private Label totalPriceHeaderLabel;
     @FXML
-    private Label stationPriceHeaderLabel;
-    @FXML
-    private Label stationTotalHeaderLabel;
-    @FXML
     private ToggleSwitch priceModeToggle;
 
     Label noMineralsLabel;
@@ -162,12 +158,6 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
         }
         if (totalPriceHeaderLabel != null) {
             updatePriceHeaders();
-        }
-        if (stationPriceHeaderLabel != null) {
-            stationPriceHeaderLabel.setText(getTranslation("mining.station_price"));
-        }
-        if (stationTotalHeaderLabel != null) {
-            stationTotalHeaderLabel.setText(getTranslation("mining.station_total"));
         }
         if (priceModeToggle != null) {
             priceModeToggle.getLeftLabel().setText(getTranslation("mining.best_price"));

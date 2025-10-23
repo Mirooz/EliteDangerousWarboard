@@ -296,19 +296,6 @@
     -fx-alignment: CENTER_LEFT;
 }
 
-/* ✅ Styles pour le prospecteur actuel */
-.current-prospector-container {
-    -fx-background-color: -fx-elite-darker;
-    -fx-padding: 20px;
-    -fx-border-color: transparent;
-    -fx-border-width: 0px;
-    -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
-    -fx-spacing: 15px;
-    -fx-min-width: 420px;
-    -fx-pref-width: 420px;
-    -fx-max-width: 420px;
-}
 
 .current-prospector-content {
     -fx-spacing: 10px;
@@ -319,15 +306,6 @@
     -fx-padding: 0px;
 }
 
-/* ✅ Message quand aucun prospecteur */
-.no-prospector-container {
-    -fx-background-color: -fx-elite-darker;
-    -fx-padding: 40px;
-    -fx-border-color: -fx-elite-gray;
-    -fx-border-width: 1px;
-    -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
-}
 
 .no-prospector-message {
     -fx-text-fill: -fx-elite-text-dim;
@@ -608,6 +586,89 @@
     -fx-padding: 10px 0;
     -fx-hgap: 10px;
     -fx-vgap: 5px;
+}
+
+/* Styles pour la ScrollPane des minéraux */
+.cargo-minerals-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+
+.cargo-minerals-scroll:focused {
+    -fx-background-color: transparent;
+}
+
+.cargo-minerals-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Scrollbar verticale pour le GridPane des minéraux - Style Elite Dangerous */
+.cargo-minerals-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-button,
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-button:hover,
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z"; /* flèche vers le bas */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z"; /* flèche vers le haut */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-arrow:hover,
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Masquer la scrollbar horizontale */
+.cargo-minerals-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
 }
 
 .cargo-minerals-grid .cargo-column-header {
@@ -1447,9 +1508,6 @@
     -fx-border-radius: 5;
     -fx-background-radius: 5;
     -fx-padding: 5;
-    -fx-pref-width: 450;
-    -fx-max-width: 450;
-    -fx-min-width: 450;
 }
 
 .panel-header {
@@ -1464,9 +1522,6 @@
     -fx-border-width: 1;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-pref-width: 440;
-    -fx-max-width: 440;
-    -fx-min-width: 440;
     -fx-effect: dropshadow(gaussian, rgba(255, 120, 0, 0.25), 10, 0.3, 0, 0);
 }
 
@@ -1596,10 +1651,6 @@
     -fx-text-transform: uppercase;
 }
 
-.destroyed-ships-table .column-header:hover {
-    -fx-background-color: rgba(255, 140, 0, 0.15);
-    -fx-cursor: hand;
-}
 
 
 /* Styles pour les statistiques de bounty par faction */
