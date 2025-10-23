@@ -6,7 +6,7 @@ import javafx.scene.layout.GridPane;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.StationCacheService;
-import be.mirooz.elitedangerous.dashboard.service.MineralPriceNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;

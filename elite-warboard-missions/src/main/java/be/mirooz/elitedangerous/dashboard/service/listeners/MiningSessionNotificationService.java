@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.service.listeners;
 
 import java.util.ArrayList;
 import java.util.List;

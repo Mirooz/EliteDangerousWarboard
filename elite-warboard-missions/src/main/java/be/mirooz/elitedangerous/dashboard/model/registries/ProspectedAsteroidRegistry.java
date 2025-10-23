@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.registries;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.service.MiningSessionNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MiningSessionNotificationService;
 
 import java.util.Deque;
 import java.util.LinkedList;

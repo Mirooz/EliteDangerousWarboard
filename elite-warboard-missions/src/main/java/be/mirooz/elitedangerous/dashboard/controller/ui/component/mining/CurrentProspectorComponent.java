@@ -4,7 +4,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidListener;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.dashboard.service.MiningEventNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;

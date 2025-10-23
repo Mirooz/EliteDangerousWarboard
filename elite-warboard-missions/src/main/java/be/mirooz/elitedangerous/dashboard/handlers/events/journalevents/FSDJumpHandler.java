@@ -2,7 +2,6 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
-import be.mirooz.elitedangerous.dashboard.service.MiningSessionNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class FSDJumpHandler implements JournalEventHandler {

@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.service.listeners;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 

@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.model.mining.MiningStat;
 import be.mirooz.elitedangerous.dashboard.model.registries.MiningStatRegistry;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MiningSessionNotificationService;
 
 import java.util.List;
 import java.util.Map;

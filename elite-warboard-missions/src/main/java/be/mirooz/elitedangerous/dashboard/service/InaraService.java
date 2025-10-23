@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotificationService;
 import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
 
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
