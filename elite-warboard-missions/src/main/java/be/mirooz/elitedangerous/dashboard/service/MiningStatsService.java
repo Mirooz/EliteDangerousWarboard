@@ -55,7 +55,30 @@ public class MiningStatsService {
      * Termine la session de minage en cours (utilise l'heure actuelle)
      */
     public void endCurrentMiningSession() {
-        miningStatRegistry.endCurrentMiningSession(null);
+        endCurrentMiningSession(null);
+    }
+    
+    /**
+     * Suspend la session de minage en cours (pour les événements Fileheader/shutdown)
+     */
+    public void suspendCurrentMiningSession(String timestamp) {
+        miningStatRegistry.suspendCurrentMiningSession(timestamp);
+        System.out.println("⛏️ Session de minage suspendue (Fileheader/Shutdown)");
+    }
+    
+    /**
+     * Reprend la session de minage suspendue (pour les événements Commander)
+     */
+    public void resumeMiningSession(String timestamp) {
+        miningStatRegistry.resumeMiningSession(timestamp);
+        System.out.println("⛏️ Session de minage reprise (Commander)");
+    }
+    
+    /**
+     * Vérifie si une session de minage est suspendue
+     */
+    public boolean isMiningSessionSuspended() {
+        return miningStatRegistry.isMiningSessionSuspended();
     }
     
     /**

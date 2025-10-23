@@ -175,31 +175,6 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
         return localizationService.getString(key);
     }
 
-    // Getters et setters
-    public void setOnCargoUpdated(Runnable onCargoUpdated) {
-        this.onCargoUpdated = onCargoUpdated;
-    }
-
-    /**
-     * Retourne le cargo actuel
-     */
-    public CommanderShip.ShipCargo getCurrentCargo() {
-        return miningService.getCargo();
-    }
-
-    /**
-     * Retourne le nombre de limpets
-     */
-    public int getLimpetsCount() {
-        return miningService.getLimpetsCount();
-    }
-
-    /**
-     * Retourne les crédits estimés
-     */
-    public long getEstimatedCredits() {
-        return miningService.calculateEstimatedCredits();
-    }
 
     /**
      * Force le rafraîchissement de l'affichage
@@ -275,23 +250,6 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
         noMineralsLabel = new Label(getTranslation("mining.no_minerals"));
         noMineralsLabel.getStyleClass().add("no-minerals-label");
         return noMineralsLabel;
-    }
-
-    // Getters pour accéder aux composants depuis l'extérieur
-    public Label getCargoUsedLabel() {
-        return cargoUsedLabel;
-    }
-
-    public Label getLimpetsCountLabel() {
-        return limpetsCountLabel;
-    }
-
-    public Label getEstimatedCreditsLabel() {
-        return estimatedCreditsLabel;
-    }
-
-    public GridPane getMineralsGridPane() {
-        return mineralsGridPane;
     }
 
     /**

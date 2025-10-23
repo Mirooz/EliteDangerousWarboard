@@ -19,11 +19,17 @@ public class MiningStat {
     private String bodyName;
     private String ringName;
     private boolean isActive;
+    private boolean isSuspended;
     private List<MiningRefinedEvent> refinedMinerals;
+    private List<SuspensionPeriod> suspensionPeriods;
+    private SuspensionPeriod currentSuspension;
     
     public MiningStat() {
         this.refinedMinerals = new ArrayList<>();
+        this.suspensionPeriods = new ArrayList<>();
         this.isActive = true;
+        this.isSuspended = false;
+        this.currentSuspension = null;
     }
     
     public MiningStat(String systemName, String bodyName, String ringName) {
@@ -64,6 +70,7 @@ public class MiningStat {
     public void endSession(String timestamp) {
         this.endDate = parseTimestamp(timestamp);
         this.isActive = false;
+        this.isSuspended = false;
     }
     
     /**
@@ -71,6 +78,47 @@ public class MiningStat {
      */
     public void endSession() {
         endSession(null);
+    }
+    
+    /**
+     * Suspend cette session de minage avec timestamp
+     */
+    public void suspendSession(String timestamp) {
+        // Créer une nouvelle période de suspension
+        this.currentSuspension = SuspensionPeriod.createSuspension(timestamp);
+        this.isSuspended = true;
+        this.isActive = false; // Une session suspendue n'est plus active
+        System.out.println("⏸️ Session suspendue: " + this.currentSuspension.getSuspendDate());
+    }
+    
+    /**
+     * Suspend cette session de minage (utilise l'heure actuelle)
+     */
+    public void suspendSession() {
+        suspendSession(null);
+    }
+    
+    /**
+     * Reprend cette session de minage avec timestamp
+     */
+    public void resumeSession(String timestamp) {
+        if (this.currentSuspension != null) {
+            // Terminer la période de suspension actuelle
+            this.currentSuspension.endSuspension(timestamp);
+            this.suspensionPeriods.add(this.currentSuspension);
+            System.out.println("▶️ Session reprise: " + this.currentSuspension.getResumeDate() + 
+                             " (durée suspension: " + this.currentSuspension.getDurationInMinutes() + " min)");
+            this.currentSuspension = null;
+        }
+        this.isSuspended = false;
+        this.isActive = true; // Une session reprise redevient active
+    }
+    
+    /**
+     * Reprend cette session de minage (utilise l'heure actuelle)
+     */
+    public void resumeSession() {
+        resumeSession(null);
     }
     
     /**
@@ -126,11 +174,26 @@ public class MiningStat {
     }
     
     /**
-     * Calcule la durée totale de la session
+     * Calcule la durée totale de la session (en excluant toutes les périodes de suspension)
      */
     public long getDurationInMinutes() {
         LocalDateTime end = endDate != null ? endDate : LocalDateTime.now();
-        return java.time.Duration.between(startDate, end).toMinutes();
+        
+        // Si la session est suspendue, utiliser la date de suspension comme fin
+        if (isSuspended && currentSuspension != null && currentSuspension.getSuspendDate() != null) {
+            end = currentSuspension.getSuspendDate();
+        }
+        
+        long totalDuration = java.time.Duration.between(startDate, end).toMinutes();
+        
+        // Soustraire toutes les périodes de suspension terminées
+        for (SuspensionPeriod period : suspensionPeriods) {
+            if (period.isCompleted()) {
+                totalDuration -= period.getDurationInMinutes();
+            }
+        }
+        
+        return Math.max(0, totalDuration); // Ne pas retourner de durée négative
     }
     
     /**
@@ -156,6 +219,55 @@ public class MiningStat {
         return totalValue;
     }
     
+    /**
+     * Récupère toutes les périodes de suspension
+     */
+    public List<SuspensionPeriod> getSuspensionPeriods() {
+        return new ArrayList<>(suspensionPeriods);
+    }
+    
+    /**
+     * Récupère la période de suspension actuelle (si suspendue)
+     */
+    public SuspensionPeriod getCurrentSuspension() {
+        return currentSuspension;
+    }
+    
+    /**
+     * Calcule la durée totale de toutes les suspensions
+     */
+    public long getTotalSuspensionDurationInMinutes() {
+        long totalSuspensionDuration = 0;
+        
+        // Ajouter toutes les périodes de suspension terminées
+        for (SuspensionPeriod period : suspensionPeriods) {
+            if (period.isCompleted()) {
+                totalSuspensionDuration += period.getDurationInMinutes();
+            }
+        }
+        
+        // Ajouter la période de suspension actuelle si elle existe
+        if (currentSuspension != null && currentSuspension.isActive()) {
+            totalSuspensionDuration += java.time.Duration.between(
+                currentSuspension.getSuspendDate(), 
+                LocalDateTime.now()
+            ).toMinutes();
+        }
+        
+        return totalSuspensionDuration;
+    }
+    
+    /**
+     * Récupère le nombre de suspensions
+     */
+    public int getSuspensionCount() {
+        int count = suspensionPeriods.size();
+        if (currentSuspension != null && currentSuspension.isActive()) {
+            count++; // Compter la suspension actuelle
+        }
+        return count;
+    }
+    
     // Getters et Setters
     public LocalDateTime getStartDate() {
         return startDate;
@@ -171,6 +283,22 @@ public class MiningStat {
     
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
+    }
+    
+    public void setSuspensionPeriods(List<SuspensionPeriod> suspensionPeriods) {
+        this.suspensionPeriods = suspensionPeriods;
+    }
+    
+    public void setCurrentSuspension(SuspensionPeriod currentSuspension) {
+        this.currentSuspension = currentSuspension;
+    }
+    
+    public boolean isSuspended() {
+        return isSuspended;
+    }
+    
+    public void setSuspended(boolean suspended) {
+        isSuspended = suspended;
     }
     
     public String getSystemName() {
@@ -215,7 +343,7 @@ public class MiningStat {
     
     @Override
     public String toString() {
-        return String.format("MiningStat{system='%s', body='%s', ring='%s', start=%s, active=%s, minerals=%d}",
-                systemName, bodyName, ringName, startDate, isActive, refinedMinerals.size());
+        return String.format("MiningStat{system='%s', body='%s', ring='%s', start=%s, active=%s, suspended=%s, minerals=%d, suspensions=%d}",
+                systemName, bodyName, ringName, startDate, isActive, isSuspended, refinedMinerals.size(), getSuspensionCount());
     }
 }

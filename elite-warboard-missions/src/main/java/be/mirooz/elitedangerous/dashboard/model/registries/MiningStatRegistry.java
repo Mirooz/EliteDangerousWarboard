@@ -113,6 +113,33 @@ public class MiningStatRegistry {
     }
     
     /**
+     * Suspend la session de minage en cours (pour les événements Fileheader/shutdown)
+     */
+    public void suspendCurrentMiningSession(String timestamp) {
+        if (currentMiningSession != null && currentMiningSession.isActive()) {
+            currentMiningSession.suspendSession(timestamp);
+            System.out.println("⏸️ Session de minage suspendue: " + currentMiningSession.getSystemName() + " - " + currentMiningSession.getRingName());
+        }
+    }
+    
+    /**
+     * Reprend la session de minage suspendue (pour les événements Commander)
+     */
+    public void resumeMiningSession(String timestamp) {
+        if (currentMiningSession != null && currentMiningSession.isSuspended()) {
+            currentMiningSession.resumeSession(timestamp);
+            System.out.println("▶️ Session de minage reprise: " + currentMiningSession.getSystemName() + " - " + currentMiningSession.getRingName());
+        }
+    }
+    
+    /**
+     * Vérifie si une session de minage est suspendue
+     */
+    public boolean isMiningSessionSuspended() {
+        return currentMiningSession != null && currentMiningSession.isSuspended();
+    }
+    
+    /**
      * Efface toutes les sessions de minage
      */
     public void clearAllStats() {
