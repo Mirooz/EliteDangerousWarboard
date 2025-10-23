@@ -234,7 +234,7 @@
 
 .prospector-navigation {
     -fx-spacing: 10px;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .elite-nav-button {
@@ -293,7 +293,7 @@
     -fx-min-width: 40px;
     -fx-pref-width: 40px;
     -fx-max-width: 40px;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 /* ✅ Styles pour le prospecteur actuel */
@@ -423,23 +423,30 @@
     -fx-text-fill: -fx-elite-orange;
     -fx-font-size: 18px;
     -fx-font-weight: bold;
+    -fx-pref-width: 80px;
+    -fx-alignment: CENTER;
 }
 .cargo-stat-price-number {
     -fx-text-fill: -fx-elite-green;
     -fx-font-size: 18px;
     -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-alignment: CENTER_RIGHT;
 }
 
 .cargo-stat-label {
     -fx-text-fill: -fx-elite-text;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
+    -fx-pref-width: 80px;
+    -fx-alignment: CENTER;
 }
 .cargo-stat-price {
     -fx-text-fill: -fx-elite-green;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-alignment: CENTER_RIGHT;
+    -fx-pref-width: 120px;
 }
 
 .cargo-stat-price-number {
@@ -487,7 +494,7 @@
     -fx-text-fill: -fx-elite-orange;
     -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-pref-width: 60px;
 }
 
@@ -495,7 +502,7 @@
     -fx-text-fill: -fx-elite-green;
     -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-pref-width: 100px;
 }
 
@@ -503,7 +510,96 @@
     -fx-text-fill: -fx-elite-green;
     -fx-font-size: 15px;
     -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-station-price {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-station-total {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+/* Style pour les prix avec "/" (valeurs nulles) */
+.cargo-mineral-null-price {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-style: italic;
+    -fx-font-size: 15px;
+    -fx-font-weight: normal;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+/* Style pour le ToggleSwitch personnalisé */
+.price-mode-toggle-switch {
+    -fx-cursor: hand;
+}
+
+.toggle-track {
+    -fx-fill: -fx-elite-dark;
+}
+
+.toggle-thumb {
+    -fx-fill: -fx-elite-text;
+    -fx-effect: dropshadow(gaussian, -fx-elite-orange, 3, 0, 0, 1);
+}
+
+/* Style pour les labels du toggle */
+.price-mode-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #888888;
+    -fx-pref-width: 100px;
+    -fx-min-width: 100px;
+    -fx-max-width: 100px;
     -fx-alignment: CENTER;
+    -fx-wrap-text: true;
+}
+
+.price-mode-label.price-mode-selected {
+    -fx-font-weight: bold !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-background-color: #ff6b35 !important;
+    -fx-background-radius: 3px !important;
+    -fx-padding: 2px 5px !important;
+}
+
+.price-mode-label.price-mode-unselected {
+    -fx-font-weight: normal !important;
+    -fx-text-fill: #888888 !important;
+    -fx-background-color: transparent !important;
+}
+
+.cargo-stat-price-number-station {
+    -fx-text-fill:-fx-elite-success;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Style pour les prix de station (couleur success) */
+.cargo-mineral-station-price-success {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-station-total-success {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
     -fx-pref-width: 100px;
 }
 
@@ -927,7 +1023,7 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .missions-scroll {
@@ -1400,7 +1496,7 @@
     -fx-padding: 5 6 5 6;
     -fx-wrap-text: false;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 /* ====== Lignes ====== */
@@ -1489,14 +1585,14 @@
     -fx-font-weight: bold;
     -fx-font-size: 14px;
     -fx-padding: 6 8 6 8;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-text-transform: uppercase;
 }
 
 .destroyed-ships-table .column-header .label {
     -fx-text-fill: -fx-elite-orange;
     -fx-text-alignment: center;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-text-transform: uppercase;
 }
 
@@ -1522,14 +1618,14 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 .faction-bond-title {
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-danger;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-padding: 5 0 0 0; /* top right bottom left */
 }
 
@@ -2151,7 +2247,7 @@
     -fx-min-width: 20;
     -fx-pref-width: 20;
     -fx-max-width: 20;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .massacre-card-faction-number {
@@ -2189,7 +2285,7 @@
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .results-panel {
@@ -2218,7 +2314,7 @@
 }
 
 .table-column {
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .massacre-results-table .table-cell {
@@ -2323,7 +2419,7 @@
     -fx-background-radius: 0px;
     -fx-min-width: 100px;
     -fx-border-width: 0 0 0 3px;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 /* Titre section Pirates - Style moderne */
@@ -3067,7 +3163,7 @@
     -fx-text-fill: -fx-elite-orange;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .mineral-price {

@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.ToggleSwitch?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentCargoComponent"
@@ -13,22 +14,27 @@
     <!-- Informations du cargo -->
     <HBox spacing="20" styleClass="cargo-info">
         <!-- Limpets à gauche -->
-        <VBox alignment="CENTER_LEFT" spacing="5">
+        <VBox alignment="CENTER_LEFT" spacing="5" prefWidth="80">
             <Label fx:id="limpetsCountLabel" text="0" styleClass="cargo-stat-number"/>
             <Label fx:id="limpetsLabel" text="LIMPETS" styleClass="cargo-stat-label"/>
         </VBox>
         
         <!-- Cargo au milieu avec barre de progression -->
-        <VBox alignment="CENTER" spacing="5" HBox.hgrow="ALWAYS">
+        <VBox alignment="CENTER" spacing="5" HBox.hgrow="ALWAYS" prefWidth="200">
             <ProgressBar fx:id="cargoProgressBar" styleClass="progress-bar" prefWidth="150"/>
             <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number"/>
         </VBox>
         
         <!-- Crédits estimés à droite -->
-        <VBox alignment="CENTER_RIGHT" spacing="5">
+        <VBox alignment="CENTER_RIGHT" spacing="5" prefWidth="120">
             <Label fx:id="estimatedCreditsLabel" text="0" styleClass="cargo-stat-price-number"/>
             <Label fx:id="estimatedCreditsTitleLabel" text="CR ESTIMÉS" styleClass="cargo-stat-price"/>
         </VBox>
+    </HBox>
+
+    <!-- Toggle pour basculer entre best price et price station -->
+    <HBox spacing="10" alignment="CENTER">
+        <ToggleSwitch fx:id="priceModeToggle" styleClass="price-mode-toggle-switch"/>
     </HBox>
 
     <!-- Tableau des minéraux avec GridPane pour un alignement parfait -->

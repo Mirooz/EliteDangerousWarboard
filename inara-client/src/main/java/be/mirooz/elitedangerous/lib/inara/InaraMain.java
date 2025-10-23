@@ -16,5 +16,6 @@ public class InaraMain {
                 500,
                 false,
                 true));
+        System.out.println(client.fetchStationMarket("/elite/station-market/391531/"));
     }
 }

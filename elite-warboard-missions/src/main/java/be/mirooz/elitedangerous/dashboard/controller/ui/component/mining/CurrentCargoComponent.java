@@ -5,6 +5,8 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import javafx.scene.layout.GridPane;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
+import be.mirooz.elitedangerous.dashboard.service.StationCacheService;
+import be.mirooz.elitedangerous.dashboard.service.MineralPriceNotificationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -24,11 +26,13 @@ import java.util.ResourceBundle;
  * - Les crédits estimés
  * - La liste des minéraux dans le cargo
  */
-public class CurrentCargoComponent implements Initializable {
+public class CurrentCargoComponent implements Initializable, MineralPriceNotificationService.MineralPriceListener {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final StationCacheService stationCacheService = StationCacheService.getInstance();
+    private final MineralPriceNotificationService priceNotificationService = MineralPriceNotificationService.getInstance();
 
     // Composants FXML
     @FXML
@@ -55,6 +59,12 @@ public class CurrentCargoComponent implements Initializable {
     private Label unitPriceHeaderLabel;
     @FXML
     private Label totalPriceHeaderLabel;
+    @FXML
+    private Label stationPriceHeaderLabel;
+    @FXML
+    private Label stationTotalHeaderLabel;
+    @FXML
+    private ToggleSwitch priceModeToggle;
 
     Label noMineralsLabel;
 
@@ -68,6 +78,12 @@ public class CurrentCargoComponent implements Initializable {
         
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
+        
+        // Écouter les changements de prix des minéraux
+        priceNotificationService.addListener(this);
+        
+        // Configurer le toggle
+        setupPriceModeToggle();
     }
 
     /**
@@ -94,8 +110,19 @@ public class CurrentCargoComponent implements Initializable {
             double cargoPercentage = (double) cargo.getCurrentUsed() / cargo.getMaxCapacity();
             cargoProgressBar.setProgress(cargoPercentage);
 
-            // Calculer et afficher les CR estimés
-            long estimatedCredits = miningService.calculateEstimatedCredits();
+            // Calculer et afficher les CR estimés selon le mode
+            long estimatedCredits;
+            if (isPriceStationMode()) {
+                estimatedCredits = calculateStationCredits();
+                // Appliquer la couleur verte pour le mode station
+                estimatedCreditsLabel.getStyleClass().clear();
+                estimatedCreditsLabel.getStyleClass().add("cargo-stat-price-number-station");
+            } else {
+                estimatedCredits = miningService.calculateEstimatedCredits();
+                // Appliquer la couleur normale pour le mode best price
+                estimatedCreditsLabel.getStyleClass().clear();
+                estimatedCreditsLabel.getStyleClass().add("cargo-stat-price-number");
+            }
             estimatedCreditsLabel.setText(miningService.formatPrice(estimatedCredits));
 
             // Afficher les minéraux avec les prix (garder les en-têtes)
@@ -129,10 +156,20 @@ public class CurrentCargoComponent implements Initializable {
             quantityHeaderLabel.setText(getTranslation("mining.quantity"));
         }
         if (unitPriceHeaderLabel != null) {
-            unitPriceHeaderLabel.setText(getTranslation("mining.unit_price"));
+            updatePriceHeaders();
         }
         if (totalPriceHeaderLabel != null) {
-            totalPriceHeaderLabel.setText(getTranslation("mining.total_price"));
+            updatePriceHeaders();
+        }
+        if (stationPriceHeaderLabel != null) {
+            stationPriceHeaderLabel.setText(getTranslation("mining.station_price"));
+        }
+        if (stationTotalHeaderLabel != null) {
+            stationTotalHeaderLabel.setText(getTranslation("mining.station_total"));
+        }
+        if (priceModeToggle != null) {
+            priceModeToggle.getLeftLabel().setText(getTranslation("mining.best_price"));
+            priceModeToggle.getRightLabel().setText(getTranslation("mining.price_station"));
         }
         if (noMineralsLabel !=null){
             noMineralsLabel.setText(getTranslation("mining.no_minerals"));
@@ -177,6 +214,64 @@ public class CurrentCargoComponent implements Initializable {
      */
     public void refresh() {
         updateCargo();
+    }
+
+    /**
+     * Nettoie les ressources (à appeler lors de la destruction du composant)
+     */
+    public void cleanup() {
+        priceNotificationService.removeListener(this);
+    }
+
+    /**
+     * Configure le toggle de mode prix
+     */
+    private void setupPriceModeToggle() {
+        if (priceModeToggle != null) {
+            priceModeToggle.setSelected(false); // Par défaut: best price
+            
+            priceModeToggle.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                updatePriceHeaders(); // Mettre à jour les en-têtes
+                updateCargo(); // Rafraîchir l'affichage
+            });
+        }
+    }
+
+    /**
+     * Retourne true si le mode "price station" est sélectionné
+     */
+    private boolean isPriceStationMode() {
+        return priceModeToggle != null && priceModeToggle.isSelected();
+    }
+
+    /**
+     * Met à jour les en-têtes des colonnes de prix selon le mode sélectionné
+     */
+    private void updatePriceHeaders() {
+        if (unitPriceHeaderLabel != null && totalPriceHeaderLabel != null) {
+            if (isPriceStationMode()) {
+                unitPriceHeaderLabel.setText(getTranslation("mining.station_price"));
+                totalPriceHeaderLabel.setText(getTranslation("mining.station_total"));
+            } else {
+                unitPriceHeaderLabel.setText(getTranslation("mining.unit_price"));
+                totalPriceHeaderLabel.setText(getTranslation("mining.total_price"));
+            }
+        }
+    }
+
+    /**
+     * Calcule les crédits estimés avec les prix de station
+     */
+    private long calculateStationCredits() {
+        Map<Mineral, Integer> minerals = miningService.getMinerals();
+        return minerals.entrySet().stream()
+                .mapToLong(entry -> {
+                    Mineral mineral = entry.getKey();
+                    Integer quantity = entry.getValue();
+                    long stationPrice = getStationPriceForMineral(mineral);
+                    return stationPrice * quantity;
+                })
+                .sum();
     }
     private Label createNoMineralsLabel() {
         noMineralsLabel = new Label(getTranslation("mining.no_minerals"));
@@ -245,17 +340,33 @@ public class CurrentCargoComponent implements Initializable {
         Label quantityLabel = new Label(String.valueOf(quantity));
         quantityLabel.getStyleClass().add("cargo-mineral-quantity");
 
+        // Déterminer les prix selon le mode sélectionné
+        long unitPrice, totalPrice;
+        String unitPriceStyle, totalPriceStyle;
+        
+        if (isPriceStationMode()) {
+            // Mode "Price Station" - utiliser les prix de station
+            unitPrice = getStationPriceForMineral(mineral);
+            totalPrice = unitPrice * quantity;
+            unitPriceStyle = unitPrice <= 0 ? "cargo-mineral-null-price" : "cargo-mineral-station-price-success";
+            totalPriceStyle = totalPrice <= 0 ? "cargo-mineral-null-price" : "cargo-mineral-station-total-success";
+        } else {
+            // Mode "Best Price" - utiliser les prix stockés
+            unitPrice = mineral.getPrice();
+            totalPrice = unitPrice * quantity;
+            unitPriceStyle = unitPrice <= 0 ? "cargo-mineral-null-price" : "cargo-mineral-unit-price";
+            totalPriceStyle = totalPrice <= 0 ? "cargo-mineral-null-price" : "cargo-mineral-total-price";
+        }
+
         // Prix unitaire
-        long unitPrice = mineral.getPrice();
-        Label unitPriceLabel = new Label(formatPriceWithCommas(unitPrice));
-        unitPriceLabel.getStyleClass().add("cargo-mineral-unit-price");
+        Label unitPriceLabel = new Label(formatPriceWithoutCr(unitPrice));
+        unitPriceLabel.getStyleClass().add(unitPriceStyle);
 
         // Prix total
-        long totalPrice = unitPrice * quantity;
-        Label totalPriceLabel = new Label(formatPriceWithCommas(totalPrice));
-        totalPriceLabel.getStyleClass().add("cargo-mineral-total-price");
+        Label totalPriceLabel = new Label(formatPriceWithoutCr(totalPrice));
+        totalPriceLabel.getStyleClass().add(totalPriceStyle);
 
-        // Ajouter au GridPane
+        // Ajouter au GridPane (seulement 4 colonnes maintenant)
         mineralsGridPane.add(mineralNameLabel, 0, rowIndex);
         mineralsGridPane.add(quantityLabel, 1, rowIndex);
         mineralsGridPane.add(unitPriceLabel, 2, rowIndex);
@@ -267,5 +378,47 @@ public class CurrentCargoComponent implements Initializable {
      */
     private String formatPriceWithCommas(long price) {
         return String.format("%,d Cr", price);
+    }
+
+    /**
+     * Formate un prix sans "Cr" et avec "/" pour les valeurs nulles
+     */
+    private String formatPriceWithoutCr(long price) {
+        if (price <= 0) {
+            return "/";
+        }
+        return String.format("%,d", price);
+    }
+
+    /**
+     * Récupère le prix de station pour un minéral depuis le cache
+     */
+    private long getStationPriceForMineral(Mineral mineral) {
+        // Utiliser la station actuellement sélectionnée
+        long stationPrice = stationCacheService.getMineralPriceInCurrentStation(mineral.getInaraName());
+        
+        if (stationPrice > 0) {
+            return stationPrice;
+        }
+        
+        // Fallback : chercher dans toutes les stations en cache
+        long fallbackPrice = stationCacheService.getCommodities().stream()
+                .filter(entry -> entry.getCommodityName().equalsIgnoreCase(mineral.getInaraName()))
+                .mapToLong(entry -> entry.getSellPrice())
+                .findFirst()
+                .orElse(0L);
+        
+        return fallbackPrice; // Retourner 0 si pas trouvé
+    }
+
+    // Implémentation de MineralPriceNotificationService.MineralPriceListener
+    
+    @Override
+    public void onMineralPriceChanged(Mineral mineral, long oldPrice, long newPrice) {
+        Platform.runLater(() -> {
+            System.out.printf("💰 Prix de %s changé: %d → %d Cr%n", mineral.getVisibleName(), oldPrice, newPrice);
+            // Rafraîchir l'affichage du cargo pour refléter le nouveau prix
+            updateCargo();
+        });
     }
 }

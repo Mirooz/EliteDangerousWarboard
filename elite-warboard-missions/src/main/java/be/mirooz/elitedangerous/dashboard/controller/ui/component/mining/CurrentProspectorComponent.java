@@ -4,8 +4,8 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidListener;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.MiningEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
-import be.mirooz.elitedangerous.dashboard.service.MiningSessionNotificationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -25,12 +25,12 @@ import java.util.*;
  * - Le compteur de prospecteurs
  * - L'affichage du message "aucun prospecteur"
  */
-public class CurrentProspectorComponent implements Initializable, ProspectedAsteroidListener {
+public class CurrentProspectorComponent implements Initializable, ProspectedAsteroidListener, MiningEventNotificationService.MiningEventListener {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
-    private final MiningSessionNotificationService notificationService = MiningSessionNotificationService.getInstance();
+    private final MiningEventNotificationService miningEventNotificationService = MiningEventNotificationService.getInstance();
 
     // Composants FXML
     @FXML
@@ -72,6 +72,9 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
 
         // S'enregistrer comme listener du registre des prospecteurs
         miningService.getProspectedRegistry().addListener(this);
+        
+        // S'enregistrer comme listener des événements de minage
+        miningEventNotificationService.addListener(this);
     }
 
     /**
@@ -310,6 +313,13 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     }
 
     /**
+     * Retourne le composant overlay pour permettre les interactions externes
+     */
+    public OverlayComponent getOverlayComponent() {
+        return overlayComponent;
+    }
+
+    /**
      * Nettoie tous les prospecteurs et vide l'overlay (utilisé lors de la fin de session de minage)
      */
     public void clearAllProspectors() {
@@ -342,6 +352,32 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
         Platform.runLater(() -> {
             System.out.println("🔄 CurrentProspectorComponent: Registre des prospecteurs vidé");
             showNoProspector();
+        });
+    }
+    
+    // Implémentation de MiningEventNotificationService.MiningEventListener
+    
+    @Override
+    public void onAsteroidCracked(ProspectedAsteroid prospector) {
+        Platform.runLater(() -> {
+            System.out.println("💥 CurrentProspectorComponent: Astéroïde craqué détecté");
+            
+            // Vérifier si l'overlay est ouvert et affiche un prospecteur avec core
+            if (overlayComponent != null && overlayComponent.isShowing()) {
+                ProspectedAsteroid currentOverlayProspector = getCurrentProspector();
+                
+                // Vérifier que l'overlay affiche bien un prospecteur avec core material
+                if (currentOverlayProspector != null && currentOverlayProspector.getCoreMineral() != null) {
+                    System.out.printf("🔍 Overlay affiche un prospecteur avec core: %s - vidage du contenu%n", 
+                        currentOverlayProspector.getCoreMineral().getVisibleName());
+                    overlayComponent.clearContent();
+                    System.out.println("🗑️ Contenu de l'overlay vidé après craquage d'astéroïde");
+                } else {
+                    System.out.println("ℹ️ Overlay ouvert mais aucun prospecteur avec core affiché - pas de vidage");
+                }
+            } else {
+                System.out.println("ℹ️ Overlay fermé - aucune action nécessaire");
+            }
         });
     }
 

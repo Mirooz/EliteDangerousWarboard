@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.MiningS
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -158,17 +159,19 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
 
     @Override
     public void refreshUI() {
-        if (miningSearchPanel != null) {
-            // Le composant de recherche se met à jour automatiquement
-        }
-        if (currentProspector != null) {
-            currentProspector.refresh();
-        }
-        if (currentCargo != null) {
-            currentCargo.refresh();
-        }
-        if (miningHistory != null) {
-            miningHistory.refresh();
-        }
+        Platform.runLater(() -> {
+            if (miningSearchPanel != null) {
+                // Le composant de recherche se met à jour automatiquement
+            }
+            if (currentProspector != null) {
+                currentProspector.refresh();
+            }
+            if (currentCargo != null) {
+                currentCargo.refresh();
+            }
+            if (miningHistory != null) {
+                miningHistory.refresh();
+            }
+        });
     }
 }

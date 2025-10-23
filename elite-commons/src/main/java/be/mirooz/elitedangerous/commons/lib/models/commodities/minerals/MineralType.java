@@ -140,7 +140,7 @@ public enum MineralType implements Mineral {
     // -- Additional minerals (default set as trash value) --
     // Laser-mined common minerals
     BAUXITE(
-            "0",
+            "51",
             "Bauxite",
             "Bauxite",
             "bauxite",
@@ -149,7 +149,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     BERTRANDITE(
-            "0",
+            "52",
             "Bertrandite",
             "Bertrandite",
             "bertrandite",
@@ -158,7 +158,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     COLTAN(
-            "0",
+            "55",
             "Coltan",
             "Coltan",
             "coltan",
@@ -167,7 +167,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     CRYOLITE(
-            "0",
+            "110",
             "Cryolite",
             "Cryolite",
             "cryolite",
@@ -176,7 +176,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     GALLITE(
-            "0",
+            "56",
             "Gallite",
             "Gallite",
             "gallite",
@@ -185,7 +185,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     GOSLARITE(
-            "0",
+            "111",
             "Goslarite",
             "Goslarite",
             "goslarite",
@@ -194,7 +194,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     INDITE(
-            "0",
+            "57",
             "Indite",
             "Indite",
             "indite",
@@ -203,7 +203,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     JADEITE(
-            "0",
+            "168",
             "Jadeite",
             "Jadeite",
             "jadeite",
@@ -212,7 +212,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     LEPIDOLITE(
-            "0",
+            "58",
             "Lepidolite",
             "Lepidolite",
             "lepidolite",
@@ -221,7 +221,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     LITHIUM_HYDROXIDE(
-            "0",
+            "147",
             "Lithium Hydroxide",
             "LithiumHydroxide",
             "lithiumhydroxide",
@@ -230,7 +230,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     METHANE_CLATHRATE(
-            "0",
+            "145",
             "Methane Clathrate",
             "MethaneClathrate",
             "methaneclathrate",
@@ -239,7 +239,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     METHANOL_MONOHYDRATE_CRYSTALS(
-            "0",
+            "146",
             "Methanol Monohydrate Crystals",
             "MethanolMonohydrateCrystals",
             "methanolmonohydratecrystals",
@@ -248,7 +248,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     MOISSANITE(
-            "0",
+            "116",
             "Moissanite",
             "Moissanite",
             "moissanite",
@@ -257,7 +257,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     PYROPHYLLITE(
-            "0",
+            "112",
             "Pyrophyllite",
             "Pyrophyllite",
             "pyrophyllite",
@@ -266,7 +266,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     RUTILE(
-            "0",
+            "59",
             "Rutile",
             "Rutile",
             "rutile",
@@ -275,7 +275,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     TAAFFEITE(
-            "0",
+            "120",
             "Taaffeite",
             "Taaffeite",
             "taaffeite",
@@ -284,7 +284,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     URANINITE(
-            "0",
+            "60",
             "Uraninite",
             "Uraninite",
             "uraninite",
@@ -295,7 +295,7 @@ public enum MineralType implements Mineral {
 
     // Precious/metals (commodities often mined/refined)
     GOLD(
-            "0",
+            "42",
             "Gold",
             "Gold",
             "gold",
@@ -304,7 +304,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     SILVER(
-            "0",
+            "46",
             "Silver",
             "Silver",
             "silver",
@@ -313,7 +313,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     PALLADIUM(
-            "0",
+            "45",
             "Palladium",
             "Palladium",
             "palladium",
@@ -322,7 +322,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     OSMIUM(
-            "0",
+            "72",
             "Osmium",
             "Osmium",
             "osmium",
@@ -331,7 +331,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     COBALT(
-            "0",
+            "39",
             "Cobalt",
             "Cobalt",
             "cobalt",
@@ -342,7 +342,7 @@ public enum MineralType implements Mineral {
 
     // Chemicals (treated here for display; mined via sub-surface/laser in gameplay)
     WATER(
-            "0",
+            "139",
             "Water",
             "Water",
             "water",
@@ -351,7 +351,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     LIQUID_OXYGEN(
-            "0",
+            "137",
             "Liquid Oxygen",
             "LiquidOxygen",
             "liquidoxygen",
@@ -360,7 +360,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     HYDROGEN_PEROXIDE(
-            "0",
+            "138",
             "Hydrogen Peroxide",
             "HydrogenPeroxide",
             "hydrogenperoxide",
@@ -369,7 +369,7 @@ public enum MineralType implements Mineral {
             MiningMethod.LASER
     ),
     HAEMATITE(
-            "0",
+            "10486",
             "Haematite",
             "haematite",
             "haematite",
@@ -550,6 +550,17 @@ public enum MineralType implements Mineral {
 
         for (be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType type : values()) {
             if (type.coreMineralName.equalsIgnoreCase(name)) {
+                return Optional.of(type);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<MineralType> fromInaraId(String inaraId) {
+        if (inaraId == null || inaraId.isBlank()) return Optional.empty();
+
+        for (be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType type : values()) {
+            if (inaraId.equals(type.inaraId)) {
                 return Optional.of(type);
             }
         }

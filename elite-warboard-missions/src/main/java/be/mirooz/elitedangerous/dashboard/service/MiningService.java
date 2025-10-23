@@ -33,6 +33,7 @@ public class MiningService {
     private final ProspectedAsteroidRegistry prospectedRegistry = ProspectedAsteroidRegistry.getInstance();
     private final InaraService inaraService = InaraService.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
+    private final StationCacheService stationCacheService = StationCacheService.getInstance();
 
     private MiningService() {
     }
@@ -145,6 +146,13 @@ public class MiningService {
      */
     public EdToolsService getEdToolsService() {
         return edToolsService;
+    }
+
+    /**
+     * Récupère le service Inara
+     */
+    public InaraService getInaraService() {
+        return inaraService;
     }
 
     /**
@@ -266,5 +274,40 @@ public class MiningService {
         public boolean hasHotspot() {
             return hotspot != null;
         }
+    }
+
+    /**
+     * Calcule les crédits estimés avec les prix de station depuis le cache
+     */
+    public long calculateEstimatedCreditsWithStationPrices() {
+        try {
+            long totalCredits = 0;
+            Map<Mineral, Integer> minerals = getMinerals();
+            if (minerals != null && !minerals.isEmpty()) {
+                for (Map.Entry<Mineral, Integer> entry : minerals.entrySet()) {
+                    Mineral mineral = entry.getKey();
+                    Integer quantity = entry.getValue();
+
+                    if (quantity != null && quantity > 0) {
+                        long stationPrice = getStationPriceForMineral(mineral);
+                        totalCredits += stationPrice * quantity;
+                    }
+                }
+            }
+            return totalCredits;
+        } catch (Exception e) {
+            System.err.println("Erreur lors du calcul des crédits estimés avec prix de station: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Récupère le prix de station pour un minéral depuis le cache
+     */
+    private long getStationPriceForMineral(Mineral mineral) {
+        // Chercher dans le cache des stations pour ce minéral
+        // Pour l'instant, on retourne le prix stocké dans le minéral
+        // TODO: Implémenter la recherche dans le cache des stations
+        return mineral.getPrice();
     }
 }

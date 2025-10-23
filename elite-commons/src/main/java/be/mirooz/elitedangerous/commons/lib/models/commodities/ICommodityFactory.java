@@ -50,4 +50,37 @@ public class ICommodityFactory {
                 .map(ICommodity.class::cast);
     }
 
+    /**
+     * Crée une commodité à partir de son ID Inara
+     * 
+     * @param inaraId L'ID Inara de la commodité (ex: "81", "10249")
+     * @return Optional contenant la commodité ou vide si non trouvée
+     */
+    public static Optional<ICommodity> ofByInaraId(String inaraId) {
+        if (inaraId == null || inaraId.isBlank()) {
+            return Optional.empty();
+        }
+        
+        // Recherche dans tous les types de commodités par ID Inara
+        return searchInCoreMineralsByInaraId(inaraId)
+                .or(() -> searchInLimpetsByInaraId(inaraId))
+                .or(Optional::empty);
+    }
+
+    /**
+     * Recherche dans les core minerals par ID Inara
+     */
+    private static Optional<ICommodity> searchInCoreMineralsByInaraId(String inaraId) {
+        return MineralType.fromInaraId(inaraId)
+                .map(ICommodity.class::cast);
+    }
+
+    /**
+     * Recherche dans les limpets par ID Inara
+     */
+    private static Optional<ICommodity> searchInLimpetsByInaraId(String inaraId) {
+        // Les limpets n'ont pas d'ID Inara, donc retourner vide
+        return Optional.empty();
+    }
+
 }

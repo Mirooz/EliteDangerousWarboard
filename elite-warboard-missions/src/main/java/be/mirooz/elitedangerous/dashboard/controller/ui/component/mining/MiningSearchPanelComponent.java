@@ -8,8 +8,10 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.wrapper.MineralListWrapper;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
+import be.mirooz.elitedangerous.dashboard.service.StationCacheService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
 import be.mirooz.elitedangerous.lib.inara.model.StationType;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -43,6 +45,7 @@ public class MiningSearchPanelComponent implements Initializable {
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
+    private final StationCacheService stationCacheService = StationCacheService.getInstance();
 
     // Images pour les icônes
     private Image laserImage;
@@ -311,6 +314,19 @@ public class MiningSearchPanelComponent implements Initializable {
 
                     if (routeResult.hasMarket()) {
                         InaraCommoditiesStats bestMarket = routeResult.getMarket();
+                        
+                        // Récupérer le marché complet de la station et le mettre en cache
+                        try {
+                            if (bestMarket.getStationUrl() != null) {
+                                StationMarket stationMarket = miningService.getInaraService().fetchStationMarket(bestMarket.getStationUrl());
+                                stationCacheService.cacheStationMarket(bestMarket.getStationName(), bestMarket.getSystemName(), stationMarket);
+                                // Définir cette station comme station actuelle pour les prix
+                                stationCacheService.setCurrentStation(bestMarket.getStationName(), bestMarket.getSystemName());
+                            }
+                        } catch (Exception e) {
+                            System.err.println("❌ Erreur lors de la récupération du marché de station: " + e.getMessage());
+                        }
+                        
                         headerPriceLabel.setText(String.format("%s Cr ", miningService.formatPrice(bestMarket.getPrice())));
                         headerDemandLabel.setText(String.format("%d T", bestMarket.getDemand()));
                         headerStationNameLabel.setText(bestMarket.getStationName());

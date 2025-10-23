@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
 
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
 import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -26,6 +27,7 @@ public class InaraService {
             .maximumSize(1000)
             .build();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
+    private final MineralPriceNotificationService priceNotificationService = MineralPriceNotificationService.getInstance();
 
 
     private InaraService() {
@@ -88,7 +90,12 @@ public class InaraService {
                         })
                         .max(Comparator.comparingDouble(InaraCommoditiesStats::getPrice))
                         .map(bestOpt -> {
+                            long oldPrice = mineral.getPrice();
                             mineral.setPrice(bestOpt.getPrice());
+                            // Notifier le changement de prix
+                            if (oldPrice != bestOpt.getPrice()) {
+                                priceNotificationService.notifyPriceChanged(mineral, oldPrice, bestOpt.getPrice());
+                            }
                             return bestOpt;
                         })
                         .orElse(null);
@@ -108,5 +115,12 @@ public class InaraService {
         return client.fetchMinerMarket(
                 mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
 
+    }
+
+    /**
+     * Récupère le marché complet d'une station
+     */
+    public StationMarket fetchStationMarket(String stationUrl) throws IOException {
+        return client.fetchStationMarket(stationUrl);
     }
 }

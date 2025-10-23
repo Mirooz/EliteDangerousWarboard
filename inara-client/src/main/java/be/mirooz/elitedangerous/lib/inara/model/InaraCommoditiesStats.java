@@ -19,4 +19,5 @@ public class InaraCommoditiesStats {
     private String lastUpdate;
     private boolean fleetCarrier;
     private StationType stationType;
+    private String stationUrl;
 }
