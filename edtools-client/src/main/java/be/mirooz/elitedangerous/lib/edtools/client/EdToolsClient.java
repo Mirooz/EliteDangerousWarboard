@@ -28,7 +28,7 @@ public class EdToolsClient {
 
     private final Cache<String, List<MiningHotspot>> miningHotspotCache =
             Caffeine.newBuilder()
-                    .expireAfterWrite(5, TimeUnit.MINUTES)
+                    .expireAfterWrite(30, TimeUnit.MINUTES)
                     .maximumSize(500)
                     .build();
     private final HttpClient httpClient = HttpClient.newHttpClient();

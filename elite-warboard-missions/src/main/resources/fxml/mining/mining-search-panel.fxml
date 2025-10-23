@@ -10,7 +10,7 @@
       spacing="10">
 
     <HBox spacing="15" alignment="CENTER_LEFT">
-        <Label fx:id="miningTitleLabel" text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>
+<!--        <Label fx:id="miningTitleLabel" text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>-->
         <HBox spacing="15" alignment="CENTER_LEFT">
             <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="true"
                       onAction="#onFleetCarrierToggle"/>
@@ -36,31 +36,41 @@
             </VBox>
 
             <!-- Conteneur pour les résultats de recherche (masqué par défaut) -->
-            <HBox fx:id="searchResultsContainer" spacing="30" styleClass="mining-search-container" alignment="CENTER_LEFT" visible="false">
+            <HBox fx:id="searchResultsContainer" spacing="30" styleClass="mining-search-container"
+                  alignment="CENTER_LEFT" visible="false">
                 <!-- Prix -->
-                <HBox spacing="5" styleClass="search-item" translateY="10">
-                    <VBox>
+                <HBox spacing="5" styleClass="search-item" translateY="10" prefWidth="210" minWidth="210" maxWidth="210">
+                    <VBox prefWidth="120" minWidth="120" maxWidth="120">
                         <Label fx:id="priceLabel" text="PRIX" styleClass="search-label"/>
                         <Label fx:id="headerPriceLabel" text="--" styleClass="search-price-large"/>
                     </VBox>
-                    <VBox>
+                    <VBox prefWidth="60" minWidth="90" maxWidth="90">
                         <Label fx:id="demandLabel" text="DEMANDE" styleClass="search-label"/>
-                        <Label fx:id="headerDemandLabel" text="--" styleClass="search-price-large"/>
+                        <Label fx:id="headerDemandLabel" text="--" styleClass="search-demand-large"/>
                     </VBox>
                 </HBox>
 
                 <!-- Ring to Mine -->
                 <VBox spacing="5" styleClass="search-item">
+
                     <Label fx:id="ringToMineLabel" text="RING TO MINE" styleClass="search-label"/>
-                    <VBox spacing="2" styleClass="ring-container,clickable-container"
-                          onMouseClicked="#onRingContainerClicked">
-                        <Label fx:id="headerRingNameLabel" text="Non défini" styleClass="location-name-large"/>
-                        <Label fx:id="headerRingSystemLabel" text="" styleClass="location-system"/>
-                    </VBox>
+                    <HBox spacing="5" alignment="CENTER" >
+                        <Button fx:id="previousRingButton" styleClass="elite-nav-button" minWidth="30" maxWidth="30"
+                                text="◀"
+                                onAction="#navigateToPreviousRing"/>
+                        <VBox spacing="2" styleClass="ring-container,clickable-container"
+                              onMouseClicked="#onRingContainerClicked"  prefWidth="150" minWidth="150" maxWidth="150">
+                            <Label fx:id="headerRingNameLabel" text="Non défini" styleClass="location-name-large"/>
+                            <Label fx:id="headerRingSystemLabel" text="" styleClass="location-system"/>
+                        </VBox>
+                        <Button fx:id="nextRingButton" styleClass="elite-nav-button" minWidth="30" maxWidth="30"
+                                text="▶"
+                                onAction="#navigateToNextRing"/>
+                    </HBox>
                 </VBox>
 
                 <!-- Flèche avec distance -->
-                <VBox spacing="5" styleClass="arrow-container" alignment="CENTER">
+                <VBox spacing="5" styleClass="arrow-container" alignment="CENTER" prefWidth="80" minWidth="80" maxWidth="80">
                     <Label fx:id="headerDistanceLabel" text="--" styleClass="distance-label"/>
                     <Label text="➤" styleClass="arrow-symbol"/>
                 </VBox>
@@ -68,17 +78,33 @@
                 <!-- Station to Sell -->
                 <HBox>
                     <VBox spacing="5" styleClass="search-item">
+                        <!-- Navigation des stations -->
+
                         <Label fx:id="stationToSellLabel" text="STATION TO SELL" styleClass="search-label"/>
-                        <VBox spacing="2" styleClass="station-container,clickable-container"
-                              onMouseClicked="#onStationContainerClicked">
-                            <Label fx:id="headerStationNameLabel" text="Non définie" styleClass="location-name-large">
-                            </Label>
-                            <Label fx:id="headerStationSystemLabel" text="" styleClass="location-system"/>
-                        </VBox>
+
+                        <HBox spacing="5" alignment="CENTER">
+                            <Button fx:id="previousStationButton" styleClass="elite-nav-button" minWidth="30"
+                                    maxWidth="30" text="◀"
+                                    onAction="#navigateToPreviousStation"/>
+                            <VBox spacing="2" styleClass="station-container,clickable-container"
+                                  onMouseClicked="#onStationContainerClicked"  prefWidth="250" minWidth="250" maxWidth="250">
+                                <Label fx:id="headerStationNameLabel" text="Non définie"
+                                       styleClass="location-name-large">
+                                </Label>
+                                <Label fx:id="headerStationSystemLabel" text="" styleClass="location-system"/>
+                            </VBox>
+                            <Button fx:id="nextStationButton" styleClass="elite-nav-button" minWidth="30" maxWidth="30"
+                                    text="▶"
+                                    onAction="#navigateToNextStation"/>
+                        </HBox>
                     </VBox>
+
+
                     <ImageView fx:id="stationTypeImageView" styleClass="station-type-icon"
-                               fitWidth="80" fitHeight="80"
+                               fitWidth="100" fitHeight="100"
                                preserveRatio="true"/>
+
+
                     <VBox spacing="2" alignment="CENTER_LEFT" >
                         <Label fx:id="headerStationDistanceTitleLabel" text="Distance" styleClass="search-label"/>
                         <Label fx:id="headerStationDistanceLabel" text="--" styleClass="location-system"/>

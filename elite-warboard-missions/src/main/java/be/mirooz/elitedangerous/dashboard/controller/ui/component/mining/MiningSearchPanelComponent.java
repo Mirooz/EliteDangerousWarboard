@@ -25,8 +25,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -77,6 +79,14 @@ public class MiningSearchPanelComponent implements Initializable {
     @FXML
     private ImageView stationTypeImageView;
     @FXML
+    private Button previousStationButton;
+    @FXML
+    private Button nextStationButton;
+    @FXML
+    private Button previousRingButton;
+    @FXML
+    private Button nextRingButton;
+    @FXML
     private ProgressIndicator loadingIndicator;
     @FXML
     private HBox searchContentHBox;
@@ -123,6 +133,7 @@ public class MiningSearchPanelComponent implements Initializable {
         initializeMaxDistanceField();
         initializeHeaderLabels();
         initializeClickHandlers();
+        initializeStationNavigation();
         updateTranslations();
         updateSearchResultsVisibility(); // Masquer les résultats par défaut
 
@@ -175,7 +186,7 @@ public class MiningSearchPanelComponent implements Initializable {
      */
     private void updateSearchResultsVisibility() {
         boolean hasMineralSelected = mineralComboBox.getValue() != null &&
-                                   !mineralComboBox.getValue().isSeparator();
+                !mineralComboBox.getValue().isSeparator();
 
         if (searchResultsContainer != null) {
             searchResultsContainer.setVisible(hasMineralSelected);
@@ -279,13 +290,13 @@ public class MiningSearchPanelComponent implements Initializable {
         if (item.getMineral().getPrice() == 0) {
             miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
                             padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
-                    .thenAccept(priceOpt -> Platform.runLater(() -> {
-                        priceOpt.ifPresentOrElse(
-                                price -> {
-                                    item.getMineral().setPrice(price.getPrice());
-                                },
-                                () -> item.setDisplayPriceError(getTranslation("mining.price_error"))
-                        );
+                    .thenAccept(markets -> Platform.runLater(() -> {
+                        if (markets != null && !markets.isEmpty()) {
+                            InaraCommoditiesStats bestPrice = markets.get(0);
+                            item.getMineral().setPrice(bestPrice.getPrice());
+                        } else {
+                            item.setDisplayPriceError(getTranslation("mining.price_error"));
+                        }
                     }))
                     .exceptionally(ex -> {
                         Platform.runLater(() -> {
@@ -297,63 +308,31 @@ public class MiningSearchPanelComponent implements Initializable {
     }
 
     /**
-     * Recherche une route de minage pour un minéral spécifique
+     * Recherche une route de minage pour un minéral spécifique avec un index de station
+     *
+     * @param mineral      Le minéral à rechercher
+     * @param stationIndex L'index de la station à afficher (0 = première station)
      */
-    private void searchMiningRouteForMineral(Mineral mineral) {
+    private void searchMiningRouteForMineral(Mineral mineral, int stationIndex) {
         setLoadingVisible(true);
         clearHeaderLabels();
 
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
-
-        miningService.searchMiningRoute(mineral, sourceSystem, maxDistance, minDemand,
+        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
                         padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
-                .thenAccept(routeResult -> Platform.runLater(() -> {
-                    setLoadingVisible(false);
-
-                    if (routeResult.hasMarket()) {
-                        InaraCommoditiesStats bestMarket = routeResult.getMarket();
-                        
-                        // Récupérer le marché complet de la station et le mettre en cache
-                        try {
-                            if (bestMarket.getStationUrl() != null) {
-                                StationMarket stationMarket = miningService.getInaraService().fetchStationMarket(bestMarket.getStationUrl());
-                                stationCacheService.cacheStationMarket(bestMarket.getStationName(), bestMarket.getSystemName(), stationMarket);
-                                // Définir cette station comme station actuelle pour les prix
-                                stationCacheService.setCurrentStation(bestMarket.getStationName(), bestMarket.getSystemName());
-                            }
-                        } catch (Exception e) {
-                            System.err.println("❌ Erreur lors de la récupération du marché de station: " + e.getMessage());
-                        }
-                        
-                        headerPriceLabel.setText(String.format("%s Cr ", miningService.formatPrice(bestMarket.getPrice())));
-                        headerDemandLabel.setText(String.format("%d T", bestMarket.getDemand()));
-                        headerStationNameLabel.setText(bestMarket.getStationName());
-                        headerStationSystemLabel.setText(bestMarket.getSystemName());
-                        headerStationDistanceLabel.setText(String.format("%.1f %s",
-                                bestMarket.getSystemDistance(), getTranslation("search.distance.unit")));
-                        updateStationTypeImage(bestMarket.getStationType());
-
-                        if (routeResult.hasHotspot()) {
-                            MiningHotspot bestHotspot = routeResult.getHotspot();
-                            headerRingNameLabel.setText(bestHotspot.getRingName());
-                            headerRingSystemLabel.setText(bestHotspot.getSystemName());
-                            headerDistanceLabel.setText(String.format("%.1f %s",
-                                    bestHotspot.getDistanceFromReference(), getTranslation("search.distance.unit")));
-                        } else {
-                            headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
-                            headerRingSystemLabel.setText("");
-                            headerDistanceLabel.setText("--");
-                        }
+                .thenAccept(inaraCommoditiesStats -> Platform.runLater(() -> {
+                    if (!inaraCommoditiesStats.isEmpty()) {
+                        // Récupérer tous les résultats depuis le cache d'InaraService
+                        miningService.getInaraService().setSearchResults(inaraCommoditiesStats);
+                        // Définir l'index de la station à afficher
+                        miningService.getInaraService().setCurrentResultIndex(stationIndex);
+                        // Mettre à jour l'affichage avec la méthode centralisée
+                        updateStationAndHotspots();
+                        updateStationNavigationButtons();
                     } else {
-                        headerPriceLabel.setText(getTranslation("mining.price_not_available"));
-                        headerDemandLabel.setText("--");
-                        headerRingNameLabel.setText(getTranslation("mining.no_market_found"));
-                        headerRingSystemLabel.setText("");
-                        headerDistanceLabel.setText("--");
-                        headerStationNameLabel.setText(getTranslation("mining.no_station_found"));
-                        headerStationSystemLabel.setText("");
+                        setNotFoundSearch();
                     }
 
                     if (onSearchCompleted != null) {
@@ -361,18 +340,42 @@ public class MiningSearchPanelComponent implements Initializable {
                     }
                 }))
                 .exceptionally(throwable -> {
-                    Platform.runLater(() -> {
-                        setLoadingVisible(false);
-                        headerPriceLabel.setText(getTranslation("mining.price_error"));
-                        headerDemandLabel.setText("--");
-                        headerRingNameLabel.setText(getTranslation("mining.search_error"));
-                        headerRingSystemLabel.setText("");
-                        headerDistanceLabel.setText("--");
-                        headerStationNameLabel.setText(getTranslation("mining.search_error"));
-                        headerStationSystemLabel.setText("");
-                    });
+                    setLoadingVisible(false);
+                    setErrorSearch();
                     return null;
                 });
+    }
+
+    private void setNotFoundSearch() {
+        headerPriceLabel.setText(getTranslation("mining.price_not_available"));
+        headerDemandLabel.setText("--");
+        headerRingNameLabel.setText(getTranslation("mining.no_market_found"));
+        headerRingSystemLabel.setText("");
+        headerDistanceLabel.setText("--");
+        headerStationNameLabel.setText(getTranslation("mining.no_station_found"));
+        headerStationSystemLabel.setText("");
+        headerStationDistanceLabel.setText("--");
+
+    }
+
+    private void setErrorSearch() {
+        Platform.runLater(() -> {
+            headerPriceLabel.setText(getTranslation("mining.price_error"));
+            headerDemandLabel.setText("--");
+            headerRingNameLabel.setText(getTranslation("mining.search_error"));
+            headerRingSystemLabel.setText("");
+            headerDistanceLabel.setText("--");
+            headerStationNameLabel.setText(getTranslation("mining.search_error"));
+            headerStationSystemLabel.setText("");
+            headerStationDistanceLabel.setText("--");
+        });
+    }
+
+    /**
+     * Recherche une route de minage pour un minéral spécifique (index 0 par défaut)
+     */
+    private void searchMiningRouteForMineral(Mineral mineral) {
+        searchMiningRouteForMineral(mineral, 0);
     }
 
     /**
@@ -387,6 +390,21 @@ public class MiningSearchPanelComponent implements Initializable {
      */
     private void initializeClickHandlers() {
         // Les gestionnaires de clic sont définis dans le FXML
+    }
+
+    /**
+     * Initialise les boutons de navigation des stations et des anneaux
+     */
+    private void initializeStationNavigation() {
+        if (previousStationButton != null && nextStationButton != null) {
+            // État initial
+            updateStationNavigationButtons();
+        }
+        
+        if (previousRingButton != null && nextRingButton != null) {
+            // État initial
+            updateRingNavigationButtons();
+        }
     }
 
     /**
@@ -458,19 +476,17 @@ public class MiningSearchPanelComponent implements Initializable {
      * Met à jour l'image du type de station
      */
     private void updateStationTypeImage(StationType stationType) {
-        Platform.runLater(() -> {
-            if (stationType != null) {
-                try {
-                    String imagePath = "/images/stations/" + stationType.getImage();
-                    Image stationImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath)));
-                    stationTypeImageView.setImage(stationImage);
-                } catch (Exception e) {
-                    stationTypeImageView.setImage(null);
-                }
-            } else {
+        if (stationType != null) {
+            try {
+                String imagePath = "/images/stations/" + stationType.getImage();
+                Image stationImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath)));
+                stationTypeImageView.setImage(stationImage);
+            } catch (Exception e) {
                 stationTypeImageView.setImage(null);
             }
-        });
+        } else {
+            stationTypeImageView.setImage(null);
+        }
     }
 
     /**
@@ -632,8 +648,168 @@ public class MiningSearchPanelComponent implements Initializable {
     }
 
 
-
     public void setOnSearchCompleted(Runnable onSearchCompleted) {
         this.onSearchCompleted = onSearchCompleted;
+    }
+
+    // Méthodes de navigation des stations
+    @FXML
+    private void navigateToPreviousStation() {
+        int currentIndex = miningService.getInaraService().getCurrentResultIndex();
+        if (currentIndex > 0) {
+            Mineral selectedMineral = mineralComboBox.getValue() != null ? mineralComboBox.getValue().getMineral() : null;
+            if (selectedMineral != null) {
+                searchMiningRouteForMineral(selectedMineral, currentIndex - 1);
+            }
+        }
+    }
+
+    @FXML
+    private void navigateToNextStation() {
+        int currentIndex = miningService.getInaraService().getCurrentResultIndex();
+        int totalResults = miningService.getInaraService().getTotalResults();
+        if (currentIndex < totalResults - 1) {
+            Mineral selectedMineral = mineralComboBox.getValue() != null ? mineralComboBox.getValue().getMineral() : null;
+            if (selectedMineral != null) {
+                searchMiningRouteForMineral(selectedMineral, currentIndex + 1);
+            }
+        }
+    }
+
+    @FXML
+    private void navigateToPreviousRing() {
+        int currentIndex = miningService.getInaraService().getCurrentHotspotIndex();
+        if (currentIndex > 0) {
+            miningService.getInaraService().setCurrentHotspotIndex(currentIndex - 1);
+            updateCurrentHotspotDisplay();
+            updateRingNavigationButtons();
+        }
+    }
+
+    @FXML
+    private void navigateToNextRing() {
+        int currentIndex = miningService.getInaraService().getCurrentHotspotIndex();
+        int totalHotspots = miningService.getInaraService().getTotalHotspots();
+        if (currentIndex < totalHotspots - 1) {
+            miningService.getInaraService().setCurrentHotspotIndex(currentIndex + 1);
+            updateCurrentHotspotDisplay();
+            updateRingNavigationButtons();
+        }
+    }
+
+    /**
+     * Méthode centralisée pour mettre à jour l'affichage de la station et ses hotspots
+     * Appelée lors de la sélection d'un minéral ou de la navigation entre stations
+     */
+    private void updateStationAndHotspots() {
+        InaraCommoditiesStats currentResult = miningService.getInaraService().getCurrentResult();
+        if (currentResult != null) {
+            // Mettre à jour l'affichage de la station
+            updateStationDisplay(currentResult);
+
+            // Récupérer les hotspots pour cette station
+            Mineral selectedMineral = mineralComboBox.getValue() != null ? mineralComboBox.getValue().getMineral() : null;
+            if (selectedMineral != null) {
+                updateHotspotsForStation(currentResult, selectedMineral);
+            }
+
+            // Mettre à jour le cache et la station actuelle
+            updateStationCache(currentResult);
+            
+            // Mettre à jour les boutons de navigation
+            updateStationNavigationButtons();
+        }
+    }
+
+    /**
+     * Met à jour l'affichage des informations de la station
+     */
+    private void updateStationDisplay(InaraCommoditiesStats station) {
+        headerStationNameLabel.setText(station.getStationName());
+        headerStationSystemLabel.setText(station.getSystemName());
+        headerStationDistanceLabel.setText(String.format("%.1f LY", station.getSystemDistance()));
+        headerPriceLabel.setText(String.format("%s Cr", miningService.formatPrice(station.getPrice())));
+        headerDemandLabel.setText(String.format("%d T", station.getDemand()));
+        updateStationTypeImage(station.getStationType());
+    }
+
+
+    /**
+     * Met à jour l'affichage des hotspots pour une station donnée
+     */
+    private void updateHotspotsForStation(InaraCommoditiesStats station, Mineral mineral) {
+        miningService.findMiningHotspotsForStation(station, mineral)
+                .thenAccept(bestHotspot -> Platform.runLater(() -> {
+                    if (bestHotspot != null) {
+                        headerRingNameLabel.setText(bestHotspot.getRingName());
+                        headerRingSystemLabel.setText(bestHotspot.getSystemName());
+                        headerDistanceLabel.setText(String.format("%.1f %s",
+                                bestHotspot.getDistanceFromReference(), getTranslation("search.distance.unit")));
+
+                    } else {
+                        headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
+                        headerRingSystemLabel.setText("");
+                        headerDistanceLabel.setText("--");
+                    }
+
+                    updateRingNavigationButtons();
+                    setLoadingVisible(false);
+                }))
+                .exceptionally(e -> {
+                    setLoadingVisible(false);
+                    return null;
+                });
+    }
+
+    /**
+     * Met à jour l'affichage du hotspot actuel (utilisé lors de la navigation)
+     */
+    private void updateCurrentHotspotDisplay() {
+        MiningHotspot currentHotspot = miningService.getInaraService().getCurrentHotspot();
+        if (currentHotspot != null) {
+            headerRingNameLabel.setText(currentHotspot.getRingName());
+            headerRingSystemLabel.setText(currentHotspot.getSystemName());
+            headerDistanceLabel.setText(String.format("%.1f %s",
+                    currentHotspot.getDistanceFromReference(), getTranslation("search.distance.unit")));
+        } else {
+            headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
+            headerRingSystemLabel.setText("");
+            headerDistanceLabel.setText("--");
+        }
+    }
+
+    /**
+     * Met à jour le cache de la station
+     */
+    private void updateStationCache(InaraCommoditiesStats station) {
+        try {
+            if (station.getStationUrl() != null) {
+                StationMarket stationMarket = miningService.getInaraService().fetchStationMarket(station.getStationUrl());
+                stationCacheService.cacheStationMarket(station.getStationName(), station.getSystemName(), stationMarket);
+                stationCacheService.setCurrentStation(station.getStationName(), station.getSystemName());
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la récupération du marché de station: " + e.getMessage());
+        }
+    }
+
+    private void updateStationNavigationButtons() {
+        if (previousStationButton != null && nextStationButton != null) {
+            int currentIndex = miningService.getInaraService().getCurrentResultIndex();
+            int totalResults = miningService.getInaraService().getTotalResults();
+
+            previousStationButton.setDisable(currentIndex <= 0);
+            nextStationButton.setDisable(currentIndex >= totalResults - 1);
+        }
+    }
+
+    private void updateRingNavigationButtons() {
+        if (previousRingButton != null && nextRingButton != null) {
+            int currentIndex = miningService.getInaraService().getCurrentHotspotIndex();
+            int totalHotspots = miningService.getInaraService().getTotalHotspots();
+
+            previousRingButton.setDisable(currentIndex <= 0);
+            nextRingButton.setDisable(currentIndex >= totalHotspots - 1);
+        }
     }
 }

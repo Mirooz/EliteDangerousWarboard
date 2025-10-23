@@ -69,19 +69,6 @@ public class ToggleSwitch extends HBox {
             setSelected(!isSelected());
         });
         
-        // Gestionnaire de clic sur les labels
-        leftLabel.setOnMouseClicked(event -> {
-            if (!isSelected()) {
-                setSelected(true);
-            }
-        });
-        
-        rightLabel.setOnMouseClicked(event -> {
-            if (isSelected()) {
-                setSelected(false);
-            }
-        });
-        
         // Listener pour les changements d'état
         selected.addListener((obs, oldVal, newVal) -> {
             updateVisualState();

@@ -51,7 +51,7 @@ public class MiningService {
     public Deque<ProspectedAsteroid> getAllProspectors() {
         return prospectedRegistry.getAll();
     }
-    
+
     /**
      * Nettoie tous les prospecteurs (utilisé lors de la fin de session de minage)
      */
@@ -59,7 +59,7 @@ public class MiningService {
         prospectedRegistry.clear();
         System.out.println("🗑️ Tous les prospecteurs ont été nettoyés");
     }
-    
+
     /**
      * Récupère le registre des prospecteurs
      */
@@ -120,7 +120,7 @@ public class MiningService {
     /**
      * Recherche le prix d'un minéral avec option Fleet Carrier
      */
-    public CompletableFuture<Optional<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
+    public CompletableFuture<List<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return inaraService.fetchMinerMarket(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
@@ -190,28 +190,25 @@ public class MiningService {
     }
 
     /**
-     * Recherche une route de minage complète pour un minéral spécifique
+     * Recherche les hotspots de minage pour une station spécifique
      */
-    public CompletableFuture<MiningRouteResult> searchMiningRoute(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
-        return findMineralPrice(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier)
-                .thenCompose(priceOpt -> {
-                    if (priceOpt.isPresent()) {
-                        InaraCommoditiesStats bestMarket = priceOpt.get();
-                        return getEdToolsService().findMiningHotspots(bestMarket.getSystemName(), mineral)
-                                .thenApply(hotspots -> {
-                                    MiningHotspot bestHotspot = null;
-                                    if (hotspots != null && !hotspots.isEmpty()) {
-                                        bestHotspot = hotspots.stream()
-                                                .min(Comparator.comparingDouble(MiningHotspot::getDistanceFromReference))
-                                                .orElse(hotspots.get(0));
-                                    }
-                                    return new MiningRouteResult(bestMarket, bestHotspot);
-                                });
-                    } else {
-                        return CompletableFuture.completedFuture(new MiningRouteResult(null, null));
+    public CompletableFuture<MiningHotspot> findMiningHotspotsForStation(InaraCommoditiesStats station, Mineral mineral) {
+        return getEdToolsService().findMiningHotspots(station.getSystemName(), mineral)
+                .thenApply(hotspots -> {
+                    if (hotspots != null && !hotspots.isEmpty()) {
+                        // Stocker tous les hotspots dans InaraService pour la navigation
+                        getInaraService().setHotspots(hotspots);
+                        // Retourner le hotspot actuel (ou le premier si aucun n'est sélectionné)
+                        MiningHotspot currentHotspot = getInaraService().getCurrentHotspot();
+                        return Objects.requireNonNullElseGet(currentHotspot, () -> hotspots.stream()
+                                .min(Comparator.comparingDouble(MiningHotspot::getDistanceFromReference))
+                                .orElse(hotspots.get(0)));
                     }
+                    return null;
                 });
     }
+
+
 
     /**
      * Récupère la distance maximale depuis un champ de saisie avec validation
@@ -247,67 +244,5 @@ public class MiningService {
         return String.format("%,d", price).replace(",", ".");
     }
 
-    /**
-     * Classe interne pour encapsuler le résultat d'une recherche de route de minage
-     */
-    public static class MiningRouteResult {
-        private final InaraCommoditiesStats market;
-        private final MiningHotspot hotspot;
 
-        public MiningRouteResult(InaraCommoditiesStats market, MiningHotspot hotspot) {
-            this.market = market;
-            this.hotspot = hotspot;
-        }
-
-        public InaraCommoditiesStats getMarket() {
-            return market;
-        }
-
-        public MiningHotspot getHotspot() {
-            return hotspot;
-        }
-
-        public boolean hasMarket() {
-            return market != null;
-        }
-
-        public boolean hasHotspot() {
-            return hotspot != null;
-        }
-    }
-
-    /**
-     * Calcule les crédits estimés avec les prix de station depuis le cache
-     */
-    public long calculateEstimatedCreditsWithStationPrices() {
-        try {
-            long totalCredits = 0;
-            Map<Mineral, Integer> minerals = getMinerals();
-            if (minerals != null && !minerals.isEmpty()) {
-                for (Map.Entry<Mineral, Integer> entry : minerals.entrySet()) {
-                    Mineral mineral = entry.getKey();
-                    Integer quantity = entry.getValue();
-
-                    if (quantity != null && quantity > 0) {
-                        long stationPrice = getStationPriceForMineral(mineral);
-                        totalCredits += stationPrice * quantity;
-                    }
-                }
-            }
-            return totalCredits;
-        } catch (Exception e) {
-            System.err.println("Erreur lors du calcul des crédits estimés avec prix de station: " + e.getMessage());
-            return 0;
-        }
-    }
-
-    /**
-     * Récupère le prix de station pour un minéral depuis le cache
-     */
-    private long getStationPriceForMineral(Mineral mineral) {
-        // Chercher dans le cache des stations pour ce minéral
-        // Pour l'instant, on retourne le prix stocké dans le minéral
-        // TODO: Implémenter la recherche dans le cache des stations
-        return mineral.getPrice();
-    }
 }

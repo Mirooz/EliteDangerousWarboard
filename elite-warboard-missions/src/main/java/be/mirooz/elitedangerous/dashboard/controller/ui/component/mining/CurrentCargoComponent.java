@@ -7,6 +7,7 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.StationCacheService;
 import be.mirooz.elitedangerous.dashboard.service.MineralPriceNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -33,6 +34,7 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final StationCacheService stationCacheService = StationCacheService.getInstance();
     private final MineralPriceNotificationService priceNotificationService = MineralPriceNotificationService.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
 
     // Composants FXML
     @FXML
@@ -228,9 +230,15 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
      */
     private void setupPriceModeToggle() {
         if (priceModeToggle != null) {
-            priceModeToggle.setSelected(false); // Par défaut: best price
+            // Charger la valeur sauvegardée ou utiliser false par défaut (best price)
+            String savedValueStr = preferencesService.getPreference("cargo.price_mode_station", "false");
+            boolean savedValue = Boolean.parseBoolean(savedValueStr);
+            priceModeToggle.setSelected(savedValue);
             
             priceModeToggle.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                // Sauvegarder la nouvelle valeur
+                preferencesService.setPreference("cargo.price_mode_station", String.valueOf(newVal));
+                
                 updatePriceHeaders(); // Mettre à jour les en-têtes
                 updateCargo(); // Rafraîchir l'affichage
             });
@@ -395,20 +403,7 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
      */
     private long getStationPriceForMineral(Mineral mineral) {
         // Utiliser la station actuellement sélectionnée
-        long stationPrice = stationCacheService.getMineralPriceInCurrentStation(mineral.getInaraName());
-        
-        if (stationPrice > 0) {
-            return stationPrice;
-        }
-        
-        // Fallback : chercher dans toutes les stations en cache
-        long fallbackPrice = stationCacheService.getCommodities().stream()
-                .filter(entry -> entry.getCommodityName().equalsIgnoreCase(mineral.getInaraName()))
-                .mapToLong(entry -> entry.getSellPrice())
-                .findFirst()
-                .orElse(0L);
-        
-        return fallbackPrice; // Retourner 0 si pas trouvé
+        return stationCacheService.getMineralPriceInCurrentStation(mineral.getInaraName());
     }
 
     // Implémentation de MineralPriceNotificationService.MineralPriceListener

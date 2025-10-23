@@ -28,7 +28,7 @@
         <!-- Crédits estimés à droite -->
         <VBox alignment="CENTER_RIGHT" spacing="5" prefWidth="120">
             <Label fx:id="estimatedCreditsLabel" text="0" styleClass="cargo-stat-price-number"/>
-            <Label fx:id="estimatedCreditsTitleLabel" text="CR ESTIMÉS" styleClass="cargo-stat-price"/>
+            <Label fx:id="estimatedCreditsTitleLabel" text="CR ESTIMÉS" styleClass="cargo-stat-label"/>
         </VBox>
     </HBox>
 

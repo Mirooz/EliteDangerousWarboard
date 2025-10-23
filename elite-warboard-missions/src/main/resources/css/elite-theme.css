@@ -569,7 +569,7 @@
 .price-mode-label.price-mode-selected {
     -fx-font-weight: bold !important;
     -fx-text-fill: #ffffff !important;
-    -fx-background-color: #ff6b35 !important;
+    -fx-background-color: -fx-elite-orange !important;
     -fx-background-radius: 3px !important;
     -fx-padding: 2px 5px !important;
 }
@@ -2772,6 +2772,28 @@
     -fx-spacing: 5px;
 }
 
+/* Styles pour les labels dans les conteneurs fixes */
+.location-name-large {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-wrap-text: false;
+    -fx-text-alignment: center;
+    -fx-max-width: infinity;
+}
+
+.location-system {
+    -fx-text-fill: -fx-elite-light-gray;
+    -fx-font-size: 11px;
+    -fx-font-weight: normal;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-wrap-text: false;
+    -fx-text-alignment: center;
+    -fx-max-width: infinity;
+}
+
+
 /* Checkbox Fleet Carrier */
 .fleet-carrier-checkbox {
     -fx-text-fill: -fx-elite-orange;
@@ -2864,6 +2886,13 @@
     -fx-translate-y: 4px;
 }
 
+.search-demand-large {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-translate-y: 4px;
+}
 /* Conteneurs pour les locations */
 .ring-container,
 .station-container {
