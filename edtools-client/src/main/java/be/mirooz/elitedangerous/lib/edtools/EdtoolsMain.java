@@ -17,7 +17,7 @@ public class EdtoolsMain {
         EdToolsClient client = new EdToolsClient();
 
         System.out.println("🚀 Démarrage de la recherche de hotspots Monazite...");
-        List<MiningHotspot> hotspots = client.fetchMiningHotspots("LHS 495", "Monazite", 1, false);
+        List<MiningHotspot> hotspots = client.fetchMiningHotspots("WISE 0410+1502", "Monazite", 1, false);
 
         System.out.println("📊 Résultats trouvés: " + hotspots.size() + " hotspots");
 

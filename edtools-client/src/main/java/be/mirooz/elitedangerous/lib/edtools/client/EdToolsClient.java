@@ -114,10 +114,10 @@ public class EdToolsClient {
         return rows;
     }
 
-    
+
     /**
      * Récupère les hotspots de minage depuis edtools.cc
-     * 
+     *
      * @param referenceSystem Système de référence (ex: "LHS 495")
      * @param mineralName Nom du minéral (ex: "Monazite")
      * @param minHotspots Nombre minimum de hotspots (ex: 1)
@@ -127,24 +127,25 @@ public class EdToolsClient {
      */
     public List<MiningHotspot> fetchMiningHotspots(String referenceSystem, String mineralName,
                                                    int minHotspots, boolean populatedOnly) throws IOException {
-        
+
         // Construire l'URL
         StringBuilder urlBuilder = new StringBuilder("https://edtools.cc/hotspot");
-        urlBuilder.append("?s=").append(URLEncoder.encode(referenceSystem, StandardCharsets.UTF_8));
+        urlBuilder.append("?s=").append(URLEncoder.encode(referenceSystem.replace("+", "%2B"), StandardCharsets.UTF_8)
+               );
         urlBuilder.append("&m=").append(URLEncoder.encode(mineralName, StandardCharsets.UTF_8));
         urlBuilder.append("&ms=").append(minHotspots);
         if (populatedOnly) {
             urlBuilder.append("&pop=on");
         }
-        
+
         String url = urlBuilder.toString();
         System.out.println("🔍 Appel EDTools hotspots: " + url);
         long start = System.currentTimeMillis();
-        
+
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                 .header("User-Agent", "Java HttpClient - ED Dashboard")
                 .GET().build();
-        
+
         HttpResponse<String> response;
         try {
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -152,14 +153,14 @@ public class EdToolsClient {
             Thread.currentThread().interrupt();
             throw new IOException("Interruption lors de l'appel EDTools", e);
         }
-        
+
         long durationCall = System.currentTimeMillis() - start;
         System.out.println("⏱️ Durée appel EDTools: " + durationCall + " ms");
-        
+
         if (response.statusCode() != 200) {
             throw new IOException("HTTP " + response.statusCode() + " calling " + url);
         }
-        
+
         return parseMiningHotspots(response.body());
     }
 
@@ -182,44 +183,44 @@ public class EdToolsClient {
         });
     }
 
-    
+
     private List<MiningHotspot> parseMiningHotspots(String html) {
         Document doc = Jsoup.parse(html);
         List<MiningHotspot> hotspots = new ArrayList<>();
-        
+
         // Chercher la table des résultats
         Element table = doc.selectFirst("table#sys_tbl");
         if (table == null) {
             System.out.println("❌ Aucune table de hotspots trouvée");
             return hotspots;
         }
-        
+
         Elements rows = table.select("tbody tr");
         System.out.println("📊 Trouvé " + rows.size() + " lignes de hotspots");
-        
+
         for (Element row : rows) {
             Elements cols = row.select("td");
             if (cols.size() < 6) {
                 continue;
             }
-            
+
             try {
                 MiningHotspot hotspot = new MiningHotspot();
-                
+
                 // Colonne 0: Distance
                 String distanceText = cols.get(0).text().trim();
                 hotspot.setDistanceFromReference(Double.parseDouble(distanceText));
-                
+
                 // Colonne 1: System
                 Element systemElement = cols.get(1);
                 String systemText = systemElement.text().trim();
                 // Enlever l'astérisque (*) si présent
                 systemText = systemText.replace("*", "").trim();
                 hotspot.setSystemName(systemText);
-                
+
                 // Colonne 2: Ring - avec tooltip contenant les détails des minéraux
                 Element ringElement = cols.get(2);
-                
+
                 // Extraire seulement le nom de l'anneau (sans le contenu du tooltip)
                 Element ringNameElement = ringElement.selectFirst("span.hvr");
                 String ringText;
@@ -237,7 +238,7 @@ public class EdToolsClient {
                     ringText = ringElement.text().trim();
                 }
                 hotspot.setRingName(ringText);
-                
+
                 // Extraire les détails des minéraux depuis le tooltip
                 Element tooltip = ringElement.selectFirst("span.ttip");
                 if (tooltip != null) {
@@ -266,23 +267,23 @@ public class EdToolsClient {
                 // Colonne 3: Type
                 String typeText = cols.get(3).text().trim();
                 hotspot.setRingType(typeText);
-                
+
                 // Colonne 4: Hotspots
                 String hotspotsText = cols.get(4).text().trim();
                 hotspot.setHotspotCount(Integer.parseInt(hotspotsText));
-                
+
                 // Colonne 5: LS
                 String lsText = cols.get(5).text().trim();
                 hotspot.setLightSeconds(Integer.parseInt(lsText.replace(",", "")));
-                
+
                 hotspots.add(hotspot);
-                
+
             } catch (Exception e) {
                 System.err.println("❌ Erreur parsing ligne hotspot: " + e.getMessage());
                 continue;
             }
         }
-        
+
         System.out.println("✅ Parsing terminé. " + hotspots.size() + " hotspots trouvés");
         return hotspots;
     }
