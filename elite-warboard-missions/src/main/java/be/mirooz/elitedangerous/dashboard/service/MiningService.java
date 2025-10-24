@@ -82,6 +82,9 @@ public class MiningService {
         if (commanderStatus.getShip() == null) {
             return null;
         }
+        if (commanderStatus.getShip().getJsonShipCargo() !=null){
+            return commanderStatus.getShip().getJsonShipCargo();
+        }
         return commanderStatus.getShip().getShipCargo();
     }
 
@@ -159,8 +162,8 @@ public class MiningService {
      * Récupère la capacité de cargo actuelle
      */
     public int getCurrentCargoCapacity() {
-        if (commanderStatus.getShip() != null && commanderStatus.getShip().getShipCargo() != null) {
-            return commanderStatus.getShip().getShipCargo().getMaxCapacity();
+        if (commanderStatus.getShip() != null) {
+            return commanderStatus.getShip().getMaxCapacity();
         }
         return 0; // Fallback
     }

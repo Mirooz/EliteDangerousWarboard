@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class CargoHandler implements JournalEventHandler {
 
     JournalService journalService;
     CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    CargoEventNotificationService cargoEventNotificationService= CargoEventNotificationService.getInstance();
 
     @Override
     public String getEventType() {
@@ -28,6 +30,7 @@ public class CargoHandler implements JournalEventHandler {
             if (cargo.getCount()==0 && "Ship".equals(cargo.getVessel())){
                 commanderStatus.getShip().resetCargo();
             }
+            cargoEventNotificationService.notifyCargoEvent();
            // CargoFile cargoFile = journalService.readCargoFile();
            // commanderStatus.getShip().resetCargo();
            // commanderStatus.getShip().setCurrentUsed(cargoFile.getCount());

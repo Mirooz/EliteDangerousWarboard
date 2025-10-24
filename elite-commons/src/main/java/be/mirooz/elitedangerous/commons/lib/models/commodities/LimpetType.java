@@ -22,7 +22,7 @@ public enum LimpetType implements ICommodity {
 
     @Override
     public String getInaraName() {
-        return null;
+        return "Limpet";
     }
 
     @Override

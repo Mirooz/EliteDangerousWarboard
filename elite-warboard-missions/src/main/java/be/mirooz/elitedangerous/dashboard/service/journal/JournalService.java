@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponen
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
+import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -300,6 +301,95 @@ public class JournalService {
                 System.err.println("Erreur lors de l'ouverture de la fenêtre de configuration: " + e.getMessage());
             }
         });
+    }
+
+    /**
+     * Lit et parse le fichier Cargo.json
+     * @return L'objet Cargo parsé ou null si erreur
+     */
+    public Cargo readCargoFile() {
+        try {
+            String journalFolder = preferencesService.getJournalFolder();
+            if (journalFolder == null || journalFolder.isEmpty()) {
+                System.out.println("⚠️ Dossier journal non configuré");
+                return null;
+            }
+            
+            Path cargoFilePath = Paths.get(journalFolder, CARGO_FILE);
+            if (!Files.exists(cargoFilePath)) {
+                System.out.println("⚠️ Fichier Cargo.json non trouvé: " + cargoFilePath);
+                return null;
+            }
+            
+            String cargoContent = Files.readString(cargoFilePath);
+            if (cargoContent == null || cargoContent.trim().isEmpty()) {
+                System.out.println("⚠️ Fichier Cargo.json vide");
+                return null;
+            }
+            
+            JsonNode cargoNode = objectMapper.readTree(cargoContent);
+            return parseCargoFromJson(cargoNode);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la lecture du fichier Cargo.json: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Parse un JsonNode en objet Cargo
+     */
+    private Cargo parseCargoFromJson(JsonNode jsonNode) {
+        Cargo cargo = new Cargo();
+        
+        // Fonctions utilitaires locales
+        java.util.function.Function<String, String> getText = field -> 
+            jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asText() : null;
+        java.util.function.Function<String, Integer> getInt = field -> 
+            jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asInt() : null;
+        
+        // Champs de base
+        cargo.setTimestamp(getText.apply("timestamp"));
+        cargo.setEvent(getText.apply("event"));
+        cargo.setVessel(getText.apply("Vessel"));
+        if (getInt.apply("Count") != null) cargo.setCount(getInt.apply("Count"));
+        
+        // Parse inventory si présent
+        if (jsonNode.has("Inventory") && jsonNode.get("Inventory").isArray()) {
+            JsonNode inventoryNode = jsonNode.get("Inventory");
+            List<Cargo.Inventory> inventory = new ArrayList<>();
+            
+            for (JsonNode itemNode : inventoryNode) {
+                Cargo.Inventory item = parseInventoryItem(itemNode);
+                inventory.add(item);
+            }
+            
+            cargo.setInventory(inventory);
+        }
+        
+        return cargo;
+    }
+    
+    /**
+     * Parse un item d'inventaire depuis un JsonNode
+     */
+    private Cargo.Inventory parseInventoryItem(JsonNode itemNode) {
+        Cargo.Inventory item = new Cargo.Inventory();
+        
+        // Fonctions utilitaires locales
+        java.util.function.Function<String, String> getText = field -> 
+            itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asText() : null;
+        java.util.function.Function<String, Integer> getInt = field -> 
+            itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asInt() : null;
+        
+        // Champs
+        item.setName(getText.apply("Name"));
+        item.setNameLocalised(getText.apply("Name_Localised"));
+        if (getInt.apply("Count") != null) item.setCount(getInt.apply("Count"));
+        if (getInt.apply("Stolen") != null) item.setStolen(getInt.apply("Stolen"));
+        
+        return item;
     }
 
 

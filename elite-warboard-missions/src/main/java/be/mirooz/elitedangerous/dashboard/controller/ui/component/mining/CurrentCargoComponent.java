@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
 import javafx.scene.layout.GridPane;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
@@ -27,13 +28,14 @@ import java.util.ResourceBundle;
  * - Les crédits estimés
  * - La liste des minéraux dans le cargo
  */
-public class CurrentCargoComponent implements Initializable, MineralPriceNotificationService.MineralPriceListener {
+public class CurrentCargoComponent implements Initializable, MineralPriceNotificationService.MineralPriceListener, CargoEventNotificationService.CargoEventInterface {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final StationCacheService stationCacheService = StationCacheService.getInstance();
     private final MineralPriceNotificationService priceNotificationService = MineralPriceNotificationService.getInstance();
+    private final CargoEventNotificationService cargoEventNotificationService = CargoEventNotificationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
 
     // Composants FXML
@@ -79,6 +81,8 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
         
         // Écouter les changements de prix des minéraux
         priceNotificationService.addListener(this);
+        cargoEventNotificationService.addListener(this);
+
         
         // Configurer le toggle
         setupPriceModeToggle();
@@ -101,11 +105,11 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
             }
 
             // Mettre à jour les statistiques du cargo
-            cargoUsedLabel.setText(String.format("%d/%d", cargo.getCurrentUsed(), cargo.getMaxCapacity()));
+            cargoUsedLabel.setText(String.format("%d/%d", cargo.getCurrentUsed(), miningService.getCurrentCargoCapacity()));
             limpetsCountLabel.setText(String.valueOf(miningService.getLimpetsCount()));
             
             // Mettre à jour la barre de progression du cargo
-            double cargoPercentage = (double) cargo.getCurrentUsed() / cargo.getMaxCapacity();
+            double cargoPercentage = (double) cargo.getCurrentUsed() / miningService.getCurrentCargoCapacity();
             cargoProgressBar.setProgress(cargoPercentage);
 
             // Calculer et afficher les CR estimés selon le mode
@@ -363,5 +367,10 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
             // Rafraîchir l'affichage du cargo pour refléter le nouveau prix
             updateCargo();
         });
+    }
+
+    @Override
+    public void onReadCargoJson() {
+        updateCargo();
     }
 }

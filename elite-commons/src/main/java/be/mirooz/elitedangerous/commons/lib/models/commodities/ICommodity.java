@@ -16,7 +16,9 @@ public interface ICommodity {
         if (this.equals(LOW_TEMPERATURE_DIAMONDS)) {
             return "LTD";
         }
-        return getInaraName().toUpperCase();
+        if (getInaraName() != null)
+            return getInaraName().toUpperCase();
+        return null;
     }
 
     default String getTitleName() {

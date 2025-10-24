@@ -36,15 +36,15 @@ public class LoadoutHandler implements JournalEventHandler {
             CommanderShip newShip = CommanderShip.builder()
                     .ship(loadout.getShip())
                     .shipCargo(oldCargo != null
-                            ? oldCargo.copy(loadout.getCargoCapacity())
-                            : new CommanderShip.ShipCargo(loadout.getCargoCapacity()))
+                            ? oldCargo.copy()
+                            : new CommanderShip.ShipCargo())
                     .maxRange(loadout.getMaxJumpRange())
+                    .maxCapacity(loadout.getCargoCapacity())
                     .build();
-
             commanderStatus.setShip(newShip);
 
             System.out.printf("New commander ship parsed: %s (%d cargo capacity)%n",
-                    newShip.getShip(), newShip.getShipCargo().getMaxCapacity());
+                    newShip.getShip(), newShip.getMaxCapacity());
 
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Loadout: " + e.getMessage());
