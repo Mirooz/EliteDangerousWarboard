@@ -1819,94 +1819,35 @@
     -fx-border-radius: 3;
     -fx-background-radius: 3;
 }
-
-/* Styles pour les ComboBox Elite Dangerous */
 .elite-combobox {
     -fx-background-color: transparent;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-weight: bold;
-    -fx-font-size: 15px;   /* 🔸 Augmenté */
     -fx-pref-height: 26px; /* 🔸 Taille verticale plus grande */
     -fx-max-height: 26px;  /* Limite la hauteur maximale */
 }
 
 .elite-combobox:hover {
     -fx-border-color: -fx-elite-cyan;
-    -fx-text-fill: -fx-elite-cyan;
-}
-
-
-.elite-combobox .arrow-button {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-}
-
-.elite-combobox .arrow-button:hover {
-    -fx-background-color: rgba(255, 107, 0, 0.05);
-}
-
-.elite-combobox .arrow {
-    -fx-background-color: -fx-elite-orange;
-}
-
-.elite-combobox:hover .arrow {
-    -fx-background-color: -fx-elite-cyan;
-}
-
-/* Style pour le texte affiché dans la ComboBox (élément sélectionné) */
-.elite-combobox .text {
-    -fx-fill: -fx-elite-cyan;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
-}
-
-.elite-combobox:hover .text {
-    -fx-fill: -fx-elite-orange;
-}
-/* ✅ Style de la liste déroulante */
-.elite-combobox .list-view {
-    -fx-background-color: -fx-elite-darker; /* remplace le fond blanc */
-    -fx-border-color: -fx-elite-cyan;
-    -fx-border-width: 1;
-    -fx-border-radius: 2;
-    -fx-background-radius: 2;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 10, 0, 0, 2);
-    -fx-max-height: 200px; /* Limite la hauteur de la liste déroulante */
-}
-
-
-/* ✅ Items normaux (non sélectionnés, non survolés) */
-.elite-combobox .list-cell:filled {
-    -fx-background-color: transparent;
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-weight: bold;
-    -fx-font-size: 12px;
-    -fx-padding: 6 8 6 8;
-    -fx-border-color: transparent;
-}
-
-/* ✅ Au survol : fond léger cyan + texte cyan */
-.elite-combobox .list-cell:hover {
-    -fx-background-color: rgba(0, 255, 255, 0.1);
-    -fx-text-fill: -fx-elite-cyan;
     -fx-cursor: hand;
 }
 
-/* ✅ Élément sélectionné : fond orange léger + texte cyan */
-.elite-combobox .list-cell:selected {
-    -fx-background-color: rgba(255, 107, 0, 0.2);
-    -fx-text-fill: -fx-elite-cyan;
+.elite-combobox .text {
+    -fx-fill: -fx-elite-orange;
     -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+.elite-combobox .list-cell {
+    -fx-background-color: -fx-elite-gray; /* remplace le fond blanc */
+
+}
+.elite-combobox .list-cell:hover .text {
+    -fx-background-color: derive(-fx-elite-gray, -20%); /* fond un peu plus foncé au survol */
+    -fx-fill: -fx-elite-cyan !important;
+    -fx-cursor: hand;
 }
 
-/* ✅ Survol d'un élément déjà sélectionné */
-.elite-combobox .list-cell:selected:hover {
-    -fx-background-color: rgba(0, 255, 255, 0.1);
-    -fx-text-fill: -fx-elite-cyan;
-}
-/* Styles pour les scrollbars Elite Dangerous du ComboBox */
+/* Styles pour les scrollbars du panneau de mining */
 .elite-combobox .scroll-bar:vertical {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
@@ -1931,6 +1872,8 @@
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: transparent;
 }
+
+.elite-combobox .scroll-bar:vertical .increment-button,
 .elite-combobox .scroll-bar:vertical .decrement-button {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
@@ -1945,15 +1888,16 @@
     -fx-background-color: -fx-elite-gray;
 }
 
-.elite-combobox .scroll-bar:vertical .increment-arrow {
+.elite-combobox .scroll-bar:vertical .decrement-arrow {
     -fx-background-color: -fx-elite-orange;
-    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z"; /* flèche vers le haut */
     -fx-pref-width: 8px;
     -fx-pref-height: 4px;
 }
-.elite-combobox .scroll-bar:vertical .decrement-arrow {
+
+.elite-combobox .scroll-bar:vertical .increment-arrow {
     -fx-background-color: -fx-elite-orange;
-    -fx-shape: "M 0 0 L 4 4 L 8 4 Z";
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z"; /* flèche vers le bas */
     -fx-pref-width: 8px;
     -fx-pref-height: 4px;
 }
@@ -1963,29 +1907,6 @@
     -fx-background-color: -fx-elite-cyan;
 }
 
-/* Masquer la scrollbar horizontale */
-.elite-combobox .scroll-bar:horizontal {
-    -fx-opacity: 0;
-    -fx-pref-height: 0;
-    -fx-min-height: 0;
-    -fx-max-height: 0;
-}
-
-/* ✅ Styles pour les séparateurs dans la ComboBox */
-.elite-combobox .list-cell:disabled {
-    -fx-background-color: -fx-elite-darker;
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-weight: bold;
-    -fx-padding: 8px 12px;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 0 0 1px 0;
-    -fx-opacity: 1.0;
-}
-
-.elite-combobox .list-cell:disabled:hover {
-    -fx-background-color: -fx-elite-darker;
-    -fx-text-fill: -fx-elite-orange;
-}
 .config-spinner {
     -fx-background-color: -fx-elite-dark;
     -fx-border-color: -fx-elite-orange;

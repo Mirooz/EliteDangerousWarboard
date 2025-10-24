@@ -3,6 +3,8 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.wrapper;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMethod;
+import be.mirooz.elitedangerous.dashboard.service.MiningService;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -23,6 +25,7 @@ public class MineralListWrapper {
         MINERAL
     }
 
+    private final MiningService miningService = MiningService.getInstance();
     private final Type type;
     private final MiningMethod miningMethod; // utilisé si SEPARATOR
     private final Mineral mineral;           // utilisé si MINERAL
@@ -44,8 +47,12 @@ public class MineralListWrapper {
         this.type = type;
         this.miningMethod = miningMethod;
         this.mineral = mineral;
-        if (mineral !=null)
-            displayPrice.bind(mineral.getPriceProperty().asString().concat(" Cr"));
+        if (mineral != null) {
+            displayPrice.bind(Bindings.createStringBinding(
+                    () -> miningService.formatPrice(mineral.getPriceProperty().get()) + " Cr",
+                    mineral.getPriceProperty()
+            ));
+        }
     }
 
     public boolean isSeparator() {

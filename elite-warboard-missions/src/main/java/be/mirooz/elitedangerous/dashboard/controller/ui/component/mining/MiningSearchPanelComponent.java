@@ -16,11 +16,13 @@ import be.mirooz.elitedangerous.lib.inara.model.StationType;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -218,13 +220,26 @@ public class MiningSearchPanelComponent implements Initializable {
                 if (item.isSeparator()) {
                     Object icon = createCategoryIcon(item.getMiningMethod());
                     Label label = new Label(item.getMiningMethod().getMining());
+
+                    Node graphic;
                     if (icon instanceof ImageView iv) {
-                        setGraphic(new HBox(5, iv, label));
+                        graphic = new HBox(5, iv, label);
                     } else {
-                        setGraphic(null);
-                        setText(icon + " " + label.getText());
+                        label.setText(icon + " " + label.getText());
+                        graphic = label;
                     }
+
+                    // 🔸 Crée une ligne (separator visuel)
+                    Region line = new Region();
+                    line.setPrefHeight(1);
+                    line.setMaxHeight(1);
+                    line.setStyle("-fx-background-color: -fx-elite-orange;");
+
+                    VBox content = new VBox(2, graphic, line);
+                    setGraphic(content);
+
                     setDisable(true);
+                    setText(null);
                     return;
                 }
 
