@@ -12,7 +12,7 @@
     <VBox fx:id="miningSearchPanelContainer" spacing="6" styleClass="mining-header" />
 
     <!-- Contenu principal en trois colonnes -->
-    <HBox spacing="20" styleClass="mining-content">
+    <HBox spacing="20" styleClass="mining-content" VBox.vgrow="ALWAYS">
         <!-- Colonne gauche : Prospecteur actuel avec navigation -->
         <VBox fx:id="currentProspectorContainer" spacing="10" styleClass="mining-left-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" maxWidth="550"/>
 

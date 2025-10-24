@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
  * <p>
  * Le contrôleur principal coordonne maintenant ces composants et gère les interactions entre eux.
  */
-public class MiningController implements Initializable, IRefreshable, IBatchListener {
+public class MiningController implements Initializable, IRefreshable {
 
     // Conteneurs pour les composants
     @FXML
@@ -59,13 +59,6 @@ public class MiningController implements Initializable, IRefreshable, IBatchList
         initializeComponents();
         setupComponentCallbacks();
         UIManager.getInstance().register(this);
-    }
-
-    @Override
-    public void onBatchEnd() {
-        if (miningSearchPanel != null) {
-            miningSearchPanel.initializeMineralComboBox();
-        }
     }
 
     /**

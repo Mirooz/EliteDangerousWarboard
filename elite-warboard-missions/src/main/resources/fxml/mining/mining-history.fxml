@@ -27,8 +27,13 @@
     </VBox>
 
     <!-- Liste des sessions de minage -->
-    <ScrollPane fx:id="miningHistoryScrollPane" styleClass="mining-history-scroll" VBox.vgrow="ALWAYS" 
-               fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
-        <VBox fx:id="miningHistoryList" spacing="8" styleClass="mining-history-list"/>
-    </ScrollPane>
+    <StackPane VBox.vgrow="ALWAYS">
+        <ScrollPane fx:id="miningHistoryScrollPane" styleClass="mining-history-scroll" 
+                   fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+            <VBox fx:id="miningHistoryList" spacing="8" styleClass="mining-history-list"/>
+        </ScrollPane>
+        
+        <!-- Loading indicator -->
+        <ProgressIndicator fx:id="loadingIndicator" styleClass="progress-indicator" visible="false"/>
+    </StackPane>
 </VBox>

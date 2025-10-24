@@ -2,10 +2,12 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMethod;
+import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.wrapper.MineralListWrapper;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.StationCacheService;
@@ -42,7 +44,7 @@ import java.util.function.Consumer;
  * - L'affichage des résultats de recherche
  * - La gestion des clics pour copier les noms de systèmes
  */
-public class MiningSearchPanelComponent implements Initializable {
+public class MiningSearchPanelComponent implements Initializable , IBatchListener {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
@@ -141,8 +143,16 @@ public class MiningSearchPanelComponent implements Initializable {
 
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
+        DashboardService.getInstance().addBatchListener(this);
     }
 
+    @Override
+    public void onBatchEnd(){
+        var items = mineralComboBox.getItems();
+        items.stream()
+                .filter(i -> !i.isSeparator())
+                .forEach(this::loadMineralPriceSafe);
+    }
     /**
      * Charge les images pour les icônes
      */
@@ -187,12 +197,13 @@ public class MiningSearchPanelComponent implements Initializable {
      * Gère la visibilité des résultats de recherche
      */
     private void updateSearchResultsVisibility() {
-        boolean hasMineralSelected = mineralComboBox.getValue() != null &&
-                !mineralComboBox.getValue().isSeparator();
 
-        if (searchResultsContainer != null) {
-            searchResultsContainer.setVisible(hasMineralSelected);
-        }
+            boolean hasMineralSelected = mineralComboBox.getValue() != null &&
+                    !mineralComboBox.getValue().isSeparator();
+
+            if (searchResultsContainer != null) {
+                searchResultsContainer.setVisible(hasMineralSelected);
+            }
     }
 
     /**
@@ -202,11 +213,6 @@ public class MiningSearchPanelComponent implements Initializable {
         var items = MineralListWrapper.createOrganizedMineralsList();
         mineralComboBox.setItems(items);
         mineralComboBox.setPromptText(getTranslation("mining.mineral_placeholder"));
-
-        // Préchargement des prix
-        items.stream()
-                .filter(i -> !i.isSeparator())
-                .forEach(this::loadMineralPriceSafe);
 
         mineralComboBox.setCellFactory(lv -> new ListCell<>() {
             @Override
@@ -247,7 +253,9 @@ public class MiningSearchPanelComponent implements Initializable {
                 setText(item.getMineral().getTitleName() + " - " + item.getDisplayPriceFormatted());
                 item.displayPriceProperty().addListener((obs, oldV, newV) -> {
                     if (getItem() == item) {
-                        setText(item.getMineral().getTitleName() + " - " + newV);
+                        Platform.runLater(() ->
+                                setText(item.getMineral().getTitleName() + " - " + newV)
+                        );
                     }
                 });
             }
@@ -288,8 +296,6 @@ public class MiningSearchPanelComponent implements Initializable {
             } else {
                 clearHeaderLabels();
             }
-            // Mettre à jour la visibilité des résultats
-            updateSearchResultsVisibility();
         });
     }
 
@@ -301,7 +307,6 @@ public class MiningSearchPanelComponent implements Initializable {
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
-
         if (item.getMineral().getPrice() == 0) {
             miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
                             padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
@@ -415,7 +420,7 @@ public class MiningSearchPanelComponent implements Initializable {
             // État initial
             updateStationNavigationButtons();
         }
-        
+
         if (previousRingButton != null && nextRingButton != null) {
             // État initial
             updateRingNavigationButtons();
@@ -730,7 +735,7 @@ public class MiningSearchPanelComponent implements Initializable {
 
             // Mettre à jour le cache et la station actuelle
             updateStationCache(currentResult);
-            
+
             // Mettre à jour les boutons de navigation
             updateStationNavigationButtons();
         }

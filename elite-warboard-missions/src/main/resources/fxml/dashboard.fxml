@@ -28,7 +28,7 @@
                 <!-- Conteneur principal avec onglets -->
                 <TabPane fx:id="mainTabPane" styleClass="main-tab-pane" VBox.vgrow="ALWAYS">
                     <!-- Onglet Missions -->
-                    <Tab fx:id="missionsTab">
+                    <Tab fx:id="missionsTab" style="-fx-cursor: hand">
                         <graphic>
                             <ImageView fx:id="missionsTabImage" styleClass="tab-image" />
                         </graphic>
@@ -36,7 +36,7 @@
                     </Tab>
                     
                     <!-- Onglet Mining -->
-                    <Tab fx:id="miningTab">
+                    <Tab fx:id="miningTab" style="-fx-cursor: hand">
                         <graphic>
                             <ImageView fx:id="miningTabImage" styleClass="tab-image" />
                         </graphic>

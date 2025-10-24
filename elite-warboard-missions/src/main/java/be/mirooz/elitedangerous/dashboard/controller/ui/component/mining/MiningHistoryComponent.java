@@ -1,8 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
+import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.mining.MiningStat;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
@@ -11,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
@@ -30,8 +35,9 @@ import java.util.ResourceBundle;
  * - La liste des sessions de minage terminées
  * - Le tri par date (plus récent en premier)
  * - Les tooltips avec le détail des minéraux
+ * - Le loading indicator pendant le chargement des données
  */
-public class MiningHistoryComponent implements Initializable {
+public class MiningHistoryComponent implements Initializable, IBatchListener, IRefreshable {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
@@ -57,6 +63,8 @@ public class MiningHistoryComponent implements Initializable {
     private ScrollPane miningHistoryScrollPane;
     @FXML
     private VBox miningHistoryList;
+    @FXML
+    private ProgressIndicator loadingIndicator;
 
     // Callback pour notifier le parent des changements
     private Runnable onHistoryUpdated;
@@ -83,8 +91,36 @@ public class MiningHistoryComponent implements Initializable {
         initializeMiningHistory();
         updateTranslations();
         
+        // Enregistrer le composant auprès du UIManager pour les refresh UI
+        UIManager.getInstance().register(this);
+        
+        // Enregistrer le composant auprès du DashboardService pour les notifications de batch
+        DashboardService.getInstance().addBatchListener(this);
+        
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
+    }
+    
+    @Override
+    public void onBatchStart() {
+        Platform.runLater(() -> setLoadingVisible(true));
+    }
+    
+    @Override
+    public void onBatchEnd() {
+        Platform.runLater(() -> {
+            setLoadingVisible(false);
+            updateMiningHistoryList();
+        });
+    }
+    
+    private void setLoadingVisible(boolean visible) {
+        this.loadingIndicator.setVisible(visible);
+    }
+    
+    @Override
+    public void refreshUI() {
+        Platform.runLater(this::updateMiningHistoryList);
     }
 
     /**
@@ -125,7 +161,7 @@ public class MiningHistoryComponent implements Initializable {
         List<MiningStat> completedStats = miningStatsService.getCompletedMiningStats();
 
         if (completedStats.isEmpty()) {
-            Label noSessionsLabel = new Label("Aucune session terminée");
+            Label noSessionsLabel = new Label(localizationService.getString("mining.no_sessions"));
             noSessionsLabel.getStyleClass().add("no-sessions-message");
             miningHistoryList.getChildren().add(noSessionsLabel);
             return;

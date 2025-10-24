@@ -2775,6 +2775,9 @@
     -fx-font-family: "Arial Black", "Arial", sans-serif;
     -fx-padding: 3px;
 }
+.fleet-carrier-checkbox:hover{
+    -fx-cursor: hand;
+}
 
 .fleet-carrier-checkbox .box {
     -fx-background-color: -fx-elite-dark;
@@ -2793,7 +2796,9 @@
     -fx-font-family: "Arial Black", "Arial", sans-serif;
     -fx-padding: 3px;
 }
-
+.pads-checkbox:hover{
+    -fx-cursor: hand;
+}
 .pads-checkbox .box {
     -fx-background-color: -fx-elite-dark;
     -fx-border-color: -fx-elite-orange;
@@ -3017,6 +3022,10 @@
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
+}
+
+.mining-history-scroll .viewport {
+    -fx-background-color: transparent;
 }
 
 .mining-history-list {
