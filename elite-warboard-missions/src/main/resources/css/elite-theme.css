@@ -520,7 +520,8 @@
 
 /* Style pour le ToggleSwitch personnalisé */
 .price-mode-toggle-switch {
-    -fx-cursor: hand;
+    /* Le curseur hand sera appliqué uniquement au switchPane via le code Java */
+    -fx-spacing: 10;
 }
 
 .toggle-track {

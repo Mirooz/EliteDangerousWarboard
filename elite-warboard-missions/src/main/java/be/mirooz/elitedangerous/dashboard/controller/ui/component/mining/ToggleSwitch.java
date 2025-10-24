@@ -47,6 +47,7 @@ public class ToggleSwitch extends HBox {
         // Configuration du switch pane
         switchPane.getChildren().addAll(track, thumb);
         switchPane.setPrefSize(50, 24); // Réduit de 30 à 24
+        switchPane.setCursor(javafx.scene.Cursor.HAND); // Curseur hand uniquement sur le switch
         
         // Configuration du container (this = HBox)
         this.setAlignment(Pos.CENTER);
