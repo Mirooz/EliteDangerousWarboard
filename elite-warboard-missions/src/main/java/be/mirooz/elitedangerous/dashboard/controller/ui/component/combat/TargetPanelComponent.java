@@ -4,12 +4,17 @@ import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
 import java.util.Map;
 
@@ -26,11 +31,15 @@ public class TargetPanelComponent extends VBox {
     private final Separator separator;
     private final LocalizationService localizationService;
     private final Label mainTitle;
+    private final PopupManager popupManager;
+    private final CopyClipboardManager copyClipboardManager;
 
     public TargetPanelComponent() {
         super();
         this.getStyleClass().add("target-panel");
         this.localizationService = LocalizationService.getInstance();
+        this.popupManager = PopupManager.getInstance();
+        this.copyClipboardManager = CopyClipboardManager.getInstance();
 
         // Titre principal
         mainTitle = new Label();
@@ -87,28 +96,23 @@ public class TargetPanelComponent extends VBox {
         grid.setVgap(5);
         grid.setAlignment(Pos.TOP_LEFT);
 
-        // Colonnes : Cible | Source | Kills
+        // Colonnes : Source | Kills (la faction cible est maintenant un titre de groupe)
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setMinWidth(80);
-        col1.setPrefWidth(150);
+        col1.setMinWidth(100);
+        col1.setPrefWidth(200);
         col1.setHgrow(Priority.ALWAYS);
 
         ColumnConstraints col2 = new ColumnConstraints();
-        col2.setMinWidth(100);
-        col2.setPrefWidth(180);
-        col2.setHgrow(Priority.ALWAYS);
+        col2.setMinWidth(80);
+        col2.setPrefWidth(80);
+        col2.setHgrow(Priority.NEVER); // kills reste fixe
 
-        ColumnConstraints col3 = new ColumnConstraints();
-        col3.setMinWidth(80);
-        col3.setPrefWidth(80);
-        col3.setHgrow(Priority.NEVER); // kills reste fixe
-
-        grid.getColumnConstraints().addAll(col1, col2, col3);
+        grid.getColumnConstraints().addAll(col1, col2);
 
         return grid;
     }
 
-    public void displayStats(Map<TargetType, CibleStats> stats) {
+    public void displayStats(Map<TargetType, CibleStats> stats, Map<String, Mission> missions) {
         pirateGrid.getChildren().clear();
         conflictGrid.getChildren().clear();
 
@@ -120,85 +124,103 @@ public class TargetPanelComponent extends VBox {
             CibleStats cibleStats = entry.getValue();
 
             if (targetType == TargetType.PIRATE) {
-                displayStats(cibleStats, pirateGrid);
+                displayStats(cibleStats, pirateGrid, missions);
                 hasPirates = true;
             } else {
-                displayStats(cibleStats, conflictGrid);
+                displayStats(cibleStats, conflictGrid, missions);
                 hasConflicts = true;
             }
         }
 
-        // Header + Visibilité
-        if (hasPirates) {
-            addHeaderRow(pirateGrid);
-        }
+        // Visibilité des sections (sans headers)
         setSectionVisible(pirateTitle, pirateGrid, hasPirates);
-
-        if (hasConflicts) {
-            addHeaderRow(conflictGrid);
-        }
         setSectionVisible(conflictTitle, conflictGrid, hasConflicts);
 
         separator.setVisible(hasPirates && hasConflicts);
         separator.setManaged(hasPirates && hasConflicts);
     }
-
-    private void addHeaderRow(GridPane grid) {
-        Label targetHeader = new Label(localizationService.getString("targets.target_faction"));
-        targetHeader.getStyleClass().add("faction-col-header");
-
-        Label sourceHeader = new Label(localizationService.getString("targets.source_faction"));
-        sourceHeader.getStyleClass().add("faction-col-header");
-
-        Label killsHeader = new Label(localizationService.getString("targets.kills"));
-        killsHeader.getStyleClass().add("faction-col-header");
-
-        grid.add(targetHeader, 0, 0);
-        grid.add(sourceHeader, 1, 0);
-        grid.add(killsHeader, 2, 0);
+    
+    // Méthode de compatibilité pour l'ancienne signature
+    public void displayStats(Map<TargetType, CibleStats> stats) {
+        displayStats(stats, null);
     }
 
-    private void displayStats(CibleStats cibleStats, GridPane grid) {
-        int rowIndex = 1; // 0 = header
+    private void displayStats(CibleStats cibleStats, GridPane grid, Map<String, Mission> missions) {
+        int rowIndex = 0; // Pas d'en-têtes
 
-        String lastTargetFaction = null;
         for (TargetFactionStats targetFaction : cibleStats.getFactions().values()) {
             int maxKills = targetFaction.getSources().values().stream()
                     .mapToInt(SourceFactionStats::getKills)
                     .max()
                     .orElse(0);
 
+            // Ajouter la faction cible comme titre de groupe
+            Label targetFactionLabel = new Label(targetFaction.getTargetFaction());
+            targetFactionLabel.getStyleClass().add("target-faction-header");
+            
+            // Ajouter tooltip et clic pour copier le système de destination
+            String destinationSystem = findDestinationSystemForFaction(targetFaction.getTargetFaction(), missions);
+            if (destinationSystem != null && !destinationSystem.isEmpty()) {
+                String tooltipText = localizationService.getString("tooltip.destination_system") + ": " + destinationSystem;
+                targetFactionLabel.setTooltip(new TooltipComponent(tooltipText));
+                targetFactionLabel.getStyleClass().add("clickable-system-target");
+                targetFactionLabel.setOnMouseClicked(e -> onClickSystem(destinationSystem, e));
+            } else {
+                targetFactionLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.destination_system_undefined")));
+            }
+            
+            // Span sur toutes les colonnes pour le titre de faction cible
+            grid.add(targetFactionLabel, 0, rowIndex, 2, 1);
+            rowIndex++;
+
+            // Ajouter les sources liées à cette faction cible
             for (SourceFactionStats src : targetFaction.getSources().values()) {
-
-                Label targetLabel = new Label(
-                        lastTargetFaction != null && lastTargetFaction.equals(targetFaction.getTargetFaction())
-                                ? "" : targetFaction.getTargetFaction()
-                );
-                targetLabel.getStyleClass().add("faction-col");
-
-                Label sourceLabel = new Label(src.getSourceFaction());
-                sourceLabel.getStyleClass().add("faction-col");
+                Label sourceLabel = new Label("  " + src.getSourceFaction()); // Indentation pour montrer la hiérarchie
+                sourceLabel.getStyleClass().add("source-faction-label");
 
                 Label killsLabel;
                 if (src.getKills() == maxKills) {
                     killsLabel = new Label(String.valueOf(src.getKills()));
-                    killsLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #FF6B00;");
+                    killsLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #FF6B00;");
                 } else {
                     int difference = maxKills - src.getKills();
                     killsLabel = new Label(src.getKills() + " (-" + difference + ")");
-                    killsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00;");
+                    killsLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #00FF00;");
                 }
                 killsLabel.getStyleClass().addAll("faction-col", "kills");
 
-                grid.add(targetLabel, 0, rowIndex);
-                grid.add(sourceLabel, 1, rowIndex);
-                grid.add(killsLabel, 2, rowIndex);
+                // Source dans la colonne 0, kills dans la colonne 1
+                grid.add(sourceLabel, 0, rowIndex);
+                grid.add(killsLabel, 1, rowIndex);
 
-                lastTargetFaction = targetFaction.getTargetFaction();
                 rowIndex++;
             }
-            lastTargetFaction = null;
+            
+            // Ajouter un espace entre les groupes de factions cibles
+            rowIndex++;
         }
+    }
+    
+    // Méthode de compatibilité pour l'ancienne signature
+    private void displayStats(CibleStats cibleStats, GridPane grid) {
+        displayStats(cibleStats, grid, null);
+    }
+    
+    private String findDestinationSystemForFaction(String targetFaction, Map<String, Mission> missions) {
+        if (missions == null) return null;
+        
+        return missions.values().stream()
+                .filter(mission -> mission.getTargetFaction() != null && mission.getTargetFaction().equals(targetFaction))
+                .filter(mission -> mission.getDestinationSystem() != null && !mission.getDestinationSystem().isEmpty())
+                .map(Mission::getDestinationSystem)
+                .findFirst()
+                .orElse(null);
+    }
+    
+    private void onClickSystem(String systemName, javafx.scene.input.MouseEvent event) {
+        copyClipboardManager.copyToClipboard(systemName);
+        Stage stage = (Stage) getScene().getWindow();
+        popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(), stage);
     }
 
     public void updateTranslations() {

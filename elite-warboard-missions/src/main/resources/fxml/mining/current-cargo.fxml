@@ -38,7 +38,7 @@
     </HBox>
 
     <!-- Tableau des minéraux avec ScrollPane pour permettre le défilement -->
-    <ScrollPane styleClass="cargo-minerals-scroll" VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER">
+    <ScrollPane styleClass="cargo-minerals-scroll" VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER" >
         <GridPane fx:id="mineralsGridPane" styleClass="cargo-minerals-grid">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS"/>

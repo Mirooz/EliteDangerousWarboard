@@ -1581,35 +1581,30 @@
 .destroyed-ships-table .table-cell.ship-name {
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
-    -fx-font-size: 15px;
-}
-
-.destroyed-ships-table .table-cell.pilot-name {
-    -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 14px;
+    -fx-font-size: 18px;
 }
 
 .destroyed-ships-table .table-cell.faction {
     -fx-text-fill: -fx-elite-text;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 .destroyed-ships-table .table-cell.ship-type {
     -fx-text-fill: -fx-elite-text-dim;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 .destroyed-ships-table .table-cell.bounty {
     -fx-text-fill: -fx-elite-success;
     -fx-font-weight: bold;
-    -fx-font-size: 15px;
+    -fx-font-size: 18px;
 }
 
 .destroyed-ships-table .table-cell.time {
     -fx-text-fill: -fx-elite-text-dim;
     -fx-font-family: "Consolas", "Courier New", monospace;
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
 }
 
 /* ====== Scrollbars cockpit-style ====== */
@@ -2364,50 +2359,43 @@
     -fx-background-color: transparent;
     -fx-spacing: 8px;
     -fx-padding: 12px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
 }
 
-/* Titre principal du panneau - Style intégré */
+/* Titre principal du panneau - Style cohérent */
 .target-panel-title {
     -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-alignment: center-left;
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
+    -fx-alignment: CENTER;
     -fx-pref-width: infinity;
     -fx-padding: 8px 0px;
     -fx-border-width: 0 0 1 0;
     -fx-border-color: -fx-elite-orange;
 }
 
-/* Titres des sections - Style moderne intégré */
+/* Titres des sections - Style cohérent */
 .target-section-title {
-    -fx-font-size: 11px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-padding: 4px 12px;
-    -fx-border-radius: 0px;
-    -fx-background-radius: 0px;
-    -fx-min-width: 100px;
-    -fx-border-width: 0 0 0 3px;
+    -fx-padding: 6px 12px;
     -fx-alignment: CENTER_LEFT;
+    -fx-text-fill: -fx-elite-text;
 }
 
-/* Titre section Pirates - Style moderne */
-.pirate-title {
-    -fx-text-fill: -fx-elite-warning;
-    -fx-background-color: rgba(255, 170, 0, 0.08);
-    -fx-border-color: -fx-elite-warning;
-    -fx-border-width: 0 0 0 3px;
+/* Titre section Pirates - Style cohérent */
+.target-section-title.pirate-title {
+    -fx-text-fill: -fx-elite-warning !important;
 }
 
-/* Titre section Conflits - Style moderne */
-.conflict-title {
-    -fx-text-fill: -fx-elite-danger;
-    -fx-background-color: rgba(255, 0, 0, 0.08);
-    -fx-border-color: -fx-elite-danger;
-    -fx-border-width: 0 0 0 3px;
+/* Titre section Conflits - Style cohérent */
+.target-section-title.conflict-title {
+    -fx-text-fill: -fx-elite-danger !important;
 }
 
 /* Sections de cibles - Style intégré */
@@ -2464,8 +2452,9 @@
 
 /* Labels des factions sources */
 .source-faction-label {
-    -fx-text-fill: -fx-elite-text;
-    -fx-font-size: 9px;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
     -fx-font-family: "Arial", sans-serif;
 }
 
@@ -2744,26 +2733,7 @@
     -fx-spacing: 5px;
 }
 
-/* Styles pour les labels dans les conteneurs fixes */
-.location-name-large {
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-wrap-text: false;
-    -fx-text-alignment: center;
-    -fx-max-width: infinity;
-}
 
-.location-system {
-    -fx-text-fill: -fx-elite-light-gray;
-    -fx-font-size: 11px;
-    -fx-font-weight: normal;
-    -fx-font-family: "Arial", sans-serif;
-    -fx-wrap-text: false;
-    -fx-text-alignment: center;
-    -fx-max-width: infinity;
-}
 
 
 /* Checkbox Fleet Carrier */
@@ -2833,6 +2803,7 @@
 /* Labels de recherche */
 .search-label {
     -fx-text-fill: -fx-elite-orange;
+    -fx-padding: 5;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
@@ -2879,17 +2850,14 @@
 /* ✅ Conteneurs cliquables - Style simple et propre */
 .clickable-container {
     -fx-cursor: hand;
-    -fx-padding: 4px;
-    -fx-background-radius: 4px;
-    -fx-border-radius: 4px;
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-border-width: 1px;
+    -fx-padding: 5px;
+    -fx-background-color: rgba(0, 255, 255, 0.05);
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
 }
 
 .clickable-container:hover {
     -fx-background-color: rgba(255, 107, 0, 0.1);
-    -fx-border-color: rgba(255, 107, 0, 0.3);
 }
 
 /* Noms de locations en grand */
@@ -3457,4 +3425,108 @@
     -fx-border-color: rgba(255, 107, 0, 0.8);
     -fx-border-width: 2px;
     -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.3), 20, 0, 0, 0);
+}
+
+/* Style pour le TabPane des missions */
+.missions-tab-pane {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab-header-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab-header-background {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px 3px 0 0;
+    -fx-background-radius: 3px 3px 0 0;
+    -fx-padding: 8px 16px;
+}
+
+.missions-tab-pane .tab:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab .tab-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.missions-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab-content-area {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 0 0 3px 3px;
+    -fx-background-radius: 0 0 3px 3px;
+}
+
+/* Style pour le panneau des targets compact */
+.target-panel-compact {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px;
+}
+
+.target-panel-compact .target-section {
+    -fx-padding: 3px;
+    -fx-spacing: 2px;
+}
+
+.target-panel-compact .target-section-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-padding: 1px 0px;
+}
+
+.target-panel-compact .target-table {
+    -fx-font-size: 10px;
+    -fx-padding: 1px;
+}
+
+.target-panel-compact .target-table .table-cell {
+    -fx-padding: 1px 3px;
+    -fx-font-size: 10px;
+}
+
+.target-panel-compact .target-table .column-header {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-padding: 1px 3px;
+}
+
+/* Style pour le header de faction cible */
+.target-faction-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-padding: 3px 0px;
+    -fx-background-color: rgba(0, 255, 255, 0.1);
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+}
+
+/* Style pour les éléments cliquables */
+.clickable-system-target {
+    -fx-cursor: hand;
+}
+
+.clickable-system-target:hover {
+    -fx-background-color: rgba(0, 255, 255, 0.2);
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.3), 4, 0, 0, 0);
 }

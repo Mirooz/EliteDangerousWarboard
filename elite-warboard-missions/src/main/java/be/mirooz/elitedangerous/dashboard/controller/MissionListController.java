@@ -1,6 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
@@ -14,6 +13,7 @@ import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.MissionCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -249,7 +249,17 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         Map<TargetType, CibleStats> stats = computeFactionStats(targetMissions);
 
         // Mettre à jour le panneau de cibles avec les nouvelles statistiques
-        targetPanel.displayStats(stats);
+        if (targetPanel != null) {
+            targetPanel.displayStats(stats, missionsRegistry.getGlobalMissionMap());
+        }
+    }
+    
+    public Map<TargetType, CibleStats> getFactionStats() {
+        List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+                .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
+                .filter(mission -> dashboardContext.getCurrentTypeFilter() == null || dashboardContext.getCurrentTypeFilter().equals(mission.getType()))
+                .collect(Collectors.toList());
+        return computeFactionStats(targetMissions);
     }
 
 

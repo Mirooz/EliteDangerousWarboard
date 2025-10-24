@@ -27,28 +27,21 @@
     <columns>
             <TableColumn fx:id="timeColumn"
                          text="HEURE"
-                         prefWidth="90"
+                         prefWidth="100"
                          sortable="false"
                          resizable="false"
                          reorderable="false"/>
 
             <TableColumn fx:id="shipNameColumn"
                          text="VAISSEAU"
-                         prefWidth="130"
-                         sortable="false"
-                         resizable="false"
-                         reorderable="false"/>
-
-            <TableColumn fx:id="pilotNameColumn"
-                         text="PILOTE"
-                         prefWidth="90"
+                         prefWidth="180"
                          sortable="false"
                          resizable="false"
                          reorderable="false"/>
 
             <TableColumn fx:id="bountyColumn"
                          text="BOUNTY"
-                         prefWidth="90"
+                         prefWidth="120"
                          sortable="false"
                          resizable="false"
                          reorderable="false"/>

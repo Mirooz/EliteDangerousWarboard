@@ -124,30 +124,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
@@ -159,71 +135,151 @@
                         java
                     </goal>
                 </goals>
-                <executions>
-                    <execution>
-                        <id>create-runtime</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>jlink</executable>
-                            <commandlineArgs>
-                                --module-path "C:/Progra~1/BellSoft/LibericaJDK-17-Full/jmods"
-                                --add-modules java.base,javafx.controls,javafx.fxml,java.logging,java.xml,java.net.http,jdk.crypto.ec
-                                --strip-debug --compress=2
-                                --output target/runtime
-                            </commandlineArgs>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>create-installer-windows</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>jpackage</executable>
-                            <arguments>
-                                <argument>--type</argument>
-                                <argument>app-image</argument>
-                                <argument>--name</argument>
-                                <argument>Elite Warboard</argument>
-                                <argument>--dest</argument>
-                                <argument>executable</argument>
-                                <argument>--vendor</argument>
-                                <argument>Mirooz</argument>
-                                <argument>--input</argument>
-                                <argument>target</argument>
-                                <argument>--main-jar</argument>
-                                <argument>elite-warboard-missions-${project.version}-jar-with-dependencies.jar</argument>
-                                <argument>--main-class</argument>
-                                <argument>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</argument>
-                                <argument>--runtime-image</argument>
-                                <argument>target/runtime</argument>
-                                <argument>--icon</argument>
-                                <argument>src/main/resources/images/elite_dashboard_icon.ico</argument>
-
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>inno-setup</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>C:\Program Files (x86)\Inno Setup 6\ISCC.exe</executable>
-                            <arguments>
-                                <argument>installer.iss</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>windows-installer</id>
+            <build>
+                <plugins>
+
+                    <!-- 1️⃣ Nettoyage -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.3.2</version>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.basedir}/target/runtime</directory>
+                                </fileset>
+                                <fileset>
+                                    <directory>${project.basedir}/executable</directory>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+
+                    <!-- 2️⃣ Compilation -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.11.0</version>
+                        <configuration>
+                            <source>17</source>
+                            <target>17</target>
+                            <encoding>UTF-8</encoding>
+                        </configuration>
+                    </plugin>
+
+                    <!-- 3️⃣ Création du JAR avec dépendances -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <archive>
+                                <manifest>
+                                    <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- 4️⃣ Création du runtime + installeur -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+
+                        <executions>
+                            <!-- 🔹 JLINK -->
+                            <execution>
+                                <id>create-runtime</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jlink</executable>
+                                    <commandlineArgs>
+                                        --module-path "C:/Progra~1/BellSoft/LibericaJDK-17-Full/jmods"
+                                        --add-modules
+                                        java.base,javafx.controls,javafx.fxml,java.logging,java.xml,java.net.http,jdk.crypto.ec
+                                        --strip-debug --compress=2
+                                        --output "${project.build.directory}/runtime"
+                                    </commandlineArgs>
+                                </configuration>
+                            </execution>
+
+                            <!-- 🔹 JPACKAGE -->
+                            <execution>
+                                <id>create-installer-windows</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>app-image</argument>
+                                        <argument>--name</argument>
+                                        <argument>Elite Warboard</argument>
+                                        <argument>--dest</argument>
+                                        <argument>executable</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>Mirooz</argument>
+
+                                        <!-- ✅ Correct paths -->
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${project.build.finalName}-jar-with-dependencies.jar</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</argument>
+                                        <argument>--runtime-image</argument>
+                                        <argument>${project.build.directory}/runtime</argument>
+                                        <argument>--icon</argument>
+                                        <argument>src/main/resources/images/elite_dashboard_icon.ico</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <!-- 🔹 INNO SETUP -->
+                            <execution>
+                                <id>inno-setup</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>C:\Program Files (x86)\Inno Setup 6\ISCC.exe</executable>
+                                    <arguments>
+                                        <argument>installer.iss</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+    </profiles>
+
 </project>

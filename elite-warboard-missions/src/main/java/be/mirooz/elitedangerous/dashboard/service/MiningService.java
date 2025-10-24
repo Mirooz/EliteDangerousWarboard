@@ -8,6 +8,8 @@ import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidReg
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -244,7 +246,11 @@ public class MiningService {
     }
 
     public String formatPrice(long price) {
-        return String.format("%,d", price).replace(",", ".");
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator('.');
+
+        DecimalFormat df = new DecimalFormat("#,##0", symbols);
+        return df.format(price);
     }
 
 

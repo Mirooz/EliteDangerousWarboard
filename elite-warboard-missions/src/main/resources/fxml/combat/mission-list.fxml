@@ -40,12 +40,14 @@
          </StackPane>
       </VBox>
 
-      <!-- Section des cibles (droite) -->
+      <!-- Section des cibles (droite) - Compacte -->
       <TargetPanelComponent fx:id="targetPanel"
-                            styleClass="target-panel-container"
-                            maxWidth="450"
-                            minWidth="300"
-                            HBox.hgrow="ALWAYS"
+                            styleClass="target-panel-compact"
+                            maxWidth="350"
+                            minWidth="280"
+                            prefHeight="400"
+                            maxHeight="500"
+                            HBox.hgrow="NEVER"
                             VBox.vgrow="NEVER"/>
    </HBox>
 

@@ -478,17 +478,7 @@ public class MiningSearchPanelComponent implements Initializable , IBatchListene
             loadingIndicator.setVisible(visible);
             loadingIndicator.setManaged(visible);
 
-            if (visible) {
-                searchContentHBox.getChildren().forEach(child -> {
-                    if (child != mineralTargetContainer) {
-                        child.setVisible(false);
-                    }
-                });
-            } else {
-                searchContentHBox.getChildren().forEach(child -> {
-                    child.setVisible(true);
-                });
-            }
+            searchResultsContainer.setVisible(!visible);
         });
     }
 

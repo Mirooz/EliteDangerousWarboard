@@ -26,6 +26,8 @@
     </HBox>
 
     <StackPane>
+
+
         <HBox fx:id="searchContentHBox" spacing="30" styleClass="mining-search-container" alignment="CENTER_LEFT">
             <!-- Minéral Cible -->
             <VBox fx:id="mineralTargetContainer" spacing="5" styleClass="search-item">
@@ -34,6 +36,7 @@
                           promptText="Sélectionner un minerais..."/>
                 <!-- Filtres déplacés dans la barre de titre -->
             </VBox>
+
 
             <!-- Conteneur pour les résultats de recherche (masqué par défaut) -->
             <HBox fx:id="searchResultsContainer" spacing="30" styleClass="mining-search-container"
@@ -51,10 +54,10 @@
                 </HBox>
 
                 <!-- Ring to Mine -->
-                <VBox spacing="5" styleClass="search-item">
+                <VBox spacing="5" styleClass="search-item"  alignment="CENTER">
 
                     <Label fx:id="ringToMineLabel" text="RING TO MINE" styleClass="search-label"/>
-                    <HBox spacing="5" alignment="CENTER" >
+                    <HBox spacing="5" alignment="CENTER">
                         <Button fx:id="previousRingButton" styleClass="elite-nav-button" minWidth="30" maxWidth="30"
                                 text="◀"
                                 onAction="#navigateToPreviousRing"/>
@@ -70,14 +73,14 @@
                 </VBox>
 
                 <!-- Flèche avec distance -->
-                <VBox spacing="5" styleClass="arrow-container" alignment="CENTER" prefWidth="80" minWidth="80" maxWidth="80">
+                <VBox styleClass="arrow-container" alignment="CENTER" prefWidth="80" minWidth="80" maxWidth="80">
                     <Label fx:id="headerDistanceLabel" text="--" styleClass="distance-label"/>
                     <Label text="➤" styleClass="arrow-symbol"/>
                 </VBox>
 
                 <!-- Station to Sell -->
-                <HBox>
-                    <VBox spacing="5" styleClass="search-item">
+                <HBox spacing="20">
+                    <VBox spacing="5" styleClass="search-item" alignment="CENTER">
                         <!-- Navigation des stations -->
 
                         <Label fx:id="stationToSellLabel" text="STATION TO SELL" styleClass="search-label"/>
@@ -98,10 +101,8 @@
                                     onAction="#navigateToNextStation"/>
                         </HBox>
                     </VBox>
-
-
                     <ImageView fx:id="stationTypeImageView" styleClass="station-type-icon"
-                               fitWidth="100" fitHeight="100"
+                               fitWidth="80" fitHeight="80"
                                preserveRatio="true"/>
 
 
@@ -112,11 +113,9 @@
                 </HBox>
             </HBox>
         </HBox>
-
         <ProgressIndicator fx:id="loadingIndicator"
-                           maxWidth="80" maxHeight="80"
-                           visible="false"
-                           translateX="-200"
-                           translateY="-20"/>
+                           prefWidth="80" prefHeight="80"
+                           visible="false" translateX="-100"/>
+
     </StackPane>
 </VBox>
