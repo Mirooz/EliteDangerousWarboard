@@ -351,7 +351,7 @@ public class InaraClient {
                 if (commodity != null) {
                     System.out.printf("🔗 Commodité trouvée: %s (ID: %s)%n", commodity.getInaraName(), inaraId);
                 } else {
-                    System.out.printf("❌ Commodité non trouvée pour l'ID: %s%n", inaraId);
+               //     System.out.printf("❌ Commodité non trouvée pour l'ID: %s%n", inaraId);
                 }
             } else {
                 System.out.printf("❌ Impossible d'extraire l'ID Inara de l'URL: %s%n", commodityUrl);

@@ -1823,8 +1823,7 @@
     -fx-background-color: transparent;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
-    -fx-pref-height: 26px; /* 🔸 Taille verticale plus grande */
-    -fx-max-height: 26px;  /* Limite la hauteur maximale */
+
 }
 
 .elite-combobox:hover {

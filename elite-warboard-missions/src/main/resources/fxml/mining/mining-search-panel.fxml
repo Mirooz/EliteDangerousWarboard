@@ -30,7 +30,7 @@
             <!-- Minéral Cible -->
             <VBox fx:id="mineralTargetContainer" spacing="5" styleClass="search-item">
                 <Label fx:id="mineralTargetLabel" text="MINÉRAL CIBLE" styleClass="search-label"/>
-                <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="235" minWidth="235"
+                <ComboBox fx:id="mineralComboBox" styleClass="elite-combobox" prefWidth="235" minWidth="235" prefHeight="40"
                           promptText="Sélectionner un minerais..."/>
                 <!-- Filtres déplacés dans la barre de titre -->
             </VBox>
