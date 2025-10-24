@@ -3,12 +3,12 @@ package be.mirooz.elitedangerous.dashboard.controller;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -54,6 +54,21 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private Button browseJournalFolderButton;
 
+    @FXML
+    private Label journalDaysSectionLabel;
+
+    @FXML
+    private Label journalDaysLabel;
+
+    @FXML
+    private Spinner<Integer> journalDaysSpinner;
+
+    @FXML
+    private Label journalDaysUnitLabel;
+
+    @FXML
+    private Label journalDaysDescriptionLabel;
+
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final DashboardService dashboardService = DashboardService.getInstance();
@@ -72,11 +87,16 @@ public class ConfigDialogController implements Initializable {
         // Initialiser le champ du dossier journal
         journalFolderTextField.setText(preferencesService.getJournalFolder());
         
-        // Stocker le chemin initial pour détecter les changements
+        // Initialiser le spinner du nombre de jours
+        journalDaysSpinner.getValueFactory().setValue(preferencesService.getJournalDays());
+        
+        // Stocker les valeurs initiales pour détecter les changements
         originalJournalFolder = preferencesService.getJournalFolder();
+        originalJournalDays = preferencesService.getJournalDays();
     }
     
     private String originalJournalFolder;
+    private int originalJournalDays;
 
     private void updateTranslations() {
         configTitleLabel.setText(localizationService.getString("config.title"));
@@ -87,6 +107,12 @@ public class ConfigDialogController implements Initializable {
         // Traiter les retours à la ligne pour la description
         String description = localizationService.getString("config.journal.description");
         journalFolderDescriptionLabel.setText(description.replace("\\n", "\n"));
+        
+        // Traductions pour la section nombre de jours
+        journalDaysSectionLabel.setText(localizationService.getString("config.journal.days"));
+        journalDaysLabel.setText(localizationService.getString("config.journal.days.label"));
+        journalDaysUnitLabel.setText(localizationService.getString("config.journal.days.unit"));
+        journalDaysDescriptionLabel.setText(localizationService.getString("config.journal.days.description"));
         
         browseJournalFolderButton.setText(localizationService.getString("config.browse"));
         saveButton.setText(localizationService.getString("config.save"));
@@ -118,11 +144,14 @@ public class ConfigDialogController implements Initializable {
         String newJournalFolder = journalFolderTextField.getText();
         preferencesService.setJournalFolder(newJournalFolder);
         
-        // Si le dossier journal a changé, relancer le chargement des missions
-        if (!newJournalFolder.equals(originalJournalFolder)) {
+        // Sauvegarder le nombre de jours
+        int newJournalDays = journalDaysSpinner.getValue();
+        preferencesService.setJournalDays(newJournalDays);
+        
+        // Si le dossier journal ou le nombre de jours a changé, relancer le chargement des missions
+        if (!newJournalFolder.equals(originalJournalFolder) || newJournalDays != originalJournalDays) {
             // Relancer le chargement des missions dans un thread séparé
             dashboardService.initActiveMissions();
-
         }
         
         // Fermer la fenêtre

@@ -226,6 +226,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
         appTitleLabel.setText(localizationService.getString("header.app.title"));
         appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
+        updateStatusLabel();
     }
     @Override
     public void onBatchStart(){
@@ -255,7 +256,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void openConfigDialog() {
         Stage primaryStage = (Stage) configButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
+        DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 550);
 
         dialog.init(primaryStage);
         dialog.showAndWait();

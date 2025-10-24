@@ -158,7 +158,8 @@ public class JournalService {
             return journalFiles;
         }
 
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(30);
+        int journalDays = preferencesService.getJournalDays();
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(journalDays);
 
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {
@@ -293,7 +294,7 @@ public class JournalService {
                         .orElse(null);
                 
                 if (primaryWindow instanceof javafx.stage.Stage stage) {
-                    DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
+                    DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 520);
                     dialog.init(stage);
                     dialog.showAndWait();
                 }

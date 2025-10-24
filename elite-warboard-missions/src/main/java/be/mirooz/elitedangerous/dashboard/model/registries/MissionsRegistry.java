@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.model.registries;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
+import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -33,5 +34,12 @@ public class MissionsRegistry {
         globalMissionMap.clear();
     }
 
+    public void setActiveMissionsToFailed(){
+        globalMissionMap.forEach((s, mission) -> {
+            if(mission.isActive()){
+                mission.setStatus(MissionStatus.FAILED);
+            }
+        });
+    }
 
 }
