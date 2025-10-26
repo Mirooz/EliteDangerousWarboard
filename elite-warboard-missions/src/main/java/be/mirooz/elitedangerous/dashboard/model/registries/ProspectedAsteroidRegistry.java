@@ -55,9 +55,9 @@ public class ProspectedAsteroidRegistry {
     }
 
     public synchronized void clear() {
-        registry.clear();
+        //registry.clear();
         // Notifier les listeners
-        notifyRegistryCleared();
+        //notifyRegistryCleared();
     }
     
     /**

@@ -226,6 +226,38 @@ public class InaraService {
     public int getTotalHotspots() {
         return currentHotspots.size();
     }
+    
+    /**
+     * Récupère le nom du système actuel du ring
+     */
+    public String getCurrentRingSystem() {
+        MiningHotspot hotspot = getCurrentHotspot();
+        return hotspot != null ? hotspot.getSystemName() : null;
+    }
+    
+    /**
+     * Récupère le nom du ring actuel
+     */
+    public String getCurrentRingName() {
+        MiningHotspot hotspot = getCurrentHotspot();
+        return hotspot != null ? hotspot.getRingName() : null;
+    }
+    
+    /**
+     * Récupère le nom de la station actuelle
+     */
+    public String getCurrentStationName() {
+        InaraCommoditiesStats result = getCurrentResult();
+        return result != null ? result.getStationName() : null;
+    }
+    
+    /**
+     * Récupère le nom du système de la station actuelle
+     */
+    public String getCurrentStationSystem() {
+        InaraCommoditiesStats result = getCurrentResult();
+        return result != null ? result.getSystemName() : null;
+    }
 
     public void setCurrentHotspotIndex(int index) {
         if (index >= 0 && index < currentHotspots.size()) {

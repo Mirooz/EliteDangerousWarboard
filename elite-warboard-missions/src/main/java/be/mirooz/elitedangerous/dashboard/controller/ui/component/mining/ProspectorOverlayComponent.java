@@ -1,6 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
+import be.mirooz.elitedangerous.dashboard.service.InaraService;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -42,10 +47,20 @@ public class ProspectorOverlayComponent {
 
     private Stage overlayStage;
     private double overlayOpacity;
+    private Label resizeHandle;
     private Slider opacitySlider;
     private Slider textScaleSlider;
     private double textScale = 1.0;
     private StackPane stackPane;
+    
+    // Labels pour afficher ring et station au hover
+    private Label ringLabel;
+    private Label stationLabel;
+    private HBox infoContainer;
+    private final InaraService inaraService = InaraService.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
+    private final PopupManager popupManager = PopupManager.getInstance();
 
     /**
      * Affiche l'overlay pour le prospecteur donné
@@ -80,6 +95,7 @@ public class ProspectorOverlayComponent {
     public void closeOverlay() {
         if (overlayStage != null && overlayStage.isShowing()) {
             saveOverlayPreferences();
+            popupManager.unregisterContainer(overlayStage);
             overlayStage.close();
             overlayStage = null;
         }
@@ -91,6 +107,7 @@ public class ProspectorOverlayComponent {
     public void updateContent(ProspectedAsteroid prospector) {
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
             VBox newCard = createOverlayCard(prospector);
+            // mirrorCard est à l'index 0
             stackPane.getChildren().set(0, newCard);
             // Appliquer le scaling actuel à la nouvelle carte
             applyTextScaleToNode(newCard, textScale);
@@ -103,6 +120,7 @@ public class ProspectorOverlayComponent {
     public void clearContent() {
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
             VBox emptyCard = createEmptyCard();
+            // mirrorCard est à l'index 0
             stackPane.getChildren().set(0, emptyCard);
             // Appliquer le scaling actuel à la carte vide
             applyTextScaleToNode(emptyCard, textScale);
@@ -146,6 +164,9 @@ public class ProspectorOverlayComponent {
 
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
+        
+        // Enregistrer le container pour les popups
+        popupManager.registerContainer(overlayStage, stackPane);
         // Style racine pour cibler les scrollbars overlay
         stackPane.getStyleClass().addAll("overlay-root","overlay-root-bordered");
         stackPane.setOnMouseExited(event -> {
@@ -158,6 +179,7 @@ public class ProspectorOverlayComponent {
         overlayStage.show();
         overlayStage.setOnCloseRequest(event -> {
             saveOverlayPreferences();
+            popupManager.unregisterContainer(overlayStage);
             overlayStage = null;
         });
     }
@@ -170,23 +192,53 @@ public class ProspectorOverlayComponent {
         VBox mirrorCard = createOverlayCard(prospector);
 
         // Créer l'icône de redimensionnement
-        Label resizeHandle = createResizeHandle();
+        resizeHandle = createResizeHandle();
 
         // Créer le curseur de transparence
         opacitySlider = createOpacitySlider();
         
         // Créer le curseur de scaling du texte
         textScaleSlider = createTextScaleSlider();
+        
+        // Créer les labels ring et station
+        ringLabel = createRingLabel();
+        stationLabel = createStationLabel();
 
         // Créer le conteneur principal
+        // Créer un conteneur pour ring -> station
+        infoContainer = new HBox(5);
+        infoContainer.setAlignment(Pos.CENTER_RIGHT);
+        Label arrowLabel = new Label("→");
+        arrowLabel.setStyle("-fx-text-fill: -fx-elite-cyan; -fx-font-weight: bold; -fx-font-size: 14px;");
+        infoContainer.getChildren().addAll(ringLabel, arrowLabel, stationLabel);
+        // Permet de ne capturer les événements que sur les enfants réels, pas sur toute la zone
+        infoContainer.setPickOnBounds(false);
+        
         stackPane = new StackPane();
-        stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider, textScaleSlider);
+        // Ordre important: mirrorCard en premier, puis infoContainer en dernier pour qu'il soit au-dessus et cliquable
+        stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider, textScaleSlider, infoContainer);
         StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(textScaleSlider, Pos.BOTTOM_RIGHT);
+        StackPane.setAlignment(infoContainer, Pos.TOP_RIGHT);
+        infoContainer.setMaxWidth(Region.USE_PREF_SIZE);
+        infoContainer.setMaxHeight(Region.USE_PREF_SIZE);
+
         StackPane.setMargin(opacitySlider, new Insets(0, 30, 0, 0));
         StackPane.setMargin(textScaleSlider, new Insets(0, 60, 20, 0));
+        StackPane.setMargin(infoContainer, new Insets(5, 50, 0, 0));
         stackPane.setPickOnBounds(true);
+        
+        // Masquer par défaut
+        infoContainer.setVisible(false);
+        
+        // S'assurer que les sliders sont cliquables même avec opacity 0
+        opacitySlider.setMouseTransparent(false);
+        textScaleSlider.setMouseTransparent(false);
+        resizeHandle.setMouseTransparent(false);
+        
+        // Par défaut, infoContainer est transparent aux événements (car invisible)
+        infoContainer.setMouseTransparent(true);
 
         // Appliquer le style initial
         updatePaneStyle(overlayOpacity, stackPane);
@@ -231,6 +283,86 @@ public class ProspectorOverlayComponent {
         resizeHandle.setStyle("-fx-text-fill: gold;-fx-font-size: 36px; -fx-font-weight: bold; -fx-alignment: center;");
         resizeHandle.setOpacity(0.0); // Masquer par défaut
         return resizeHandle;
+    }
+    
+    /**
+     * Crée le label pour afficher le ring au hover
+     */
+    private Label createRingLabel() {
+        Label label = new Label();
+        updateRingLabel();
+        label.getStyleClass().add("overlay-info-label");
+        label.setStyle("-fx-text-fill: -fx-elite-cyan; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 100, 150, 0.3); -fx-background-radius: 5px;");
+        label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: -fx-elite-cyan; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 200, 255, 0.5); -fx-background-radius: 5px;"));
+        label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: -fx-elite-cyan; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 100, 150, 0.3); -fx-background-radius: 5px;"));
+        return label;
+    }
+    
+    /**
+     * Crée le label pour afficher la station au hover
+     */
+    private Label createStationLabel() {
+        Label label = new Label();
+        updateStationLabel();
+        label.getStyleClass().add("overlay-info-label");
+        label.setStyle("-fx-text-fill: -fx-elite-green; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 150, 0, 0.3); -fx-background-radius: 5px;");
+        label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: -fx-elite-green; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 255, 100, 0.5); -fx-background-radius: 5px;"));
+        label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: -fx-elite-green; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 150, 0, 0.3); -fx-background-radius: 5px;"));
+        return label;
+    }
+    
+    /**
+     * Met à jour le label du ring
+     */
+    private void updateRingLabel() {
+        if (ringLabel != null) {
+            String ringName = inaraService.getCurrentRingName();
+            String ringSystem = inaraService.getCurrentRingSystem();
+            
+            if (ringName != null && !ringName.isEmpty()) {
+                ringLabel.setText("Ring: " + ringName);
+                
+                // Ajouter tooltip et clic pour copier le système
+                if (ringSystem != null && !ringSystem.isEmpty()) {
+                    String tooltipText = localizationService.getString("tooltip.origin_system") + ": " + ringSystem;
+                    ringLabel.setTooltip(new TooltipComponent(tooltipText));
+                    ringLabel.setOnMouseClicked(e -> {
+                        copyClipboardManager.copyToClipboard(ringSystem);
+                        popupManager.showPopup(localizationService.getString("system.copied"), e.getSceneX(), e.getSceneY(), overlayStage);
+                    });
+                    ringLabel.setCursor(javafx.scene.Cursor.HAND);
+                }
+            } else {
+                ringLabel.setText("");
+            }
+        }
+    }
+    
+    /**
+     * Met à jour le label de la station
+     */
+    private void updateStationLabel() {
+        if (stationLabel != null) {
+            String stationName = inaraService.getCurrentStationName();
+            String stationSystem = inaraService.getCurrentStationSystem();
+            
+            if (stationName != null && !stationName.isEmpty()) {
+                stationLabel.setText("Station: " + stationName);
+                
+                // Ajouter tooltip et clic pour copier le système
+                if (stationSystem != null && !stationSystem.isEmpty()) {
+                    String tooltipText = localizationService.getString("tooltip.origin_system") + ": " + stationSystem;
+                    stationLabel.setTooltip(new TooltipComponent(tooltipText));
+                    stationLabel.setOnMouseClicked(e -> {
+                        copyClipboardManager.copyToClipboard(stationSystem);
+                        popupManager.showPopup(localizationService.getString("system.copied"), e.getSceneX(), e.getSceneY(), overlayStage);
+                    });
+                    stationLabel.setCursor(javafx.scene.Cursor.HAND);
+                }
+            } else {
+                stationLabel.setText("");
+            }
+        }
     }
 
     /**
@@ -316,7 +448,7 @@ public class ProspectorOverlayComponent {
      */
     private void updateTextScale(double scale) {
         if (stackPane != null && stackPane.getChildren().size() > 0) {
-            VBox card = (VBox) stackPane.getChildren().get(0);
+            VBox card = (VBox) stackPane.getChildren().get(0); // mirrorCard est à l'index 0
             applyTextScaleToNode(card, scale);
         }
     }
@@ -409,36 +541,45 @@ public class ProspectorOverlayComponent {
             // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                if (stackPane.getChildren().size() > 3) {
-                    ((Label) stackPane.getChildren().get(1)).setOpacity(1.0); // resizeHandle
-                    ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8); // opacitySlider
-                    ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8); // textScaleSlider
-                }
+                if (resizeHandle != null) resizeHandle.setOpacity(1.0);
+                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
+                if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                if (stackPane.getChildren().size() > 3) {
-                    ((Label) stackPane.getChildren().get(1)).setOpacity(0.8); // resizeHandle
-                    ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8); // opacitySlider
-                    ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8); // textScaleSlider
-                }
+                if (resizeHandle != null) resizeHandle.setOpacity(0.8);
+                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
+                if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
             }
         });
 
         // Masquer les contrôles quand la souris quitte la scène
         scene.setOnMouseExited(e -> {
-            if (stackPane.getChildren().size() > 3) {
-                ((Label) stackPane.getChildren().get(1)).setOpacity(0.0); // resizeHandle
-                ((Slider) stackPane.getChildren().get(2)).setOpacity(0.0); // opacitySlider
-                ((Slider) stackPane.getChildren().get(3)).setOpacity(0.0); // textScaleSlider
+            if (resizeHandle != null) resizeHandle.setOpacity(0.0);
+            if (opacitySlider != null) opacitySlider.setOpacity(0.0);
+            if (textScaleSlider != null) textScaleSlider.setOpacity(0.0);
+            // Masquer ring et station
+            if (infoContainer != null) {
+                infoContainer.setVisible(false);
+                infoContainer.setMouseTransparent(true);
             }
         });
 
         // Afficher les contrôles quand la souris entre dans la scène
         scene.setOnMouseEntered(e -> {
-            if (stackPane.getChildren().size() > 3) {
-                ((Label) stackPane.getChildren().get(1)).setOpacity(0.8); // resizeHandle
-                ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8); // opacitySlider
-                ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8); // textScaleSlider
+            if (resizeHandle != null) resizeHandle.setOpacity(0.8);
+            if (opacitySlider != null) opacitySlider.setOpacity(0.8);
+            if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
+            // Afficher ring et station si disponibles
+            updateRingLabel();
+            updateStationLabel();
+            if (infoContainer != null) {
+                boolean hasRing = ringLabel != null && ringLabel.getText() != null && !ringLabel.getText().isEmpty();
+                boolean hasStation = stationLabel != null && stationLabel.getText() != null && !stationLabel.getText().isEmpty();
+                // Afficher seulement si au moins un élément est disponible
+                boolean shouldShow = hasRing || hasStation;
+                infoContainer.setVisible(shouldShow);
+                // Si on montre, on rend l'infoContainer transparent aux événements sauf sur ses enfants réels
+                infoContainer.setMouseTransparent(!shouldShow);
             }
         });
 
