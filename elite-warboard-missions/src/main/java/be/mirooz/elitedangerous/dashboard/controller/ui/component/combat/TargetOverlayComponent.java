@@ -87,6 +87,9 @@ public class TargetOverlayComponent {
     public void closeOverlay() {
         if (overlayStage != null && overlayStage.isShowing()) {
             saveOverlayPreferences();
+            // Nettoyer le container pour les popups
+            PopupManager popupManager = PopupManager.getInstance();
+            popupManager.unregisterContainer(overlayStage);
             overlayStage.close();
             overlayStage = null;
         }
@@ -151,16 +154,15 @@ public class TargetOverlayComponent {
             stackPane.getStyleClass().remove("overlay-root-bordered");
         });
         
+        // Enregistrer le StackPane comme container pour les popups
+        PopupManager popupManager = PopupManager.getInstance();
+        popupManager.registerContainer(overlayStage, stackPane);
+        
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
 
         // Afficher l'overlay
         overlayStage.show();
-
-        overlayStage.setOnCloseRequest(event -> {
-            saveOverlayPreferences();
-            overlayStage = null;
-        });
     }
 
     /**
@@ -294,8 +296,8 @@ public class TargetOverlayComponent {
                 targetFactionLabel.getStyleClass().add("clickable-system-target");
                 targetFactionLabel.setOnMouseClicked(e -> {
                     copyClipboardManager.copyToClipboard(destinationSystem);
-                    Stage stage = (Stage) grid.getScene().getWindow();
-                    popupManager.showPopup(localizationService.getString("system.copied"), e.getSceneX(), e.getSceneY(), stage);
+                    // Utiliser le Stage de l'overlay au lieu de la scène du grid
+                    popupManager.showPopup(localizationService.getString("system.copied"), e.getSceneX(), e.getSceneY(), overlayStage);
                 });
             } else {
                 targetFactionLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.destination_system_undefined")));
@@ -584,7 +586,12 @@ public class TargetOverlayComponent {
         });
 
         // Listener pour la fermeture de la fenêtre
-
+        overlayStage.setOnCloseRequest(event -> {
+            saveOverlayPreferences();
+            PopupManager popupManager = PopupManager.getInstance();
+            popupManager.unregisterContainer(overlayStage);
+            overlayStage = null;
+        });
     }
 
     /**

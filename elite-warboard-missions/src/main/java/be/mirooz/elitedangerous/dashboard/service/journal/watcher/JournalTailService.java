@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.service.journal.watcher;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
@@ -42,16 +43,7 @@ public class JournalTailService {
         }
 
         // Puis commencer à tracker les nouvelles lignes
-        tailer = Tailer.builder()
-                .setFile(journalFile)
-                .setTailerListener(listener)
-                .setDelayDuration(Duration.ofMillis(1000))
-                .setTailFromEnd(true)
-                .setReOpen(true)
-                .setBufferSize(4096)
-                .setCharset(StandardCharsets.UTF_8)
-                .get();
-
+        tailer = new Tailer(journalFile, StandardCharsets.UTF_8, listener, 1000, true, false, IOUtils.DEFAULT_BUFFER_SIZE);
         tailerThread = new Thread(tailer, "JournalTailThread");
         tailerThread.setDaemon(true);
         tailerThread.start();
