@@ -58,14 +58,19 @@
 - **Center panel** : Mission list with massacre and conflict filters
 - **Right panel** : Target faction statistics (Pirates/Conflict zones)
 - **Footer** : Commander information and current system
+- **Kills remaining overlay** : Visual indicator of remaining kills
+
+![targetoverlay.png](elite-warboard-missions/src/main/resources/images/combat/targetoverlay.png)
 
 ### **Mining Interface**
 - **Mining panel** : Real-time mining session tracking
 - **Mineral tracking** : Live updates of mined materials and quantities
 - **Price toggle** : Switch between best prices and station prices
-- **Prospector Overlay** : Displays an overlay on your Elite Dangerous game window
 - **Session history** : Complete history of mining sessions with statistics
 - **Loading indicators** : Visual feedback during data processing
+- **Prospector Overlay** : Displays an overlay on your Elite Dangerous game window
+
+![miningoverlay.png](elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png)
 
 ### **Combat System Search**
 1. Click "SEARCH COMBAT SYSTEMS" in the header
