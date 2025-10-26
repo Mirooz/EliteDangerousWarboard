@@ -11,6 +11,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipCompone
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -293,13 +294,20 @@ public class TargetOverlayComponent {
     private void addDestroyedShipInfo(VBox panel) {
         DestroyedShipsRegistery registry = DestroyedShipsRegistery.getInstance();
         LocalizationService localizationService = LocalizationService.getInstance();
+        MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
         
         if (registry != null) {
             int totalBounty = registry.getTotalBountyEarned();
             int totalConflictBounty = registry.getTotalConflictBounty();
             
-            // Afficher seulement si au moins un total est différent de 0
-            if (totalBounty > 0 || totalConflictBounty > 0) {
+            // Calculer les pending credits
+            long pendingCredits = missionsRegistry.getGlobalMissionMap().values().stream()
+                    .filter(Mission::isPending)
+                    .mapToLong(Mission::getReward)
+                    .sum();
+            
+            // Afficher seulement si au moins un total est différent de 0 ou s'il y a des pending credits
+            if (totalBounty > 0 || totalConflictBounty > 0 || pendingCredits > 0) {
                 // Séparateur
                 Separator separator = new Separator();
                 separator.getStyleClass().add("target-separator");
@@ -309,22 +317,32 @@ public class TargetOverlayComponent {
                 VBox totalContainer = new VBox(5);
                 totalContainer.setPadding(new Insets(10, 0, 0, 0));
                 
-                StringBuilder totals = new StringBuilder();
-                if (totalBounty > 0) {
-                    totals.append(localizationService.getString("targets.total_bounty")).append(": ")
-                           .append(getFormattedNumber(totalBounty)).append(" Cr");
-                }
-                if (totalBounty > 0 && totalConflictBounty > 0) {
-                    totals.append(" / ");
-                }
-                if (totalConflictBounty > 0) {
-                    totals.append(localizationService.getString("targets.total_bonds")).append(": ")
-                           .append(getFormattedNumber(totalConflictBounty)).append(" Cr");
+                // Affichage des bounty/bonds
+                if (totalBounty > 0 || totalConflictBounty > 0) {
+                    StringBuilder totals = new StringBuilder();
+                    if (totalBounty > 0) {
+                        totals.append(localizationService.getString("targets.total_bounty")).append(": ")
+                               .append(getFormattedNumber(totalBounty)).append(" Cr");
+                    }
+                    if (totalBounty > 0 && totalConflictBounty > 0) {
+                        totals.append(" / ");
+                    }
+                    if (totalConflictBounty > 0) {
+                        totals.append(localizationService.getString("targets.total_bonds")).append(": ")
+                               .append(getFormattedNumber(totalConflictBounty)).append(" Cr");
+                    }
+                    
+                    Label totalLabel = new Label(totals.toString());
+                    totalLabel.setStyle("-fx-text-fill: -fx-elite-success; -fx-font-weight: bold; -fx-font-size: 0.9em;");
+                    totalContainer.getChildren().add(totalLabel);
                 }
                 
-                Label totalLabel = new Label(totals.toString());
-                totalLabel.setStyle("-fx-text-fill: -fx-elite-success; -fx-font-weight: bold;");
-                totalContainer.getChildren().add(totalLabel);
+                // Affichage des pending credits
+                if (pendingCredits > 0) {
+                    Label pendingLabel = new Label(localizationService.getString("targets.pending") + ": " + getFormattedNumber(pendingCredits) + " Cr");
+                    pendingLabel.setStyle("-fx-text-fill: -fx-elite-success; -fx-font-weight: bold; -fx-font-size: 0.9em;");
+                    totalContainer.getChildren().add(pendingLabel);
+                }
                 
                 panel.getChildren().add(totalContainer);
             }

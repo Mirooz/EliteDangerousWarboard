@@ -27,12 +27,12 @@
    </HBox>
 
    <!-- Layout principal avec missions à gauche et cibles à droite -->
-   <HBox spacing="20.0">
+   <HBox spacing="20.0" VBox.vgrow="ALWAYS">
       <!-- Section des missions (gauche) -->
       <VBox HBox.hgrow="ALWAYS" spacing="10.0">
          <StackPane VBox.vgrow="ALWAYS">
             <NotSelectableListView fx:id="missionListView"
-                                   styleClass="missions-scroll" minWidth="600"/>
+                                   styleClass="missions-scroll" minWidth="600" />
 
             <ProgressIndicator fx:id="loadingIndicator"
                                maxWidth="100" maxHeight="100"
