@@ -48,7 +48,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     @FXML
     private Button overlayButton;
 
-    private OverlayComponent overlayComponent;
+    private ProspectorOverlayComponent prospectorOverlayComponent;
 
     // Variables pour la navigation
     private List<ProspectedAsteroid> allProspectors = new ArrayList<>();
@@ -57,7 +57,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialiser le composant overlay
-        overlayComponent = new OverlayComponent();
+        prospectorOverlayComponent = new ProspectorOverlayComponent();
 
         updateProspectors();
         updateTranslations();
@@ -237,7 +237,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
             String text;
             String icon;
 
-            if (overlayComponent != null && overlayComponent.isShowing()) {
+            if (prospectorOverlayComponent != null && prospectorOverlayComponent.isShowing()) {
                 text = getTranslation("mining.overlay_close");
                 icon = "✖"; // Croix pour fermer
             } else {
@@ -247,7 +247,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
 
             // Vérifier si la traduction a fonctionné, sinon utiliser un texte par défaut
             if (text == null || text.startsWith("mining.")) {
-                if (overlayComponent != null && overlayComponent.isShowing()) {
+                if (prospectorOverlayComponent != null && prospectorOverlayComponent.isShowing()) {
                     text = "Fermer Overlay";
                 } else {
                     text = "Ouvrir Overlay";
@@ -338,7 +338,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
             System.out.println("💥 CurrentProspectorComponent: Astéroïde craqué détecté");
             
             // Vérifier si l'overlay est ouvert et affiche un prospecteur avec core
-            if (overlayComponent != null && overlayComponent.isShowing()) {
+            if (prospectorOverlayComponent != null && prospectorOverlayComponent.isShowing()) {
                 ProspectedAsteroid currentOverlayProspector = getCurrentProspector();
                 
                 // Vérifier que l'overlay affiche bien un prospecteur avec core material
@@ -346,7 +346,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
                     System.out.printf("🔍 Overlay affiche un prospecteur avec core: %s - vidage du contenu%n", 
                         currentOverlayProspector.getCoreMineral().getVisibleName());
                     currentOverlayProspector.setCracked(true);
-                    overlayComponent.clearContent();
+                    prospectorOverlayComponent.clearContent();
                     System.out.println("🗑️ Contenu de l'overlay vidé après craquage d'astéroïde");
                 } else {
                     System.out.println("ℹ️ Overlay ouvert mais aucun prospecteur avec core affiché - pas de vidage");
@@ -359,8 +359,8 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
 
     @FXML
     public void showProspectorOverlay() {
-        if (overlayComponent != null) {
-            overlayComponent.showOverlay(getCurrentProspector());
+        if (prospectorOverlayComponent != null) {
+            prospectorOverlayComponent.showOverlay(getCurrentProspector());
             updateOverlayButtonText();
         }
     }
@@ -369,13 +369,13 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
      * Met à jour le contenu de l'overlay lors du changement de prospecteur
      */
     private void updateOverlayContent() {
-        if (overlayComponent != null && overlayComponent.isShowing()) {
+        if (prospectorOverlayComponent != null && prospectorOverlayComponent.isShowing()) {
             ProspectedAsteroid currentProspector = getCurrentProspector();
             if (currentProspector != null && !currentProspector.isCracked()) {
-                overlayComponent.updateContent(currentProspector);
+                prospectorOverlayComponent.updateContent(currentProspector);
             } else {
                 // Si aucun prospecteur, vider l'overlay
-                overlayComponent.clearContent();
+                prospectorOverlayComponent.clearContent();
             }
         }
     }

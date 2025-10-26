@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -37,10 +38,13 @@ public class DialogComponent {
             this.stage = new Stage();
             this.stage.setTitle(title);
             this.stage.setScene(scene);
-            this.stage.initModality(Modality.APPLICATION_MODAL);
+
+            this.stage.initModality(Modality.WINDOW_MODAL);
             this.stage.initOwner(owner);
+            this.stage.setAlwaysOnTop(true);
+            this.stage.requestFocus();
             this.stage.setResizable(false);
-            this.stage.initStyle(StageStyle.UNDECORATED);
+            this.stage.initStyle(StageStyle.TRANSPARENT);
 
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors de l'initialisation du dialogue : " + fxmlPath, e);

@@ -14,6 +14,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.MissionCardComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetOverlayComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -58,10 +59,16 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final TargetOverlayComponent targetOverlayComponent = new TargetOverlayComponent();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         missionListView.setComponentFactory(MissionCardComponent::new);
+
+        // Configurer le bouton overlay dans le panneau de cibles
+        if (targetPanel != null) {
+            targetPanel.setOnOverlayButtonClick(this::showTargetOverlay);
+        }
 
         initializeComboBoxes();
         updateLanguage();
@@ -252,6 +259,11 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         if (targetPanel != null) {
             targetPanel.displayStats(stats, missionsRegistry.getGlobalMissionMap());
         }
+        
+        // Mettre à jour l'overlay s'il est ouvert
+        if (targetOverlayComponent.isShowing()) {
+            targetOverlayComponent.updateContent(stats, missionsRegistry.getGlobalMissionMap());
+        }
     }
     
     public Map<TargetType, CibleStats> getFactionStats() {
@@ -278,10 +290,39 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         return stats;
     }
 
+    @FXML
+    private void showTargetOverlay() {
+        Map<TargetType, CibleStats> stats = getFactionStats();
+        Map<String, Mission> missions = missionsRegistry.getGlobalMissionMap();
+        
+        // Si l'overlay est déjà ouvert, on le ferme
+        if (targetOverlayComponent.isShowing()) {
+            targetOverlayComponent.closeOverlay();
+            updateOverlayButtonText();
+        } else {
+            // Sinon, on l'ouvre
+            targetOverlayComponent.showOverlay(stats, missions);
+            updateOverlayButtonText();
+        }
+    }
+    
+    private void updateOverlayButtonText() {
+        if (targetPanel != null) {
+            targetPanel.updateOverlayButtonText(targetOverlayComponent.isShowing());
+        }
+    }
+    
     @Override
     public void refreshUI() {
         refreshMissions();
 
         updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
+        
+        // Mettre à jour l'overlay s'il est ouvert
+        if (targetOverlayComponent.isShowing()) {
+            Map<TargetType, CibleStats> stats = getFactionStats();
+            Map<String, Mission> missions = missionsRegistry.getGlobalMissionMap();
+            targetOverlayComponent.updateContent(stats, missions);
+        }
     }
 }

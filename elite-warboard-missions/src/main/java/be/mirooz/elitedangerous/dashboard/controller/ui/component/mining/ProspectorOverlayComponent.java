@@ -25,7 +25,7 @@ import java.util.Locale;
  * - Le curseur de transparence du background
  * - La sauvegarde/restauration des préférences
  */
-public class OverlayComponent {
+public class ProspectorOverlayComponent {
 
     public static final double MIN_OPPACITY = 0.01;
     public static final int MIN_WIDTH_OVERLAY = 200;
@@ -66,6 +66,14 @@ public class OverlayComponent {
         createOverlayStage(prospector);
     }
 
+    public ProspectorOverlayComponent() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (overlayStage != null && overlayStage.isShowing()) {
+                saveOverlayPreferences();
+            }
+        }));
+
+    }
     /**
      * Ferme l'overlay s'il est ouvert
      */
@@ -113,11 +121,7 @@ public class OverlayComponent {
      */
 
     private void createOverlayStage(ProspectedAsteroid prospector) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (overlayStage != null && overlayStage.isShowing()) {
-                saveOverlayPreferences();
-            }
-        }));
+
         // Création de la fenêtre overlay
         overlayStage = new Stage();
         overlayStage.initStyle(StageStyle.TRANSPARENT);
@@ -152,6 +156,10 @@ public class OverlayComponent {
 
         // Afficher l'overlay
         overlayStage.show();
+        overlayStage.setOnCloseRequest(event -> {
+            saveOverlayPreferences();
+            overlayStage = null;
+        });
     }
 
     /**
@@ -434,11 +442,7 @@ public class OverlayComponent {
             }
         });
 
-        // Listener pour la fermeture de la fenêtre
-        overlayStage.setOnCloseRequest(event -> {
-            saveOverlayPreferences();
-            overlayStage = null;
-        });
+
     }
 
     /**

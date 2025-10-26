@@ -11,6 +11,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
@@ -33,6 +34,8 @@ public class TargetPanelComponent extends VBox {
     private final Label mainTitle;
     private final PopupManager popupManager;
     private final CopyClipboardManager copyClipboardManager;
+    private final Button overlayButton;
+    private Runnable onOverlayButtonClick;
 
     public TargetPanelComponent() {
         super();
@@ -41,9 +44,25 @@ public class TargetPanelComponent extends VBox {
         this.popupManager = PopupManager.getInstance();
         this.copyClipboardManager = CopyClipboardManager.getInstance();
 
-        // Titre principal
+        // Créer le bouton overlay
+        overlayButton = new Button("🗔");
+        overlayButton.getStyleClass().add("elite-nav-button");
+        overlayButton.setOnAction(e -> {
+            if (onOverlayButtonClick != null) {
+                onOverlayButtonClick.run();
+            }
+        });
+
+        // Créer le titre
         mainTitle = new Label();
         mainTitle.getStyleClass().add("target-panel-title");
+        
+        // Container pour le titre et le bouton
+        HBox titleContainer = new HBox(10);
+        titleContainer.setAlignment(Pos.CENTER_LEFT);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        titleContainer.getChildren().addAll(mainTitle, spacer, overlayButton);
 
         // Section Pirates
         pirateTitle = new Label();
@@ -69,6 +88,7 @@ public class TargetPanelComponent extends VBox {
         // Layout global
         this.getChildren().addAll(
                 mainTitle,
+                overlayButton,
                 pirateTitleContainer,
                 pirateGrid,
                 separator,
@@ -86,7 +106,13 @@ public class TargetPanelComponent extends VBox {
 
         // Traductions
         updateTranslations();
-        localizationService.addLanguageChangeListener(locale -> updateTranslations());
+        localizationService.addLanguageChangeListener(locale -> {
+            updateTranslations();
+            updateOverlayButtonText(false);
+        });
+        
+        // Mettre à jour le texte du bouton overlay initialement
+        updateOverlayButtonText(false);
     }
 
     private GridPane createStatsGrid() {
@@ -234,5 +260,42 @@ public class TargetPanelComponent extends VBox {
         title.setManaged(visible);
         grid.setVisible(visible);
         grid.setManaged(visible);
+    }
+    
+    /**
+     * Définit l'action à exécuter lors du clic sur le bouton overlay
+     */
+    public void setOnOverlayButtonClick(Runnable action) {
+        this.onOverlayButtonClick = action;
+    }
+    
+    /**
+     * Met à jour le texte du bouton overlay
+     */
+    public void updateOverlayButtonText(boolean isOverlayShowing) {
+        if (overlayButton != null) {
+            String text;
+            String icon;
+
+            if (isOverlayShowing) {
+                text = localizationService.getString("targets.overlay_close");
+                icon = "✖"; // Croix pour fermer
+            } else {
+                text = localizationService.getString("targets.overlay_open");
+                icon = "🗔"; // Icône de fenêtre pour ouvrir
+            }
+
+            // Vérifier si la traduction a fonctionné, sinon utiliser un texte par défaut
+            if (text == null || text.startsWith("targets.")) {
+                if (isOverlayShowing) {
+                    text = "Fermer";
+                } else {
+                    text = "Overlay";
+                }
+            }
+
+            // Combiner l'icône et le texte
+            overlayButton.setText(icon + " " + text);
+        }
     }
 }
