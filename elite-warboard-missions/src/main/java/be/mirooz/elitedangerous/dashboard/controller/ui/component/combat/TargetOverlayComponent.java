@@ -10,12 +10,15 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
+import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -23,7 +26,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.security.PublicKey;
 import java.util.Locale;
 import java.util.Map;
 
@@ -65,11 +67,28 @@ public class TargetOverlayComponent {
                 saveOverlayPreferences();
             }
         }));
+        
+        // Écouter les changements de langue pour mettre à jour l'overlay
+        LocalizationService.getInstance().addLanguageChangeListener(locale -> {
+            if (overlayStage != null && overlayStage.isShowing()) {
+                // Recréer le contenu avec la nouvelle langue
+                // Note: nécessite de stocker les dernières stats et missions
+                refreshOverlayContent();
+            }
+        });
     }
+    
+    // Variables pour stocker les dernières données
+    private Map<TargetType, CibleStats> lastStats;
+    private Map<String, Mission> lastMissions;
     /**
      * Affiche l'overlay pour les cibles données
      */
     public void showOverlay(Map<TargetType, CibleStats> stats, Map<String, Mission> missions) {
+        // Sauvegarder les données pour la mise à jour de langue
+        lastStats = stats;
+        lastMissions = missions;
+        
         // Si la fenêtre est déjà ouverte, on la ferme
         if (overlayStage != null && overlayStage.isShowing()) {
             saveOverlayPreferences();
@@ -79,6 +98,24 @@ public class TargetOverlayComponent {
         }
 
         createOverlayStage(stats, missions);
+    }
+    
+    /**
+     * Rafraîchit le contenu de l'overlay avec la nouvelle langue
+     */
+    private void refreshOverlayContent() {
+        if (lastStats != null && lastMissions != null && overlayStage != null && overlayStage.isShowing()) {
+            // Recréer le panneau avec les nouvelles traductions
+            VBox newPanel = createTargetPanel(lastStats, lastMissions);
+            newPanel.getStyleClass().add("mirror-overlay");
+            
+            // Remplacer le panneau dans le stackPane
+            stackPane.getChildren().set(0, newPanel);
+            
+            // Appliquer le scaling actuel
+            applyTextScaleToNode(newPanel, textScale);
+            targetPanelComponent = newPanel;
+        }
     }
 
     /**
@@ -99,6 +136,10 @@ public class TargetOverlayComponent {
      * Met à jour le contenu de l'overlay avec de nouvelles stats
      */
     public void updateContent(Map<TargetType, CibleStats> stats, Map<String, Mission> missions) {
+        // Sauvegarder les données pour la mise à jour de langue
+        lastStats = stats;
+        lastMissions = missions;
+        
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
             // Recréer complètement le panneau avec les nouvelles stats
             VBox newPanel = createTargetPanel(stats, missions);
@@ -240,7 +281,54 @@ public class TargetOverlayComponent {
             panel.getChildren().addAll(titleContainer, grid);
         }
         
+        // Ajouter les infos du dernier ship destroyed en bas
+        addDestroyedShipInfo(panel);
+        
         return panel;
+    }
+    
+    /**
+     * Ajoute les totaux de bounty et combat bonds en bas du panel
+     */
+    private void addDestroyedShipInfo(VBox panel) {
+        DestroyedShipsRegistery registry = DestroyedShipsRegistery.getInstance();
+        LocalizationService localizationService = LocalizationService.getInstance();
+        
+        if (registry != null) {
+            int totalBounty = registry.getTotalBountyEarned();
+            int totalConflictBounty = registry.getTotalConflictBounty();
+            
+            // Afficher seulement si au moins un total est différent de 0
+            if (totalBounty > 0 || totalConflictBounty > 0) {
+                // Séparateur
+                Separator separator = new Separator();
+                separator.getStyleClass().add("target-separator");
+                panel.getChildren().add(separator);
+                
+                // Conteneur pour les totaux
+                VBox totalContainer = new VBox(5);
+                totalContainer.setPadding(new Insets(10, 0, 0, 0));
+                
+                StringBuilder totals = new StringBuilder();
+                if (totalBounty > 0) {
+                    totals.append(localizationService.getString("targets.total_bounty")).append(": ")
+                           .append(getFormattedNumber(totalBounty)).append(" Cr");
+                }
+                if (totalBounty > 0 && totalConflictBounty > 0) {
+                    totals.append(" / ");
+                }
+                if (totalConflictBounty > 0) {
+                    totals.append(localizationService.getString("targets.total_bonds")).append(": ")
+                           .append(getFormattedNumber(totalConflictBounty)).append(" Cr");
+                }
+                
+                Label totalLabel = new Label(totals.toString());
+                totalLabel.setStyle("-fx-text-fill: -fx-elite-success; -fx-font-weight: bold;");
+                totalContainer.getChildren().add(totalLabel);
+                
+                panel.getChildren().add(totalContainer);
+            }
+        }
     }
     
     /**
@@ -315,6 +403,26 @@ public class TargetOverlayComponent {
                 sourceLabel.setPrefWidth(Region.USE_COMPUTED_SIZE);
                 sourceLabel.setMinWidth(Region.USE_COMPUTED_SIZE);
                 
+                // Ajouter tooltip et clic pour copier le système d'origine de cette faction
+                String[] sourceInfo = findOriginSystemAndStationForFaction(src.getSourceFaction(), missions);
+                String sourceSystem = sourceInfo[0];
+                String sourceStation = sourceInfo[1];
+                if (sourceSystem != null && !sourceSystem.isEmpty()) {
+                    String tooltipText = localizationService.getString("tooltip.origin_system") + ": " + sourceSystem;
+                    if (sourceStation != null && !sourceStation.isEmpty()) {
+                        tooltipText += " | " + sourceStation;
+                    }
+                    sourceLabel.setTooltip(new TooltipComponent(tooltipText));
+                    sourceLabel.getStyleClass().add("clickable-system-source");
+                    sourceLabel.setOnMouseClicked(e -> {
+                        copyClipboardManager.copyToClipboard(sourceSystem);
+                        popupManager.showPopup(localizationService.getString("system.copied"), e.getSceneX(), e.getSceneY(), overlayStage);
+                    });
+                } else {
+                    String tooltipText = localizationService.getString("tooltip.origin_system_undefined");
+                    sourceLabel.setTooltip(new TooltipComponent(tooltipText));
+                }
+                
                 Label killsLabel;
                 if (src.getKills() == maxKills) {
                     killsLabel = new Label(String.valueOf(src.getKills()));
@@ -355,6 +463,20 @@ public class TargetOverlayComponent {
                 .map(Mission::getDestinationSystem)
                 .findFirst()
                 .orElse(null);
+    }
+    
+    /**
+     * Trouve le système et la station d'origine pour une faction source
+     */
+    private String[] findOriginSystemAndStationForFaction(String sourceFaction, Map<String, Mission> missions) {
+        if (missions == null) return new String[]{null, null};
+        
+        return missions.values().stream()
+                .filter(mission -> mission.getFaction() != null && mission.getFaction().equals(sourceFaction))
+                .filter(mission -> mission.getOriginSystem() != null && !mission.getOriginSystem().isEmpty())
+                .map(mission -> new String[]{mission.getOriginSystem(), mission.getOriginStation()})
+                .findFirst()
+                .orElse(new String[]{null, null});
     }
 
     /**

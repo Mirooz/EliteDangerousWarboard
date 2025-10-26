@@ -203,6 +203,23 @@ public class TargetPanelComponent extends VBox {
             for (SourceFactionStats src : targetFaction.getSources().values()) {
                 Label sourceLabel = new Label("  " + src.getSourceFaction()); // Indentation pour montrer la hiérarchie
                 sourceLabel.getStyleClass().add("source-faction-label");
+                
+                // Ajouter tooltip et clic pour copier le système d'origine de cette faction
+                String[] sourceInfo = findOriginSystemAndStationForFaction(src.getSourceFaction(), missions);
+                String sourceSystem = sourceInfo[0];
+                String sourceStation = sourceInfo[1];
+                if (sourceSystem != null && !sourceSystem.isEmpty()) {
+                    String tooltipText = localizationService.getString("tooltip.origin_system") + ": " + sourceSystem;
+                    if (sourceStation != null && !sourceStation.isEmpty()) {
+                        tooltipText += " | " + sourceStation;
+                    }
+                    sourceLabel.setTooltip(new TooltipComponent(tooltipText));
+                    sourceLabel.getStyleClass().add("clickable-system-source");
+                    sourceLabel.setOnMouseClicked(e -> onClickSystem(sourceSystem, e));
+                } else {
+                    String tooltipText = localizationService.getString("tooltip.origin_system_undefined");
+                    sourceLabel.setTooltip(new TooltipComponent(tooltipText));
+                }
 
                 Label killsLabel;
                 if (src.getKills() == maxKills) {
@@ -241,6 +258,17 @@ public class TargetPanelComponent extends VBox {
                 .map(Mission::getDestinationSystem)
                 .findFirst()
                 .orElse(null);
+    }
+    
+    private String[] findOriginSystemAndStationForFaction(String sourceFaction, Map<String, Mission> missions) {
+        if (missions == null) return new String[]{null, null};
+        
+        return missions.values().stream()
+                .filter(mission -> mission.getFaction() != null && mission.getFaction().equals(sourceFaction))
+                .filter(mission -> mission.getOriginSystem() != null && !mission.getOriginSystem().isEmpty())
+                .map(mission -> new String[]{mission.getOriginSystem(), mission.getOriginStation()})
+                .findFirst()
+                .orElse(new String[]{null, null});
     }
     
     private void onClickSystem(String systemName, javafx.scene.input.MouseEvent event) {

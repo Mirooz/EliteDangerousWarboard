@@ -3516,9 +3516,6 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-cyan;
     -fx-padding: 3px 0px;
-    -fx-background-color: rgba(0, 255, 255, 0.1);
-    -fx-background-radius: 3px;
-    -fx-border-radius: 3px;
 }
 
 /* Style pour les éléments cliquables */
