@@ -7,6 +7,10 @@ import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.util.stream.Stream;
 
 public class JournalTailService {
 
@@ -25,12 +29,7 @@ public class JournalTailService {
         TailerListenerAdapter listener = new TailerListenerAdapter() {
             @Override
             public void handle(String line) {
-                try {
-                    JsonNode jsonNode = objectMapper.readTree(line);
-                    JournalEventDispatcher.getInstance().dispatch(jsonNode);
-                } catch (Exception e) {
-                    System.err.println("[Tailer] Ligne ignorée: " + e.getMessage());
-                }
+                processLine(line);
             }
         };
 
@@ -38,37 +37,53 @@ public class JournalTailService {
         stop();
 
         // Lire d'abord tout le contenu existant du fichier
-        if (readNow)
+        if (readNow) {
             readExistingContent(journalFile);
+        }
 
         // Puis commencer à tracker les nouvelles lignes
-        tailer = new Tailer(journalFile, listener, 1000, true);
+        tailer = Tailer.builder()
+                .setFile(journalFile)
+                .setTailerListener(listener)
+                .setDelayDuration(Duration.ofMillis(1000))
+                .setTailFromEnd(true)
+                .setReOpen(true)
+                .setBufferSize(4096)
+                .setCharset(StandardCharsets.UTF_8)
+                .get();
+
         tailerThread = new Thread(tailer, "JournalTailThread");
-        tailerThread.setDaemon(true); // ✅ ne bloque pas la fermeture
+        tailerThread.setDaemon(true);
         tailerThread.start();
     }
 
     /**
-     * Lit tout le contenu existant du fichier journal
+     * Traite une ligne du journal (lecture + dispatch)
+     */
+    private void processLine(String line) {
+        if (line == null || line.isBlank()) return;
+        try {
+            JsonNode jsonNode = objectMapper.readTree(line);
+            JournalEventDispatcher.getInstance().dispatch(jsonNode);
+        } catch (Exception e) {
+            // ligne JSON invalide → ignorée
+            // System.err.println("[Tailer] Ligne ignorée: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Lit tout le contenu existant du fichier journal avant de démarrer le tailer
      */
     private void readExistingContent(File journalFile) {
-        try {
-            if (journalFile.exists() && journalFile.length() > 0) {
-                System.out.println("[Tailer] Reading existing content from: " + journalFile.getName());
-                java.nio.file.Files.lines(journalFile.toPath())
-                    .forEach(line -> {
-                        try {
-                            JsonNode jsonNode = objectMapper.readTree(line);
-                            JournalEventDispatcher.getInstance().dispatch(jsonNode);
-                        } catch (Exception e) {
-                            // Ignorer les lignes malformées
-                        }
-                    });
-                System.out.println("[Tailer] Finished reading existing content");
-            }
+        if (!journalFile.exists() || journalFile.length() == 0) return;
+
+        System.out.println("[Tailer] Reading existing content from: " + journalFile.getName());
+        try (Stream<String> lines = Files.lines(journalFile.toPath(), StandardCharsets.UTF_8)) {
+            lines.forEach(this::processLine);
         } catch (Exception e) {
             System.err.println("[Tailer] Error reading existing content: " + e.getMessage());
         }
+        System.out.println("[Tailer] Finished reading existing content");
     }
 
     public void stop() {

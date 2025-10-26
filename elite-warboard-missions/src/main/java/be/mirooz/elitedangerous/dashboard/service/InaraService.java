@@ -198,6 +198,11 @@ public class InaraService {
 
     // Méthodes de navigation entre les hotspots
     public void setHotspots(List<MiningHotspot> hotspots) {
+        if (hotspots == null){
+            this.currentHotspotIndex =-1;
+            this.currentHotspots = new ArrayList<>();
+            return;
+        }
         this.currentHotspots = new ArrayList<>(hotspots);
         this.currentHotspotIndex = -1;
         

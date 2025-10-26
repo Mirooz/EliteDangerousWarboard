@@ -29,10 +29,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -308,7 +306,7 @@ public class MiningSearchPanelComponent implements Initializable , IBatchListene
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
         if (item.getMineral().getPrice() == 0) {
-            miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
+            miningService.findMineralStation(mineral, sourceSystem, maxDistance, minDemand,
                             padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
                     .thenAccept(markets -> Platform.runLater(() -> {
                         if (markets != null && !markets.isEmpty()) {
@@ -340,27 +338,26 @@ public class MiningSearchPanelComponent implements Initializable , IBatchListene
         String sourceSystem = miningService.getCurrentSystem();
         int maxDistance = getMaxDistanceFromField();
         int minDemand = miningService.getCurrentCargoCapacity();
-        miningService.findMineralPrice(mineral, sourceSystem, maxDistance, minDemand,
+        miningService.findMineralStation(mineral, sourceSystem, maxDistance, minDemand,
                         padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
                 .thenAccept(inaraCommoditiesStats -> Platform.runLater(() -> {
+                    // Récupérer tous les résultats depuis le cache d'InaraService
+                    miningService.getInaraService().setSearchResults(inaraCommoditiesStats);
+                    // Définir l'index de la station à afficher
+                    miningService.getInaraService().setCurrentResultIndex(stationIndex);
                     if (!inaraCommoditiesStats.isEmpty()) {
-                        // Récupérer tous les résultats depuis le cache d'InaraService
-                        miningService.getInaraService().setSearchResults(inaraCommoditiesStats);
-                        // Définir l'index de la station à afficher
-                        miningService.getInaraService().setCurrentResultIndex(stationIndex);
-                        // Mettre à jour l'affichage avec la méthode centralisée
                         updateStationAndHotspots();
-                        updateStationNavigationButtons();
                     } else {
                         setNotFoundSearch();
+                        updateRingNavigationButtons();
                     }
+                    updateStationNavigationButtons();
 
                     if (onSearchCompleted != null) {
                         onSearchCompleted.run();
                     }
                 }))
                 .exceptionally(throwable -> {
-                    setLoadingVisible(false);
                     setErrorSearch();
                     return null;
                 });
@@ -376,6 +373,10 @@ public class MiningSearchPanelComponent implements Initializable , IBatchListene
         headerStationSystemLabel.setText("");
         headerStationDistanceLabel.setText("--");
 
+        miningService.getInaraService().setHotspots(null);
+        miningService.getInaraService().setCurrentHotspotIndex(0);
+        setLoadingVisible(false);
+
     }
 
     private void setErrorSearch() {
@@ -388,6 +389,7 @@ public class MiningSearchPanelComponent implements Initializable , IBatchListene
             headerStationNameLabel.setText(getTranslation("mining.search_error"));
             headerStationSystemLabel.setText("");
             headerStationDistanceLabel.setText("--");
+            setLoadingVisible(false);
         });
     }
 
@@ -626,6 +628,12 @@ public class MiningSearchPanelComponent implements Initializable , IBatchListene
         if (miningTitleLabel != null) {
             miningTitleLabel.setText(getTranslation("mining.title"));
         }
+        if (headerRingNameLabel != null){
+            headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
+        }
+        if (headerStationNameLabel != null) {
+            headerStationNameLabel.setText(getTranslation("mining.no_station_found"));
+        }
         updateDistanceUnits();
     }
 
@@ -767,6 +775,7 @@ public class MiningSearchPanelComponent implements Initializable , IBatchListene
                 }))
                 .exceptionally(e -> {
                     setLoadingVisible(false);
+                    updateRingNavigationButtons();
                     return null;
                 });
     }

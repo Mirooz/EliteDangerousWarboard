@@ -111,14 +111,19 @@ public class OverlayComponent {
     /**
      * Crée la fenêtre overlay
      */
+
     private void createOverlayStage(ProspectedAsteroid prospector) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (overlayStage != null && overlayStage.isShowing()) {
+                saveOverlayPreferences();
+            }
+        }));
         // Création de la fenêtre overlay
         overlayStage = new Stage();
         overlayStage.initStyle(StageStyle.TRANSPARENT);
         overlayStage.setAlwaysOnTop(true);
         overlayStage.setTitle("Prospector Overlay");
         overlayStage.setResizable(true);
-
         // Définir la taille par défaut et minimale
         overlayStage.setMinWidth(MIN_WIDTH_OVERLAY);
         overlayStage.setMinHeight(MIN_HEIGHT_OVERLAY);

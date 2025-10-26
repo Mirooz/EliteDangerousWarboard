@@ -18,6 +18,7 @@ import javafx.application.Platform;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -83,7 +84,8 @@ public class JournalService {
 
             // Parcourt tous les fichiers, du plus récent au plus ancien
             for (File journal : journalFiles) {
-                List<String> lines = Files.readAllLines(journal.toPath());
+                List<String> lines = Files.readAllLines(journal.toPath(), StandardCharsets.UTF_8);
+
 
                 for (String line : lines) {
                     try {
@@ -238,8 +240,7 @@ public class JournalService {
         for (File journalFile : journalFiles) {
 
             try {
-                List<String> lines = Files.readAllLines(journalFile.toPath());
-
+                List<String> lines = Files.readAllLines(journalFile.toPath(), StandardCharsets.UTF_8);
                 for (String line : lines) {
                     try {
                         JsonNode jsonNode = objectMapper.readTree(line);

@@ -125,7 +125,7 @@ public class MiningService {
     /**
      * Recherche le prix d'un minéral avec option Fleet Carrier
      */
-    public CompletableFuture<List<InaraCommoditiesStats>> findMineralPrice(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
+    public CompletableFuture<List<InaraCommoditiesStats>> findMineralStation(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return inaraService.fetchMinerMarket(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
@@ -200,9 +200,9 @@ public class MiningService {
     public CompletableFuture<MiningHotspot> findMiningHotspotsForStation(InaraCommoditiesStats station, Mineral mineral) {
         return getEdToolsService().findMiningHotspots(station.getSystemName(), mineral)
                 .thenApply(hotspots -> {
+                    getInaraService().setHotspots(hotspots);
                     if (hotspots != null && !hotspots.isEmpty()) {
                         // Stocker tous les hotspots dans InaraService pour la navigation
-                        getInaraService().setHotspots(hotspots);
                         // Retourner le hotspot actuel (ou le premier si aucun n'est sélectionné)
                         MiningHotspot currentHotspot = getInaraService().getCurrentHotspot();
                         return Objects.requireNonNullElseGet(currentHotspot, () -> hotspots.stream()

@@ -15,6 +15,7 @@ public class ProspectedAsteroid {
     private String content;
     private String contentLocalised;
     private Double remaining;
+    private boolean cracked = false;
 
     @Data
     public static class Material {

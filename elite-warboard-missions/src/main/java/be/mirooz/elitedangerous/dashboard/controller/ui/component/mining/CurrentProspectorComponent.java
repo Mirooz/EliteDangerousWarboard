@@ -309,28 +309,6 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
         updateProspectors();
     }
 
-    /**
-     * Retourne le composant overlay pour permettre les interactions externes
-     */
-    public OverlayComponent getOverlayComponent() {
-        return overlayComponent;
-    }
-
-    /**
-     * Nettoie tous les prospecteurs et vide l'overlay (utilisé lors de la fin de session de minage)
-     */
-    public void clearAllProspectors() {
-        // Nettoyer les prospecteurs dans le service
-        miningService.clearAllProspectors();
-
-        // Mettre à jour l'affichage
-        updateProspectors();
-
-        // Vider l'overlay si il est ouvert
-        if (overlayComponent != null && overlayComponent.isShowing()) {
-            overlayComponent.clearContent();
-        }
-    }
     
     // Implémentation de ProspectedAsteroidListener
     
@@ -367,6 +345,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
                 if (currentOverlayProspector != null && currentOverlayProspector.getCoreMineral() != null) {
                     System.out.printf("🔍 Overlay affiche un prospecteur avec core: %s - vidage du contenu%n", 
                         currentOverlayProspector.getCoreMineral().getVisibleName());
+                    currentOverlayProspector.setCracked(true);
                     overlayComponent.clearContent();
                     System.out.println("🗑️ Contenu de l'overlay vidé après craquage d'astéroïde");
                 } else {
@@ -392,7 +371,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     private void updateOverlayContent() {
         if (overlayComponent != null && overlayComponent.isShowing()) {
             ProspectedAsteroid currentProspector = getCurrentProspector();
-            if (currentProspector != null) {
+            if (currentProspector != null && !currentProspector.isCracked()) {
                 overlayComponent.updateContent(currentProspector);
             } else {
                 // Si aucun prospecteur, vider l'overlay
