@@ -7,7 +7,9 @@
 ## 🎯 Main Features
 
 ### 📊 **Massacre Stacking Management**
-- **Mission stacking** : Visualize all your active massacre missions with real-time progression
+- **Mission stacking** : Visualize all your active massacre missions with real-time progression. Kills from pirate massacre missions stack — meaning a single pirate kill can count simultaneously toward multiple missions, even if they come from different factions.
+  This tool provides a clear visual breakdown of your remaining kills per faction, helping you track and optimize your bounty grind efficiently.
+- **Conflict zone management** : Track your conflict zone progression and bounty rewards. The application automatically tracks your conflict zone progression and combat bonds.
 - **System search** : Find systems conducive to massacre missions via EdTools API
 - **Conflict search** : Locate civil war and conflict zones via Inara API
 - **Bounty tracking** : History of destroyed ships with bounties and timestamps
@@ -32,23 +34,6 @@
 - **Bilingual interface** : English and French with explanatory descriptions
 - **Loading indicators** : Visual feedback during data processing
 - **Automatic updates** : Real-time synchronization with game events
-
-
-
-## 🛠️ Installation
-
-### **Simple Installation (Recommended)**
-1. Download `EliteWarboard-Setup.exe` from releases
-2. Run the installer
-3. Launch the application from Start Menu or desktop
-
-**✅ No external downloads required** : JDK and JavaFX are embedded in the installer. No Java installation or additional dependencies needed.
-
-### **Configuration**
-1. On first launch, configure your Elite Dangerous journal folder
-2. Default location: `C:/Users/[YourName]/Saved Games/Frontier Developments/Elite Dangerous`
-3. Select your language (English/French)
-4. The application automatically starts analyzing your journals
 
 ## 🎮 Usage
 
@@ -82,12 +67,11 @@
 ![searchmission2.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fsearchmission2.png)
 
 ### **Mining System Search**
-1. Click "SEARCH MINING SYSTEMS" in the mining panel
-2. Select the mineral you want to mine
-3. The system finds the most profitable station with mining locations
-4. View results with station information and prices
-5. Switch between different stations and rings as needed
-6. Click on a station to copy system name to clipboard
+1. Select the mineral you want to mine
+2. The system finds the most profitable station with mining locations
+3. View results with station information and prices
+4. Switch between different stations and rings as needed
+5. Click on a station to copy system name to clipboard
 
 ![miningsearch.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingsearch.png)
 
@@ -104,14 +88,32 @@ The application is available in **English and French** with complete interface t
 - System search descriptions
 - Mission types and statuses
 
+## 🛠️ Installation
+
+### **Simple Installation (Recommended)**
+1. Download `EliteWarboard-Setup.exe` from releases
+2. Run the installer
+3. Launch the application from Start Menu or desktop
+
+**✅ No external downloads required** : JDK and JavaFX are embedded in the installer. No Java installation or additional dependencies needed.
+
+### **Configuration**
+1. On first launch, configure your Elite Dangerous journal folder
+2. Default location: `C:/Users/[YourName]/Saved Games/Frontier Developments/Elite Dangerous`
+3. Select your language (English/French)
+4. The application automatically starts analyzing your journals
+
+
 ## 🔧 Technologies Used
 
 - **JavaFX 17** : Modern user interface
 - **Maven** : Project management and automated build
 - **Jackson** : JSON journal file analysis
 - **Lombok** : Boilerplate code reduction
-- **EdTools API** : Massacre system search
-- **Inara API** : Conflict zone search
+- **EdTools API** : Massacre system search and hotspot detection
+- **Inara API** : Conflict zone search and market informationsearch
+- **Inno Setup** : Installer creation with embedded runtime
+- **JDK 17** : Java Development Kit
 - **jpackage** : Installer creation with embedded runtime
 
 ## 📁 Project Structure
@@ -180,7 +182,6 @@ The application automatically processes these Elite Dangerous events:
 
 ### **Commander Events**
 - `Commander` : Detects commander changes and triggers popup notifications
-
 ## 🌐 External APIs
 
 - **EdTools PvE** : Massacre system search, faction conflict data, and mining system information
@@ -200,17 +201,24 @@ The application automatically processes these Elite Dangerous events:
 ## 🚀 Build and Development
 
 ### **Local Build**
+JDK 17 and JavaFX 17 are required to build and run the project.
+
+You can simplify setup by using the Liberica JDK 17 Full
+distribution, which already includes both the JDK and JavaFX modules.
+
+InnoSetup is also required to build the windows installer.
 ```bash
 mvn clean install
 ```
 
 ### **Installer Creation**
 ```bash
-mvn clean install
+mvn clean install -P windows-installer
 # Automatically generates EliteWarboard-Setup.exe with embedded runtime
 ```
 
 ### **Development**
+Run in elite-warboard-missions module:
 ```bash
 mvn exec:java
 ```
@@ -224,6 +232,7 @@ mvn exec:java
 - ✅ **Price Comparison** : Toggle between best prices and station prices
 - ✅ **Mining History** : View completed sessions with detailed statistics
 - ✅ **Improve massacre stacking UI** : Visual improvements
+- ✅ **Massacre stacking overlay** : Real-time overlay showing how many kills are left for each faction
 - ✅ **Automatic commander detection** : Notification popup with automatic journal re-reading
 - ✅ **Network error handling** : Translated error popups for connection issues
 - ✅ **Styled ComboBoxes** : Enhanced mission filters with Elite Dangerous styling
@@ -238,6 +247,7 @@ mvn exec:java
 - ✅ **Wing Mission Support** : Automatic wing mission detection
 - ✅ **Automatic Reset** : Bounty statistics reset on redemption
 - ✅ **Bilingual interface** : Complete English/French support
+- ✅ **Multi account** : Automatic new commander detection
 
 ## 🤝 Contributing
 

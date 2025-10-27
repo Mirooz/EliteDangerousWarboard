@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.controller.ui.wrapper;
+package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.wrapper;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
