@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotificationService;
 import be.mirooz.elitedangerous.lib.inara.client.InaraClient;
 
+import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
 import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
@@ -47,16 +48,7 @@ public class InaraService {
         return INSTANCE;
     }
 
-    /**
-     * Sauvegarde le prix d'un minéral dans les préférences utilisateur
-     */
-    private void saveMineralPriceToPreferences(Mineral mineral, int price) {
-        if (mineral instanceof MineralType) {
-            String key = "mineral.price." + mineral.getCargoJsonName();
-            preferencesService.setPreference(key, String.valueOf(price));
-            System.out.printf("💾 Prix sauvegardé pour %s: %d Cr%n", mineral.getVisibleName(), price);
-        }
-    }
+
 
     public CompletableFuture<List<ConflictSystem>> findConflictZoneSystems(String referenceSystem) {
 
@@ -73,6 +65,9 @@ public class InaraService {
         return name + "|" + sourceSystem + "|" + distance + "|" + supplyDemand + "|" + largePad + "|" + fleetCarrier;
     }
 
+    public List<CommodityMaxSell> fetchCommoditiesMaxSell() throws IOException{
+        return client.fetchCommoditiesMaxSell();
+    }
     public List<InaraCommoditiesStats> fetchMinerMarket(
             Mineral mineral,
             String sourceSystem,
@@ -120,8 +115,7 @@ public class InaraService {
                     priceNotificationService.notifyPriceChanged(mineral, oldPrice, bestResult.getPrice());
                 }
             }
-            
-            saveMineralPriceToPreferences(mineral, mineral.getPrice());
+
             return filteredResults;
         } catch (Exception e) {
             System.err.println("❌ Error while fetching miner market for " + mineral.getInaraName() + ": " + e.getMessage());

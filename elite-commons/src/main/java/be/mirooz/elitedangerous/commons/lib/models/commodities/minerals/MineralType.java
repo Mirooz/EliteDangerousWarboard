@@ -410,32 +410,32 @@ public enum MineralType implements Mineral {
     // Set trash value true for common/low-value minerals we added
     static {
         setTrashItems();
-        BAUXITE.setPrice(2882);
-        BERTRANDITE.setPrice(18418);
-        COLTAN.setPrice(6131);
-        CRYOLITE.setPrice(16489);
-        GALLITE.setPrice(12152);
-        GOSLARITE.setPrice(8596);
-        INDITE.setPrice(11222);
-        JADEITE.setPrice(43134);
-        LEPIDOLITE.setPrice(2050);
-        LITHIUM_HYDROXIDE.setPrice(5649);
-        METHANE_CLATHRATE.setPrice(1594);
-        METHANOL_MONOHYDRATE_CRYSTALS.setPrice(2554);
-        MOISSANITE.setPrice(30194);
-        PYROPHYLLITE.setPrice(15940);
-        RUTILE.setPrice(3631);
-        TAAFFEITE.setPrice(53071);
-        URANINITE.setPrice(3002);
-        WATER.setPrice(1910);
-        LIQUID_OXYGEN.setPrice(4267);
-        HYDROGEN_PEROXIDE.setPrice(3301);
-        GOLD.setPrice(48302);
-        SILVER.setPrice(38345);
-        PALLADIUM.setPrice(52368);
-        OSMIUM.setPrice(66991);
-        COBALT.setPrice(5400);
-        HAEMATITE.setPrice(10044);
+//        BAUXITE.setPrice(2882);
+//        BERTRANDITE.setPrice(18418);
+//        COLTAN.setPrice(6131);
+//        CRYOLITE.setPrice(16489);
+//        GALLITE.setPrice(12152);
+//        GOSLARITE.setPrice(8596);
+//        INDITE.setPrice(11222);
+//        JADEITE.setPrice(43134);
+//        LEPIDOLITE.setPrice(2050);
+//        LITHIUM_HYDROXIDE.setPrice(5649);
+//        METHANE_CLATHRATE.setPrice(1594);
+//        METHANOL_MONOHYDRATE_CRYSTALS.setPrice(2554);
+//        MOISSANITE.setPrice(30194);
+//        PYROPHYLLITE.setPrice(15940);
+//        RUTILE.setPrice(3631);
+//        TAAFFEITE.setPrice(53071);
+//        URANINITE.setPrice(3002);
+//        WATER.setPrice(1910);
+//        LIQUID_OXYGEN.setPrice(4267);
+//        HYDROGEN_PEROXIDE.setPrice(3301);
+//        GOLD.setPrice(48302);
+//        SILVER.setPrice(38345);
+//        PALLADIUM.setPrice(52368);
+//        OSMIUM.setPrice(66991);
+//        COBALT.setPrice(5400);
+//        HAEMATITE.setPrice(10044);
 
 
     }

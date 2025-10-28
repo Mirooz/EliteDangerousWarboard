@@ -16,7 +16,7 @@
               <option value="exec:java" />
             </list>
           </option>
-          <option name="multimoduleDir" value="$PROJECT_DIR$" />
+          <option name="multimoduleDir" />
           <option name="pomFileName" />
           <option name="profilesMap">
             <map />

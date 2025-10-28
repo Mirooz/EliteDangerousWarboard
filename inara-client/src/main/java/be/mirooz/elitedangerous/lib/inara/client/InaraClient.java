@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.lib.inara.client;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
 import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
@@ -494,8 +495,83 @@ public class InaraClient {
         return text.replaceAll("[^a-zA-Z0-9\\s\\-.,()\\[\\]|+\\s]", "").trim();
     }
 
-
     public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad, boolean fleetCarrier) throws IOException {
         return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, fleetCarrier, 15000, 48, supplyDemand);
+    }
+
+    // ─────────────────────────────────────────────
+    // 📊 FETCH COMMODITIES MAX SELL PRICES
+    // ─────────────────────────────────────────────
+    
+    /**
+     * Récupère la liste des commodités depuis Inara et extrait le prix max de vente de chaque commodité
+     * 
+     * @return Une liste de CommodityMaxSell avec le nom de la commodité et son prix max de vente
+     * @throws IOException Si une erreur se produit lors de l'appel HTTP
+     */
+    public List<CommodityMaxSell> fetchCommoditiesMaxSell() throws IOException {
+        String url = BASE_URL + "/elite/commodities-list/";
+        System.out.println("Fetching commodities list from: " + url);
+        
+        long start = System.currentTimeMillis();
+        Document doc = fetchHtml(url);
+        long duration = System.currentTimeMillis() - start;
+        System.out.println("INARA commodities list call duration: " + duration + " ms");
+        
+        List<CommodityMaxSell> commodities = new ArrayList<>();
+        
+        // Sélectionner toutes les lignes de commodités
+        Elements rows = doc.select("table.tablesortercollapsed tbody tr.taggeditem");
+        System.out.println("Found " + rows.size() + " commodity rows");
+        
+        for (Element row : rows) {
+            Elements cols = row.select("td");
+            
+            // Vérifier qu'il y a suffisamment de colonnes
+            if (cols.size() < 5) {
+                continue;
+            }
+            
+            try {
+                // Colonne 0: Nom de la commodité et lien
+                Element commodityLink = cols.get(0).selectFirst("a[href*='/elite/commodity/']");
+                if (commodityLink == null) {
+                    continue;
+                }
+                
+                String commodityName = commodityLink.text().trim();
+                String commodityUrl = commodityLink.attr("href");
+                String inaraId = extractInaraIdFromUrl(commodityUrl);
+                
+                // Colonne 4 (index 5 visible): Prix max de vente
+                // La structure HTML est: <td class="alignright" data-order="VALUE">DISPLAY <span class="minor">Cr</span></td>
+                Element maxSellElement = cols.get(4);
+                String maxSellText = maxSellElement.text().replace(",", "").replace("Cr", "").trim();
+                
+                int maxSellPrice = 0;
+                if (!maxSellText.isEmpty() && !maxSellText.equals("-")) {
+                    try {
+                        // Essayer d'extraire depuis data-order d'abord (plus fiable)
+                        String dataOrder = maxSellElement.attr("data-order");
+                        if (dataOrder != null && !dataOrder.isEmpty()) {
+                            maxSellPrice = Integer.parseInt(dataOrder);
+                        } else {
+                            maxSellPrice = Integer.parseInt(maxSellText);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.err.println("Error parsing max sell price for " + commodityName + ": " + maxSellText);
+                    }
+                }
+                
+                CommodityMaxSell commodityMaxSell = new CommodityMaxSell(commodityName, inaraId, maxSellPrice);
+                commodities.add(commodityMaxSell);
+                
+            } catch (Exception e) {
+                System.err.println("Error parsing commodity row: " + e.getMessage());
+            }
+        }
+        
+        System.out.println("Successfully parsed " + commodities.size() + " commodities with max sell prices");
+        return commodities;
     }
 }

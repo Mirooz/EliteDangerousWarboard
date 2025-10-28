@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip.ShipCarg
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidRegistry;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
+import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 
 import java.text.DecimalFormat;
@@ -170,6 +171,15 @@ public class MiningService {
         return 0; // Fallback
     }
 
+    public CompletableFuture <List<CommodityMaxSell>> fetchCommoditiesMaxSell() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return inaraService.fetchCommoditiesMaxSell();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
     /**
      * Calcule les CR estimés basés sur les minéraux dans le cargo
      */

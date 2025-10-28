@@ -55,7 +55,7 @@ public class MiningController implements Initializable, IRefreshable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializePricePreference();
+       //+ initializePricePreference();
         initializeComponents();
         setupComponentCallbacks();
         UIManager.getInstance().register(this);

@@ -199,15 +199,7 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
      */
     private void setupPriceModeToggle() {
         if (priceModeToggle != null) {
-            // Charger la valeur sauvegardée ou utiliser false par défaut (best price)
-            String savedValueStr = preferencesService.getPreference("cargo.price_mode_station", "false");
-            boolean savedValue = Boolean.parseBoolean(savedValueStr);
-            priceModeToggle.setSelected(savedValue);
-            
             priceModeToggle.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                // Sauvegarder la nouvelle valeur
-                preferencesService.setPreference("cargo.price_mode_station", String.valueOf(newVal));
-                
                 updatePriceHeaders(); // Mettre à jour les en-têtes
                 updateCargo(); // Rafraîchir l'affichage
             });
