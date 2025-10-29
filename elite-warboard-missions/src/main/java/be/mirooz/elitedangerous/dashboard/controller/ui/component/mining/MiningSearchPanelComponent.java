@@ -10,11 +10,10 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
-import be.mirooz.elitedangerous.dashboard.service.StationCacheService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotificationService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
-import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
 import be.mirooz.elitedangerous.lib.inara.model.StationType;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -52,8 +51,6 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
-    private final StationCacheService stationCacheService = StationCacheService.getInstance();
-
     // Images pour les icônes
     private Image laserImage;
     private Image coreImage;
@@ -130,6 +127,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
 
     public static final int MAX_DISTANCE = 100;
 
+    private final MineralPriceNotificationService priceNotificationService = MineralPriceNotificationService.getInstance();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadImages();
@@ -345,7 +343,11 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
                     // Définir l'index de la station à afficher
                     miningService.getInaraService().setCurrentResultIndex(stationIndex);
                     if (!inaraCommoditiesStats.isEmpty()) {
-                        updateStationAndHotspots();
+                        InaraCommoditiesStats currentResult = miningService.getInaraService().getCurrentResult();
+                        // Mettre à jour l'affichage de la station
+                        updateStationDisplay(currentResult);
+                        updateHotspots(currentResult);
+                        updateCurrentStationMarket(currentResult);
                     } else {
                         setNotFoundSearch();
                         updateRingNavigationButtons();
@@ -718,21 +720,14 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
      * Méthode centralisée pour mettre à jour l'affichage de la station et ses hotspots
      * Appelée lors de la sélection d'un minéral ou de la navigation entre stations
      */
-    private void updateStationAndHotspots() {
-        InaraCommoditiesStats currentResult = miningService.getInaraService().getCurrentResult();
+    private void updateHotspots(InaraCommoditiesStats currentResult) {
         if (currentResult != null) {
-            // Mettre à jour l'affichage de la station
-            updateStationDisplay(currentResult);
 
             // Récupérer les hotspots pour cette station
             Mineral selectedMineral = mineralComboBox.getValue() != null ? mineralComboBox.getValue().getMineral() : null;
             if (selectedMineral != null) {
                 updateHotspotsForStation(currentResult, selectedMineral);
             }
-
-            // Mettre à jour le cache et la station actuelle
-            updateStationCache(currentResult);
-
             // Mettre à jour les boutons de navigation
             updateStationNavigationButtons();
         }
@@ -799,15 +794,26 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
     /**
      * Met à jour le cache de la station
      */
-    private void updateStationCache(InaraCommoditiesStats station) {
-        try {
-            if (station.getStationUrl() != null) {
-                StationMarket stationMarket = miningService.getInaraService().fetchStationMarket(station.getStationUrl());
-                stationCacheService.cacheStationMarket(station.getStationName(), station.getSystemName(), stationMarket);
-                stationCacheService.setCurrentStation(station.getStationName(), station.getSystemName());
-            }
-        } catch (Exception e) {
-            System.err.println("❌ Erreur lors de la récupération du marché de station: " + e.getMessage());
+    private void updateCurrentStationMarket(InaraCommoditiesStats currentResult) {
+        if (currentResult.getStationUrl() != null) {
+            // Récupérer le marché de la station depuis Inara de manière asynchrone
+            miningService.fetchStationMarket(currentResult.getStationUrl())
+                    .thenAccept(stationMarket -> Platform.runLater(() -> {
+                        // Définir cette station comme station actuelle
+                        miningService.getInaraService().setCurrentStationMarket(
+                                currentResult.getStationName(),
+                                currentResult.getSystemName(),
+                                stationMarket
+                        );
+
+                        priceNotificationService.notifyPriceChanged();
+
+                    }))
+                    .exceptionally(e -> {
+                        System.err.println("❌ Erreur lors de la récupération du marché de station: " + e.getMessage());
+                        e.printStackTrace();
+                        return null;
+                    });
         }
     }
 

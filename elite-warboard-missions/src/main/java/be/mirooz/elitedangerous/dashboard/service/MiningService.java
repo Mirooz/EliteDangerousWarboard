@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidReg
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -36,7 +37,6 @@ public class MiningService {
     private final ProspectedAsteroidRegistry prospectedRegistry = ProspectedAsteroidRegistry.getInstance();
     private final InaraService inaraService = InaraService.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
-    private final StationCacheService stationCacheService = StationCacheService.getInstance();
 
     private MiningService() {
     }
@@ -159,6 +159,22 @@ public class MiningService {
      */
     public InaraService getInaraService() {
         return inaraService;
+    }
+
+    /**
+     * Récupère le marché complet d'une station de manière asynchrone
+     * 
+     * @param stationUrl L'URL de la station
+     * @return Un CompletableFuture contenant le marché de la station
+     */
+    public CompletableFuture<StationMarket> fetchStationMarket(String stationUrl) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return inaraService.fetchStationMarket(stationUrl);
+            } catch (Exception e) {
+                throw new RuntimeException("Erreur lors de la récupération du marché de station", e);
+            }
+        });
     }
 
     /**

@@ -28,7 +28,10 @@ public class InaraService {
             .expireAfterWrite(15, TimeUnit.MINUTES)
             .maximumSize(1000)
             .build();
-    private final PreferencesService preferencesService = PreferencesService.getInstance();
+    private final Cache<String, StationMarket> stationMarketCache = Caffeine.newBuilder()
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .maximumSize(100)
+            .build();
     private final MineralPriceNotificationService priceNotificationService = MineralPriceNotificationService.getInstance();
     
     // Navigation entre les résultats de recherche
@@ -38,6 +41,11 @@ public class InaraService {
     // Navigation entre les hotspots
     private List<MiningHotspot> currentHotspots = new ArrayList<>();
     private int currentHotspotIndex = -1;
+    
+    // Station actuelle et son marché
+    private StationMarket currentStationMarket;
+    private String currentStationMarketName;
+    private String currentStationMarketSystem;
 
 
     private InaraService() {
@@ -112,7 +120,7 @@ public class InaraService {
                 long oldPrice = mineral.getPrice();
                 mineral.setPrice(bestResult.getPrice());
                 if (oldPrice != bestResult.getPrice()) {
-                    priceNotificationService.notifyPriceChanged(mineral, oldPrice, bestResult.getPrice());
+                    priceNotificationService.notifyPriceChanged();
                 }
             }
 
@@ -132,10 +140,25 @@ public class InaraService {
     }
 
     /**
-     * Récupère le marché complet d'une station
+     * Récupère le marché complet d'une station avec mise en cache
      */
     public StationMarket fetchStationMarket(String stationUrl) throws IOException {
-        return client.fetchStationMarket(stationUrl);
+        // Vérifier le cache
+        StationMarket cachedMarket = stationMarketCache.getIfPresent(stationUrl);
+        if (cachedMarket != null) {
+            System.out.printf("🎯 Marché de station trouvé en cache: %s%n", stationUrl);
+            return cachedMarket;
+        }
+        
+        // Appel à Inara si pas en cache
+        System.out.printf("📡 Appel à Inara pour récupérer le marché: %s%n", stationUrl);
+        StationMarket market = client.fetchStationMarket(stationUrl);
+
+        // Mettre en cache
+        stationMarketCache.put(stationUrl, market);
+        System.out.printf("💾 Marché mis en cache: %s avec %d commodités%n", stationUrl, market.getCommodities().size());
+        
+        return market;
     }
 
     // Méthodes de navigation entre les résultats
@@ -257,5 +280,66 @@ public class InaraService {
         if (index >= 0 && index < currentHotspots.size()) {
             this.currentHotspotIndex = index;
         }
+    }
+    
+    // ─────────────────────────────────────────────
+    // Station actuelle et son marché
+    // ─────────────────────────────────────────────
+    
+    /**
+     * Définit la station actuelle et son marché
+     * Appelé après avoir trouvé une station via findMineralStation
+     */
+    public void setCurrentStationMarket(String stationName, String systemName, StationMarket stationMarket) {
+        this.currentStationMarketName = stationName;
+        this.currentStationMarketSystem = systemName;
+        this.currentStationMarket = stationMarket;
+        System.out.printf("📍 Station actuelle définie: %s [%s] avec %d commodités%n", 
+            stationName, systemName, stationMarket.getCommodities().size());
+    }
+    
+    /**
+     * Récupère le marché de la station actuelle
+     */
+    public StationMarket getCurrentStationMarket() {
+        return currentStationMarket;
+    }
+    
+    /**
+     * Vérifie si une station actuelle est définie
+     */
+    public boolean hasCurrentStationMarket() {
+        return currentStationMarket != null;
+    }
+    
+    /**
+     * Récupère le nom de la station actuelle
+     */
+    public String getCurrentStationMarketName() {
+        return currentStationMarketName;
+    }
+    
+    /**
+     * Récupère le nom du système de la station actuelle
+     */
+    public String getCurrentStationMarketSystem() {
+        return currentStationMarketSystem;
+    }
+    
+    /**
+     * Récupère le prix d'un minéral dans la station actuelle
+     * @param mineralName Le nom du minéral (nom Inara, ex: "Alexandrite")
+     * @return Le prix de vente du minéral dans la station actuelle, ou 0 si non trouvé
+     */
+    public long getMineralPriceInCurrentStation(String mineralName) {
+        if (currentStationMarket == null) {
+            return 0; // Aucune station définie
+        }
+        
+        return currentStationMarket.getCommodities().stream()
+                .filter(entry -> entry.getCommodityName().equalsIgnoreCase(mineralName))
+                .mapToLong(StationMarket.CommodityMarketEntry::getSellPrice)
+                .findFirst()
+                .orElse(0L); // Minéral non trouvé dans la station
     }
 }

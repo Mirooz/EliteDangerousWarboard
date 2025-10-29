@@ -6,7 +6,6 @@ import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificati
 import javafx.scene.layout.GridPane;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
-import be.mirooz.elitedangerous.dashboard.service.StationCacheService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.application.Platform;
@@ -33,7 +32,6 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
     // Services
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
-    private final StationCacheService stationCacheService = StationCacheService.getInstance();
     private final MineralPriceNotificationService priceNotificationService = MineralPriceNotificationService.getInstance();
     private final CargoEventNotificationService cargoEventNotificationService = CargoEventNotificationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
@@ -343,19 +341,19 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
     }
 
     /**
-     * Récupère le prix de station pour un minéral depuis le cache
+     * Récupère le prix de station pour un minéral depuis la station actuelle
      */
     private long getStationPriceForMineral(Mineral mineral) {
         // Utiliser la station actuellement sélectionnée
-        return stationCacheService.getMineralPriceInCurrentStation(mineral.getInaraName());
+        return miningService.getInaraService().getMineralPriceInCurrentStation(mineral.getInaraName());
     }
 
     // Implémentation de MineralPriceNotificationService.MineralPriceListener
     
     @Override
-    public void onMineralPriceChanged(Mineral mineral, long oldPrice, long newPrice) {
+    public void onMineralPriceChanged() {
         Platform.runLater(() -> {
-            System.out.printf("💰 Prix de %s changé: %d → %d Cr%n", mineral.getVisibleName(), oldPrice, newPrice);
+            System.out.println("💰 Prix  changé");
             // Rafraîchir l'affichage du cargo pour refléter le nouveau prix
             updateCargo();
         });

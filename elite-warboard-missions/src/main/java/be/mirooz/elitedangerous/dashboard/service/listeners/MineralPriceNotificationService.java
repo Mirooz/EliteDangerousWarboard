@@ -39,9 +39,9 @@ public class MineralPriceNotificationService {
     /**
      * Notifie tous les listeners qu'un prix de minéral a changé
      */
-    public void notifyPriceChanged(Mineral mineral, long oldPrice, long newPrice) {
+    public void notifyPriceChanged() {
         for (MineralPriceListener listener : listeners) {
-            listener.onMineralPriceChanged(mineral, oldPrice, newPrice);
+            listener.onMineralPriceChanged();
         }
     }
 
@@ -49,6 +49,6 @@ public class MineralPriceNotificationService {
      * Interface pour écouter les changements de prix des minéraux
      */
     public interface MineralPriceListener {
-        void onMineralPriceChanged(Mineral mineral, long oldPrice, long newPrice);
+        void onMineralPriceChanged();
     }
 }
