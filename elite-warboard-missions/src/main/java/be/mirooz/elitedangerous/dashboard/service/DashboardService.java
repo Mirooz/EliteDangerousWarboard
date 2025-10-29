@@ -53,6 +53,7 @@ public class DashboardService {
                 JournalTailService.getInstance().stop();
                 ProspectedAsteroidRegistry.getInstance().clear();
                 MiningStatRegistry.getInstance().clearAllStats();
+                CombatMissionHistoryService.getInstance().clear();
                 JournalWatcherService.getInstance().stop();
                 journalService.getMissionsFromLastWeek();
             } catch (Exception ex) {

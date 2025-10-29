@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
+import be.mirooz.elitedangerous.dashboard.service.CombatMissionHistoryService;
 import be.mirooz.elitedangerous.dashboard.util.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
@@ -15,8 +16,11 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableL
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.MissionCardComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetOverlayComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.CombatMissionHistoryComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.VBox;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -56,10 +60,16 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @FXML
     private TargetPanelComponent targetPanel;
 
+    @FXML
+    private VBox historyContainer;
+
+    private CombatMissionHistoryComponent missionHistoryComponent;
+
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final TargetOverlayComponent targetOverlayComponent = new TargetOverlayComponent();
+    private final CombatMissionHistoryService historyService = CombatMissionHistoryService.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -69,6 +79,9 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         if (targetPanel != null) {
             targetPanel.setOnOverlayButtonClick(this::showTargetOverlay);
         }
+
+        // Charger le composant d'historique des missions
+        initializeHistoryComponent();
 
         initializeComboBoxes();
         updateLanguage();
@@ -85,6 +98,20 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         dashboardContext.setCurrentFilter(MissionStatus.ACTIVE);
     }
 
+    private void initializeHistoryComponent() {
+        try {
+            if (historyContainer != null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/combat/combat-mission-history.fxml"));
+                VBox historyPanel = loader.load();
+                missionHistoryComponent = loader.getController();
+                historyContainer.getChildren().add(historyPanel);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement du composant d'historique: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void initializeComboBoxes() {
         // Initialiser les ComboBox avec les valeurs par défaut
         // Déclencher les filtres initiaux
@@ -98,6 +125,11 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
         dashboardContext.addFilterListener(this::updateFactionStats);
         updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
+
+        // Rafraîchir l'historique des missions complétées
+        if (missionHistoryComponent != null) {
+            missionHistoryComponent.refreshHistory();
+        }
     }
 
     @Override
@@ -318,6 +350,8 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
         updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
         
+
+
         // Mettre à jour l'overlay s'il est ouvert
         if (targetOverlayComponent.isShowing()) {
             Map<TargetType, CibleStats> stats = getFactionStats();

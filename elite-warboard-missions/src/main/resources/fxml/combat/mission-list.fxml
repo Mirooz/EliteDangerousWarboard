@@ -41,14 +41,19 @@
       </VBox>
 
       <!-- Section des cibles (droite) - Compacte -->
-      <TargetPanelComponent fx:id="targetPanel"
-                            styleClass="target-panel-compact"
-                            maxWidth="350"
-                            minWidth="280"
-                            prefHeight="400"
-                            maxHeight="500"
-                            HBox.hgrow="NEVER"
-                            VBox.vgrow="NEVER"/>
+      <VBox HBox.hgrow="NEVER" spacing="10.0" minWidth="380" maxWidth="380">
+         <TargetPanelComponent fx:id="targetPanel"
+                              styleClass="target-panel-compact"
+                              maxWidth="380"
+                              minWidth="280"
+                              prefHeight="280"
+                              maxHeight="320"
+                              VBox.vgrow="NEVER"/>
+         
+         <!-- Historique des missions -->
+         <VBox fx:id="historyContainer" VBox.vgrow="ALWAYS" spacing="10.0">
+         </VBox>
+      </VBox>
    </HBox>
 
 </VBox>

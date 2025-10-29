@@ -12,7 +12,7 @@
     <HBox spacing="15" alignment="CENTER_LEFT">
 <!--        <Label fx:id="miningTitleLabel" text="RECHERCHE DE MINAGE" styleClass="mining-header-title"/>-->
         <HBox spacing="15" alignment="CENTER_LEFT">
-            <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="true"
+            <CheckBox fx:id="fleetCarrierCheckBox" styleClass="fleet-carrier-checkbox" selected="false"
                       onAction="#onFleetCarrierToggle"/>
             <CheckBox fx:id="padsCheckBox" styleClass="pads-checkbox" selected="false"
                       onAction="#onPadsToggle"/>

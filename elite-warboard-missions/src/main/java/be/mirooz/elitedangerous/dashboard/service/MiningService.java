@@ -280,4 +280,11 @@ public class MiningService {
     }
 
 
+    public void setCoreSession(boolean isCore) {
+        if ( MiningStatsService.getInstance().isMiningInProgress() ) {
+            MiningStatsService.getInstance().getCurrentMiningSession().ifPresent(
+                    session -> session.setCoreSession(isCore)
+            );
+        }
+    }
 }

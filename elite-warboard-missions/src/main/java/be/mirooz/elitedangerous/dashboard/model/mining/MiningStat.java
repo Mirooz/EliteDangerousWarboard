@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.mining;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Map;
 /**
  * Représente une session de minage avec ses statistiques
  */
+@Data
 public class MiningStat {
     
     private LocalDateTime startDate;
@@ -23,6 +25,7 @@ public class MiningStat {
     private List<MiningRefinedEvent> refinedMinerals;
     private List<SuspensionPeriod> suspensionPeriods;
     private SuspensionPeriod currentSuspension;
+    private boolean isCoreSession = false;
     
     public MiningStat() {
         this.refinedMinerals = new ArrayList<>();
@@ -266,84 +269,5 @@ public class MiningStat {
             count++; // Compter la suspension actuelle
         }
         return count;
-    }
-    
-    // Getters et Setters
-    public LocalDateTime getStartDate() {
-        return startDate;
-    }
-    
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;
-    }
-    
-    public LocalDateTime getEndDate() {
-        return endDate;
-    }
-    
-    public void setEndDate(LocalDateTime endDate) {
-        this.endDate = endDate;
-    }
-    
-    public void setSuspensionPeriods(List<SuspensionPeriod> suspensionPeriods) {
-        this.suspensionPeriods = suspensionPeriods;
-    }
-    
-    public void setCurrentSuspension(SuspensionPeriod currentSuspension) {
-        this.currentSuspension = currentSuspension;
-    }
-    
-    public boolean isSuspended() {
-        return isSuspended;
-    }
-    
-    public void setSuspended(boolean suspended) {
-        isSuspended = suspended;
-    }
-    
-    public String getSystemName() {
-        return systemName;
-    }
-    
-    public void setSystemName(String systemName) {
-        this.systemName = systemName;
-    }
-    
-    public String getBodyName() {
-        return bodyName;
-    }
-    
-    public void setBodyName(String bodyName) {
-        this.bodyName = bodyName;
-    }
-    
-    public String getRingName() {
-        return ringName;
-    }
-    
-    public void setRingName(String ringName) {
-        this.ringName = ringName;
-    }
-    
-    public boolean isActive() {
-        return isActive;
-    }
-    
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-    
-    public List<MiningRefinedEvent> getRefinedMinerals() {
-        return refinedMinerals;
-    }
-    
-    public void setRefinedMinerals(List<MiningRefinedEvent> refinedMinerals) {
-        this.refinedMinerals = refinedMinerals;
-    }
-    
-    @Override
-    public String toString() {
-        return String.format("MiningStat{system='%s', body='%s', ring='%s', start=%s, active=%s, suspended=%s, minerals=%d, suspensions=%d}",
-                systemName, bodyName, ringName, startDate, isActive, isSuspended, refinedMinerals.size(), getSuspensionCount());
     }
 }

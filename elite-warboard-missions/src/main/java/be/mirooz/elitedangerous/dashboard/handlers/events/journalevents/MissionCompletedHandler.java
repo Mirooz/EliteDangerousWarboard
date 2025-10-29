@@ -2,9 +2,13 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.service.CombatMissionHistoryService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class MissionCompletedHandler implements JournalEventHandler {
+    
+    private final CombatMissionHistoryService historyService = CombatMissionHistoryService.getInstance();
+    
     @Override
     public String getEventType() {
         return "MissionCompleted";
@@ -23,6 +27,9 @@ public class MissionCompletedHandler implements JournalEventHandler {
                     mission.setTargetCount(jsonNode.get("KillCount").asInt());
                 }
                 mission.setCurrentCount(mission.getTargetCount());
+                
+                // Enregistrer dans l'historique et notifier
+                historyService.registerCompletedMission(mission);
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de MissionCompleted: " + e.getMessage());

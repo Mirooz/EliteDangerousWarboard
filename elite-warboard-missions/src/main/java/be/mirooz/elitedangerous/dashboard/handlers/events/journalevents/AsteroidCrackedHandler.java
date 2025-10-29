@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
+import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,7 +34,8 @@ public class AsteroidCrackedHandler implements JournalEventHandler {
             
             if (lastProspector != null && lastProspector.getCoreMineral() != null) {
                 System.out.printf("🔍 Prospecteur avec core détecté: %s%n", lastProspector.getCoreMineral().getVisibleName());
-                
+
+                miningService.setCoreSession(true);
                 // Notifier tous les listeners de l'événement AsteroidCracked
                 notificationService.notifyAsteroidCracked(lastProspector);
             } else {
@@ -44,7 +46,8 @@ public class AsteroidCrackedHandler implements JournalEventHandler {
             System.err.println("❌ Erreur lors du traitement de l'événement AsteroidCracked: " + e.getMessage());
         }
     }
-    
+
+
     @Override
     public String getEventType() {
         return "AsteroidCracked";

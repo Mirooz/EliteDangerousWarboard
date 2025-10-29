@@ -81,6 +81,7 @@ public class JournalService {
                 System.err.println("Aucun fichier journal trouvé");
                 return;
             }
+            journalFiles.sort(Comparator.comparing(File::getName));
 
             // Parcourt tous les fichiers, du plus récent au plus ancien
             for (File journal : journalFiles) {
@@ -198,6 +199,7 @@ public class JournalService {
         try {
             List<File> journalFiles = getJournalFilesFromLastWeek();
 
+            journalFiles.sort(Comparator.comparing(File::getName));
             // Filtrer les fichiers pour ne garder que ceux du commandant identifié
             journalFiles = journalFiles.stream()
                     .filter(this::isJournalFromCommander)

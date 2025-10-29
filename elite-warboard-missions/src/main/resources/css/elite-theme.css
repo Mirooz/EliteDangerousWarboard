@@ -2529,7 +2529,18 @@
     -fx-background-radius: 3px;
     -fx-padding: 2px 6px;
 }
-
+/* Indicateur de core */
+.laser-indicator {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 170, 0, 0.2);
+    -fx-border-color: -fx-elite-success;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 6px;
+}
 /* Noms de minéraux */
 .elite-mineral-name {
     -fx-text-fill: -fx-elite-cyan;
@@ -3226,6 +3237,205 @@
 
 /* Masquer la scrollbar horizontale */
 .mining-history-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* ───────────────────────────────────────────── */
+/* 🗡️ COMBAT MISSION HISTORY STYLES             */
+/* ───────────────────────────────────────────── */
+
+/* Container principal de l'historique de combat */
+.combat-history-container {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+/* Titre des sections d'historique */
+.history-section-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 5px 0;
+}
+
+/* ScrollPane pour l'historique */
+.history-scroll {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.history-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Liste des historiques */
+.history-list {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 5px;
+}
+
+/* Carte d'historique */
+.history-card {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.history-card:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+/* Catégorie (PIRATE ou CONFLIT) */
+.history-category-pirate {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+.history-category-conflict {
+    -fx-text-fill: -fx-elite-danger;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+/* Flèche entre les systèmes */
+.history-arrow {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+}
+
+/* Label du système */
+.history-system {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* Styles pour les systèmes cliquables dans l'historique */
+.history-card .clickable-system-source {
+    -fx-cursor: hand;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.history-card .clickable-system-source:hover {
+    -fx-underline: true;
+}
+
+.history-card .clickable-system-target {
+    -fx-cursor: hand;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.history-card .clickable-system-target:hover {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-underline: true;
+}
+
+/* Statut d'historique */
+.history-stat {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+}
+
+/* Récompense */
+.history-reward {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* Message "No data" */
+.history-no-data {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-alignment: CENTER;
+    -fx-padding: 20px;
+}
+
+/* Dernière activité */
+.history-last-activity {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 10px;
+    -fx-font-style: italic;
+}
+
+/* Styles pour les scrollbars de l'historique */
+.history-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.history-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.history-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.history-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.history-scroll .scroll-bar:vertical .increment-button,
+.history-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.history-scroll .scroll-bar:vertical .increment-button:hover,
+.history-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.history-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.history-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.history-scroll .scroll-bar:vertical .increment-arrow:hover,
+.history-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Masquer la scrollbar horizontale */
+.history-scroll .scroll-bar:horizontal {
     -fx-opacity: 0;
     -fx-pref-height: 0;
     -fx-min-height: 0;

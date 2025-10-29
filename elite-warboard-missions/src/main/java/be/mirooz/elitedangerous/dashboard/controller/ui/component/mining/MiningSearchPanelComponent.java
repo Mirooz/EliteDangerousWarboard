@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMe
 import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.wrapper.MineralListWrapper;
+import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
@@ -318,6 +319,8 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
                                     commodityMaxSell.ifPresent(
                                             maxSell -> mineral.getMineral().setPrice(maxSell.getMaxSellPrice()));
                                 });
+                        DashboardContext.getInstance().refreshUI();
+
                     }
                 }));
     }
@@ -628,12 +631,6 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
         }
         if (miningTitleLabel != null) {
             miningTitleLabel.setText(getTranslation("mining.title"));
-        }
-        if (headerRingNameLabel != null) {
-            headerRingNameLabel.setText(getTranslation("mining.no_hotspot_found"));
-        }
-        if (headerStationNameLabel != null) {
-            headerStationNameLabel.setText(getTranslation("mining.no_station_found"));
         }
         updateDistanceUnits();
     }

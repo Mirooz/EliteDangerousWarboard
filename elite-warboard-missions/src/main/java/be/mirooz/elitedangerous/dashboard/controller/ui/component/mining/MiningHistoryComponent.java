@@ -199,16 +199,24 @@ public class MiningHistoryComponent implements Initializable, IBatchListener, IR
 
         Label ringLabel = new Label(shortenRingName(stat.getRingName(), stat.getSystemName()));
         ringLabel.getStyleClass().add("session-ring");
+        Label coreIndicator = null;
+        if (stat.isCoreSession()){
+            coreIndicator = new Label(getTranslation("mining.core"));
+            coreIndicator.getStyleClass().add("core-indicator");
+        }
+        else {
+            coreIndicator = new Label(getTranslation("mining.laser"));
+            coreIndicator.getStyleClass().add("laser-indicator");
+        }
 
         // Ajouter un indicateur "CURRENT" si la session est active
         if (stat.isActive()) {
             Label currentLabel = new Label(getTranslation("mining.current_session"));
             currentLabel.getStyleClass().add("session-current");
-            header.getChildren().addAll(systemLabel, ringLabel, currentLabel);
+            header.getChildren().addAll(systemLabel, ringLabel, currentLabel,coreIndicator);
         } else {
-            header.getChildren().addAll(systemLabel, ringLabel);
+            header.getChildren().addAll(systemLabel, ringLabel,coreIndicator);
         }
-
         // Layout principal avec informations à gauche et minéraux à droite
         HBox mainContent = new HBox(15);
         mainContent.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -231,7 +239,7 @@ public class MiningHistoryComponent implements Initializable, IBatchListener, IR
         Label valuePrefixLabel = new Label(getTranslation("mining.value") + ": ");
         valuePrefixLabel.getStyleClass().add("session-info");
         
-        Label valueAmountLabel = new Label(miningService.formatPrice(stat.getTotalValue()) + " Cr");
+        Label valueAmountLabel = new Label("~ " +miningService.formatPrice(stat.getTotalValue()) + " Cr");
         valueAmountLabel.getStyleClass().add("session-value");
         
         valueContainer.getChildren().addAll(valuePrefixLabel, valueAmountLabel);
