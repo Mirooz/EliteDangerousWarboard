@@ -52,6 +52,7 @@ public class CombatMissionHistoryComponent implements Initializable {
 
         // Écouter les changements d'historique
         historyService.addListener(this::refreshHistory);
+        localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }
 
     /**

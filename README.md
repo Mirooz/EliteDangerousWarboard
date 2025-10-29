@@ -1,8 +1,8 @@
-# Elite Dangerous Dashboard
+# Elite Dangerous Warboard
 
 ## Description
 
-**Elite Dangerous Dashboard** is a comprehensive companion application designed to optimize your Elite Dangerous gaming experience. The application analyzes game journal files in real-time to provide detailed insights into your missions, combat activities, and mining operations. Whether you're focused on massacre missions, conflict zones, or mining expeditions, this dashboard helps you track progress, find opportunities, and maximize your earnings.
+**Elite Warboard** is a comprehensive companion application designed to optimize your Elite Dangerous gaming experience. The application analyzes game journal files in real-time to provide detailed insights into your missions, combat activities, and mining operations. Whether you're focused on massacre missions, conflict zones, or mining expeditions, this dashboard helps you track progress, find opportunities, and maximize your earnings.
 
 ## 🎯 Main Features
 
@@ -14,8 +14,9 @@
 - **Conflict search** : Locate civil war and conflict zones via Inara API
 - **Bounty tracking** : History of destroyed ships with bounties and timestamps
 - **Financial tracking** : Track pending and potential credits from missions
+- **Combat history** : View massacre/conflict sessions with kills and earnings
 
-![missionpanel.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fmissionpanel.png)
+![missionpanel.png](elite-warboard-missions/src/main/resources/images/missionpanel.png)
 
 ### ⛏️ **Mining Operations Tracker**
 - **Session tracking** : Monitor your mining sessions with detailed statistics
@@ -226,18 +227,27 @@ mvn exec:java
 ## 📝 Changelog
 
 ### Version 1.1.0
+
+#### Mining
+
 - ✅ **Mining Operations Tracker** : Complete mining session tracking with real-time updates
 - ✅ **Mining System Search** : Find optimal mining locations with mineral filters
 - ✅ **Mineral Analysis** : Track quantities and values of mined materials
 - ✅ **Price Comparison** : Toggle between best prices and station prices
 - ✅ **Mining History** : View completed sessions with detailed statistics
-- ✅ **Improve massacre stacking UI** : Visual improvements
-- ✅ **Massacre stacking overlay** : Real-time overlay showing how many kills are left for each faction
-- ✅ **Automatic commander detection** : Notification popup with automatic journal re-reading
 - ✅ **Network error handling** : Translated error popups for connection issues
 - ✅ **Styled ComboBoxes** : Enhanced mission filters with Elite Dangerous styling
+- 
+#### Massacre Stacking
+- ✅ **Improve massacre stacking UI** : Visual improvements
+- ✅ **Massacre stacking overlay** : Real-time overlay showing how many kills are left for each faction
+- ✅ **Combat History** : View completed massacre/conflict sessions with detailed statistics
+
 
 ### Version 1.0.0
+
+#### Massacre Stacking
+
 - ✅ **Massacre Stacking Management** : Real-time massacre mission tracking and stacking
 - ✅ **System Search** : Find combat systems via EdTools and Inara APIs
 - ✅ **Destroyed Ships Journal** : Complete bounty tracking
@@ -248,14 +258,7 @@ mvn exec:java
 - ✅ **Automatic Reset** : Bounty statistics reset on redemption
 - ✅ **Bilingual interface** : Complete English/French support
 - ✅ **Multi account** : Automatic new commander detection
-
-## 🤝 Contributing
-
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- ✅ **Automatic commander detection** : Notification popup with automatic journal re-reading
 
 ## 📄 License
 
@@ -272,7 +275,7 @@ If you encounter issues:
 
 ## 🎯 Project Goal
 
-**Elite Dangerous Dashboard** is designed to optimize your Elite Dangerous experience across multiple gameplay styles. Whether you're focused on combat missions, mining operations, or exploration, this dashboard helps you:
+**Elite Warboard** is designed to optimize your Elite Dangerous experience across multiple gameplay styles. Whether you're focused on combat missions, mining operations, or exploration, this dashboard helps you:
 
 ### **For Combat Pilots**
 - **Efficiently stack** massacre missions to maximize earnings
