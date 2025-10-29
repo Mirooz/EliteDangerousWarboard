@@ -120,24 +120,11 @@ public class MiningController implements Initializable, IRefreshable {
                     miningHistory.refresh();
                 }
             });
-        }
-    }
-    /**
-     * Initialise les préférences de prix des minéraux
-     */
-    private void initializePricePreference() {
-        System.out.println("📊 Chargement des prix des minéraux depuis les préférences...");
-        for (MineralType mineralType : MineralType.values()) {
-            String priceStr = preferencesService.getPreference("mineral.price." + mineralType.getCargoJsonName(), null);
-            if (priceStr != null) {
-                try {
-                    int price = Integer.parseInt(priceStr);
-                    mineralType.setPrice(price);
-                    System.out.printf("💰 Prix chargé pour %s: %d Cr (cache pré-chargé)%n", mineralType.getVisibleName(), price);
-                } catch (NumberFormatException e) {
-                    System.err.printf("❌ Erreur lors du parsing du prix pour %s: %s%n", mineralType.getCargoJsonName(), priceStr);
+            miningSearchPanel.setOnPriceUpdated(() -> {
+                if (miningHistory != null) {
+                    miningHistory.refresh();
                 }
-            }
+            });
         }
     }
 
@@ -163,7 +150,7 @@ public class MiningController implements Initializable, IRefreshable {
                 currentCargo.refresh();
             }
             if (miningHistory != null) {
-                miningHistory.refresh();
+
             }
         });
     }

@@ -125,6 +125,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
     // Callback pour notifier le parent des changements
     private Consumer<Mineral> onMineralSelected;
     private Runnable onSearchCompleted;
+    private Runnable onPriceUpdated;
 
     public static final int MAX_DISTANCE = 100;
 
@@ -320,7 +321,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
                                             maxSell -> mineral.getMineral().setPrice(maxSell.getMaxSellPrice()));
                                 });
                         DashboardContext.getInstance().refreshUI();
-
+                        onPriceUpdated.run();
                     }
                 }));
     }
@@ -832,5 +833,9 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
             previousRingButton.setDisable(currentIndex <= 0);
             nextRingButton.setDisable(currentIndex >= totalHotspots - 1);
         }
+    }
+
+    public void setOnPriceUpdated(Runnable onPriceUpdated) {
+        this.onPriceUpdated = onPriceUpdated;
     }
 }

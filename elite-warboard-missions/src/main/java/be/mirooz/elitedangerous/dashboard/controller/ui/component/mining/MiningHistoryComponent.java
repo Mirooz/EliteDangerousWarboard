@@ -37,7 +37,7 @@ import java.util.ResourceBundle;
  * - Les tooltips avec le détail des minéraux
  * - Le loading indicator pendant le chargement des données
  */
-public class MiningHistoryComponent implements Initializable, IBatchListener, IRefreshable {
+public class MiningHistoryComponent implements Initializable, IBatchListener {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
@@ -90,9 +90,7 @@ public class MiningHistoryComponent implements Initializable, IBatchListener, IR
     public void initialize(URL location, ResourceBundle resources) {
         initializeMiningHistory();
         updateTranslations();
-        
-        // Enregistrer le composant auprès du UIManager pour les refresh UI
-        UIManager.getInstance().register(this);
+
         
         // Enregistrer le composant auprès du DashboardService pour les notifications de batch
         DashboardService.getInstance().addBatchListener(this);
@@ -118,10 +116,6 @@ public class MiningHistoryComponent implements Initializable, IBatchListener, IR
         this.loadingIndicator.setVisible(visible);
     }
     
-    @Override
-    public void refreshUI() {
-        Platform.runLater(this::updateMiningHistoryList);
-    }
 
     /**
      * Initialise l'historique des sessions de minage

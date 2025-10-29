@@ -220,7 +220,6 @@ public class JournalService {
 
             // Traiter les fichiers dans l'ordre chronologique (plus ancien en premier)
             // Les fichiers sont déjà triés par date décroissante, on les inverse
-            Collections.reverse(journalFiles);
             dispatchAllEvents(journalFiles);
 
             if (!journalFiles.isEmpty()) {

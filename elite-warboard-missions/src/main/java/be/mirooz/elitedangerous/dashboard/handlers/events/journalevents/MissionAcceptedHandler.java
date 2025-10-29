@@ -56,6 +56,9 @@ public class MissionAcceptedHandler implements JournalEventHandler {
                 expiryTime = parseTimestamp(timestamp).plusDays(7);
             }
 
+            if (missionId.equals("1034203225")){
+                System.out.println("la omg");
+            }
             Mission mission = new Mission();
             mission.setId(missionId);
             mission.setName(missionName);
