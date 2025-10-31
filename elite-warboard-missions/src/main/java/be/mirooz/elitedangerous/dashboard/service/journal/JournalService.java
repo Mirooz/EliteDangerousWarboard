@@ -2,9 +2,9 @@ package be.mirooz.elitedangerous.dashboard.service.journal;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
-import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.CommanderHandler;
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
+import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -18,6 +18,7 @@ import javafx.application.Platform;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,11 +33,10 @@ import java.util.stream.Stream;
 public class JournalService {
 
     private static final String JOURNAL_PREFIX = "Journal.";
-    private static final String SHIPYARD_FILE = "Shipyard.json";
+    private static final String CARGO_FILE = "Cargo.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
-    private final String currentShip = null;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
@@ -81,24 +81,33 @@ public class JournalService {
                 System.err.println("Aucun fichier journal trouvé");
                 return;
             }
-            // Le premier fichier est le plus récent (trié par date décroissante)
-            File latestJournal = journalFiles.get(0);
-            List<String> lines = Files.readAllLines(latestJournal.toPath());
-            for (String line : lines) {
-                try {
-                    JsonNode jsonNode = objectMapper.readTree(line);
-                    if ("Commander".equals(jsonNode.get("event").asText())) {
-                        dispatcher.dispatch(jsonNode);
-                        return;
+            journalFiles.sort(Comparator.comparing(File::getName));
+
+            // Parcourt tous les fichiers, du plus récent au plus ancien
+            for (File journal : journalFiles) {
+                List<String> lines = Files.readAllLines(journal.toPath(), StandardCharsets.UTF_8);
+
+
+                for (String line : lines) {
+                    try {
+                        JsonNode jsonNode = objectMapper.readTree(line);
+                        if ("Commander".equals(jsonNode.path("event").asText())) {
+                            dispatcher.dispatch(jsonNode);
+                            return; // stop dès qu'on trouve
+                        }
+                    } catch (Exception e) {
+                        // Ignorer les lignes malformées
                     }
-                } catch (Exception e) {
-                    // Ignorer les lignes malformées
                 }
             }
+
+            System.err.println("Aucun event 'Commander' trouvé dans les journaux récents.");
+
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'extraction du nom du commandant: " + e.getMessage());
+            System.err.println("Erreur lors de l'extraction du nom du commandant : " + e.getMessage());
         }
     }
+
 
     /**
      * Vérifie si un fichier journal appartient au commandant identifié
@@ -152,7 +161,8 @@ public class JournalService {
             return journalFiles;
         }
 
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
+        int journalDays = preferencesService.getJournalDays();
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(journalDays);
 
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {
@@ -189,6 +199,7 @@ public class JournalService {
         try {
             List<File> journalFiles = getJournalFilesFromLastWeek();
 
+            journalFiles.sort(Comparator.comparing(File::getName));
             // Filtrer les fichiers pour ne garder que ceux du commandant identifié
             journalFiles = journalFiles.stream()
                     .filter(this::isJournalFromCommander)
@@ -209,7 +220,6 @@ public class JournalService {
 
             // Traiter les fichiers dans l'ordre chronologique (plus ancien en premier)
             // Les fichiers sont déjà triés par date décroissante, on les inverse
-            Collections.reverse(journalFiles);
             dispatchAllEvents(journalFiles);
 
             if (!journalFiles.isEmpty()) {
@@ -231,8 +241,7 @@ public class JournalService {
         for (File journalFile : journalFiles) {
 
             try {
-                List<String> lines = Files.readAllLines(journalFile.toPath());
-
+                List<String> lines = Files.readAllLines(journalFile.toPath(), StandardCharsets.UTF_8);
                 for (String line : lines) {
                     try {
                         JsonNode jsonNode = objectMapper.readTree(line);
@@ -287,7 +296,7 @@ public class JournalService {
                         .orElse(null);
                 
                 if (primaryWindow instanceof javafx.stage.Stage stage) {
-                    DialogComponent dialog = new DialogComponent("/fxml/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 450);
+                    DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 550, 520);
                     dialog.init(stage);
                     dialog.showAndWait();
                 }
@@ -296,5 +305,95 @@ public class JournalService {
             }
         });
     }
+
+    /**
+     * Lit et parse le fichier Cargo.json
+     * @return L'objet Cargo parsé ou null si erreur
+     */
+    public Cargo readCargoFile() {
+        try {
+            String journalFolder = preferencesService.getJournalFolder();
+            if (journalFolder == null || journalFolder.isEmpty()) {
+                System.out.println("⚠️ Dossier journal non configuré");
+                return null;
+            }
+            
+            Path cargoFilePath = Paths.get(journalFolder, CARGO_FILE);
+            if (!Files.exists(cargoFilePath)) {
+                System.out.println("⚠️ Fichier Cargo.json non trouvé: " + cargoFilePath);
+                return null;
+            }
+            
+            String cargoContent = Files.readString(cargoFilePath);
+            if (cargoContent == null || cargoContent.trim().isEmpty()) {
+                System.out.println("⚠️ Fichier Cargo.json vide");
+                return null;
+            }
+            
+            JsonNode cargoNode = objectMapper.readTree(cargoContent);
+            return parseCargoFromJson(cargoNode);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la lecture du fichier Cargo.json: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Parse un JsonNode en objet Cargo
+     */
+    private Cargo parseCargoFromJson(JsonNode jsonNode) {
+        Cargo cargo = new Cargo();
+        
+        // Fonctions utilitaires locales
+        java.util.function.Function<String, String> getText = field -> 
+            jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asText() : null;
+        java.util.function.Function<String, Integer> getInt = field -> 
+            jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asInt() : null;
+        
+        // Champs de base
+        cargo.setTimestamp(getText.apply("timestamp"));
+        cargo.setEvent(getText.apply("event"));
+        cargo.setVessel(getText.apply("Vessel"));
+        if (getInt.apply("Count") != null) cargo.setCount(getInt.apply("Count"));
+        
+        // Parse inventory si présent
+        if (jsonNode.has("Inventory") && jsonNode.get("Inventory").isArray()) {
+            JsonNode inventoryNode = jsonNode.get("Inventory");
+            List<Cargo.Inventory> inventory = new ArrayList<>();
+            
+            for (JsonNode itemNode : inventoryNode) {
+                Cargo.Inventory item = parseInventoryItem(itemNode);
+                inventory.add(item);
+            }
+            
+            cargo.setInventory(inventory);
+        }
+        
+        return cargo;
+    }
+    
+    /**
+     * Parse un item d'inventaire depuis un JsonNode
+     */
+    private Cargo.Inventory parseInventoryItem(JsonNode itemNode) {
+        Cargo.Inventory item = new Cargo.Inventory();
+        
+        // Fonctions utilitaires locales
+        java.util.function.Function<String, String> getText = field -> 
+            itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asText() : null;
+        java.util.function.Function<String, Integer> getInt = field -> 
+            itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asInt() : null;
+        
+        // Champs
+        item.setName(getText.apply("Name"));
+        item.setNameLocalised(getText.apply("Name_Localised"));
+        if (getInt.apply("Count") != null) item.setCount(getInt.apply("Count"));
+        if (getInt.apply("Stolen") != null) item.setStolen(getInt.apply("Stolen"));
+        
+        return item;
+    }
+
 
 }

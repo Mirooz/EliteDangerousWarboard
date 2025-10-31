@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Elite Warboard
+Comment=Mission stacking helper for Elite Dangerous
+Exec=/opt/elite-warboard/bin/elite-warboard
+Icon=elite_dashboard_icon
+Terminal=false
+Type=Application
+Categories=Game;Utility;
+StartupNotify=true
+

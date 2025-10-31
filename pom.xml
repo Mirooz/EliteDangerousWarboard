@@ -7,7 +7,7 @@
 
     <groupId>be.mirooz.elitedangerous</groupId>
     <artifactId>elite-warboard-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>pom</packaging>
 
     <name>Elite Warboard</name>
@@ -15,7 +15,9 @@
     <modules>
         <module>edtools-client</module>
         <module>inara-client</module>
+        <module>elite-commons</module>
         <module>elite-warboard-missions</module>
+        <module>journal-analyzer</module>
     </modules>
 
     <properties>
@@ -30,6 +32,11 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.18.38</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>2.0.17</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

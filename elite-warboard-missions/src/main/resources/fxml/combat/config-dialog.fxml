@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="be.mirooz.elitedangerous.dashboard.controller.ConfigDialogController"
+           styleClass="config-dialog">
+
+    <VBox spacing="20.0" styleClass="config-content">
+        <padding>
+            <Insets bottom="5.0" left="10.0" right="5.0" top="10.0"/>
+        </padding>
+
+        <!-- En-tête avec titre -->
+        <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="config-header">
+            <VBox spacing="2.0">
+                <Label fx:id="configTitleLabel" text="CONFIGURATION" styleClass="config-title"/>
+                <Label fx:id="configSubtitleLabel" text="Paramètres de l'application" styleClass="config-subtitle"/>
+            </VBox>
+        </HBox>
+
+        <!-- Section Langue -->
+        <VBox spacing="10.0" styleClass="config-section">
+            <Label fx:id="languageSectionLabel" text="LANGUE" styleClass="config-section-title"/>
+            
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+                <RadioButton fx:id="frenchRadioButton" text="Français" 
+                           onAction="#selectFrench" styleClass="config-radio"/>
+                <RadioButton fx:id="englishRadioButton" text="English" 
+                           onAction="#selectEnglish" styleClass="config-radio"/>
+            </HBox>
+        </VBox>
+
+        <!-- Section Dossier Journal -->
+        <VBox spacing="10.0" styleClass="config-section">
+            <Label fx:id="journalFolderSectionLabel" text="DOSSIER JOURNAL" styleClass="config-section-title"/>
+            
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <TextField fx:id="journalFolderTextField" styleClass="config-textfield" 
+                          promptText="Chemin vers le dossier Journal Elite Dangerous" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="browseJournalFolderButton" text="Parcourir..." 
+                       onAction="#browseJournalFolder" styleClass="elite-button"/>
+            </HBox>
+            
+            <Label fx:id="journalFolderDescriptionLabel" text="Votre dossier contenant les journaux de log, généralement à C:/Users/Saved Games/Frontier Developments/Elite Dangerous" 
+                   styleClass="config-description"/>
+        </VBox>
+
+        <!-- Section Nombre de jours -->
+        <VBox spacing="10.0" styleClass="config-section">
+            <Label fx:id="journalDaysSectionLabel" text="PÉRIODE DE LECTURE" styleClass="config-section-title"/>
+            
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label fx:id="journalDaysLabel" text="Nombre de jours à lire:" styleClass="config-label"/>
+                <Spinner fx:id="journalDaysSpinner" styleClass="config-spinner" prefWidth="70"
+                        editable="true" initialValue="30" min="1" max="365"/>
+                <Label fx:id="journalDaysUnitLabel" text="jours" styleClass="config-label"/>
+            </HBox>
+            
+            <Label fx:id="journalDaysDescriptionLabel" text="Nombre de jours en arrière pour lire les fichiers journal (par défaut: 30 jours)" 
+                   styleClass="config-description"/>
+        </VBox>
+
+        <!-- Panneau des boutons d'action -->
+        <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="config-action-panel">
+            <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveConfig"
+                    styleClass="elite-button" text="SAUVEGARDER"/>
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelConfig"
+                    styleClass="elite-button-secondary" text="ANNULER"/>
+        </HBox>
+    </VBox>
+
+</StackPane>

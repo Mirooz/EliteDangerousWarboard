@@ -1,24 +1,37 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
+import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
+import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
+import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
+import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
+import be.mirooz.elitedangerous.dashboard.service.CombatMissionHistoryService;
 import be.mirooz.elitedangerous.dashboard.util.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
-import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.MissionCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.MissionCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetOverlayComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.CombatMissionHistoryComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.VBox;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Contrôleur pour la liste des missions
@@ -44,13 +57,31 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @FXML
     private Label statusFilterLabel;
 
+    @FXML
+    private TargetPanelComponent targetPanel;
+
+    @FXML
+    private VBox historyContainer;
+
+    private CombatMissionHistoryComponent missionHistoryComponent;
+
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final TargetOverlayComponent targetOverlayComponent = new TargetOverlayComponent();
+    private final CombatMissionHistoryService historyService = CombatMissionHistoryService.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         missionListView.setComponentFactory(MissionCardComponent::new);
+
+        // Configurer le bouton overlay dans le panneau de cibles
+        if (targetPanel != null) {
+            targetPanel.setOnOverlayButtonClick(this::showTargetOverlay);
+        }
+
+        // Charger le composant d'historique des missions
+        initializeHistoryComponent();
 
         initializeComboBoxes();
         updateLanguage();
@@ -58,10 +89,27 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         UIManager.getInstance().register(this);
 
         // Écouter les changements de langue
-        localizationService.addLanguageChangeListener(locale -> updateLanguage());
+        localizationService.addLanguageChangeListener(locale -> {
+            updateLanguage();
+
+            updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());});
 
         dashboardContext.addFilterListener(this::applyFilter);
         dashboardContext.setCurrentFilter(MissionStatus.ACTIVE);
+    }
+
+    private void initializeHistoryComponent() {
+        try {
+            if (historyContainer != null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/combat/combat-mission-history.fxml"));
+                VBox historyPanel = loader.load();
+                missionHistoryComponent = loader.getController();
+                historyContainer.getChildren().add(historyPanel);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement du composant d'historique: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void initializeComboBoxes() {
@@ -74,6 +122,14 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @Override
     public void onBatchEnd() {
         setLoadingVisible(false);
+
+        dashboardContext.addFilterListener(this::updateFactionStats);
+        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
+
+        // Rafraîchir l'historique des missions complétées
+        if (missionHistoryComponent != null) {
+            missionHistoryComponent.refreshHistory();
+        }
     }
 
     @Override
@@ -166,6 +222,8 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         typeFilterLabel.setText(localizationService.getString("filter.type"));
         statusFilterLabel.setText(localizationService.getString("filter.status"));
 
+        // Les traductions pour le panneau de cibles sont gérées dans le composant lui-même
+
         int currentTypeSelection=0;
         int currentStatusSelection=0;
         // Sauvegarder les sélections actuelles
@@ -221,8 +279,84 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
     }
 
+    private void updateFactionStats(MissionStatus currentStatus, MissionType currentType) {
+        // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
+        List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+                .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
+                .filter(mission -> currentType == null || currentType.equals(mission.getType()))
+                .collect(Collectors.toList());
+        Map<TargetType, CibleStats> stats = computeFactionStats(targetMissions);
+
+        // Mettre à jour le panneau de cibles avec les nouvelles statistiques
+        if (targetPanel != null) {
+            targetPanel.displayStats(stats, missionsRegistry.getGlobalMissionMap());
+        }
+        
+        // Mettre à jour l'overlay s'il est ouvert
+        if (targetOverlayComponent.isShowing()) {
+            targetOverlayComponent.updateContent(stats, missionsRegistry.getGlobalMissionMap());
+        }
+    }
+    
+    public Map<TargetType, CibleStats> getFactionStats() {
+        List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+                .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
+                .filter(mission -> dashboardContext.getCurrentTypeFilter() == null || dashboardContext.getCurrentTypeFilter().equals(mission.getType()))
+                .collect(Collectors.toList());
+        return computeFactionStats(targetMissions);
+    }
+
+
+    private Map<TargetType, CibleStats> computeFactionStats(List<Mission> massacreMissions) {
+        Map<TargetType, CibleStats> stats = new HashMap<>();
+
+        for (Mission mission : massacreMissions) {
+            if (mission.getTargetFaction() == null || mission.getTargetType() == null) continue;
+
+            CibleStats cibleStats = stats.computeIfAbsent(mission.getTargetType(), c -> new CibleStats(mission.getTargetType()));
+
+            TargetFactionStats targetStats = cibleStats.getOrCreateFaction(mission.getTargetFaction());
+
+            targetStats.addSource(new SourceFactionStats(mission.getFaction(), mission.getTargetCountLeft()));
+        }
+        return stats;
+    }
+
+    @FXML
+    private void showTargetOverlay() {
+        Map<TargetType, CibleStats> stats = getFactionStats();
+        Map<String, Mission> missions = missionsRegistry.getGlobalMissionMap();
+        
+        // Si l'overlay est déjà ouvert, on le ferme
+        if (targetOverlayComponent.isShowing()) {
+            targetOverlayComponent.closeOverlay();
+            updateOverlayButtonText();
+        } else {
+            // Sinon, on l'ouvre
+            targetOverlayComponent.showOverlay(stats, missions);
+            updateOverlayButtonText();
+        }
+    }
+    
+    private void updateOverlayButtonText() {
+        if (targetPanel != null) {
+            targetPanel.updateOverlayButtonText(targetOverlayComponent.isShowing());
+        }
+    }
+    
     @Override
     public void refreshUI() {
         refreshMissions();
+
+        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
+        
+
+
+        // Mettre à jour l'overlay s'il est ouvert
+        if (targetOverlayComponent.isShowing()) {
+            Map<TargetType, CibleStats> stats = getFactionStats();
+            Map<String, Mission> missions = missionsRegistry.getGlobalMissionMap();
+            targetOverlayComponent.updateContent(stats, missions);
+        }
     }
 }

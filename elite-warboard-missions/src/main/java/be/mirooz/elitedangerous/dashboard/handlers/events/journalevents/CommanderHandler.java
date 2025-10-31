@@ -1,8 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import javafx.application.Platform;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +13,7 @@ public class CommanderHandler implements JournalEventHandler {
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
+    private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
 
     @Override
     public String getEventType() {
@@ -38,6 +40,13 @@ public class CommanderHandler implements JournalEventHandler {
                 commanderStatus.setFID(fid);
 
                 System.out.println("Commandant - " + name + " - " + fid);
+                
+                // Reprendre la session de minage suspendue si elle existe
+                if (miningStatsService.isMiningSessionSuspended()) {
+                    String timestamp = jsonNode.has("timestamp") ? jsonNode.get("timestamp").asText() : null;
+                    miningStatsService.resumeMiningSession(timestamp);
+                    System.out.println("▶️ Session de minage reprise (Commander)");
+                }
 
                 // Si c'est un nouveau commandant, afficher le popup et relire les journaux
                 if (isNewCommander && currentCommanderName != null) {

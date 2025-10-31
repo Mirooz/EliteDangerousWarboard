@@ -106,6 +106,26 @@ public class PreferencesService {
     }
 
     /**
+     * Définit le nombre de jours pour la lecture des journaux
+     */
+    public void setJournalDays(int days) {
+        preferences.setProperty("journal.days", String.valueOf(days));
+        savePreferences();
+    }
+
+    /**
+     * Récupère le nombre de jours pour la lecture des journaux
+     */
+    public int getJournalDays() {
+        String daysStr = preferences.getProperty("journal.days", "30");
+        try {
+            return Integer.parseInt(daysStr);
+        } catch (NumberFormatException e) {
+            return 30; // Valeur par défaut si parsing échoue
+        }
+    }
+
+    /**
      * Vérifie si un fichier de préférences existe
      */
     public boolean hasPreferencesFile() {

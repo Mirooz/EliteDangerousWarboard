@@ -6,7 +6,7 @@
     <parent>
         <groupId>be.mirooz.elitedangerous</groupId>
         <artifactId>elite-warboard-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
 
     <groupId>be.mirooz.elitedangerous.lib</groupId>
@@ -23,9 +23,25 @@
             <artifactId>jsoup</artifactId>
             <version>1.17.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>be.mirooz.elitedangerous.lib</groupId>
+            <artifactId>elite-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
         </dependency>
     </dependencies>
 </project>

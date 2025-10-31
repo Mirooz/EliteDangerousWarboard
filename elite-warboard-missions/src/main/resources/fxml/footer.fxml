@@ -4,12 +4,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.FactionStatsComponent?>
 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="footer-panel" xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.FooterController">
    <padding>
-      <Insets bottom="10.0" left="20.0" right="20.0" top="10.0"/>
+      <Insets bottom="20.0" left="20.0" right="20.0" />
    </padding>
    <VBox alignment="CENTER_LEFT" spacing="2.0">
       <!-- Labels d'en-tête -->
@@ -33,15 +32,4 @@
    <Region HBox.hgrow="ALWAYS"/>
 
 
-   <FactionStatsComponent fx:id="factionStats" alignment="CENTER_RIGHT" spacing="5.0" styleClass="faction-stats"
-                          >
-      <!-- En-tête -->
-      <HBox alignment="CENTER" spacing="40.0" styleClass="faction-header">
-         <Label fx:id="targetHeaderLabel" text="Cible" styleClass="faction-col-header" prefWidth="100"/>
-         <Label fx:id="targetFactionHeaderLabel" text="Target Faction" styleClass="faction-col-header" prefWidth="150"/>
-         <Label fx:id="sourceFactionHeaderLabel" text="Source Faction" styleClass="faction-col-header" prefWidth="150"/>
-         <Label fx:id="killsHeaderLabel" text="Kills" styleClass="faction-col-header" prefWidth="60"/>
-      </HBox>
-      <!-- Ici le contrôleur Java ajoutera dynamiquement les lignes -->
-   </FactionStatsComponent>
 </HBox>

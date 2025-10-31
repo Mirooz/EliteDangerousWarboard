@@ -41,10 +41,6 @@ public class DestroyedShipsController implements Initializable, IRefreshable, IB
     private TableColumn<DestroyedShip, String> shipNameColumn;
 
     @FXML
-    private TableColumn<DestroyedShip, String> pilotNameColumn;
-
-
-    @FXML
     private TableColumn<DestroyedShip, Integer> bountyColumn;
 
     @FXML
@@ -85,14 +81,15 @@ public class DestroyedShipsController implements Initializable, IRefreshable, IB
         // Mettre à jour les en-têtes de colonnes
         timeColumn.setText(localizationService.getString("destroyed_ships.time"));
         shipNameColumn.setText(localizationService.getString("destroyed_ships.ship"));
-        pilotNameColumn.setText(localizationService.getString("destroyed_ships.pilot"));
         bountyColumn.setText(localizationService.getString("destroyed_ships.bounty"));
     }
 
     private void initializeTable() {
-        // Colonne Bounty : format avec séparateur de milliers
-        shipNameColumn.setCellValueFactory(new PropertyValueFactory<>("shipName"));
-        pilotNameColumn.setCellValueFactory(new PropertyValueFactory<>("pilotName"));
+        shipNameColumn.setCellValueFactory(cellData -> {
+            String name = cellData.getValue().getShipName();
+            return new SimpleStringProperty(name != null ? name.toUpperCase() : "");
+        });
+
         bountyColumn.setCellValueFactory(new PropertyValueFactory<>("totalBountyReward"));
 
         bountyColumn.setCellFactory(col -> new TableCell<DestroyedShip, Integer>() {

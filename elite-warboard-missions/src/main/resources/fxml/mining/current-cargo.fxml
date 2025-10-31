@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.ToggleSwitch?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentCargoComponent"
+      spacing="10" HBox.hgrow="ALWAYS">
+
+    <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>
+
+    <!-- Informations du cargo -->
+    <HBox spacing="20" styleClass="cargo-info">
+        <!-- Limpets à gauche -->
+        <VBox alignment="CENTER_LEFT" spacing="5" prefWidth="80">
+            <Label fx:id="limpetsCountLabel" text="0" styleClass="cargo-stat-number"/>
+            <Label fx:id="limpetsLabel" text="LIMPETS" styleClass="cargo-stat-label"/>
+        </VBox>
+        
+        <!-- Cargo au milieu avec barre de progression -->
+        <VBox alignment="CENTER" spacing="5" HBox.hgrow="ALWAYS" prefWidth="200">
+            <ProgressBar fx:id="cargoProgressBar" styleClass="progress-bar" prefWidth="150"/>
+            <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number"/>
+        </VBox>
+        
+        <!-- Crédits estimés à droite -->
+        <VBox alignment="CENTER_RIGHT" spacing="5" prefWidth="120">
+            <Label fx:id="estimatedCreditsLabel" text="0" styleClass="cargo-stat-price-number"/>
+            <Label fx:id="estimatedCreditsTitleLabel" text="CR ESTIMÉS" styleClass="cargo-stat-label"/>
+        </VBox>
+    </HBox>
+
+    <!-- Toggle pour basculer entre best price et price station -->
+    <HBox spacing="10" alignment="CENTER">
+        <ToggleSwitch fx:id="priceModeToggle" styleClass="price-mode-toggle-switch"/>
+    </HBox>
+
+    <!-- Tableau des minéraux avec ScrollPane pour permettre le défilement -->
+    <ScrollPane styleClass="cargo-minerals-scroll" VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER" >
+        <GridPane fx:id="mineralsGridPane" styleClass="cargo-minerals-grid">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <!-- En-têtes des colonnes -->
+            <Label fx:id="mineralHeaderLabel" text="MINÉRAL" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="cargo-column-header"/>
+            <Label fx:id="quantityHeaderLabel" text="NOMBRE" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="cargo-column-header" />
+            <Label fx:id="unitPriceHeaderLabel" text="PRIX UNITAIRE" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="cargo-column-header"/>
+            <Label fx:id="totalPriceHeaderLabel" text="PRIX TOTAL" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="cargo-column-header"/>
+        </GridPane>
+    </ScrollPane>
+</VBox>

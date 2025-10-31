@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.CombatMissionHistoryComponent"
+      spacing="10" styleClass="combat-history-container">
+   
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+   </padding>
+   
+   <Label fx:id="historyTitleLabel" text="HISTORIQUE DES MISSIONS" styleClass="section-title"/>
+   
+   <Separator/>
+   
+   <!-- Liste unique pour toutes les missions -->
+   <ScrollPane fitToWidth="true" styleClass="history-scroll" VBox.vgrow="ALWAYS" minHeight="120">
+      <VBox fx:id="historyListBox" spacing="5" styleClass="history-list"/>
+   </ScrollPane>
+   
+</VBox>
+

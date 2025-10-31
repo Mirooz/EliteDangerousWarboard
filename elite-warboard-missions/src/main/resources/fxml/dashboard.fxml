@@ -2,14 +2,51 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="be.mirooz.elitedangerous.dashboard.controller.DashboardController">
-   <center>
-      <StackPane fx:id="popupContainer">
-         <!-- Ici tu mets un vrai conteneur principal -->
-         <BorderPane fx:id="mainPane" styleClass="main-content" />
-      </StackPane>
-   </center>
+    <center>
+        <StackPane fx:id="popupContainer">
+            <VBox>
+                <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="title-bar">
+                    <children>
+                        <Label fx:id="appTitleLabel" styleClass="app-title" text="ELITE DANGEROUS"/>
+                        <Label fx:id="appSubtitleLabel" styleClass="app-subtitle" text="DASHBOARD DES MISSIONS"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="statusLabel" styleClass="status-label"/>
+                        <Button fx:id="configButton" mnemonicParsing="false" onAction="#openConfigDialog"
+                                styleClass="config-button" text="⚙"/>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0"/>
+                    </padding>
+                </HBox>
+                <Separator styleClass="header-separator"/>
+
+                <!-- Conteneur principal avec onglets -->
+                <TabPane fx:id="mainTabPane" styleClass="main-tab-pane" VBox.vgrow="ALWAYS">
+                    <!-- Onglet Missions -->
+                    <Tab fx:id="missionsTab" style="-fx-cursor: hand">
+                        <graphic>
+                            <ImageView fx:id="missionsTabImage" styleClass="tab-image" />
+                        </graphic>
+                        <BorderPane fx:id="missionsPane" styleClass="main-content" />
+                    </Tab>
+                    
+                    <!-- Onglet Mining -->
+                    <Tab fx:id="miningTab" style="-fx-cursor: hand">
+                        <graphic>
+                            <ImageView fx:id="miningTabImage" styleClass="tab-image" />
+                        </graphic>
+                        <BorderPane fx:id="miningPane" styleClass="main-content" />
+                    </Tab>
+                </TabPane>
+                
+                <!-- Footer -->
+                <HBox fx:id="footerContainer" styleClass="footer-container" />
+            </VBox>
+        </StackPane>
+    </center>
 </BorderPane>

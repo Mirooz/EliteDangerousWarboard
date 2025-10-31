@@ -2,38 +2,93 @@
 
 ## Description
 
-**Elite Dangerous Warboard** is a specialized dashboard designed to optimize the Elite Dangerous gaming experience, specifically focused on massacre and conflict missions. The application analyzes game journal files in real-time to provide a comprehensive overview of your missions, combat statistics, and mission opportunities.
-
-![exempledashboard.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fexempledashboard.png)
+**Elite Warboard** is a comprehensive companion application designed to optimize your Elite Dangerous gaming experience. The application analyzes game journal files in real-time to provide detailed insights into your missions, combat activities, and mining operations. Whether you're focused on massacre missions, conflict zones, or mining expeditions, this dashboard helps you track progress, find opportunities, and maximize your earnings.
 
 ## 🎯 Main Features
 
-### 📊 **Massacre Mission Dashboard**
-- **Mission stacking** : Visualize all your active massacre missions with real-time progression
-- **Conflict missions** : Track civil war and conflict missions
-- **Smart filtering** : Filter by type (Massacre/Conflict) and status (Active/Completed/Failed) with styled ComboBoxes
-- **Wing missions** : Automatic detection of wing missions with distinctive icon
-- **Visual progression** : Progress bars to track your kills toward objectives
-
-### 🔍 **Combat System Search**
-- **Massacre search** : Find systems conducive to massacre missions via EdTools API
+### 📊 **Massacre Stacking Management**
+- **Mission stacking** : Visualize all your active massacre missions with real-time progression. Kills from pirate massacre missions stack — meaning a single pirate kill can count simultaneously toward multiple missions, even if they come from different factions.
+  This tool provides a clear visual breakdown of your remaining kills per faction, helping you track and optimize your bounty grind efficiently.
+- **Conflict zone management** : Track your conflict zone progression and bounty rewards. The application automatically tracks your conflict zone progression and combat bonds.
+- **System search** : Find systems conducive to massacre missions via EdTools API
 - **Conflict search** : Locate civil war and conflict zones via Inara API
-- **Advanced filters** : Maximum distance, minimum sources, large pads only
-- **Faction filtering** : Filter results by Federation, Empire, Alliance, or Independent
-- **Bilingual interface** : English and French with explanatory descriptions
+- **Bounty tracking** : History of destroyed ships with bounties and timestamps
+- **Financial tracking** : Track pending and potential credits from missions
+- **Combat history** : View massacre/conflict sessions with kills and earnings
 
-### 💰 **Credits and Bounty Management**
-- **Pending credits** : Track credits from completed but unredeemed missions
-- **Potential credits** : Estimate total earnings from active missions
-- **Bounty journal** : History of destroyed ships with bounties and timestamps
-- **Automatic reset** : Automatic reset when redeeming bounties
+![missionpanel.png](elite-warboard-missions/src/main/resources/images/missionpanel.png)
+
+### ⛏️ **Mining Operations Tracker**
+- **Session tracking** : Monitor your mining sessions with detailed statistics
+- **Mineral analysis** : Track quantities and values of mined materials
+- **Price comparison** : Compare best prices vs station prices for optimal selling
+- **Mining history** : View completed sessions with duration and earnings
+- **Real-time updates** : Live tracking of mining activities as they happen
+
+![miningpanel.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingpanel.png)
 
 ### 🚀 **Advanced Features**
 - **New commander detection** : Automatic popup and journal re-reading when switching commanders
 - **Real-time reading** : Automatic monitoring of new journal files
 - **Elite Dangerous interface** : Visual theme consistent with the game universe
 - **Network error handling** : Translated error popups in case of connection issues
-[seachsystem](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fseachsystem)
+- **Bilingual interface** : English and French with explanatory descriptions
+- **Loading indicators** : Visual feedback during data processing
+- **Automatic updates** : Real-time synchronization with game events
+
+## 🎮 Usage
+
+### **Massacre Stacking Interface**
+- **Header** : Overview of active massacre missions, credits and statistics
+- **Left panel** : Destroyed ships journal and bounty tracking
+- **Center panel** : Mission list with massacre and conflict filters
+- **Right panel** : Target faction statistics (Pirates/Conflict zones)
+- **Footer** : Commander information and current system
+- **Kills remaining overlay** : Visual indicator of remaining kills
+
+![targetoverlay.png](elite-warboard-missions/src/main/resources/images/combat/targetoverlay.png)
+
+### **Mining Interface**
+- **Mining panel** : Real-time mining session tracking
+- **Mineral tracking** : Live updates of mined materials and quantities
+- **Price toggle** : Switch between best prices and station prices
+- **Session history** : Complete history of mining sessions with statistics
+- **Loading indicators** : Visual feedback during data processing
+- **Prospector Overlay** : Displays an overlay on your Elite Dangerous game window
+
+![miningoverlay.png](elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png)
+
+### **Combat System Search**
+1. Click "SEARCH COMBAT SYSTEMS" in the header
+2. Choose "MASSACRE" or "CONFLICT" tab
+3. Configure your search criteria
+4. Click "SEARCH" to get results
+5. Click on a system to copy it to clipboard
+
+![searchmission2.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fsearchmission2.png)
+
+### **Mining System Search**
+1. Select the mineral you want to mine
+2. The system finds the most profitable station with mining locations
+3. View results with station information and prices
+4. Switch between different stations and rings as needed
+5. Click on a station to copy system name to clipboard
+
+![miningsearch.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingsearch.png)
+
+### **Mission Filtering**
+- **Type** : All, Massacre, Conflict
+- **Status** : All, Active, Completed, Failed
+- **Faction** : Click on a row in statistics to filter
+
+## 🌐 Language Support
+
+The application is available in **English and French** with complete interface translation including:
+- All menus and buttons
+- Error messages and notifications
+- System search descriptions
+- Mission types and statuses
+
 ## 🛠️ Installation
 
 ### **Simple Installation (Recommended)**
@@ -49,36 +104,6 @@
 3. Select your language (English/French)
 4. The application automatically starts analyzing your journals
 
-## 🎮 Usage
-
-### **Main Interface**
-- **Header** : Overview of active missions, credits and statistics
-- **Left panel** : Destroyed ships journal and bounties
-- **Center panel** : Mission list with ComboBox filters
-- **Right panel** : Detailed faction statistics
-- **Footer** : Commander information and current system
-
-### **System Search**
-1. Click "SEARCH COMBAT SYSTEMS" in the header
-2. Choose "MASSACRE" or "CONFLICT" tab
-3. Configure your search criteria
-4. Click "SEARCH" to get results
-5. Click on a system to copy it to clipboard
-
-### **Mission Filtering**
-- **Type** : All, Massacre, Conflict
-- **Status** : All, Active, Completed, Failed
-- **Faction** : Click on a row in statistics to filter
-
-
-![seachsystem.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fseachsystem.png)
-## 🌐 Language Support
-
-The application is available in **English and French** with complete interface translation including:
-- All menus and buttons
-- Error messages and notifications
-- System search descriptions
-- Mission types and statuses
 
 ## 🔧 Technologies Used
 
@@ -86,49 +111,85 @@ The application is available in **English and French** with complete interface t
 - **Maven** : Project management and automated build
 - **Jackson** : JSON journal file analysis
 - **Lombok** : Boilerplate code reduction
-- **EdTools API** : Massacre system search
-- **Inara API** : Conflict zone search
+- **EdTools API** : Massacre system search and hotspot detection
+- **Inara API** : Conflict zone search and market informationsearch
+- **Inno Setup** : Installer creation with embedded runtime
+- **JDK 17** : Java Development Kit
 - **jpackage** : Installer creation with embedded runtime
 
 ## 📁 Project Structure
 
 ```
-elite-warboard-missions/
-├── src/main/java/be/mirooz/elitedangerous/dashboard/
-│   ├── controller/          # JavaFX controllers
-│   ├── handlers/            # Journal event handlers
-│   ├── model/               # Data models and enums
-│   ├── service/             # Business services (EdTools, Inara, Journal)
-│   └── ui/                  # Interface components
-├── src/main/resources/
-│   ├── css/                 # Elite Dangerous theme
-│   ├── fxml/               # User interfaces
-│   ├── images/             # Icons and images
-│   └── messages_*.properties # Translations
-├── executable/             # Final build with embedded runtime
-└── installer.iss           # Inno Setup installation script
+elite-dashboard/
+├── elite-warboard-missions/          # Main application module
+│   ├── src/main/java/be/mirooz/elitedangerous/dashboard/
+│   │   ├── controller/               # JavaFX controllers and UI management
+│   │   ├── handlers/                 # Journal event handlers and processors
+│   │   ├── model/                    # Data models, enums, and registries
+│   │   ├── service/                  # Business services (APIs, Journal, Localization)
+│   │   └── ui/                       # Custom UI components and managers
+│   ├── src/main/resources/
+│   │   ├── css/                      # Elite Dangerous theme and styling
+│   │   ├── fxml/                     # User interface layouts
+│   │   ├── images/                   # Icons, images, and assets
+│   │   └── messages_*.properties     # English and French translations
+│   └── installer.iss                  # Inno Setup installation script
+├── edtools-client/                   # EdTools API client library
+├── inara-client/                     # Inara API client library
+├── elite-commons/                    # Shared utilities and common code
+└── journal-analyzer/                # Journal file analysis tool
 ```
 
 ## 📋 Supported Journal Events
 
 The application automatically processes these Elite Dangerous events:
 
-- `MissionAccepted` : Adds a new mission
+### **Mission Events**
+- `MissionAccepted` : Adds a new mission with target faction and destination
 - `MissionCompleted` : Marks a mission as completed
 - `MissionFailed` : Marks a mission as failed
-- `MissionRedirected` : Marks massacre missions as completed
-- `Bounty` : Updates kill counters and bounties
-- `RedeemVoucher` : Resets bounty statistics
-- `Commander` : Detects commander changes
-- `LoadGame` : Updates ship information
-- `Location` : Updates current position
-- `Docked`/`Undocked` : Tracks docking status
+- `MissionRedirected` : Handles massacre mission completion and redirection
+- `MissionAbandoned` : Marks a mission as abandoned
+- `MissionExpired` : Handles expired missions
+- `MissionProgress` : Updates mission progress
 
+### **Combat Events**
+- `Bounty` : Updates kill counters and bounty rewards for massacre missions
+- `RedeemVoucher` : Resets bounty and combat bond statistics after redemption
+- `FactionKillBond` : Tracks faction kill bonds
+- `CommitCrime` : Records criminal activities
+- `Died` : Handles commander death events
+- `ShipTargeted` : Tracks ship targeting events
+
+### **Mining Events**
+- `MiningRefined` : Tracks refined materials and adds to mining statistics
+- `Cargo` : Monitors cargo changes during mining operations
+- `ProspectedAsteroid` : Records asteroid prospecting data and core materials
+- `AsteroidCracked` : Tracks asteroid destruction for core mining
+- `LaunchDrone` : Monitors mining drone deployment
+- `EjectCargo` : Tracks cargo ejection during mining
+- `BuyDrones` : Records mining drone purchases
+- `SellDrones` : Records mining drone sales
+- `MarketSell` : Tracks mineral sales and updates mining statistics
+
+### **Ship Events**
+- `Loadout` : Updates ship configuration and cargo capacity
+- `LoadGame` : Sets commander online status
+- `Location` : Updates current system and station position
+- `Docked`/`Undocked` : Tracks docking status and station information
+- `FSDJump` : Tracks system jumps and updates mining session status
+- `SupercruiseEntry`/`SupercruiseExit` : Monitors supercruise transitions
+- `ShutDown` : Handles ship shutdown events
+
+### **Commander Events**
+- `Commander` : Detects commander changes and triggers popup notifications
 ## 🌐 External APIs
 
-- **EdTools PvE** : Massacre system search
-- **Inara** : Conflict zone and civil war search
-- **Error handling** : Translated network error popups
+- **EdTools PvE** : Massacre system search, faction conflict data, and mining system information
+- **Inara** : Conflict zone and civil war search, station information, and mining commodity prices
+- **Error handling** : Translated network error popups with user-friendly messages
+- **Real-time data** : Live API integration for up-to-date system information
+- **Fallback mechanisms** : Graceful handling of API unavailability
 
 ## 🎨 User Interface
 
@@ -141,48 +202,72 @@ The application automatically processes these Elite Dangerous events:
 ## 🚀 Build and Development
 
 ### **Local Build**
+JDK 17 and JavaFX 17 are required to build and run the project.
+
+You can simplify setup by using the Liberica JDK 17 Full
+distribution, which already includes both the JDK and JavaFX modules.
+
+
 ```bash
 mvn clean install
 ```
 
 ### **Installer Creation**
+#### Windows
+
+InnoSetup is required to build the Windows installer.
 ```bash
-mvn clean install
+mvn clean install -P windows-installer
+# Automatically generates EliteWarboard-Setup.exe with embedded runtime
+```
+#### Linux
+```bash
+mvn clean install -P linux-installer
 # Automatically generates EliteWarboard-Setup.exe with embedded runtime
 ```
 
+
 ### **Development**
+Run in elite-warboard-missions module:
 ```bash
 mvn exec:java
 ```
 
 ## 📝 Changelog
 
+### Version 1.1.0
+
+#### Mining
+
+- ✅ **Mining Operations Tracker** : Complete mining session tracking with real-time updates
+- ✅ **Mining System Search** : Find optimal mining locations with mineral filters
+- ✅ **Mineral Analysis** : Track quantities and values of mined materials
+- ✅ **Price Comparison** : Toggle between best prices and station prices
+- ✅ **Mining History** : View completed sessions with detailed statistics
+- ✅ **Network error handling** : Translated error popups for connection issues
+- ✅ **Styled ComboBoxes** : Enhanced mission filters with Elite Dangerous styling
+- 
+#### Massacre Stacking
+- ✅ **Improve massacre stacking UI** : Visual improvements
+- ✅ **Massacre stacking overlay** : Real-time overlay showing how many kills are left for each faction
+- ✅ **Combat History** : View completed massacre/conflict sessions with detailed statistics
+
+
 ### Version 1.0.0
-- ✅ Automatic new commander detection
-- ✅ Notification popup with automatic journal re-reading
-- ✅ Immediate reading of new journal files
-- ✅ Network error handling with translated popups
-- ✅ Styled ComboBoxes for mission filters
-- ✅ Explanatory descriptions for search tabs
-- ✅ Complete conflict mission support
-- ✅ Bilingual English/French interface
-- ✅ Real-time massacre mission dashboard
-- ✅ System search via EdTools and Inara
-- ✅ Destroyed ships journal
-- ✅ Faction bounty statistics
-- ✅ Interactive mission filtering
-- ✅ Elite Dangerous user interface
-- ✅ Wing mission support
-- ✅ Automatic bounty reset
 
-## 🤝 Contributing
+#### Massacre Stacking
 
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- ✅ **Massacre Stacking Management** : Real-time massacre mission tracking and stacking
+- ✅ **System Search** : Find combat systems via EdTools and Inara APIs
+- ✅ **Destroyed Ships Journal** : Complete bounty tracking
+- ✅ **Faction Statistics** : Detailed faction bounty analysis
+- ✅ **Interactive Filtering** : Advanced mission and faction filtering
+- ✅ **Elite Dangerous Theme** : Authentic game interface styling
+- ✅ **Wing Mission Support** : Automatic wing mission detection
+- ✅ **Automatic Reset** : Bounty statistics reset on redemption
+- ✅ **Bilingual interface** : Complete English/French support
+- ✅ **Multi account** : Automatic new commander detection
+- ✅ **Automatic commander detection** : Notification popup with automatic journal re-reading
 
 ## 📄 License
 
@@ -199,11 +284,24 @@ If you encounter issues:
 
 ## 🎯 Project Goal
 
-**Elite Dangerous Warboard** is specifically designed to optimize the experience for players focused on massacre and conflict missions. It enables you to:
+**Elite Warboard** is designed to optimize your Elite Dangerous experience across multiple gameplay styles. Whether you're focused on combat missions, mining operations, or exploration, this dashboard helps you:
 
+### **For Combat Pilots**
 - **Efficiently stack** massacre missions to maximize earnings
 - **Quickly find** the best systems for combat missions
-- **Track in real-time** your mission progression
+- **Track in real-time** your mission progression and kills
 - **Optimize** your credit and reputation farming strategy
+
+### **For Miners**
+- **Monitor mining sessions** with detailed real-time statistics
+- **Track mineral values** and compare prices for optimal selling
+- **Analyze mining efficiency** through session history and statistics
+- **Maximize profits** by choosing the best selling locations
+
+### **For All Commanders**
+- **Comprehensive tracking** of all your Elite Dangerous activities
+- **Real-time updates** as you play the game
+- **Bilingual support** in English and French
+- **Professional interface** that matches the Elite Dangerous universe
 
 The application is completely self-contained and requires no external dependency installation.

@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.Mission;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
@@ -56,6 +56,9 @@ public class MissionAcceptedHandler implements JournalEventHandler {
                 expiryTime = parseTimestamp(timestamp).plusDays(7);
             }
 
+            if (missionId.equals("1034203225")){
+                System.out.println("la omg");
+            }
             Mission mission = new Mission();
             mission.setId(missionId);
             mission.setName(missionName);

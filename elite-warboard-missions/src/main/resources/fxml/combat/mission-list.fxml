@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView?>
+<?import be.mirooz.elitedangerous.dashboard.model.commander.Mission?>
+<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent?>
+<VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.MissionListController">
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+   </padding>
+   <HBox alignment="CENTER_LEFT" spacing="20.0">
+      <Label fx:id="missionsTitleLabel" styleClass="section-title" text="MISSIONS"/>
+      <Region HBox.hgrow="ALWAYS"/>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <Label fx:id="typeFilterLabel" styleClass="filter-label" text="Type:"/>
+         <ComboBox fx:id="typeFilterComboBox" styleClass="elite-combobox" onAction="#onTypeFilterChanged"/>
+      </HBox>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <Label fx:id="statusFilterLabel" styleClass="filter-label" text="Statut:"/>
+         <ComboBox fx:id="statusFilterComboBox" styleClass="elite-combobox" onAction="#onStatusFilterChanged"/>
+      </HBox>
+   </HBox>
+
+   <!-- Layout principal avec missions à gauche et cibles à droite -->
+   <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+      <!-- Section des missions (gauche) -->
+      <VBox HBox.hgrow="ALWAYS" spacing="10.0">
+         <StackPane VBox.vgrow="ALWAYS">
+            <NotSelectableListView fx:id="missionListView"
+                                   styleClass="missions-scroll" minWidth="600" />
+
+            <ProgressIndicator fx:id="loadingIndicator"
+                               maxWidth="100" maxHeight="100"
+                               visible="false" />
+         </StackPane>
+      </VBox>
+
+      <!-- Section des cibles (droite) - Compacte -->
+      <VBox HBox.hgrow="NEVER" spacing="10.0" minWidth="380" maxWidth="380">
+         <TargetPanelComponent fx:id="targetPanel"
+                              styleClass="target-panel-compact"
+                              maxWidth="380"
+                              minWidth="280"
+                              prefHeight="280"
+                              maxHeight="320"
+                              VBox.vgrow="NEVER"/>
+         
+         <!-- Historique des missions -->
+         <VBox fx:id="historyContainer" VBox.vgrow="ALWAYS" spacing="10.0">
+         </VBox>
+      </VBox>
+   </HBox>
+
+</VBox>

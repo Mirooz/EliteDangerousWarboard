@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox styleClass="header-panel" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.HeaderController">
+    <children>
+        <!-- Statistiques des missions -->
+        <HBox alignment="CENTER_LEFT" spacing="30.0" styleClass="stats-panel">
+            <padding>
+                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0"/>
+            </padding>
+
+            <VBox alignment="CENTER" spacing="5.0" fx:id="missionStatBox" visible="false">
+                <Label fx:id="missionCountLabel" styleClass="stat,stat-mission" text="0"/>
+                <Label fx:id="missionCountTextLabel" styleClass="stat-label" text="MISSIONS"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5.0" fx:id="earnCreditsBox" visible="false">
+                <Label fx:id="earnCreditsLabel" styleClass="stat,stat-earn" text="0"/>
+                <Label fx:id="earnCreditsTextLabel" styleClass="stat-label" text="CRÉDITS GAGNÉS"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5.0" fx:id="potentialCreditsBox" visible="false">
+                <Label fx:id="potentialCreditsLabel" styleClass="stat,stat-potential" text="0"/>
+                <Label fx:id="potentialCreditsTextLabel" styleClass="stat-label" text="CRÉDITS POTENTIELS"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5.0" fx:id="pendingCreditsBox" visible="false">
+                <Label fx:id="pendingCreditsLabel" styleClass="stat,stat-pending" text="0"/>
+                <Label fx:id="pendingCreditsTextLabel" styleClass="stat-label" text="CRÉDITS EN ATTENTE"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5.0" fx:id="lostCreditsBox" visible="false">
+                <Label fx:id="lostCreditsLabel" styleClass="stat,stat-failed" text="0"/>
+                <Label fx:id="lostCreditsTextLabel" styleClass="stat-label" text="CRÉDITS PERDUS"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Bouton de recherche massacre -->
+            <VBox alignment="CENTER_RIGHT" spacing="5.0">
+                <Button fx:id="massacreSearchButton" mnemonicParsing="false" onAction="#openMassacreSearchDialog"
+                        styleClass="elite-button" text="RECHERCHER SYSTÈMES MASSACRE"/>
+            </VBox>
+        </HBox>
+    </children>
+</VBox>

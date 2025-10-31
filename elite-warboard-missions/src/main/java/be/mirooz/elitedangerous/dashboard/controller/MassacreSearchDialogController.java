@@ -1,15 +1,15 @@
 package be.mirooz.elitedangerous.dashboard.controller;
 
-import be.mirooz.elitedangerous.dashboard.model.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.SystemCardComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.ConflictCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.SystemCardComponent;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.ConflictCardComponent;
 import be.mirooz.elitedangerous.dashboard.service.InaraService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
-import be.mirooz.elitedangerous.lib.inara.model.ConflictSystem;
+import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -358,8 +358,10 @@ public class MassacreSearchDialogController implements Initializable {
         if (referenceSystem == null || referenceSystem.trim().isEmpty()) {
             referenceSystem = commanderStatus.getCurrentStarSystem();
             referenceSystemField.setText(referenceSystem);
-            if (referenceSystemField.getText().isEmpty())
+            if (referenceSystem == null || referenceSystem.isEmpty()) {
                 referenceSystemField.setText("Sol");
+                referenceSystem = "Sol";
+            }
         }
         return referenceSystem;
     }

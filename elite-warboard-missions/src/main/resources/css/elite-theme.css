@@ -17,6 +17,776 @@
     -fx-elite-danger: #FF0000;
 }
 
+/* Design Elite Dangerous - Onglets carrés élégants */
+.main-tab-pane {
+    -fx-tab-min-width: 80px;
+    -fx-tab-max-width: 80px;
+    -fx-tab-min-height: 80px;
+    -fx-tab-max-height: 80px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-padding: 10px;
+}
+
+.main-tab-pane .tab {
+    -fx-background-color: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 0px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 10, 0.3, 0, 2);
+}
+
+.main-tab-pane .tab:selected {
+    -fx-background-color: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+    -fx-border-color: #FFAA00;
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.8), 20, 0.6, 0, 4);
+}
+
+.main-tab-pane .tab:hover {
+    -fx-background-color: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+    -fx-border-color: #FFAA00;
+    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.6), 15, 0.4, 0, 3);
+}
+
+/* Supprimer définitivement la croix de fermeture */
+.main-tab-pane .tab .tab-close-button {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+}
+
+.main-tab-pane .tab .tab-close-button:hover {
+    -fx-opacity: 0;
+}
+
+/* Masquer tous les éléments de fermeture des onglets */
+.main-tab-pane .tab .tab-close-button * {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+.main-tab-pane .tab .tab-close-button .graphic {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+.main-tab-pane .tab-header-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.main-tab-pane .tab-header-background {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.main-tab-pane .tab-content-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
+/* Images carrées élégantes Elite Dangerous */
+.tab-image {
+    -fx-cursor: hand;
+    -fx-fit-width: 60px;
+    -fx-fit-height: 60px;
+    -fx-preserve-ratio: true;
+    -fx-smooth: true;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 5, 0.2, 0, 1);
+}
+
+/* Système simple et cohérent */
+.tab-image {
+    -fx-transition: all 0.2s ease;
+}
+
+/* Hover : surbrillance légère */
+.tab-image:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.5), 8, 0.3, 0, 0);
+}
+
+/* Sélection : surbrillance forte */
+.tab-image-selected {
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.9), 15, 0.6, 0, 0);
+}
+
+/* Supprimer le focus indicator bleu par défaut */
+.main-tab-pane .tab:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.main-tab-pane .tab {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Supprimer tous les indicateurs de focus */
+.main-tab-pane .tab:selected:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.main-tab-pane .tab-header-area {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* Empêcher la fermeture des onglets */
+.main-tab-pane .tab .tab-close-button {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+    -fx-min-width: 0;
+    -fx-min-height: 0;
+}
+
+.main-tab-pane .tab .tab-close-button:hover {
+    -fx-opacity: 0;
+}
+
+.main-tab-pane .tab .tab-close-button * {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+/* Styles pour le panneau de mining */
+.mining-panel {
+    -fx-background-color: -fx-elite-dark;
+    -fx-z-index: 10;
+    -fx-spacing: 8;
+}
+
+.mining-title-bar {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 10px 20px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.mining-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.mining-separator {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.mining-content {
+    -fx-spacing: 10px;
+}
+
+.mining-left-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.mining-center-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.mining-right-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.mining-section-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10px 0;
+}
+
+/* ✅ Styles pour la navigation des prospecteurs */
+.prospector-navigation-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 10px 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.prospector-navigation {
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.elite-nav-button {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-pref-height: 30px;
+    -fx-min-height: 30px;
+    -fx-max-height: 30px;
+    -fx-cursor: hand;
+}
+
+.elite-nav-button:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.elite-nav-button:disabled {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-gray;
+    -fx-cursor: default;
+}
+
+/* Style spécifique pour le bouton LAST qui doit être plus large */
+.elite-nav-button.last-button {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.elite-nav-button.last-button:hover {
+    -fx-background-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.elite-nav-button.last-button:disabled {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-gray;
+}
+
+.prospector-counter {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-min-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-max-width: 40px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+
+.current-prospector-content {
+    -fx-spacing: 10px;
+    -fx-alignment: TOP_LEFT;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-padding: 0px;
+}
+
+
+.no-prospector-message {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+}
+
+
+
+
+
+.asteroid-icon {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.asteroid-icon.core-asteroid {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 18px;
+}
+
+.elite-mineral-name {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+
+.elite-materials-title {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+
+.elite-material-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 13px;
+}
+
+
+.elite-material-percent {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+
+.elite-content {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 14px;
+}
+
+
+.prospector-mineral {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.prospector-content {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+}
+
+.prospector-remaining {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 10px;
+}
+
+.prospector-material {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 10px;
+}
+
+.materials-container {
+    -fx-spacing: 2px;
+    -fx-padding: 5px 0 0 10px;
+}
+
+/* ✅ Styles pour le cargo (refaits) */
+.cargo-info {
+    -fx-background-color: rgba(0, 255, 255, 0.05);
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.cargo-stat-number {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 80px;
+    -fx-alignment: CENTER;
+}
+.cargo-stat-price-number {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.cargo-stat-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 80px;
+    -fx-alignment: CENTER;
+}
+.cargo-stat-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-pref-width: 120px;
+}
+
+.cargo-stat-price-number {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.cargo-minerals-list {
+    -fx-spacing: 8px;
+    -fx-padding: 10px 0 0 0;
+    -fx-fill-height: true;
+}
+
+/* En-têtes des colonnes pour les minéraux */
+.cargo-minerals-header {
+    -fx-padding: 5px 0;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1px 0;
+    -fx-spacing: 10px;
+}
+
+.cargo-column-header {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+/* Lignes de minéraux */
+.cargo-mineral-row {
+    -fx-padding: 3px 0;
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.cargo-mineral-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 120px;
+}
+
+.cargo-mineral-quantity {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 60px;
+}
+
+.cargo-mineral-unit-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-total-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-station-price {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-station-total {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+/* Style pour les prix avec "/" (valeurs nulles) */
+.cargo-mineral-null-price {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-style: italic;
+    -fx-font-size: 15px;
+    -fx-font-weight: normal;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+/* Style pour le ToggleSwitch personnalisé */
+.price-mode-toggle-switch {
+    /* Le curseur hand sera appliqué uniquement au switchPane via le code Java */
+    -fx-spacing: 10;
+}
+
+.toggle-track {
+    -fx-fill: -fx-elite-dark;
+}
+
+.toggle-thumb {
+    -fx-fill: -fx-elite-text;
+    -fx-effect: dropshadow(gaussian, -fx-elite-orange, 3, 0, 0, 1);
+}
+
+/* Style pour les labels du toggle */
+.price-mode-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #888888;
+    -fx-pref-width: 100px;
+    -fx-min-width: 100px;
+    -fx-max-width: 100px;
+    -fx-alignment: CENTER;
+    -fx-wrap-text: true;
+}
+
+.price-mode-label.price-mode-selected {
+    -fx-font-weight: bold !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-background-color: -fx-elite-orange !important;
+    -fx-background-radius: 3px !important;
+    -fx-padding: 2px 5px !important;
+}
+
+.price-mode-label.price-mode-unselected {
+    -fx-font-weight: normal !important;
+    -fx-text-fill: #888888 !important;
+    -fx-background-color: transparent !important;
+}
+
+.cargo-stat-price-number-station {
+    -fx-text-fill:-fx-elite-success;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Style pour les prix de station (couleur success) */
+.cargo-mineral-station-price-success {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+.cargo-mineral-station-total-success {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 100px;
+}
+
+/* Styles pour le GridPane des minéraux */
+.cargo-minerals-grid {
+    -fx-padding: 10px 0;
+    -fx-hgap: 10px;
+    -fx-vgap: 5px;
+}
+
+/* Styles pour la ScrollPane des minéraux */
+.cargo-minerals-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+
+.cargo-minerals-scroll:focused {
+    -fx-background-color: transparent;
+}
+
+.cargo-minerals-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Scrollbar verticale pour le GridPane des minéraux - Style Elite Dangerous */
+.cargo-minerals-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-button,
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-button:hover,
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z"; /* flèche vers le bas */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z"; /* flèche vers le haut */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.cargo-minerals-scroll .scroll-bar:vertical .increment-arrow:hover,
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Masquer la scrollbar horizontale */
+.cargo-minerals-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.cargo-minerals-grid .cargo-column-header {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 5px 0;
+}
+
+.cargo-minerals-grid .cargo-mineral-name {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 3px 0;
+    -fx-font-size: 13px;
+}
+
+.cargo-minerals-grid .cargo-mineral-quantity {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 3px 0;
+}
+
+.cargo-minerals-grid .cargo-mineral-unit-price {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 3px 0;
+}
+
+
+.mineral-card {
+    -fx-background-color: rgba(0, 255, 255, 0.03);
+    -fx-padding: 12px 16px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-alignment: center-left;
+    -fx-spacing: 10px;
+}
+
+.mineral-card:hover {
+    -fx-background-color: rgba(0, 255, 255, 0.08);
+    -fx-border-color: -fx-elite-success;
+}
+
+.mineral-name {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.mineral-quantity {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-min-width: 50px;
+    -fx-alignment: center-right;
+}
+
+.no-minerals-label {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+/* Styles pour le tableau des missions */
+.missions-table-container {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 10px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.table-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.missions-table {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-table-cell-border-color: -fx-elite-light-gray;
+}
+
+.missions-table .column-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 1px 1px 0;
+}
+
+.missions-table .table-row-cell {
+    -fx-background-color: -fx-elite-dark;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 10px;
+}
+
+.missions-table .table-row-cell:odd {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.missions-table .table-row-cell:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.missions-table .table-cell {
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 0 1px 0 0;
+    -fx-padding: 5px;
+}
+
+.table-column {
+    -fx-alignment: center-left;
+}
+
 /* Styles généraux */
 .root {
     -fx-background-color: -fx-elite-dark;
@@ -221,7 +991,7 @@
 /* Contenu principal */
 .main-content {
     -fx-background-color: -fx-elite-dark;
-    -fx-padding: 20;
+    -fx-padding: 10;
 }
 
 /* Panneau de statistiques */
@@ -315,7 +1085,7 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .missions-scroll {
@@ -341,12 +1111,15 @@
 }
 
 .missions-scroll .scroll-bar:horizontal {
-    -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
+    -fx-opacity: 0;
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
 }
 .missions-scroll .list-cell {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-padding: 2 0 2 0;
 }
 
 /* cellule sélectionnée */
@@ -461,7 +1234,6 @@
 /* Barre de progression */
 .progress-bar {
     -fx-background-color: -fx-elite-gray;
-    -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
 }
 
@@ -471,9 +1243,7 @@
 
 /* Pied de page */
 .footer-panel {
-    -fx-background-color: -fx-elite-darker;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 2 0 0 0;
+    -fx-z-index: 1;
 }
 
 .footer-text {
@@ -587,15 +1357,30 @@
 
 .massacre-progress {
     -fx-border-color: transparent;
-    -fx-border-width: 1;
-}
-.massacre-progress .track {
-    -fx-background-color: white;   /* ⚡ fond blanc */
-}
-.massacre-progress .bar {
-    -fx-background-color: -fx-elite-orange;
+    -fx-border-width: 0;
+    -fx-padding: 0;                     /* 🧠 enlève le padding interne global */
+    -fx-background-insets: 0;
 }
 
+.massacre-progress .track {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;           /* optionnel : coins légèrement arrondis */
+    -fx-padding: 0;                     /* 👈 enlève l'épaisseur inutile */
+    -fx-min-height: 10px;               /* 👈 fixe la hauteur réelle */
+    -fx-pref-height: 10px;
+    -fx-max-height: 10px;
+}
+
+.massacre-progress .bar {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;           /* optionnel */
+    -fx-padding: 0;
+    -fx-min-height: 10px;
+    -fx-pref-height: 10px;
+    -fx-max-height: 10px;
+}
 .massacre-reward {
     -fx-font-size: 16px;
     -fx-text-fill: -fx-elite-green;
@@ -709,23 +1494,11 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
     -fx-padding: 4 8 4 8;
-}
 
-/* Alignements spécifiques */
-.faction-col-header.target,
-.faction-col.target {
-    -fx-alignment: CENTER_LEFT;
-}
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-style: solid;
 
-.faction-col-header.source,
-.faction-col.source {
-    -fx-alignment: CENTER; /* centré */
-}
-
-.faction-col-header.kills,
-.faction-col.kills {
-    -fx-text-fill: -fx-elite-orange;
-    -fx-alignment: CENTER_RIGHT;
 }
 
 /* Styles pour le panneau des vaisseaux détruits */
@@ -736,9 +1509,6 @@
     -fx-border-radius: 5;
     -fx-background-radius: 5;
     -fx-padding: 5;
-    -fx-pref-width: 450;
-    -fx-max-width: 450;
-    -fx-min-width: 450;
 }
 
 .panel-header {
@@ -753,9 +1523,6 @@
     -fx-border-width: 1;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
-    -fx-pref-width: 440;
-    -fx-max-width: 440;
-    -fx-min-width: 440;
     -fx-effect: dropshadow(gaussian, rgba(255, 120, 0, 0.25), 10, 0.3, 0, 0);
 }
 
@@ -785,7 +1552,7 @@
     -fx-padding: 5 6 5 6;
     -fx-wrap-text: false;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 /* ====== Lignes ====== */
@@ -814,35 +1581,30 @@
 .destroyed-ships-table .table-cell.ship-name {
     -fx-text-fill: -fx-elite-orange;
     -fx-font-weight: bold;
-    -fx-font-size: 15px;
-}
-
-.destroyed-ships-table .table-cell.pilot-name {
-    -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 14px;
+    -fx-font-size: 18px;
 }
 
 .destroyed-ships-table .table-cell.faction {
     -fx-text-fill: -fx-elite-text;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 .destroyed-ships-table .table-cell.ship-type {
     -fx-text-fill: -fx-elite-text-dim;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 .destroyed-ships-table .table-cell.bounty {
     -fx-text-fill: -fx-elite-success;
     -fx-font-weight: bold;
-    -fx-font-size: 15px;
+    -fx-font-size: 18px;
 }
 
 .destroyed-ships-table .table-cell.time {
     -fx-text-fill: -fx-elite-text-dim;
     -fx-font-family: "Consolas", "Courier New", monospace;
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
 }
 
 /* ====== Scrollbars cockpit-style ====== */
@@ -874,21 +1636,17 @@
     -fx-font-weight: bold;
     -fx-font-size: 14px;
     -fx-padding: 6 8 6 8;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-text-transform: uppercase;
 }
 
 .destroyed-ships-table .column-header .label {
     -fx-text-fill: -fx-elite-orange;
     -fx-text-alignment: center;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-text-transform: uppercase;
 }
 
-.destroyed-ships-table .column-header:hover {
-    -fx-background-color: rgba(255, 140, 0, 0.15);
-    -fx-cursor: hand;
-}
 
 
 /* Styles pour les statistiques de bounty par faction */
@@ -907,14 +1665,14 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 .faction-bond-title {
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-danger;
     -fx-font-family: "Arial Black", "Arial", sans-serif;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
     -fx-padding: 5 0 0 0; /* top right bottom left */
 }
 
@@ -1056,67 +1814,93 @@
     -fx-border-radius: 3;
     -fx-background-radius: 3;
 }
-
-/* Styles pour les ComboBox Elite Dangerous */
 .elite-combobox {
     -fx-background-color: transparent;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-weight: bold;
-    -fx-font-size: 12px;
-    -fx-border-radius: 2;
-    -fx-pref-width: 130;
-    -fx-min-width: 130;
+
 }
 
 .elite-combobox:hover {
     -fx-border-color: -fx-elite-cyan;
-    -fx-text-fill: -fx-elite-cyan;
+    -fx-cursor: hand;
 }
 
+.elite-combobox .text {
+    -fx-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+.elite-combobox .list-cell {
+    -fx-background-color: -fx-elite-gray; /* remplace le fond blanc */
 
-.elite-combobox .arrow-button {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
+}
+.elite-combobox .list-cell:hover .text {
+    -fx-background-color: derive(-fx-elite-gray, -20%); /* fond un peu plus foncé au survol */
+    -fx-fill: -fx-elite-cyan !important;
+    -fx-cursor: hand;
 }
 
-.elite-combobox .arrow-button:hover {
-    -fx-background-color: transparent;
+/* Styles pour les scrollbars du panneau de mining */
+.elite-combobox .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
 }
 
-.elite-combobox .arrow {
+.elite-combobox .scroll-bar:vertical .thumb {
     -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
 }
 
-.elite-combobox:hover .arrow {
+.elite-combobox .scroll-bar:vertical .thumb:hover {
     -fx-background-color: -fx-elite-cyan;
 }
 
-/* Styles pour la liste déroulante */
-.elite-combobox .list-view {
+.elite-combobox .scroll-bar:vertical .track {
     -fx-background-color: -fx-elite-darker;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1;
-    -fx-border-radius: 2;
-    -fx-background-radius: 2;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 10, 0, 0, 2);
-}
-
-.elite-combobox .list-cell {
-    -fx-background-color: -fx-elite-gray;
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-weight: bold;
-    -fx-font-size: 12px;
-    -fx-padding: 6 8 6 8;
     -fx-border-color: transparent;
 }
 
-.elite-combobox .list-cell:hover {
-    -fx-background-color: -fx-elite-gray;
-    -fx-text-fill: -fx-elite-cyan;
-    -fx-cursor: hand;
+.elite-combobox .scroll-bar:vertical .increment-button,
+.elite-combobox .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
 }
+
+.elite-combobox .scroll-bar:vertical .increment-button:hover,
+.elite-combobox .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.elite-combobox .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z"; /* flèche vers le haut */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.elite-combobox .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z"; /* flèche vers le bas */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.elite-combobox .scroll-bar:vertical .increment-arrow:hover,
+.elite-combobox .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
 .config-spinner {
     -fx-background-color: -fx-elite-dark;
     -fx-border-color: -fx-elite-orange;
@@ -1430,7 +2214,7 @@
     -fx-min-width: 20;
     -fx-pref-width: 20;
     -fx-max-width: 20;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .massacre-card-faction-number {
@@ -1449,7 +2233,7 @@
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
     -fx-border-radius: 4;
-    -fx-padding: 10 15 10 15;
+    -fx-padding: 10 5 10 5;
     -fx-alignment: CENTER_LEFT;
 }
 
@@ -1468,7 +2252,7 @@
     -fx-text-fill: -fx-elite-cyan;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .results-panel {
@@ -1497,7 +2281,7 @@
 }
 
 .table-column {
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .massacre-results-table .table-cell {
@@ -1548,52 +2332,1408 @@
     -fx-cursor: hand;
 }
 
-/* Styles pour les onglets */
-.main-tab-pane {
+/* Styles dupliqués supprimés - utilisent les styles circulaires définis plus haut */
+
+.massacre-search-content {
     -fx-background-color: -fx-elite-dark;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1;
+    -fx-padding: 20;
 }
 
-.main-tab-pane .tab-header-area {
+/* ====== STYLES POUR LE PANNEAU DE CIBLES - DESIGN INTÉGRÉ ====== */
+
+/* Conteneur principal du panneau de cibles */
+.target-panel-container {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 0px;
+    -fx-pref-height: -1;
+    -fx-max-height: -1;
+    -fx-min-height: -1;
+}
+
+/* Panneau de cibles principal */
+.target-panel {
+    -fx-background-color: transparent;
+    -fx-spacing: 8px;
+    -fx-padding: 12px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+/* Titre principal du panneau - Style cohérent */
+.target-panel-title {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-alignment: CENTER;
+    -fx-pref-width: infinity;
+    -fx-padding: 8px 0px;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -fx-elite-orange;
+}
+
+/* Titres des sections - Style cohérent */
+.target-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 6px 12px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-text-fill: -fx-elite-text;
+}
+
+/* Titre section Pirates - Style cohérent */
+.target-section-title.pirate-title {
+    -fx-text-fill: -fx-elite-warning !important;
+}
+
+/* Titre section Conflits - Style cohérent */
+.target-section-title.conflict-title {
+    -fx-text-fill: -fx-elite-danger !important;
+}
+
+/* Sections de cibles - Style intégré */
+.target-section {
+    -fx-spacing: 4px;
+    -fx-padding: 6px 0;
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+}
+
+/* Séparateur entre les sections - Style moderne */
+.target-separator {
+    -fx-background-color: transparent;
+    -fx-pref-height: 8px;
+}
+
+/* En-têtes de colonnes - Style moderne intégré */
+.faction-col-header {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-background-color: rgba(255, 107, 0, 0.05);
+    -fx-border-color: rgba(255, 107, 0, 0.2);
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4px 8px;
+    -fx-alignment: center-left;
+}
+
+/* Lignes de données - Style moderne intégré */
+.target-data-row {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-padding: 3px 8px;
+    -fx-border-radius: 1px;
+    -fx-background-radius: 1px;
+}
+
+.target-data-row:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.03);
+    -fx-border-color: rgba(255, 107, 0, 0.1);
+    -fx-border-width: 0 0 0 2px;
+}
+
+/* Labels des factions cibles */
+.target-faction-label {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial", sans-serif;
+}
+
+/* Labels des factions sources */
+.source-faction-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial", sans-serif;
+}
+
+/* Labels des kills */
+.kills-label {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-alignment: center-right;
+}
+
+/* Labels des kills négatifs */
+.kills-negative-label {
+    -fx-text-fill: -fx-elite-danger;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-alignment: center-right;
+}
+
+/* Message pour les sections vides - Style Elite Dangerous */
+.empty-section-message {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-alignment: center;
+    -fx-padding: 15px;
+    -fx-background-color: rgba(255, 107, 0, 0.05);
+    -fx-border-color: rgba(255, 107, 0, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+/* ====== STYLES POUR LE CONTENEUR DU FOOTER ====== */
+
+/* Conteneur du footer */
+.footer-container {
+    -fx-background-color: transparent;
+    -fx-padding: 0px;
+    -fx-spacing: 0px;
+}
+
+/* ====== STYLES POUR LES ASTÉROÏDES PROSPECTÉS ELITE DANGEROUS ====== */
+
+
+
+
+/* Icône d'astéroïde */
+.asteroid-icon {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.core-asteroid {
+    -fx-text-fill: -fx-elite-warning !important;
+    -fx-font-size: 18px !important;
+}
+
+/* Indicateur de core */
+.core-indicator {
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 170, 0, 0.2);
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 6px;
+}
+/* Indicateur de core */
+.laser-indicator {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 170, 0, 0.2);
+    -fx-border-color: -fx-elite-success;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 6px;
+}
+/* Noms de minéraux */
+.elite-mineral-name {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.elite-mineral-name-large {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Contenu */
+.elite-content {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.elite-content-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 17px;
+    -fx-font-style: italic;
+}
+
+
+/* Conteneur des matériaux */
+.elite-materials-container {
+    -fx-spacing: 4px;
+    -fx-padding: 8px 0 0 0;
+}
+
+/* Titre des matériaux */
+.elite-materials-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.elite-materials-title-large {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Noms des matériaux */
+.elite-material-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-min-width: 100px;
+}
+
+.elite-material-name-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 17px;
+    -fx-min-width: 120px;
+}
+
+
+.elite-material-percent-large {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-min-width: 50px;
+    -fx-alignment: center-right;
+}
+.elite-material-percent-large.low {
+     -fx-text-fill: -fx-elite-text;
+ }
+
+.elite-material-percent-large.medium {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 19px;
+}
+
+.elite-material-percent-large.high {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 19px;
+}
+
+.elite-material-estimation-large {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-min-width: 100px;
+    -fx-alignment: center-right;
+}
+
+.core-estimation-large {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-min-width: 120px;
+    -fx-alignment: center-right;
+}
+
+.elite-total-label-large {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.elite-total-value-large {
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.asteroid-total-estimation {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+/* ====== STYLES POUR LA SECTION DE PRÉPARATION ====== */
+
+/* Section de préparation */
+.mining-preparation-section {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 12px;
+}
+
+/* Section cargo */
+.mining-cargo-section {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 12px;
+}
+
+/* Informations de préparation */
+.preparation-info {
+    -fx-spacing: 15px;
+}
+
+.preparation-item {
+    -fx-spacing: 5px;
+}
+
+/* Labels de préparation */
+.preparation-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.preparation-value {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.preparation-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* ====== STYLES POUR LE HEADER DE RECHERCHE DE MINAGE ====== */
+
+/* Header de recherche */
+.mining-header {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    /* Réduire l'espace interne, surtout en bas */
+    -fx-padding: 10px 15px 6px 15px; /* top right bottom left */
+    -fx-spacing: 8px;
+}
+
+/* Titre du header */
+.mining-header-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-alignment: center;
+}
+
+/* Conteneur de recherche */
+.mining-search-container {
+    -fx-spacing: 20px;
+    -fx-alignment: center-left;
+}
+
+/* Éléments de recherche */
+.search-item {
+    -fx-spacing: 5px;
+}
+
+
+
+
+/* Checkbox Fleet Carrier */
+.fleet-carrier-checkbox {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 3px;
+}
+.fleet-carrier-checkbox:hover{
+    -fx-cursor: hand;
+}
+
+.fleet-carrier-checkbox .box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-padding: 2px;
+}
+
+/* Checkbox Pads */
+.pads-checkbox {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 3px;
+}
+.pads-checkbox:hover{
+    -fx-cursor: hand;
+}
+.pads-checkbox .box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-padding: 2px;
+}
+
+/* TextField Elite Dangerous */
+.elite-textfield {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-padding: 4px 6px;
+}
+
+.elite-textfield:focused {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px;
+}
+
+.elite-textfield:hover {
+    -fx-border-color: -fx-elite-cyan;
+}
+
+/* Labels de recherche */
+.search-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-padding: 5;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+/* Valeurs de recherche */
+.search-value {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 200px;
+}
+
+/* Prix de recherche */
+.search-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+}
+
+/* Prix de recherche large */
+.search-price-large {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-translate-y: 4px;
+}
+
+.search-demand-large {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-translate-y: 4px;
+}
+/* Conteneurs pour les locations */
+.ring-container,
+.station-container {
+    -fx-spacing: 2px;
+}
+
+/* ✅ Conteneurs cliquables - Style simple et propre */
+.clickable-container {
+    -fx-cursor: hand;
+    -fx-padding: 5px;
+    -fx-background-color: rgba(0, 255, 255, 0.05);
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.clickable-container:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+}
+
+/* Noms de locations en grand */
+.location-name-large {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-cursor: hand;
+}
+
+/* Systèmes de locations */
+.location-system {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+/* Conteneur de la flèche */
+.arrow-container {
+    -fx-spacing: 5px;
+    -fx-padding: 0 10px;
+}
+
+/* Label de distance */
+.distance-label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+/* Symbole de flèche */
+.arrow-symbol {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 25px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+/* ✅ Style pour l'icône du type de station */
+.station-type-icon {
+    -fx-opacity: 0.9;
+}
+
+/* ✅ Style pour l'indicateur de chargement */
+.progress-indicator {
+    -fx-progress-color: -fx-elite-success;
+}
+
+
+/* ComboBox des minéraux */
+.mineral-combo-box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-pref-width: 150px;
+}
+
+.mineral-combo-box .list-cell {
+    -fx-background-color: -fx-elite-dark;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-padding: 5px;
+}
+
+.mineral-combo-box .list-cell:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.mineral-combo-box .list-cell {
+    -fx-padding: 8px 12px;
+}
+
+.mineral-combo-box .list-cell:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+/* Label de prix */
+.price-label {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 100px;
+    -fx-alignment: center;
+}
+
+/* Champs de texte */
+.source-system-field,
+.distance-field,
+.demand-field {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-pref-width: 80px;
+    -fx-padding: 5px;
+}
+
+/* Bouton de recherche */
+.search-button {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 16px;
+    -fx-pref-width: 120px;
+}
+
+.search-button:hover {
+    -fx-background-color: -fx-elite-warning;
+}
+
+/* Styles pour l'historique des sessions de minage */
+.mining-history-scroll {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.mining-history-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.mining-history-list {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 10px;
+}
+
+.mining-session-card {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.mining-session-card:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+/* Style pour les sessions de minage actives */
+.mining-session-card-current {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 2px;
+}
+
+.mining-session-card-current:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-warning;
+}
+
+/* Indicateur de session actuelle */
+.session-current {
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 170, 0, 0.2);
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 6px;
+}
+
+.session-system {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.session-ring {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+}
+
+.session-info {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 13px;
+}
+
+.session-value {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.session-date {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.session-duration-hours {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.session-duration-minutes {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.no-sessions-message {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-alignment: center;
+}
+
+/* Styles pour les statistiques globales */
+.mining-stats-summary {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.mining-stat-number {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.mining-stat-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+}
+
+/* Style pour le tooltip des sessions de minage */
+.mining-session-tooltip {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-family: "Consolas", "Monaco", monospace;
+    -fx-padding: 8px;
+    -fx-max-width: 300px;
+}
+
+/* Styles pour les détails des minéraux dans les cartes de session */
+.minerals-details {
+    -fx-spacing: 2px;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.mineral-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.mineral-quantity {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.mineral-price {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.mineral-empty {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.mineral-more-inline {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-padding: 0 0 0 5px;
+}
+
+/* Styles pour les scrollbars du panneau de mining */
+.mining-history-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.mining-history-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.mining-history-scroll .scroll-bar:vertical .increment-button,
+.mining-history-scroll .scroll-bar:vertical .decrement-button {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
 }
 
-.main-tab-pane .tab-header-background {
-    -fx-background-color: -fx-elite-darker;
+.mining-history-scroll .scroll-bar:vertical .increment-button:hover,
+.mining-history-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
 }
 
-.main-tab-pane .tab {
+.mining-history-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z"; /* flèche vers le haut */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z"; /* flèche vers le bas */
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.mining-history-scroll .scroll-bar:vertical .increment-arrow:hover,
+.mining-history-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Masquer la scrollbar horizontale */
+.mining-history-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* ───────────────────────────────────────────── */
+/* 🗡️ COMBAT MISSION HISTORY STYLES             */
+/* ───────────────────────────────────────────── */
+
+/* Container principal de l'historique de combat */
+.combat-history-container {
     -fx-background-color: -fx-elite-gray;
     -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1 1 0 1;
-    -fx-border-radius: 4 4 0 0;
-    -fx-background-radius: 4 4 0 0;
-    -fx-padding: 8 15;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
 }
 
-.main-tab-pane .tab:selected {
+/* Titre des sections d'historique */
+.history-section-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 5px 0;
+}
+
+/* ScrollPane pour l'historique */
+.history-scroll {
     -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.history-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Liste des historiques */
+.history-list {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 5px;
+}
+
+/* Carte d'historique */
+.history-card {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.history-card:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+/* Catégorie (PIRATE ou CONFLIT) */
+.history-category-pirate {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+.history-category-conflict {
+    -fx-text-fill: -fx-elite-danger;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+/* Flèche entre les systèmes */
+.history-arrow {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+}
+
+/* Label du système */
+.history-system {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* Styles pour les systèmes cliquables dans l'historique */
+.history-card .clickable-system-source {
+    -fx-cursor: hand;
     -fx-text-fill: -fx-elite-orange;
 }
 
-.main-tab-pane .tab .tab-label {
+.history-card .clickable-system-source:hover {
+    -fx-underline: true;
+}
+
+.history-card .clickable-system-target {
+    -fx-cursor: hand;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.history-card .clickable-system-target:hover {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-underline: true;
+}
+
+/* Statut d'historique */
+.history-stat {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+}
+
+/* Récompense */
+.history-reward {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* Message "No data" */
+.history-no-data {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-alignment: CENTER;
+    -fx-padding: 20px;
+}
+
+/* Dernière activité */
+.history-last-activity {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 10px;
+    -fx-font-style: italic;
+}
+
+/* Styles pour les scrollbars de l'historique */
+.history-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.history-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.history-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.history-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.history-scroll .scroll-bar:vertical .increment-button,
+.history-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.history-scroll .scroll-bar:vertical .increment-button:hover,
+.history-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.history-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.history-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.history-scroll .scroll-bar:vertical .increment-arrow:hover,
+.history-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Masquer la scrollbar horizontale */
+.history-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* Styles pour les images de prospecteurs (carrées) */
+.prospector-image {
+    -fx-fit-width: 60px;
+    -fx-fit-height: 60px;
+    -fx-preserve-ratio: false;
+}
+
+.prospector-image-large {
+    -fx-fit-width: 80px;
+    -fx-fit-height: 80px;
+    -fx-preserve-ratio: false;
+}
+
+/* Styles pour les cartes de minéraux agrandies */
+.elite-prospector-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 15px;
+    -fx-spacing: 10px;
+}
+
+.elite-prospector-card-large {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+    -fx-spacing: 12px;
+}
+
+/* Nombre de minéraux en orange */
+.mineral-count {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.search-button:disabled {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-text-dim;
+}
+.mirror-overlay {
+    -fx-background-color: rgba(255, 255, 255, 0); /* invisible mais capte la souris */
+    -fx-border-color: transparent;
+    -fx-effect: none;
+}
+
+.mirror-overlay:hover {
+    -fx-border-color: rgba(255, 107, 0, 0.8);
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.3), 20, 0, 0, 0);
+}
+
+/* Indicateur de redimensionnement pour l'overlay */
+.mirror-overlay .resize-handle {
+    -fx-background-color: rgba(255, 215, 0, 0.3);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-cursor: se-resize;
+    -fx-pref-width: 25px;
+    -fx-pref-height: 25px;
+    -fx-min-width: 25px;
+    -fx-min-height: 25px;
+    -fx-max-width: 25px;
+    -fx-max-height: 25px;
+}
+
+.mirror-overlay .resize-handle:hover {
+    -fx-background-color: rgba(255, 215, 0, 0.6);
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow(gaussian, gold, 8, 0.8, 0, 0);
+}
+
+/* Slider de scale de texte (overlay) - style Elite Dangerous */
+.opacity-slider {
+    -fx-background-color: rgba(26, 26, 26, 0.85);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-pref-width: 14px;
+    -fx-pref-height: 140px;
+}
+
+.opacity-slider .track {
+    -fx-background-color: linear-gradient(to right, #2a2a2a, #141414);
+    -fx-background-radius: 2;
+}
+
+.opacity-slider .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 3;
+    -fx-pref-width: 14px;
+    -fx-pref-height: 14px;
+}
+
+.opacity-slider:hover .thumb {
+    -fx-background-color: -fx-elite-cyan;
+}
+/* Slider de scale de texte (overlay) - style Elite Dangerous */
+.text-scale-slider {
+    -fx-background-color: rgba(26, 26, 26, 0.85);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-pref-width: 140px;
+    -fx-pref-height: 14px;
+}
+
+.text-scale-slider .track {
+    -fx-background-color: linear-gradient(to right, #2a2a2a, #141414);
+    -fx-background-radius: 2;
+}
+
+.text-scale-slider .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 3;
+    -fx-pref-width: 14px;
+    -fx-pref-height: 14px;
+}
+
+.text-scale-slider:hover .thumb {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Scrollbars Elite Dangerous pour l'overlay */
+.overlay-root .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+}
+
+.overlay-root .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+}
+
+.overlay-root .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.overlay-root .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.overlay-root .scroll-bar:vertical .increment-button,
+.overlay-root .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.overlay-root .scroll-bar:vertical .increment-button:hover,
+.overlay-root .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.overlay-root .scroll-bar:vertical .increment-arrow{
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+}
+.overlay-root .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+}
+
+.overlay-root .scroll-bar:vertical .increment-arrow:hover,
+.overlay-root .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Scrollbar horizontale pour l'overlay (ex: slider de taille de texte) */
+.overlay-root .scroll-bar:horizontal {
+    -fx-opacity: 0.9;
+    -fx-pref-height: 6px;
+    -fx-background-color: -fx-elite-darker;
+}
+
+.overlay-root .scroll-bar:horizontal .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+}
+.overlay-root-bordered{
+    -fx-border-color: rgba(255, 107, 0, 0.8);
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.3), 20, 0, 0, 0);
+}
+
+/* Style pour le TabPane des missions */
+.missions-tab-pane {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab-header-area {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab-header-background {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px 3px 0 0;
+    -fx-background-radius: 3px 3px 0 0;
+    -fx-padding: 8px 16px;
+}
+
+.missions-tab-pane .tab:selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.missions-tab-pane .tab .tab-label {
     -fx-text-fill: -fx-elite-text;
     -fx-font-weight: bold;
     -fx-font-size: 12px;
 }
 
-.main-tab-pane .tab:selected .tab-label {
-    -fx-text-fill: -fx-elite-orange;
+.missions-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -fx-elite-dark;
 }
 
-.main-tab-pane .tab-content-area {
+.missions-tab-pane .tab-content-area {
     -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 0 0 3px 3px;
+    -fx-background-radius: 0 0 3px 3px;
 }
 
-.massacre-search-content {
+/* Style pour le panneau des targets compact */
+.target-panel-compact {
     -fx-background-color: -fx-elite-dark;
-    -fx-padding: 20;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px;
+}
+
+.target-panel-compact .target-section {
+    -fx-padding: 3px;
+    -fx-spacing: 2px;
+}
+
+.target-panel-compact .target-section-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-padding: 1px 0px;
+}
+
+.target-panel-compact .target-table {
+    -fx-font-size: 10px;
+    -fx-padding: 1px;
+}
+
+.target-panel-compact .target-table .table-cell {
+    -fx-padding: 1px 3px;
+    -fx-font-size: 10px;
+}
+
+.target-panel-compact .target-table .column-header {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-padding: 1px 3px;
+}
+
+/* Style pour le header de faction cible */
+.target-faction-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-padding: 3px 0px;
+}
+
+/* Style pour les éléments cliquables */
+.clickable-system-target {
+    -fx-cursor: hand;
+}
+
+.clickable-system-target:hover {
+    -fx-background-color: rgba(0, 255, 255, 0.2);
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.3), 4, 0, 0, 0);
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentProspectorComponent"
+      spacing="10" VBox.vgrow="ALWAYS">
+
+    <HBox spacing="15" styleClass="prospector-navigation-header" alignment="CENTER_LEFT">
+        <Label fx:id="currentProspectorLabel" text="PROSPECTEUR ACTUEL" styleClass="mining-section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Navigation -->
+        <HBox spacing="10" styleClass="prospector-navigation" alignment="CENTER">
+            <Button fx:id="lastProspectorButton" styleClass="elite-nav-button"
+                    onAction="#showLastProspector"/>
+            <Button fx:id="previousProspectorButton" styleClass="elite-nav-button"  minWidth="30" maxWidth="30" text="◀"
+                    onAction="#showPreviousProspector"/>
+            <Label fx:id="prospectorCounterLabel" text="1/1" styleClass="prospector-counter"/>
+            <Button fx:id="nextProspectorButton" styleClass="elite-nav-button" minWidth="30" maxWidth="30"  text="▶"
+                    onAction="#showNextProspector"/>
+            <Button fx:id="overlayButton"
+                    styleClass="elite-nav-button"
+                    onAction="#showProspectorOverlay"/>
+        </HBox>
+    </HBox>
+
+    <VBox fx:id="currentProspectorContent" styleClass="current-prospector-content"/>
+
+</VBox>
