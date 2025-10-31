@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="JournalAnalyzerApp" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="be.mirooz.elitedangerous.journal.JournalAnalyzerApp" />
+    <module name="journal-analyzer" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="be.mirooz.elitedangerous.journal.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

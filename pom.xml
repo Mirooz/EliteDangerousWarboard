@@ -17,6 +17,7 @@
         <module>inara-client</module>
         <module>elite-commons</module>
         <module>elite-warboard-missions</module>
+        <module>journal-analyzer</module>
     </modules>
 
     <properties>
