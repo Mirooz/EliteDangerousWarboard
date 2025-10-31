@@ -207,16 +207,25 @@ JDK 17 and JavaFX 17 are required to build and run the project.
 You can simplify setup by using the Liberica JDK 17 Full
 distribution, which already includes both the JDK and JavaFX modules.
 
-InnoSetup is also required to build the windows installer.
+
 ```bash
 mvn clean install
 ```
 
 ### **Installer Creation**
+#### Windows
+
+InnoSetup is required to build the Windows installer.
 ```bash
 mvn clean install -P windows-installer
 # Automatically generates EliteWarboard-Setup.exe with embedded runtime
 ```
+#### Linux
+```bash
+mvn clean install -P linux-installer
+# Automatically generates EliteWarboard-Setup.exe with embedded runtime
+```
+
 
 ### **Development**
 Run in elite-warboard-missions module:

@@ -17,7 +17,7 @@
    <Separator/>
    
    <!-- Liste unique pour toutes les missions -->
-   <ScrollPane fitToWidth="true" styleClass="history-scroll" VBox.vgrow="ALWAYS">
+   <ScrollPane fitToWidth="true" styleClass="history-scroll" VBox.vgrow="ALWAYS" minHeight="120">
       <VBox fx:id="historyListBox" spacing="5" styleClass="history-list"/>
    </ScrollPane>
    

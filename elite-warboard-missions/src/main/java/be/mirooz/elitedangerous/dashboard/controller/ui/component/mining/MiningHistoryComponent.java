@@ -10,6 +10,7 @@ import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MiningSessionNotificationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -94,7 +95,8 @@ public class MiningHistoryComponent implements Initializable, IBatchListener {
         
         // Enregistrer le composant auprès du DashboardService pour les notifications de batch
         DashboardService.getInstance().addBatchListener(this);
-        
+
+        MiningSessionNotificationService.getInstance().addSessionEndListener(this::refresh);
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }

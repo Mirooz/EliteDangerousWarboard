@@ -1,6 +1,5 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
@@ -371,10 +370,28 @@ public enum MineralType implements Mineral {
     HAEMATITE(
             "10486",
             "Haematite",
-            "haematite",
+            "Haematite",
             "haematite",
             "haematite",
             "$haematite_name;",
+            MiningMethod.LASER
+    ),
+    PRASEODYMIUM(
+            "143",
+            "Praseodymium",
+            "Praseodymium",
+            "praseodymium",
+            "praseodymium",
+            "$praseodymium_name;",
+            MiningMethod.LASER
+    ),
+    SAMARIUM(
+            "142",
+            "Samarium",
+            "Samarium",
+            "samarium",
+            "samarium",
+            "$samarium_name;",
             MiningMethod.LASER
     );
 
@@ -442,6 +459,8 @@ public enum MineralType implements Mineral {
         OSMIUM.setPrice(66991);
         COBALT.setPrice(5400);
         HAEMATITE.setPrice(10044);
+        PRASEODYMIUM.setPrice(11509);
+        SAMARIUM.setPrice(29280);
     }
 
     private static void setTrashItems() {
@@ -465,6 +484,7 @@ public enum MineralType implements Mineral {
         WATER.setTrashValue(true);
         LIQUID_OXYGEN.setTrashValue(true);
         HYDROGEN_PEROXIDE.setTrashValue(true);
+        PRASEODYMIUM.setTrashValue(true);
         // Precious/metals
         GOLD.setTrashValue(true);
         SILVER.setTrashValue(true);
@@ -472,6 +492,7 @@ public enum MineralType implements Mineral {
         OSMIUM.setTrashValue(true);
         COBALT.setTrashValue(true);
         HAEMATITE.setTrashValue(true);
+        SAMARIUM.setTrashValue(true);
     }
 
     @Override
