@@ -318,6 +318,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
             System.out.println("🔄 CurrentProspectorComponent: Nouveau prospecteur ajouté - " + 
                 (prospector != null ? prospector.toString() : "null"));
             // Afficher automatiquement le dernier prospecteur (qui est maintenant le premier dans la liste inversée)
+            refresh();
             showLastProspector();
         });
     }
