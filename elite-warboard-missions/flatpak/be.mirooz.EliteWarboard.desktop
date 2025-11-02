@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Elite Warboard
+Comment=Elite Dangerous mission and mining manager
+Exec=EliteWarboard
+Icon=be.mirooz.EliteWarboard
+Terminal=false
+Type=Application
+Categories=Game;
