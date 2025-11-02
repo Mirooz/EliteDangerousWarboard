@@ -37,3 +37,8 @@ build/
 ### Mac OS ###
 .DS_Store
 executable/
+
+/build-dir/
+/.flatpak-builder/
+/EliteWarboard.flatpak
+/repo/

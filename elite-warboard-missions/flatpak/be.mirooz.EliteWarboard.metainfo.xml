@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>be.mirooz.EliteWarboard</id>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>Proprietary</project_license>
+
+    <name>Elite Warboard</name>
+    <summary>Unified dashboard for Elite Dangerous: missions, mining, stats and more</summary>
+
+    <description>
+        <p>
+            Elite Warboard is a modern companion app for Elite Dangerous.
+            It automatically reads your journal logs to show missions, mining profits, and activity history —
+            without manual interaction.
+        </p>
+        <p>
+            It’s designed to be the easiest way to track your gameplay, progress, and goals across sessions.
+        </p>
+    </description>
+
+    <launchable type="desktop-id">be.mirooz.EliteWarboard.desktop</launchable>
+    <developer_name>Mirooz</developer_name>
+    <url type="homepage">https://github.com/Mirooz/EliteDangerousWarboard</url>
+    <update_contact>ewen_gallet@hotmail.com</update_contact>
+    <content_rating type="oars-1.1"/>
+</component>

@@ -1,0 +1,33 @@
+app-id: be.mirooz.EliteWarboard
+runtime: org.freedesktop.Platform
+runtime-version: "23.08"
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.openjdk17
+command: /app/bin/EliteWarboard
+finish-args:
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=home
+
+modules:
+  - name: elite-warboard
+    buildsystem: simple
+    build-commands:
+      # Copie l’exécutable principal (app-image)
+      - install -D "elite-warboard-missions/executable/EliteWarboard/bin/EliteWarboard" "/app/bin/EliteWarboard"
+
+      # Copie la lib JavaFX + runtime embarqué
+      - mkdir -p /app/lib
+      - cp -r "elite-warboard-missions/executable/EliteWarboard/lib/"* "/app/lib/"
+
+      # Copie l’icône, le .desktop et le fichier metainfo
+      - install -D "elite-warboard-missions/executable/EliteWarboard/lib/EliteWarboard.png" "/app/share/icons/hicolor/256x256/apps/be.mirooz.EliteWarboard.png"
+      - install -D "elite-warboard-missions/flatpak/be.mirooz.EliteWarboard.desktop" "/app/share/applications/be.mirooz.EliteWarboard.desktop"
+      - install -D "elite-warboard-missions/flatpak/be.mirooz.EliteWarboard.metainfo.xml" "/app/share/metainfo/be.mirooz.EliteWarboard.metainfo.xml"
+
+    sources:
+      - type: dir
+        path: ../../

@@ -347,7 +347,7 @@
                         <version>3.1.0</version>
 
                         <executions>
-                            <!-- 🔹 JLINK -->
+                            <!-- 🔹 JLINK --><!-- 🔹 JLINK Linux : crée un runtime embarqué Java+JavaFX -->
                             <execution>
                                 <id>create-runtime</id>
                                 <phase>install</phase>
@@ -357,12 +357,46 @@
                                 <configuration>
                                     <executable>jlink</executable>
                                     <commandlineArgs>
-                                        --module-path "C:/Progra~1/BellSoft/LibericaJDK-17-Full/jmods"
+                                        --module-path "/usr/lib/jvm/bellsoft-java17-full-amd64/bin/jmods"
                                         --add-modules
                                         java.base,javafx.controls,javafx.fxml,java.logging,java.xml,java.net.http,jdk.crypto.ec
                                         --strip-debug --compress=2
                                         --output "${project.build.directory}/runtime"
                                     </commandlineArgs>
+                                </configuration>
+                            </execution>
+
+                            <!-- 🔹 JPACKAGE app-image (pour Flatpak) -->
+                            <execution>
+                                <id>create-installer-linux-flatpak</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>app-image</argument>
+                                        <argument>--name</argument>
+                                        <argument>EliteWarboard</argument>
+                                        <argument>--dest</argument>
+                                        <argument>executable</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>Mirooz</argument>
+
+                                        <!-- ✅ Correct paths -->
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${project.build.finalName}-jar-with-dependencies.jar</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</argument>
+                                        <argument>--runtime-image</argument>
+                                        <argument>${project.build.directory}/runtime</argument>
+                                        <argument>--icon</argument>
+                                        <argument>src/main/resources/images/elite_dashboard_icon.png</argument>
+                                    </arguments>
                                 </configuration>
                             </execution>
 
@@ -379,7 +413,7 @@
                                         <argument>--type</argument>
                                         <argument>deb</argument>
                                         <argument>--name</argument>
-                                        <argument>Elite Warboard</argument>
+                                        <argument>EliteWarboard</argument>
                                         <argument>--dest</argument>
                                         <argument>executable</argument>
                                         <argument>--vendor</argument>
@@ -399,6 +433,27 @@
                                         <argument>Games</argument>
                                         <argument>--resource-dir</argument>
                                         <argument>src/main/resources/linux</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>flatpak-bundle</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>-c</argument>
+                                        <argument>
+                                            cd executable/EliteWarboard
+                                            # 🔹 Construction du Flatpak
+                                            flatpak-builder --force-clean --repo=repo build-dir ../../flatpak/be.mirooz.EliteWarboard.yaml
+
+                                            # 🔹 Création du bundle .flatpak
+                                            flatpak build-bundle repo ../EliteWarboard.flatpak be.mirooz.EliteWarboard master
+                                        </argument>
                                     </arguments>
                                 </configuration>
                             </execution>
