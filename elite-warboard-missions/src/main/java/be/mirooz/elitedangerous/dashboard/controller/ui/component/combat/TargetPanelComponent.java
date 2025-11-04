@@ -165,11 +165,6 @@ public class TargetPanelComponent extends VBox {
         separator.setVisible(hasPirates && hasConflicts);
         separator.setManaged(hasPirates && hasConflicts);
     }
-    
-    // Méthode de compatibilité pour l'ancienne signature
-    public void displayStats(Map<TargetType, CibleStats> stats) {
-        displayStats(stats, null);
-    }
 
     private void displayStats(CibleStats cibleStats, GridPane grid, Map<String, Mission> missions) {
         int rowIndex = 0; // Pas d'en-têtes

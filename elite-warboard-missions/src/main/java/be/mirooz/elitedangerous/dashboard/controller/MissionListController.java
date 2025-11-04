@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.model.targetpanel.CibleStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
 import be.mirooz.elitedangerous.dashboard.service.CombatMissionHistoryService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.util.comparator.MissionTimestampComparator;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
@@ -18,6 +19,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetP
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetOverlayComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.CombatMissionHistoryComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.VBox;
@@ -121,7 +123,6 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
     @Override
     public void onBatchEnd() {
-        setLoadingVisible(false);
 
         dashboardContext.addFilterListener(this::updateFactionStats);
         updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
@@ -130,11 +131,16 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         if (missionHistoryComponent != null) {
             missionHistoryComponent.refreshHistory();
         }
+        refreshMissions();
+        setLoadingVisible(false);
+
+        MissionEventNotificationService.getInstance().addListener(this::refreshMissions);
     }
 
     @Override
     public void onBatchStart() {
         setLoadingVisible(true);
+        MissionEventNotificationService.getInstance().clearListeners();
     }
 
     private void setLoadingVisible(boolean visible) {
@@ -142,7 +148,9 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     }
 
     private void refreshMissions() {
-        applyFilter(DashboardContext.getInstance().getCurrentFilter(), DashboardContext.getInstance().getCurrentTypeFilter());
+        Platform.runLater(() -> {
+            applyFilter(DashboardContext.getInstance().getCurrentFilter(), DashboardContext.getInstance().getCurrentTypeFilter());
+        });
     }
 
     private void applyFilter(MissionStatus currentFilter, MissionType currentTypeFilter) {
@@ -281,11 +289,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
     private void updateFactionStats(MissionStatus currentStatus, MissionType currentType) {
         // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
-        List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
-                .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
-                .filter(mission -> currentType == null || currentType.equals(mission.getType()))
-                .collect(Collectors.toList());
-        Map<TargetType, CibleStats> stats = computeFactionStats(targetMissions);
+        Map<TargetType, CibleStats> stats = getFactionStats();
 
         // Mettre à jour le panneau de cibles avec les nouvelles statistiques
         if (targetPanel != null) {
@@ -297,15 +301,16 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
             targetOverlayComponent.updateContent(stats, missionsRegistry.getGlobalMissionMap());
         }
     }
-    
-    public Map<TargetType, CibleStats> getFactionStats() {
+
+    private Map<TargetType, CibleStats> getFactionStats() {
+        MissionType currentType =dashboardContext.getCurrentTypeFilter();
         List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
-                .filter(mission -> dashboardContext.getCurrentTypeFilter() == null || dashboardContext.getCurrentTypeFilter().equals(mission.getType()))
+                .filter(mission -> currentType == null || currentType.equals(mission.getType()))
                 .collect(Collectors.toList());
-        return computeFactionStats(targetMissions);
+        Map<TargetType, CibleStats> stats = computeFactionStats(targetMissions);
+        return stats;
     }
-
 
     private Map<TargetType, CibleStats> computeFactionStats(List<Mission> massacreMissions) {
         Map<TargetType, CibleStats> stats = new HashMap<>();
@@ -346,17 +351,8 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     
     @Override
     public void refreshUI() {
-        refreshMissions();
-
+        updateComboBoxSelections(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
         updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
-        
-
-
-        // Mettre à jour l'overlay s'il est ouvert
-        if (targetOverlayComponent.isShowing()) {
-            Map<TargetType, CibleStats> stats = getFactionStats();
-            Map<String, Mission> missions = missionsRegistry.getGlobalMissionMap();
-            targetOverlayComponent.updateContent(stats, missions);
-        }
+        missionListView.refresh();
     }
 }

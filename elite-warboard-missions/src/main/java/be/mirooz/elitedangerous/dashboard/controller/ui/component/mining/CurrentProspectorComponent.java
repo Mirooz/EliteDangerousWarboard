@@ -1,8 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
+import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidListener;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
@@ -25,7 +27,7 @@ import java.util.*;
  * - Le compteur de prospecteurs
  * - L'affichage du message "aucun prospecteur"
  */
-public class CurrentProspectorComponent implements Initializable, ProspectedAsteroidListener, MiningEventNotificationService.MiningEventListener {
+public class CurrentProspectorComponent implements Initializable, ProspectedAsteroidListener, MiningEventNotificationService.MiningEventListener, IBatchListener {
 
     // Services
     private final MiningService miningService = MiningService.getInstance();
@@ -58,7 +60,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     public void initialize(URL location, ResourceBundle resources) {
         // Initialiser le composant overlay
         prospectorOverlayComponent = new ProspectorOverlayComponent();
-
+        DashboardService.getInstance().addBatchListener(this);
         updateProspectors();
         updateTranslations();
 
@@ -74,7 +76,14 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
         miningService.getProspectedRegistry().addListener(this);
         
         // S'enregistrer comme listener des événements de minage
+    }
+    @Override
+    public void onBatchEnd(){
         miningEventNotificationService.addListener(this);
+    }
+    @Override
+    public void onBatchStart(){
+        miningEventNotificationService.removeListeners();
     }
 
     /**

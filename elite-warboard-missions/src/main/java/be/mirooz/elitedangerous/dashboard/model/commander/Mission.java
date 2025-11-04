@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.model.commander;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,13 @@ public class Mission {
     private TargetType targetType;
     private LocalDateTime acceptedTime;
     private boolean wing;
+
+
+    public void setStatus(MissionStatus status) {
+        this.status = status;
+        MissionEventNotificationService.getInstance().notifyOnMissionStatusChanged();
+    }
+
     public boolean isShipActivePirateMassacreMission(){
         return isShipPirateMission() && MissionStatus.ACTIVE.equals(status);
     }

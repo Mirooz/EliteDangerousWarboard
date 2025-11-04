@@ -6,10 +6,10 @@
     <parent>
         <groupId>be.mirooz.elitedangerous</groupId>
         <artifactId>elite-warboard-parent</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
     <artifactId>elite-warboard-missions</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
