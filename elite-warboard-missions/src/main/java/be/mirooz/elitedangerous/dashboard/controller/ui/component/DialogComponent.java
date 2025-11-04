@@ -41,7 +41,7 @@ public class DialogComponent {
 
             this.stage.initModality(Modality.WINDOW_MODAL);
             this.stage.initOwner(owner);
-            this.stage.setAlwaysOnTop(true);
+            this.stage.setAlwaysOnTop(false);
             this.stage.requestFocus();
             this.stage.setResizable(false);
             this.stage.initStyle(StageStyle.TRANSPARENT);

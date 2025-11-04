@@ -33,8 +33,8 @@ public class MiningEventNotificationService {
     /**
      * Retire un listener
      */
-    public void removeListener(MiningEventListener listener) {
-        listeners.remove(listener);
+    public void removeListeners () {
+        listeners.clear();
     }
     
     /**
