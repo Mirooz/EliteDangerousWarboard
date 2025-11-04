@@ -93,7 +93,8 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> {
             updateLanguage();
-
+            // Rafraîchir les missions pour recréer les cartes avec les nouvelles traductions
+            refreshMissions();
             updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());});
 
         dashboardContext.addFilterListener(this::applyFilter);
@@ -248,8 +249,6 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         // Restaurer les sélections
         restoreComboBoxSelections(currentTypeSelection, currentStatusSelection);
 
-        // Rafraîchir les missions pour recréer les cartes avec les nouvelles traductions
-        refreshMissions();
     }
 
     private void updateComboBoxOptions() {
