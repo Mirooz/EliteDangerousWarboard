@@ -1,6 +1,6 @@
 [Setup]
 AppName=Elite Warboard
-AppVersion=1.1.1
+AppVersion=1.1.2
 DefaultDirName={autopf}\Elite Warboard
 DisableProgramGroupPage=yes
 OutputBaseFilename=EliteWarboard-Setup

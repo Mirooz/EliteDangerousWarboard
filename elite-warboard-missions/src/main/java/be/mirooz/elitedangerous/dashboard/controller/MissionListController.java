@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 /**
  * Contrôleur pour la liste des missions
  */
-public class MissionListController implements Initializable, IRefreshable, IBatchListener {
+public class MissionListController implements Initializable, IRefreshable, IBatchListener, MissionEventNotificationService.MissionEventListener {
     @FXML
     private ProgressIndicator loadingIndicator;
     @FXML
@@ -95,7 +95,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
             updateLanguage();
             // Rafraîchir les missions pour recréer les cartes avec les nouvelles traductions
             refreshMissions();
-            updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());});
+        });
 
         dashboardContext.addFilterListener(this::applyFilter);
         dashboardContext.setCurrentFilter(MissionStatus.ACTIVE);
@@ -126,8 +126,6 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     public void onBatchEnd() {
 
         dashboardContext.addFilterListener(this::updateFactionStats);
-        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
-
         // Rafraîchir l'historique des missions complétées
         if (missionHistoryComponent != null) {
             missionHistoryComponent.refreshHistory();
@@ -135,7 +133,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         refreshMissions();
         setLoadingVisible(false);
 
-        MissionEventNotificationService.getInstance().addListener(this::refreshMissions);
+        MissionEventNotificationService.getInstance().addListener(this);
     }
 
     @Override
@@ -164,6 +162,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
                 .toList();
         missionListView.getItems().setAll(filteredMissions);
         updateComboBoxSelections(currentFilter, currentTypeFilter);
+        updateFactionStats(currentFilter, currentTypeFilter);
     }
 
     private void updateComboBoxSelections(MissionStatus currentFilter, MissionType currentTypeFilter) {
@@ -233,8 +232,8 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
         // Les traductions pour le panneau de cibles sont gérées dans le composant lui-même
 
-        int currentTypeSelection=0;
-        int currentStatusSelection=0;
+        int currentTypeSelection = 0;
+        int currentStatusSelection = 0;
         // Sauvegarder les sélections actuelles
         if (typeFilterComboBox != null && typeFilterComboBox.getSelectionModel() != null) {
             currentTypeSelection = typeFilterComboBox.getSelectionModel().getSelectedIndex();
@@ -294,7 +293,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         if (targetPanel != null) {
             targetPanel.displayStats(stats, missionsRegistry.getGlobalMissionMap());
         }
-        
+
         // Mettre à jour l'overlay s'il est ouvert
         if (targetOverlayComponent.isShowing()) {
             targetOverlayComponent.updateContent(stats, missionsRegistry.getGlobalMissionMap());
@@ -302,7 +301,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     }
 
     private Map<TargetType, CibleStats> getFactionStats() {
-        MissionType currentType =dashboardContext.getCurrentTypeFilter();
+        MissionType currentType = dashboardContext.getCurrentTypeFilter();
         List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
                 .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
                 .filter(mission -> currentType == null || currentType.equals(mission.getType()))
@@ -330,7 +329,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     private void showTargetOverlay() {
         Map<TargetType, CibleStats> stats = getFactionStats();
         Map<String, Mission> missions = missionsRegistry.getGlobalMissionMap();
-        
+
         // Si l'overlay est déjà ouvert, on le ferme
         if (targetOverlayComponent.isShowing()) {
             targetOverlayComponent.closeOverlay();
@@ -341,17 +340,29 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
             updateOverlayButtonText();
         }
     }
-    
+
     private void updateOverlayButtonText() {
         if (targetPanel != null) {
             targetPanel.updateOverlayButtonText(targetOverlayComponent.isShowing());
         }
     }
-    
+
     @Override
     public void refreshUI() {
-        updateComboBoxSelections(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
-        updateFactionStats(dashboardContext.getCurrentFilter(),dashboardContext.getCurrentTypeFilter());
-        missionListView.refresh();
     }
+
+    @Override
+    public void onStatusChanged() {
+        refreshMissions();
+    }
+
+    @Override
+    public void onKillChanged() {
+        Platform.runLater(() -> {
+            updateFactionStats(dashboardContext.getCurrentFilter(), dashboardContext.getCurrentTypeFilter());
+            missionListView.refresh();
+        });
+    }
+
+
 }

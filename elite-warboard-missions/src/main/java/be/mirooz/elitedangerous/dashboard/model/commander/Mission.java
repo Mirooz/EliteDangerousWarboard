@@ -37,6 +37,10 @@ public class Mission {
     private LocalDateTime acceptedTime;
     private boolean wing;
 
+    public void setCurrentCount(int currentCount) {
+        this.currentCount = currentCount;
+        MissionEventNotificationService.getInstance().notifyOnMissionCurrentKillCountChanged();
+    }
 
     public void setStatus(MissionStatus status) {
         this.status = status;

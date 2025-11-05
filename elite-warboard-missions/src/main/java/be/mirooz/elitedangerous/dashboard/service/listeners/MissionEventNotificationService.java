@@ -38,11 +38,20 @@ public class MissionEventNotificationService {
             }
         }
     }
-    
+    public void notifyOnMissionCurrentKillCountChanged() {
+        for (MissionEventListener listener : listeners) {
+            try {
+                listener.onKillChanged();
+            } catch (Exception e) {
+                System.err.println("Erreur lors de la notification AsteroidCracked: " + e.getMessage());
+            }
+        }
+    }
     /**
      * Interface pour écouter les événements de minage
      */
     public interface MissionEventListener {
         void onStatusChanged();
+        void onKillChanged();
     }
 }
