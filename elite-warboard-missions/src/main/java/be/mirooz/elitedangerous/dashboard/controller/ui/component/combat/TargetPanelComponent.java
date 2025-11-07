@@ -9,6 +9,7 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -130,7 +131,8 @@ public class TargetPanelComponent extends VBox {
 
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setMinWidth(80);
-        col2.setPrefWidth(80);
+        col2.setPrefWidth(120);
+        col2.setHalignment(HPos.RIGHT);
         col2.setHgrow(Priority.NEVER); // kills reste fixe
 
         grid.getColumnConstraints().addAll(col1, col2);
@@ -219,11 +221,11 @@ public class TargetPanelComponent extends VBox {
                 Label killsLabel;
                 if (src.getKills() == maxKills) {
                     killsLabel = new Label(String.valueOf(src.getKills()));
-                    killsLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #FF6B00;");
+                    killsLabel.setStyle("-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #FF6B00;");
                 } else {
                     int difference = maxKills - src.getKills();
                     killsLabel = new Label(src.getKills() + " (-" + difference + ")");
-                    killsLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #00FF00;");
+                    killsLabel.setStyle("-fx-font-size: 19px; -fx-text-fill: #00FF00; ");
                 }
                 killsLabel.getStyleClass().addAll("faction-col", "kills");
 

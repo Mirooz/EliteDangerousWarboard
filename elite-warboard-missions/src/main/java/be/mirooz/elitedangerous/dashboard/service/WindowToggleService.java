@@ -73,10 +73,14 @@ public class WindowToggleService {
         this.savedX = stage.getX();
         this.savedY = stage.getY();
         
-        // Ajouter un listener JavaFX sur la scène pour capturer les touches même quand l'app a le focus
+        // Ajouter des listeners JavaFX sur la scène pour capturer les touches même quand l'app a le focus
         Platform.runLater(() -> {
             if (stage.getScene() != null) {
-                stage.getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressFromScene);
+                Scene scene = stage.getScene();
+                // Listener pour la touche de bind
+                scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressFromScene);
+                // Filtre pour désactiver la navigation au clavier (empêcher la sélection des éléments)
+                scene.addEventFilter(KeyEvent.KEY_PRESSED, this::disableKeyboardNavigation);
             }
         });
     }
@@ -196,6 +200,43 @@ public class WindowToggleService {
         if (eventKeyCode == keyCode) {
             toggleWindowAndOpenCombo();
             event.consume(); // Consommer l'événement pour éviter qu'il soit traité ailleurs
+        }
+    }
+
+    /**
+     * Désactive la navigation au clavier pour empêcher la sélection des éléments
+     */
+    private void disableKeyboardNavigation(KeyEvent event) {
+        // Ne pas bloquer si l'événement est déjà consommé (par exemple par handleKeyPressFromScene)
+        if (event.isConsumed()) {
+            return;
+        }
+        
+        // Ne pas bloquer si le service est en pause (fenêtre de config ouverte)
+        if (isPaused) {
+            return;
+        }
+        
+        KeyCode keyCode = event.getCode();
+        
+        // Bloquer toutes les touches de navigation au clavier
+        if (keyCode == KeyCode.TAB ||
+            keyCode == KeyCode.UP ||
+            keyCode == KeyCode.DOWN ||
+            keyCode == KeyCode.LEFT ||
+            keyCode == KeyCode.RIGHT ||
+            keyCode == KeyCode.HOME ||
+            keyCode == KeyCode.END ||
+            keyCode == KeyCode.PAGE_UP ||
+            keyCode == KeyCode.PAGE_DOWN ||
+            keyCode == KeyCode.ENTER ||
+            keyCode == KeyCode.SPACE) {
+            // Ne pas bloquer la touche de bind (elle est gérée par handleKeyPressFromScene qui la consomme)
+            int bindKeyCode = preferencesService.getWindowToggleKeyboardKey();
+            int eventKeyCode = convertJavaFXKeyCodeToNative(keyCode);
+            if (eventKeyCode != bindKeyCode) {
+                event.consume(); // Consommer l'événement pour empêcher la navigation
+            }
         }
     }
 

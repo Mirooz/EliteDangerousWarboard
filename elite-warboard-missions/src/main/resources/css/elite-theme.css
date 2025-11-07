@@ -1474,7 +1474,7 @@
 /* Colonnes */
 .faction-col {
     -fx-font-family: "Elite Dangerous", "Consolas", "Courier New", monospace;
-    -fx-font-size: 14px;
+    -fx-font-size: 19px;
     -fx-text-fill: -fx-elite-text;
     -fx-padding: 4 12 4 12;
 }
@@ -2453,7 +2453,7 @@
 /* Labels des factions sources */
 .source-faction-label {
     -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial", sans-serif;
 }
@@ -3722,7 +3722,7 @@
 
 /* Style pour le header de faction cible */
 .target-faction-header {
-    -fx-font-size: 14px;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-cyan;
     -fx-padding: 3px 0px;

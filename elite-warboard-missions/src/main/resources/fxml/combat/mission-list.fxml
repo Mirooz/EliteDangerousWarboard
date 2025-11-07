@@ -41,10 +41,10 @@
       </VBox>
 
       <!-- Section des cibles (droite) - Compacte -->
-      <VBox HBox.hgrow="NEVER" spacing="10.0" minWidth="380" maxWidth="380">
+      <VBox HBox.hgrow="NEVER" spacing="10.0" minWidth="380" maxWidth="480">
          <TargetPanelComponent fx:id="targetPanel"
                               styleClass="target-panel-compact"
-                              maxWidth="380"
+                              maxWidth="480"
                               minWidth="280"
                               prefHeight="280"
                               maxHeight="320"
