@@ -19,7 +19,11 @@ public class ProspectedAsteroidRegistry {
     private ProspectedAsteroidRegistry() {
         miningSessionNotificationService.addSessionEndListener(this::notifyEndMiningSession);
     }
-    
+
+    public void removeListeners() {
+        listeners.clear();
+    }
+
     private static class Holder {
         private static final ProspectedAsteroidRegistry INSTANCE = new ProspectedAsteroidRegistry();
     }

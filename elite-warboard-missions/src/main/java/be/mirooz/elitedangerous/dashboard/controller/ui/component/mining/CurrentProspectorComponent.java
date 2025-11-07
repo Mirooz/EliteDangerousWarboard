@@ -72,18 +72,20 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
 
-        // S'enregistrer comme listener du registre des prospecteurs
-        miningService.getProspectedRegistry().addListener(this);
         
         // S'enregistrer comme listener des événements de minage
     }
     @Override
     public void onBatchEnd(){
         miningEventNotificationService.addListener(this);
+        // S'enregistrer comme listener du registre des prospecteurs
+        miningService.getProspectedRegistry().addListener(this);
     }
     @Override
     public void onBatchStart(){
         miningEventNotificationService.removeListeners();
+        // S'enregistrer comme listener du registre des prospecteurs
+        miningService.getProspectedRegistry().removeListeners();
     }
 
     /**

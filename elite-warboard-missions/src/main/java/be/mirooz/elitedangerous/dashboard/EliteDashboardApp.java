@@ -129,16 +129,13 @@ public class   EliteDashboardApp extends Application {
     private void startHotasListener() {
         new Thread(() -> {
             try {
+                // Initialisation du ControllerEnvironment peut être lente, on le fait dans un thread séparé
+                System.out.println("🔍 Recherche des contrôleurs HOTAS...");
                 Controller[] controllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
 
                 if (controllers.length == 0) {
                     System.out.println("❌ Aucun contrôleur détecté !");
                     return;
-                }
-
-                System.out.println("🎮 Contrôleurs détectés :");
-                for (Controller c : controllers) {
-                    System.out.println("   ➜ " + c.getName() + " (" + c.getType() + ")");
                 }
 
                 // On garde uniquement les périphériques pertinents
@@ -153,8 +150,8 @@ public class   EliteDashboardApp extends Application {
                     return;
                 }
 
-                System.out.println("✅ Suivi des contrôleurs actifs : " +
-                        activeControllers.stream().map(Controller::getName).toList());
+                System.out.println("✅ HOTAS actif : " +
+                        activeControllers.stream().map(Controller::getName).collect(java.util.stream.Collectors.joining(", ")));
 
                 // État précédent de chaque composant pour chaque contrôleur
                 Map<Controller, float[]> lastStates = new HashMap<>();
@@ -181,30 +178,20 @@ public class   EliteDashboardApp extends Application {
                             // Ignore le bruit analogique
                             if (Math.abs(value) < 0.05f) value = 0.0f;
 
-                            // État modifié → on log
+                            // État modifié → on log uniquement les actions importantes
                             if (prevValues[i] != value) {
                                 prevValues[i] = value;
 
-                                if (!name.isBlank()) {
-                                    System.out.printf("🎛️ [%s] %s → %.2f%n", ctrl.getName(), name, value);
-                                }
-
-                                // 🎯 Exemple : hat switch vers le haut sur n'importe quel contrôleur
+                                // 🎯 Hat switch vers le haut sur TWCS Throttle
                                 if ("Commande de pouce".equalsIgnoreCase(name) && value == 0.25f && ctrl.getName().equals("TWCS Throttle")) {
                                     Platform.runLater(() -> toggleWindowAndOpenCombo());
                                 }
-
-                                // Exemple : bouton pressé / relâché
-                                if (value == 1.0f) {
-                                    System.out.printf("🟢 [%s] Bouton pressé: %s%n", ctrl.getName(), name);
-                                } else if (value == 0.0f) {
-                                    System.out.printf("⚫ [%s] Bouton relâché: %s%n", ctrl.getName(), name);
-                                }
+                                // Note: Les logs verbeux ont été supprimés pour améliorer les performances
                             }
                         }
                     }
 
-                    Thread.sleep(50); // 20 Hz → très léger, quasi zéro CPU
+                    Thread.sleep(100); // 20 Hz → très léger, quasi zéro CPU
                 }
 
             } catch (Exception e) {
