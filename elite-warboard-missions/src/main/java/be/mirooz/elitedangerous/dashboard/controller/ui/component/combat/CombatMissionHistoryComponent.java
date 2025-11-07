@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.combat;
 
+import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
@@ -7,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.model.combat.CombatMissionStats;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.service.CombatMissionHistoryService;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -27,7 +29,7 @@ import java.util.ResourceBundle;
 /**
  * Composant pour afficher l'historique des missions de massacre complétées
  */
-public class CombatMissionHistoryComponent implements Initializable {
+public class CombatMissionHistoryComponent implements Initializable, IBatchListener {
 
     // Services
     private final CombatMissionHistoryService historyService = CombatMissionHistoryService.getInstance();
@@ -45,16 +47,23 @@ public class CombatMissionHistoryComponent implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateTranslations();
-        refreshHistory();
-
+        DashboardService.getInstance().addBatchListener(this);
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> refreshHistory());
 
-        // Écouter les changements d'historique
-        historyService.addListener(this::refreshHistory);
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
     }
 
+    @Override
+    public void onBatchStart() {
+        // Écouter les changements d'historique
+        historyService.removeListeners();
+    }
+    @Override
+    public void onBatchEnd() {
+        refreshHistory();
+        historyService.addListener(this::refreshHistory);
+    }
     /**
      * Met à jour les traductions
      */

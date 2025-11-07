@@ -131,7 +131,6 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
             missionHistoryComponent.refreshHistory();
         }
         refreshMissions();
-        setLoadingVisible(false);
 
         MissionEventNotificationService.getInstance().addListener(this);
     }
@@ -163,6 +162,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         missionListView.getItems().setAll(filteredMissions);
         updateComboBoxSelections(currentFilter, currentTypeFilter);
         updateFactionStats(currentFilter, currentTypeFilter);
+        setLoadingVisible(false);
     }
 
     private void updateComboBoxSelections(MissionStatus currentFilter, MissionType currentTypeFilter) {

@@ -526,9 +526,9 @@ public class   EliteDashboardApp extends Application {
         Interpolator interpolator = Interpolator.SPLINE(0.4, 0.0, 0.2, 1.0);
         
         // Durée de l'animation de taille/position (rapide)
-        Duration windowDuration = Duration.millis(100);
+        Duration windowDuration = Duration.millis(200);
         // Durée totale de l'animation des triangles (très rapide - 0.2 seconde)
-        Duration triangleDuration = Duration.millis(200);
+        Duration triangleDuration = Duration.millis(400);
 
         // Créer et afficher l'animation des triangles qui disparaissent
         Pane triangleOverlay = createTriangleAnimationOverlay();

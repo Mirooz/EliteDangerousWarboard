@@ -141,7 +141,11 @@ public class CombatMissionHistoryService {
     public void removeListener(Runnable listener) {
         listeners.remove(listener);
     }
-    
+
+    public void removeListeners() {
+        listeners.clear();
+    }
+
     /**
      * Notifie tous les listeners
      */
