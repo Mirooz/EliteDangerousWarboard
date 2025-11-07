@@ -64,6 +64,29 @@
                    styleClass="config-description"/>
         </VBox>
 
+        <!-- Section Toggle de fenêtre -->
+        <VBox spacing="10.0" styleClass="config-section">
+            <Label fx:id="windowToggleSectionLabel" text="TOGGLE DE FENÊTRE" styleClass="config-section-title"/>
+            
+            <!-- Checkbox pour activer/désactiver -->
+            <CheckBox fx:id="windowToggleEnabledCheckBox" text="Activer le toggle de fenêtre" 
+                    styleClass="config-checkbox"/>
+            
+            <!-- Bind unifié -->
+            <VBox spacing="5.0" styleClass="config-subsection">
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label fx:id="windowToggleBindLabel" text="Bind:" styleClass="config-label"/>
+                    <TextField fx:id="windowToggleBindTextField" styleClass="config-textfield" 
+                              prefWidth="250" editable="false"/>
+                    <Button fx:id="windowToggleBindButton" text="BIND" 
+                           onAction="#captureBind" styleClass="elite-button"/>
+                </HBox>
+                <Label fx:id="windowToggleBindDescriptionLabel" 
+                       text="Cliquez sur BIND puis appuyez sur une touche clavier ou un bouton/composant HOTAS" 
+                       styleClass="config-description"/>
+            </VBox>
+        </VBox>
+
         <!-- Panneau des boutons d'action -->
         <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="config-action-panel">
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveConfig"

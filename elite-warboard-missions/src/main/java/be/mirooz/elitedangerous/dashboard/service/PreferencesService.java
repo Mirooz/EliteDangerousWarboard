@@ -131,6 +131,92 @@ public class PreferencesService {
     public boolean hasPreferencesFile() {
         return Files.exists(preferencesFile);
     }
+
+    /**
+     * Active ou désactive le toggle de fenêtre
+     */
+    public void setWindowToggleEnabled(boolean enabled) {
+        preferences.setProperty("window.toggle.enabled", String.valueOf(enabled));
+        savePreferences();
+    }
+
+    /**
+     * Vérifie si le toggle de fenêtre est activé
+     */
+    public boolean isWindowToggleEnabled() {
+        String value = preferences.getProperty("window.toggle.enabled", "true");
+        return Boolean.parseBoolean(value);
+    }
+
+    /**
+     * Définit la touche clavier pour le toggle (code de touche NativeKeyEvent)
+     */
+    public void setWindowToggleKeyboardKey(int keyCode) {
+        preferences.setProperty("window.toggle.keyboard.key", String.valueOf(keyCode));
+        savePreferences();
+    }
+
+    /**
+     * Récupère la touche clavier pour le toggle (par défaut: Espace = 57)
+     */
+    public int getWindowToggleKeyboardKey() {
+        String value = preferences.getProperty("window.toggle.keyboard.key", "57"); // VC_SPACE = 57
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return 57; // Espace par défaut
+        }
+    }
+
+    /**
+     * Définit le nom du contrôleur HOTAS pour le toggle
+     */
+    public void setWindowToggleHotasController(String controllerName) {
+        preferences.setProperty("window.toggle.hotas.controller", controllerName != null ? controllerName : "");
+        savePreferences();
+    }
+
+    /**
+     * Récupère le nom du contrôleur HOTAS pour le toggle
+     */
+    public String getWindowToggleHotasController() {
+        return preferences.getProperty("window.toggle.hotas.controller", "TWCS Throttle");
+    }
+
+    /**
+     * Définit le nom du composant HOTAS pour le toggle
+     */
+    public void setWindowToggleHotasComponent(String componentName) {
+        preferences.setProperty("window.toggle.hotas.component", componentName != null ? componentName : "");
+        savePreferences();
+    }
+
+    /**
+     * Récupère le nom du composant HOTAS pour le toggle
+     */
+    public String getWindowToggleHotasComponent() {
+        return preferences.getProperty("window.toggle.hotas.component", "Commande de pouce");
+    }
+
+    /**
+     * Définit la valeur du composant HOTAS pour le toggle
+     */
+    public void setWindowToggleHotasValue(float value) {
+        preferences.setProperty("window.toggle.hotas.value", String.valueOf(value));
+        savePreferences();
+    }
+
+    /**
+     * Récupère la valeur du composant HOTAS pour le toggle
+     */
+    public float getWindowToggleHotasValue() {
+        String value = preferences.getProperty("window.toggle.hotas.value", "0.25");
+        try {
+            return Float.parseFloat(value);
+        } catch (NumberFormatException e) {
+            return 0.25f; // Valeur par défaut
+        }
+    }
 }
 
 

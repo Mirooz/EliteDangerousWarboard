@@ -3,18 +3,29 @@ package be.mirooz.elitedangerous.dashboard.controller;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.TextField;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import net.java.games.input.Controller;
+import net.java.games.input.ControllerEnvironment;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Contrôleur pour la fenêtre de configuration
@@ -69,12 +80,45 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private Label journalDaysDescriptionLabel;
 
+    @FXML
+    private Label windowToggleSectionLabel;
+
+    @FXML
+    private CheckBox windowToggleEnabledCheckBox;
+
+    @FXML
+    private Label windowToggleBindLabel;
+
+    @FXML
+    private TextField windowToggleBindTextField;
+
+    @FXML
+    private Button windowToggleBindButton;
+
+    @FXML
+    private Label windowToggleBindDescriptionLabel;
+
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final DashboardService dashboardService = DashboardService.getInstance();
+    private final WindowToggleService windowToggleService = WindowToggleService.getInstance();
+    
+    private boolean isCapturingBind = false;
+    private NativeKeyListener keyCaptureListener = null;
+    private Thread hotasCaptureThread = null;
+    
+    // Valeurs capturées
+    private int capturedKeyCode = -1;
+    private String capturedControllerName = null;
+    private String capturedComponentName = null;
+    private float capturedComponentValue = 0.0f;
+    private boolean isKeyboardBind = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Mettre en pause le service de toggle pendant que la fenêtre de config est ouverte
+        windowToggleService.pause();
+        
         updateTranslations();
         
         // Initialiser la sélection selon la langue actuelle
@@ -89,6 +133,36 @@ public class ConfigDialogController implements Initializable {
         
         // Initialiser le spinner du nombre de jours
         journalDaysSpinner.getValueFactory().setValue(preferencesService.getJournalDays());
+        
+        // Initialiser les valeurs du toggle de fenêtre
+        windowToggleEnabledCheckBox.setSelected(preferencesService.isWindowToggleEnabled());
+        
+        // Afficher le bind actuel
+        String controllerName = preferencesService.getWindowToggleHotasController();
+        String componentName = preferencesService.getWindowToggleHotasComponent();
+        
+        if (controllerName != null && !controllerName.isEmpty() && 
+            componentName != null && !componentName.isEmpty()) {
+            // Bind HOTAS
+            float value = preferencesService.getWindowToggleHotasValue();
+            windowToggleBindTextField.setText(controllerName + " - " + componentName + " (" + value + ")");
+            isKeyboardBind = false;
+            capturedControllerName = controllerName;
+            capturedComponentName = componentName;
+            capturedComponentValue = value;
+        } else {
+            // Bind clavier
+            int keyCode = preferencesService.getWindowToggleKeyboardKey();
+            if (keyCode > 0) {
+                windowToggleBindTextField.setText(getKeyName(keyCode));
+                isKeyboardBind = true;
+                capturedKeyCode = keyCode;
+            } else {
+                windowToggleBindTextField.setText("");
+                isKeyboardBind = false;
+                capturedKeyCode = -1;
+            }
+        }
         
         // Stocker les valeurs initiales pour détecter les changements
         originalJournalFolder = preferencesService.getJournalFolder();
@@ -113,6 +187,13 @@ public class ConfigDialogController implements Initializable {
         journalDaysLabel.setText(localizationService.getString("config.journal.days.label"));
         journalDaysUnitLabel.setText(localizationService.getString("config.journal.days.unit"));
         journalDaysDescriptionLabel.setText(localizationService.getString("config.journal.days.description"));
+        
+        // Traductions pour la section toggle de fenêtre
+        windowToggleSectionLabel.setText(localizationService.getString("config.window.toggle"));
+        windowToggleEnabledCheckBox.setText(localizationService.getString("config.window.toggle.enabled"));
+        windowToggleBindLabel.setText(localizationService.getString("config.window.toggle.bind"));
+        windowToggleBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+        windowToggleBindDescriptionLabel.setText(localizationService.getString("config.window.toggle.bind.description"));
         
         browseJournalFolderButton.setText(localizationService.getString("config.browse"));
         saveButton.setText(localizationService.getString("config.save"));
@@ -148,11 +229,35 @@ public class ConfigDialogController implements Initializable {
         int newJournalDays = journalDaysSpinner.getValue();
         preferencesService.setJournalDays(newJournalDays);
         
+        // Sauvegarder les paramètres du toggle de fenêtre
+        preferencesService.setWindowToggleEnabled(windowToggleEnabledCheckBox.isSelected());
+        
+        if (isKeyboardBind && capturedKeyCode != -1) {
+            // Sauvegarder bind clavier
+            preferencesService.setWindowToggleKeyboardKey(capturedKeyCode);
+            // Effacer bind HOTAS pour indiquer qu'on utilise le clavier
+            preferencesService.setWindowToggleHotasController("");
+            preferencesService.setWindowToggleHotasComponent("");
+        } else if (!isKeyboardBind && capturedControllerName != null && capturedComponentName != null) {
+            // Sauvegarder bind HOTAS
+            preferencesService.setWindowToggleHotasController(capturedControllerName);
+            preferencesService.setWindowToggleHotasComponent(capturedComponentName);
+            preferencesService.setWindowToggleHotasValue(capturedComponentValue);
+            // Effacer bind clavier pour indiquer qu'on utilise le HOTAS (mettre une valeur invalide)
+            preferencesService.setWindowToggleKeyboardKey(-1);
+        }
+        
         // Si le dossier journal ou le nombre de jours a changé, relancer le chargement des missions
         if (!newJournalFolder.equals(originalJournalFolder) || newJournalDays != originalJournalDays) {
             // Relancer le chargement des missions dans un thread séparé
             dashboardService.initActiveMissions();
         }
+        
+        // Reprendre le service (la fenêtre va se fermer)
+        windowToggleService.resume();
+        
+        // Redémarrer le service de toggle pour appliquer les nouvelles configurations
+        windowToggleService.restart();
         
         // Fermer la fenêtre
         Stage stage = (Stage) saveButton.getScene().getWindow();
@@ -161,6 +266,14 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private void cancelConfig() {
+        // Arrêter la capture si active
+        if (isCapturingBind) {
+            stopBindCapture();
+        }
+        
+        // Reprendre le service (la fenêtre va se fermer)
+        windowToggleService.resume();
+        
         // Fermer la fenêtre sans sauvegarder
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
@@ -189,6 +302,223 @@ public class ConfigDialogController implements Initializable {
         
         if (selectedDirectory != null) {
             journalFolderTextField.setText(selectedDirectory.getAbsolutePath());
+        }
+    }
+
+    @FXML
+    private void captureBind() {
+        if (isCapturingBind) {
+            stopBindCapture();
+            return;
+        }
+
+        isCapturingBind = true;
+        windowToggleBindButton.setText("BIND...");
+        windowToggleBindTextField.setText("Appuyez sur une touche clavier ou un bouton/composant HOTAS...");
+
+        // Démarrer la capture clavier
+        startKeyboardCapture();
+        
+        // Démarrer la capture HOTAS
+        startHotasCapture();
+    }
+
+    private void startKeyboardCapture() {
+        // Utiliser le TextField pour capturer les touches JavaFX
+        // Le TextField doit avoir le focus pour recevoir les événements
+        Platform.runLater(() -> {
+            windowToggleBindTextField.requestFocus();
+            windowToggleBindTextField.setOnKeyPressed(this::handleKeyPressForCapture);
+            windowToggleBindTextField.setEditable(false); // Empêcher la saisie manuelle
+        });
+        System.out.println("🎹 Capture clavier démarrée - Appuyez sur une touche...");
+    }
+
+    /**
+     * Gère les pressions de touches pour la capture (via JavaFX)
+     */
+    private void handleKeyPressForCapture(KeyEvent event) {
+        if (!isCapturingBind) {
+            return;
+        }
+
+        // Convertir KeyCode JavaFX en code NativeKeyEvent
+        KeyCode keyCode = event.getCode();
+        int nativeKeyCode = convertKeyCodeToNative(keyCode);
+        
+        if (nativeKeyCode > 0) {
+            System.out.println("🔑 Touche pressée pendant capture: " + nativeKeyCode + " (" + keyCode.getName() + ")");
+            capturedKeyCode = nativeKeyCode;
+            isKeyboardBind = true;
+            
+            windowToggleBindTextField.setText(keyCode.getName());
+            windowToggleBindTextField.setOnKeyPressed(null); // Retirer le listener
+            stopBindCapture();
+            
+            // Consommer l'événement pour éviter qu'il soit traité ailleurs
+            event.consume();
+        }
+    }
+
+    /**
+     * Convertit KeyCode JavaFX en code NativeKeyEvent
+     */
+    private int convertKeyCodeToNative(KeyCode keyCode) {
+        // Mapping manuel des touches courantes
+        switch (keyCode) {
+            case SPACE: return NativeKeyEvent.VC_SPACE;
+            case ENTER: return NativeKeyEvent.VC_ENTER;
+            case ESCAPE: return NativeKeyEvent.VC_ESCAPE;
+            case TAB: return NativeKeyEvent.VC_TAB;
+            case BACK_SPACE: return NativeKeyEvent.VC_BACKSPACE;
+            case DELETE: return NativeKeyEvent.VC_DELETE;
+            case UP: return NativeKeyEvent.VC_UP;
+            case DOWN: return NativeKeyEvent.VC_DOWN;
+            case LEFT: return NativeKeyEvent.VC_LEFT;
+            case RIGHT: return NativeKeyEvent.VC_RIGHT;
+            case F1: return NativeKeyEvent.VC_F1;
+            case F2: return NativeKeyEvent.VC_F2;
+            case F3: return NativeKeyEvent.VC_F3;
+            case F4: return NativeKeyEvent.VC_F4;
+            case F5: return NativeKeyEvent.VC_F5;
+            case F6: return NativeKeyEvent.VC_F6;
+            case F7: return NativeKeyEvent.VC_F7;
+            case F8: return NativeKeyEvent.VC_F8;
+            case F9: return NativeKeyEvent.VC_F9;
+            case F10: return NativeKeyEvent.VC_F10;
+            case F11: return NativeKeyEvent.VC_F11;
+            case F12: return NativeKeyEvent.VC_F12;
+            case SHIFT: return NativeKeyEvent.VC_SHIFT;
+            case CONTROL: return NativeKeyEvent.VC_CONTROL;
+            case ALT: return NativeKeyEvent.VC_ALT;
+            default:
+                // Pour les lettres (A-Z)
+                if (keyCode.isLetterKey()) {
+                    char c = Character.toUpperCase(keyCode.getName().charAt(0));
+                    return NativeKeyEvent.VC_A + (c - 'A');
+                }
+                // Pour les chiffres (0-9)
+                if (keyCode.isDigitKey()) {
+                    int digit = Character.getNumericValue(keyCode.getName().charAt(0));
+                    return NativeKeyEvent.VC_0 + digit;
+                }
+                return -1;
+        }
+    }
+
+    private void startHotasCapture() {
+        hotasCaptureThread = new Thread(() -> {
+            try {
+                Controller[] controllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
+                
+                var activeControllers = Arrays.stream(controllers)
+                        .filter(c -> c.getType() == Controller.Type.STICK
+                                || c.getType() == Controller.Type.GAMEPAD
+                                || c.getType() == Controller.Type.WHEEL)
+                        .toList();
+
+                if (activeControllers.isEmpty()) {
+                    return;
+                }
+
+                // Initialiser les états précédents en lisant une première fois
+                Map<Controller, float[]> lastStates = new HashMap<>();
+                for (Controller ctrl : activeControllers) {
+                    if (ctrl.poll()) {
+                        float[] initialState = new float[ctrl.getComponents().length];
+                        for (int i = 0; i < ctrl.getComponents().length; i++) {
+                            float val = ctrl.getComponents()[i].getPollData();
+                            if (Math.abs(val) < 0.05f) val = 0.0f;
+                            initialState[i] = val;
+                        }
+                        lastStates.put(ctrl, initialState);
+                    }
+                }
+
+                // Attendre un peu pour s'assurer que les valeurs initiales sont bien lues
+                Thread.sleep(100);
+
+                while (isCapturingBind && !Thread.currentThread().isInterrupted()) {
+                    for (Controller ctrl : activeControllers) {
+                        if (!ctrl.poll()) {
+                            continue;
+                        }
+
+                        var components = ctrl.getComponents();
+                        float[] prevValues = lastStates.get(ctrl);
+
+                        for (int i = 0; i < components.length; i++) {
+                            var comp = components[i];
+                            float value = comp.getPollData();
+                            String name = comp.getName();
+
+                            // Ignorer le bruit analogique
+                            if (Math.abs(value) < 0.05f) value = 0.0f;
+
+                            // Détecter un changement significatif (transition)
+                            float prevValue = prevValues[i];
+                            if (prevValue != value && Math.abs(value - prevValue) > 0.05f) {
+                                // Mettre à jour l'état précédent
+                                prevValues[i] = value;
+                                
+                                // Capturer seulement si la nouvelle valeur est significative
+                                if (Math.abs(value) > 0.1f && isCapturingBind) {
+                                    capturedControllerName = ctrl.getName();
+                                    capturedComponentName = name;
+                                    capturedComponentValue = value;
+                                    isKeyboardBind = false;
+                                    
+                                    Platform.runLater(() -> {
+                                        windowToggleBindTextField.setText(
+                                            capturedControllerName + " - " + 
+                                            capturedComponentName + " (" + 
+                                            String.format("%.2f", capturedComponentValue) + ")"
+                                        );
+                                        stopBindCapture();
+                                    });
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    Thread.sleep(50); // Poll plus fréquemment pour la capture
+                }
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, "HotasBindCaptureThread");
+        
+        hotasCaptureThread.start();
+    }
+
+    private void stopBindCapture() {
+        isCapturingBind = false;
+        windowToggleBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+        
+        if (keyCaptureListener != null) {
+            try {
+                GlobalScreen.removeNativeKeyListener(keyCaptureListener);
+            } catch (Exception ignored) {}
+            keyCaptureListener = null;
+        }
+        
+        if (hotasCaptureThread != null && hotasCaptureThread.isAlive()) {
+            hotasCaptureThread.interrupt();
+        }
+        
+        // Ne pas redémarrer le service ici car on est toujours dans la fenêtre de config
+        // Le service sera redémarré après la sauvegarde
+    }
+
+    private String getKeyName(int keyCode) {
+        try {
+            return NativeKeyEvent.getKeyText(keyCode);
+        } catch (Exception e) {
+            return "Key " + keyCode;
         }
     }
 }
