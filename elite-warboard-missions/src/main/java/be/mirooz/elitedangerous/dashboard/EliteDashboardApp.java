@@ -180,7 +180,7 @@ public class   EliteDashboardApp extends Application {
                                 }
 
                                 // 🎯 Exemple : hat switch vers le haut sur n'importe quel contrôleur
-                                if ("Commande de pouce".equalsIgnoreCase(name) && value == 0.25f) {
+                                if ("Commande de pouce".equalsIgnoreCase(name) && value == 0.25f && ctrl.getName().equals("TWCS Throttle")) {
                                     Platform.runLater(() -> toggleWindowAndOpenCombo());
                                 }
 
