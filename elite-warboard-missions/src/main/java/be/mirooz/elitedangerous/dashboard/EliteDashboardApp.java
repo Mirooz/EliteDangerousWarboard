@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class EliteDashboardApp extends Application {
+public class   EliteDashboardApp extends Application {
 
     private LocalizationService localizationService = LocalizationService.getInstance();
     private Stage mainStage;
@@ -180,7 +180,7 @@ public class EliteDashboardApp extends Application {
                                 }
 
                                 // 🎯 Exemple : hat switch vers le haut sur n'importe quel contrôleur
-                                if ("Hat Switch".equalsIgnoreCase(name) && value == 0.25f) {
+                                if ("Commande de pouce".equalsIgnoreCase(name) && value == 0.25f) {
                                     Platform.runLater(() -> toggleWindowAndOpenCombo());
                                 }
 
@@ -248,6 +248,11 @@ public class EliteDashboardApp extends Application {
                 savedX = mainStage.getX();
                 savedY = mainStage.getY();
                 hidden = true;
+                // 🔁 Remet la souris à sa position d'origine
+                if (lastMousePos != null) {
+                    robot.mouseMove(lastMousePos.x, lastMousePos.y);
+                    System.out.println("🖱️ Souris restaurée à (" + lastMousePos.x + ", " + lastMousePos.y + ")");
+                }
 
                 mainStage.setWidth(1);
                 mainStage.setHeight(1);
@@ -268,11 +273,12 @@ public class EliteDashboardApp extends Application {
     }
 
     private void moveMouseToCenter(Robot robot) {
+        lastMousePos = MouseInfo.getPointerInfo().getLocation();
         double x = mainStage.getX();
         double y = mainStage.getY();
         double width = mainStage.getWidth();
         int centerX = (int) x + (int) width / 2;
-        int centerY = (int) y + 100;
+        int centerY = (int) y + 15;
         robot.mouseMove(centerX, centerY);
         System.out.println("🎯 Souris déplacée au centre (" + centerX + ", " + centerY + ")");
     }
