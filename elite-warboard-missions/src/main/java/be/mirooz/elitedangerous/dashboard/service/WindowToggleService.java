@@ -12,9 +12,11 @@ import javafx.scene.control.TabPane;
 import javafx.scene.effect.Glow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -52,6 +54,10 @@ public class WindowToggleService {
     private Thread hotasThread;
     private NativeKeyListener keyboardListener = null;
     private boolean isPaused = false; // Pour désactiver temporairement le toggle
+    private Paint savedSceneFill = null; // Pour sauvegarder la couleur originale de la scène
+    private Map<javafx.scene.Node, Double> savedNodeOpacities = new HashMap<>(); // Pour sauvegarder les opacités des nœuds
+    private Map<javafx.scene.Node, String> savedNodeStyles = new HashMap<>(); // Pour sauvegarder les styles des nœuds
+    private String savedRootPaneStyle = null; // Pour sauvegarder le style original du rootPane
 
     private WindowToggleService() {
         this.preferencesService = PreferencesService.getInstance();
@@ -512,6 +518,18 @@ public class WindowToggleService {
 
         isAnimating = true;
         hidden = false;
+        
+        // Rendre la scène transparente pendant l'animation
+        if (mainStage.getScene() != null) {
+            Scene scene = mainStage.getScene();
+            if (savedSceneFill == null) {
+                Paint fill = scene.getFill();
+                // Si la scène n'a pas de couleur définie, elle a un fond blanc par défaut
+                // On sauvegarde null pour indiquer qu'il faut restaurer à transparent
+                savedSceneFill = fill;
+            }
+            scene.setFill(Color.TRANSPARENT);
+        }
 
         double startWidth = 1;
         double startHeight = 1;
@@ -565,6 +583,9 @@ public class WindowToggleService {
 
         Pane triangleOverlay = createTriangleAnimationOverlay();
         rootPane.getChildren().add(triangleOverlay);
+        
+        // Rendre le contenu du dashboard invisible
+        hideDashboardContent(triangleOverlay);
 
         windowTimeline.play();
 
@@ -581,9 +602,21 @@ public class WindowToggleService {
         triangleTimeline.setOnFinished(event -> {
             rootPane.getChildren().remove(triangleOverlay);
             isAnimating = false;
+            // Restaurer le contenu du dashboard
+            restoreDashboardContent();
+            // Restaurer la couleur originale de la scène
+            if (mainStage.getScene() != null) {
+                if (savedSceneFill != null) {
+                    mainStage.getScene().setFill(savedSceneFill);
+                } else {
+                    // Si pas de couleur sauvegardée, utiliser transparent au lieu de null
+                    // car null peut donner un fond blanc par défaut
+                    mainStage.getScene().setFill(Color.TRANSPARENT);
+                }
+            }
             System.out.println("🔼 Fenêtre restaurée");
             comboBox.hide();
-            moveMouseToCenter(robot);
+           // moveMouseToCenter(robot);
         });
 
         PauseTransition delay = new PauseTransition(Duration.millis(100));
@@ -607,6 +640,18 @@ public class WindowToggleService {
         
         isAnimating = true;
         hidden = true;
+        
+        // Rendre la scène transparente pendant l'animation
+        if (mainStage.getScene() != null) {
+            Scene scene = mainStage.getScene();
+            if (savedSceneFill == null) {
+                Paint fill = scene.getFill();
+                // Si la scène n'a pas de couleur définie, elle a un fond blanc par défaut
+                // On sauvegarde null pour indiquer qu'il faut restaurer à transparent
+                savedSceneFill = fill;
+            }
+            scene.setFill(Color.TRANSPARENT);
+        }
 
         double startWidth = savedWidth;
         double startHeight = savedHeight;
@@ -626,6 +671,9 @@ public class WindowToggleService {
 
         Pane triangleOverlay = createTriangleAnimationOverlay();
         rootPane.getChildren().add(triangleOverlay);
+        
+        // Rendre le contenu du dashboard invisible
+        hideDashboardContent(triangleOverlay);
         
         animateTrianglesDisappear(triangleOverlay, triangleDuration);
 
@@ -667,6 +715,18 @@ public class WindowToggleService {
         triangleTimeline.setOnFinished(event -> {
             rootPane.getChildren().remove(triangleOverlay);
             isAnimating = false;
+            // Restaurer le contenu du dashboard
+            restoreDashboardContent();
+            // Restaurer la couleur originale de la scène
+            if (mainStage.getScene() != null) {
+                if (savedSceneFill != null) {
+                    mainStage.getScene().setFill(savedSceneFill);
+                } else {
+                    // Si pas de couleur sauvegardée, utiliser transparent au lieu de null
+                    // car null peut donner un fond blanc par défaut
+                    mainStage.getScene().setFill(Color.TRANSPARENT);
+                }
+            }
             System.out.println("🔽 Fenêtre réduite");
             if (lastMousePos != null) {
                 robot.mouseMove(lastMousePos.x, lastMousePos.y);
@@ -693,11 +753,69 @@ public class WindowToggleService {
     }
 
     /**
+     * Rend tous les enfants du rootPane invisibles (sauf comboBox et overlay)
+     */
+    private void hideDashboardContent(Pane overlay) {
+        if (rootPane == null) return;
+        savedNodeOpacities.clear();
+        savedNodeStyles.clear();
+        
+        // Sauvegarder et rendre le rootPane transparent
+        if (savedRootPaneStyle == null) {
+            savedRootPaneStyle = rootPane.getStyle();
+        }
+        rootPane.setStyle("-fx-background-color: transparent;");
+        
+        for (Node child : rootPane.getChildren()) {
+            // Ne pas cacher le comboBox ni l'overlay de triangles
+            if (child != comboBox && child != overlay) {
+                savedNodeOpacities.put(child, child.getOpacity());
+                savedNodeStyles.put(child, child.getStyle());
+                child.setOpacity(0.0);
+                // Rendre aussi le fond transparent
+                String currentStyle = child.getStyle();
+                if (currentStyle == null || currentStyle.isEmpty()) {
+                    child.setStyle("-fx-background-color: transparent;");
+                } else if (!currentStyle.contains("-fx-background-color")) {
+                    child.setStyle(currentStyle + " -fx-background-color: transparent;");
+                } else {
+                    // Remplacer la couleur de fond existante par transparent
+                    child.setStyle(currentStyle.replaceAll("-fx-background-color:[^;]+;", "-fx-background-color: transparent;"));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Restaure l'opacité de tous les enfants du rootPane
+     */
+    private void restoreDashboardContent() {
+        if (rootPane == null) return;
+        for (Map.Entry<Node, Double> entry : savedNodeOpacities.entrySet()) {
+            entry.getKey().setOpacity(entry.getValue());
+        }
+        savedNodeOpacities.clear();
+        
+        // Restaurer les styles originaux des nœuds
+        for (Map.Entry<Node, String> entry : savedNodeStyles.entrySet()) {
+            entry.getKey().setStyle(entry.getValue());
+        }
+        savedNodeStyles.clear();
+        
+        // Restaurer le style original du rootPane
+        if (savedRootPaneStyle != null) {
+            rootPane.setStyle(savedRootPaneStyle);
+        } else {
+            rootPane.setStyle("");
+        }
+    }
+    
+    /**
      * Crée un overlay avec des triangles pour l'animation
      */
     private Pane createTriangleAnimationOverlay() {
         Pane overlay = new Pane();
-        overlay.setStyle("-fx-background-color: #000000;");
+        overlay.setStyle("-fx-background-color: transparent;");
         overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
         
         if (mainStage.getScene() != null) {
