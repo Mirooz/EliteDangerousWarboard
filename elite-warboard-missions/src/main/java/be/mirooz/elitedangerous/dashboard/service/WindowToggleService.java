@@ -7,6 +7,8 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.effect.Glow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -37,6 +39,9 @@ public class WindowToggleService {
     private Stage mainStage;
     private ComboBox<String> comboBox;
     private StackPane rootPane;
+    private TabPane tabPane;
+    private Tab missionsTab;
+    private Tab miningTab;
     private boolean hidden = false;
     private boolean isAnimating = false;
     private double savedWidth = 1200;
@@ -84,19 +89,31 @@ public class WindowToggleService {
             }
         });
     }
+    
+    /**
+     * Initialise le TabPane pour le changement d'onglet
+     */
+    public void initializeTabPane(TabPane tabPane, Tab missionsTab, Tab miningTab) {
+        this.tabPane = tabPane;
+        this.missionsTab = missionsTab;
+        this.miningTab = miningTab;
+    }
 
     /**
      * Démarre les listeners si le toggle est activé dans les préférences
      */
     public void start() {
-        if (!preferencesService.isWindowToggleEnabled()) {
-            System.out.println("⚠️ Toggle de fenêtre désactivé dans les préférences");
+        boolean windowToggleEnabled = preferencesService.isWindowToggleEnabled();
+        boolean tabSwitchEnabled = preferencesService.isTabSwitchEnabled();
+        
+        if (!windowToggleEnabled && !tabSwitchEnabled) {
+            System.out.println("⚠️ Aucun service activé dans les préférences");
             return;
         }
 
         startGlobalKeyboardListener();
         startHotasListener();
-        System.out.println("✅ Service de toggle de fenêtre démarré (clavier + HOTAS)");
+        System.out.println("✅ Service de bind démarré (clavier + HOTAS)");
     }
 
     /**
@@ -146,11 +163,13 @@ public class WindowToggleService {
      */
     private void startGlobalKeyboardListener() {
         try {
-            int keyCode = preferencesService.getWindowToggleKeyboardKey();
+            int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
+            int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
+            int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
             
-            // Ne pas démarrer si le keyCode est invalide (bind HOTAS actif)
-            if (keyCode <= 0) {
-                System.out.println("⚠️ Pas de bind clavier configuré (bind HOTAS actif)");
+            // Ne pas démarrer si aucun keyCode n'est configuré
+            if (windowToggleKeyCode <= 0 && tabLeftKeyCode <= 0 && tabRightKeyCode <= 0) {
+                System.out.println("⚠️ Pas de bind clavier configuré");
                 return;
             }
             
@@ -166,16 +185,36 @@ public class WindowToggleService {
             keyboardListener = new NativeKeyListener() {
                 @Override
                 public void nativeKeyPressed(NativeKeyEvent e) {
+                    int keyCode = e.getKeyCode();
+                    boolean isFocused = mainStage.isFocused();
+                    
+                    System.out.println("🔑 Touche pressée (GlobalScreen): " + keyCode + " (app focused: " + isFocused + ")");
+                    
                     // Ne traiter que si l'app n'a pas le focus (sinon c'est le listener JavaFX qui gère)
-                    if (e.getKeyCode() == keyCode && !mainStage.isFocused()) {
+                    if (isFocused) {
+                        System.out.println("⏭️ Ignoré car l'app a le focus (JavaFX listener gère)");
+                        return;
+                    }
+                    
+                    if (keyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
+                        System.out.println("✅ Touche window toggle détectée (GlobalScreen)! (code: " + windowToggleKeyCode + ")");
                         Platform.runLater(() -> toggleWindowAndOpenCombo());
+                    } else if (keyCode == tabLeftKeyCode && preferencesService.isTabSwitchEnabled()) {
+                        System.out.println("✅ Touche tab left détectée (GlobalScreen)! (code: " + tabLeftKeyCode + ")");
+                        Platform.runLater(() -> switchToPreviousTab());
+                    } else if (keyCode == tabRightKeyCode && preferencesService.isTabSwitchEnabled()) {
+                        System.out.println("✅ Touche tab right détectée (GlobalScreen)! (code: " + tabRightKeyCode + ")");
+                        Platform.runLater(() -> switchToNextTab());
+                    } else {
+                        System.out.println("ℹ️ Touche non bindée (code: " + keyCode + ")");
                     }
                 }
             };
             
             GlobalScreen.addNativeKeyListener(keyboardListener);
 
-            System.out.println("🎧 Hook clavier global actif (touche: " + keyCode + ").");
+            System.out.println("🎧 Hook clavier global actif (window: " + windowToggleKeyCode + 
+                             ", tab left: " + tabLeftKeyCode + ", tab right: " + tabRightKeyCode + ").");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -189,17 +228,41 @@ public class WindowToggleService {
             return;
         }
         
-        int keyCode = preferencesService.getWindowToggleKeyboardKey();
-        if (keyCode <= 0) {
-            return; // Pas de bind clavier configuré
-        }
-        
         // Convertir KeyCode JavaFX en code NativeKeyEvent pour comparaison
         int eventKeyCode = convertJavaFXKeyCodeToNative(event.getCode());
+        KeyCode keyCode = event.getCode();
         
-        if (eventKeyCode == keyCode) {
+        System.out.println("🔑 Touche pressée (JavaFX): " + keyCode.getName() + " (code: " + eventKeyCode + ")");
+        
+        // Vérifier le bind window toggle
+        int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
+        if (eventKeyCode == windowToggleKeyCode && windowToggleKeyCode > 0 && preferencesService.isWindowToggleEnabled()) {
+            System.out.println("✅ Touche window toggle détectée! (code: " + windowToggleKeyCode + ")");
             toggleWindowAndOpenCombo();
-            event.consume(); // Consommer l'événement pour éviter qu'il soit traité ailleurs
+            event.consume();
+            return;
+        }
+        
+        // Vérifier les binds de changement d'onglet
+        if (preferencesService.isTabSwitchEnabled()) {
+            int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
+            int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
+            
+            System.out.println("📋 Binds configurés - Left: " + tabLeftKeyCode + ", Right: " + tabRightKeyCode);
+            
+            if (eventKeyCode == tabLeftKeyCode && tabLeftKeyCode > 0) {
+                System.out.println("✅ Touche tab left détectée! (code: " + tabLeftKeyCode + ")");
+                switchToPreviousTab();
+                event.consume();
+                return;
+            } else if (eventKeyCode == tabRightKeyCode && tabRightKeyCode > 0) {
+                System.out.println("✅ Touche tab right détectée! (code: " + tabRightKeyCode + ")");
+                switchToNextTab();
+                event.consume();
+                return;
+            }
+        } else {
+            System.out.println("⚠️ Changement d'onglet désactivé dans les préférences");
         }
     }
 
@@ -218,6 +281,19 @@ public class WindowToggleService {
         }
         
         KeyCode keyCode = event.getCode();
+        int eventKeyCode = convertJavaFXKeyCodeToNative(keyCode);
+        
+        // Vérifier si c'est une touche de bind configurée
+        int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
+        int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
+        int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
+        
+        // Ne pas bloquer les touches de bind
+        if (eventKeyCode == windowToggleKeyCode || 
+            eventKeyCode == tabLeftKeyCode || 
+            eventKeyCode == tabRightKeyCode) {
+            return;
+        }
         
         // Bloquer toutes les touches de navigation au clavier
         if (keyCode == KeyCode.TAB ||
@@ -231,12 +307,7 @@ public class WindowToggleService {
             keyCode == KeyCode.PAGE_DOWN ||
             keyCode == KeyCode.ENTER ||
             keyCode == KeyCode.SPACE) {
-            // Ne pas bloquer la touche de bind (elle est gérée par handleKeyPressFromScene qui la consomme)
-            int bindKeyCode = preferencesService.getWindowToggleKeyboardKey();
-            int eventKeyCode = convertJavaFXKeyCodeToNative(keyCode);
-            if (eventKeyCode != bindKeyCode) {
-                event.consume(); // Consommer l'événement pour empêcher la navigation
-            }
+            event.consume(); // Consommer l'événement pour empêcher la navigation
         }
     }
 
@@ -283,17 +354,32 @@ public class WindowToggleService {
     }
 
     /**
-     * Listener HOTAS
+     * Listener HOTAS unifié pour tous les binds
      */
     private void startHotasListener() {
-        String controllerName = preferencesService.getWindowToggleHotasController();
-        String componentName = preferencesService.getWindowToggleHotasComponent();
-        float componentValue = preferencesService.getWindowToggleHotasValue();
+        // Récupérer toutes les configurations HOTAS
+        String windowToggleController = preferencesService.getWindowToggleHotasController();
+        String windowToggleComponent = preferencesService.getWindowToggleHotasComponent();
+        float windowToggleValue = preferencesService.getWindowToggleHotasValue();
+        
+        String tabLeftController = preferencesService.getTabSwitchLeftHotasController();
+        String tabLeftComponent = preferencesService.getTabSwitchLeftHotasComponent();
+        float tabLeftValue = preferencesService.getTabSwitchLeftHotasValue();
+        
+        String tabRightController = preferencesService.getTabSwitchRightHotasController();
+        String tabRightComponent = preferencesService.getTabSwitchRightHotasComponent();
+        float tabRightValue = preferencesService.getTabSwitchRightHotasValue();
 
         // Si aucune configuration HOTAS, ne pas démarrer
-        if (controllerName == null || controllerName.isEmpty() || 
-            componentName == null || componentName.isEmpty()) {
-            System.out.println("⚠️ Aucune configuration HOTAS pour le toggle");
+        boolean hasWindowToggle = windowToggleController != null && !windowToggleController.isEmpty() && 
+                                  windowToggleComponent != null && !windowToggleComponent.isEmpty();
+        boolean hasTabLeft = tabLeftController != null && !tabLeftController.isEmpty() && 
+                            tabLeftComponent != null && !tabLeftComponent.isEmpty();
+        boolean hasTabRight = tabRightController != null && !tabRightController.isEmpty() && 
+                             tabRightComponent != null && !tabRightComponent.isEmpty();
+        
+        if (!hasWindowToggle && !hasTabLeft && !hasTabRight) {
+            System.out.println("⚠️ Aucune configuration HOTAS");
             return;
         }
 
@@ -341,16 +427,34 @@ public class WindowToggleService {
                             float value = comp.getPollData();
                             String name = comp.getName();
 
-                            if (Math.abs(value) < 0.05f) value = 0.0f;
+                            if (Math.abs(value) < 0.05f)
+                                value = 0.0f;
 
                             if (prevValues[i] != value) {
                                 prevValues[i] = value;
 
-                                // Vérifier si c'est le bon contrôleur, composant et valeur
-                                if (controllerName.equalsIgnoreCase(ctrl.getName()) &&
-                                    componentName.equalsIgnoreCase(name) &&
-                                    Math.abs(value - componentValue) < 0.01f) {
+                                // Vérifier window toggle
+                                if (hasWindowToggle && preferencesService.isWindowToggleEnabled() &&
+                                    windowToggleController.equalsIgnoreCase(ctrl.getName()) &&
+                                    windowToggleComponent.equalsIgnoreCase(name) &&
+                                    Math.abs(value - windowToggleValue) < 0.01f) {
                                     Platform.runLater(() -> toggleWindowAndOpenCombo());
+                                }
+                                
+                                // Vérifier tab left
+                                if (hasTabLeft && preferencesService.isTabSwitchEnabled() &&
+                                    tabLeftController.equalsIgnoreCase(ctrl.getName()) &&
+                                    tabLeftComponent.equalsIgnoreCase(name) &&
+                                    Math.abs(value - tabLeftValue) < 0.01f) {
+                                    Platform.runLater(() -> switchToPreviousTab());
+                                }
+                                
+                                // Vérifier tab right
+                                if (hasTabRight && preferencesService.isTabSwitchEnabled() &&
+                                    tabRightController.equalsIgnoreCase(ctrl.getName()) &&
+                                    tabRightComponent.equalsIgnoreCase(name) &&
+                                    Math.abs(value - tabRightValue) < 0.01f) {
+                                    Platform.runLater(() -> switchToNextTab());
                                 }
                             }
                         }
@@ -364,7 +468,7 @@ public class WindowToggleService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }, "HotasToggleListenerThread");
+        }, "HotasUnifiedListenerThread");
         
         hotasThread.start();
     }
@@ -794,6 +898,82 @@ public class WindowToggleService {
         int centerY = (int) y + 15;
         robot.mouseMove(centerX, centerY);
         System.out.println("🎯 Souris déplacée au centre (" + centerX + ", " + centerY + ")");
+    }
+
+    /**
+     * Change vers l'onglet précédent (cycle: Mining -> Missions -> Mining)
+     */
+    private void switchToPreviousTab() {
+        if (isPaused) {
+            System.out.println("⚠️ Changement d'onglet ignoré (service en pause)");
+            return;
+        }
+        
+        // Vérifier que la fenêtre est visible (pas cachée)
+        if (hidden) {
+            System.out.println("⚠️ Changement d'onglet ignoré (fenêtre cachée)");
+            return;
+        }
+        
+        if (tabPane == null) {
+            System.out.println("⚠️ Changement d'onglet ignoré (TabPane non initialisé)");
+            return;
+        }
+        
+        if (missionsTab == null || miningTab == null) {
+            System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
+            return;
+        }
+        
+        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        if (selectedTab == missionsTab) {
+            tabPane.getSelectionModel().select(miningTab);
+            System.out.println("📑 Changement vers onglet Mining");
+        } else if (selectedTab == miningTab) {
+            tabPane.getSelectionModel().select(missionsTab);
+            System.out.println("📑 Changement vers onglet Missions");
+        } else {
+            tabPane.getSelectionModel().select(missionsTab);
+            System.out.println("📑 Sélection de l'onglet Missions (aucun onglet sélectionné)");
+        }
+    }
+
+    /**
+     * Change vers l'onglet suivant (cycle: Missions -> Mining -> Missions)
+     */
+    private void switchToNextTab() {
+        if (isPaused) {
+            System.out.println("⚠️ Changement d'onglet ignoré (service en pause)");
+            return;
+        }
+        
+        // Vérifier que la fenêtre est visible (pas cachée)
+        if (hidden) {
+            System.out.println("⚠️ Changement d'onglet ignoré (fenêtre cachée)");
+            return;
+        }
+        
+        if (tabPane == null) {
+            System.out.println("⚠️ Changement d'onglet ignoré (TabPane non initialisé)");
+            return;
+        }
+        
+        if (missionsTab == null || miningTab == null) {
+            System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
+            return;
+        }
+        
+        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        if (selectedTab == missionsTab) {
+            tabPane.getSelectionModel().select(miningTab);
+            System.out.println("📑 Changement vers onglet Mining");
+        } else if (selectedTab == miningTab) {
+            tabPane.getSelectionModel().select(missionsTab);
+            System.out.println("📑 Changement vers onglet Missions");
+        } else {
+            tabPane.getSelectionModel().select(missionsTab);
+            System.out.println("📑 Sélection de l'onglet Missions (aucun onglet sélectionné)");
+        }
     }
 }
 

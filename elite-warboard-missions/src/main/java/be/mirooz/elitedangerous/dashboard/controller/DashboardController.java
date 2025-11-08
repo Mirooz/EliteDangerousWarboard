@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.fxml.FXML;
@@ -65,7 +66,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private final DashboardService dashboardService = DashboardService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final CommanderStatusComponent commanderStatusComponent= CommanderStatusComponent.getInstance();
-
+    private final WindowToggleService windowToggleService = WindowToggleService.getInstance();
 
     private final LocalizationService localizationService = LocalizationService.getInstance();
     @Override
@@ -85,6 +86,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
+        
+        // Initialiser le TabPane dans le service de bind unifié
+        windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab);
     }
 
     private void loadComponents() {
@@ -255,7 +259,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void openConfigDialog() {
         Stage primaryStage = (Stage) configButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 700, 650);
+        DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 900, 800);
 
         dialog.init(primaryStage);
         dialog.showAndWait();
