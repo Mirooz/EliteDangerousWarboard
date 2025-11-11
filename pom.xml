@@ -18,6 +18,7 @@
         <module>elite-commons</module>
         <module>elite-warboard-missions</module>
         <module>journal-analyzer</module>
+        <module>bioforge-biodatas</module>
     </modules>
 
     <properties>
