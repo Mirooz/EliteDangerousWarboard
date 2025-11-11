@@ -1071,6 +1071,36 @@
     -fx-text-fill: -fx-elite-dark;
 }
 
+.elite-button-capturing {
+    -fx-background-color: -fx-elite-orange !important;
+    -fx-border-color: -fx-elite-orange !important;
+    -fx-text-fill: -fx-elite-dark !important;
+}
+
+.elite-button:disabled {
+    -fx-opacity: 0.5;
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: #666666;
+    -fx-text-fill: #999999;
+}
+
+.disabled-container {
+    -fx-opacity: 0.5;
+}
+
+.disabled-container .config-checkbox {
+    -fx-opacity: 1.0;
+}
+
+.config-checkbox {
+    -fx-opacity: 1.0;
+    -fx-text-fill: -fx-elite-text;
+}
+
+.config-checkbox:disabled {
+    -fx-opacity: 0.5;
+}
+
 /* Conteneur des missions */
 .missions-container {
     -fx-background-color: -fx-elite-gray;

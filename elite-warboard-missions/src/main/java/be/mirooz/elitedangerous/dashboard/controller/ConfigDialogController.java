@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import net.java.games.input.Controller;
@@ -81,10 +82,13 @@ public class ConfigDialogController implements Initializable {
     private Label journalDaysDescriptionLabel;
 
     @FXML
-    private Label windowToggleSectionLabel;
+    private Label vrModeSectionLabel;
 
     @FXML
-    private CheckBox windowToggleEnabledCheckBox;
+    private CheckBox vrModeEnabledCheckBox;
+
+    @FXML
+    private VBox bindingsContainer;
 
     @FXML
     private Label windowToggleBindLabel;
@@ -100,12 +104,6 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private Label windowToggleBindDescriptionLabel;
-
-    @FXML
-    private Label tabSwitchSectionLabel;
-
-    @FXML
-    private CheckBox tabSwitchEnabledCheckBox;
 
     @FXML
     private Label tabSwitchLeftLabel;
@@ -182,13 +180,18 @@ public class ConfigDialogController implements Initializable {
         // Initialiser le spinner du nombre de jours
         journalDaysSpinner.getValueFactory().setValue(preferencesService.getJournalDays());
         
-        // Initialiser les valeurs du toggle de fenêtre
-        windowToggleEnabledCheckBox.setSelected(preferencesService.isWindowToggleEnabled());
-        updateWindowToggleBindDisplay();
+        // Initialiser le VR mode (activé si au moins un des services est activé)
+        boolean vrModeEnabled = preferencesService.isWindowToggleEnabled() || preferencesService.isTabSwitchEnabled();
+        vrModeEnabledCheckBox.setSelected(vrModeEnabled);
+        // S'assurer que la checkbox est activée
+        vrModeEnabledCheckBox.setDisable(false);
         
-        // Initialiser les valeurs du changement de tab
-        tabSwitchEnabledCheckBox.setSelected(preferencesService.isTabSwitchEnabled());
+        // Initialiser les affichages des binds
+        updateWindowToggleBindDisplay();
         updateTabSwitchBindDisplays();
+        
+        // Mettre à jour l'état des bindings selon le VR mode
+        updateBindingsEnabledState();
         
         // Stocker les valeurs initiales pour détecter les changements
         originalJournalFolder = preferencesService.getJournalFolder();
@@ -214,18 +217,17 @@ public class ConfigDialogController implements Initializable {
         journalDaysUnitLabel.setText(localizationService.getString("config.journal.days.unit"));
         journalDaysDescriptionLabel.setText(localizationService.getString("config.journal.days.description"));
         
-        // Traductions pour la section toggle de fenêtre
-        windowToggleSectionLabel.setText(localizationService.getString("config.window.toggle"));
-        windowToggleEnabledCheckBox.setText(localizationService.getString("config.window.toggle.enabled"));
-        windowToggleBindLabel.setText(localizationService.getString("config.window.toggle.bind"));
-        windowToggleBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
-        windowToggleBindDescriptionLabel.setText(localizationService.getString("config.window.toggle.bind.description"));
-        
-        // Traductions pour la section changement de tab
-        tabSwitchSectionLabel.setText(localizationService.getString("config.tab.switch"));
-        tabSwitchEnabledCheckBox.setText(localizationService.getString("config.tab.switch.enabled"));
+        // Traductions pour la section VR mode
+        vrModeSectionLabel.setText("VR MODE");
+        vrModeEnabledCheckBox.setText(localizationService.getString("config.vr.mode.enabled"));
+        windowToggleBindLabel.setText(localizationService.getString("config.window.toggle.bind.label"));
         tabSwitchLeftLabel.setText(localizationService.getString("config.tab.switch.left"));
         tabSwitchRightLabel.setText(localizationService.getString("config.tab.switch.right"));
+        
+        // Mettre à jour le texte des boutons BIND
+        windowToggleBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+        tabSwitchLeftButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+        tabSwitchRightButton.setText(localizationService.getString("config.window.toggle.bind.button"));
         
         browseJournalFolderButton.setText(localizationService.getString("config.browse"));
         saveButton.setText(localizationService.getString("config.save"));
@@ -387,11 +389,49 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private void selectFrench() {
         englishRadioButton.setSelected(false);
+        localizationService.setLanguage("fr");
+        updateTranslations();
     }
 
     @FXML
     private void selectEnglish() {
         frenchRadioButton.setSelected(false);
+        localizationService.setLanguage("en");
+        updateTranslations();
+    }
+
+    @FXML
+    private void onVrModeChanged() {
+        // S'assurer que la checkbox reste activée
+        vrModeEnabledCheckBox.setDisable(false);
+        updateBindingsEnabledState();
+    }
+
+    /**
+     * Met à jour l'état activé/désactivé des bindings selon le VR mode
+     */
+    private void updateBindingsEnabledState() {
+        boolean vrModeEnabled = vrModeEnabledCheckBox.isSelected();
+        
+        // Désactiver/griser tous les bindings si VR mode est désactivé
+        windowToggleBindButton.setDisable(!vrModeEnabled);
+        windowToggleUnbindButton.setDisable(!vrModeEnabled);
+        windowToggleBindValueLabel.setDisable(!vrModeEnabled);
+        tabSwitchLeftButton.setDisable(!vrModeEnabled);
+        tabSwitchLeftUnbindButton.setDisable(!vrModeEnabled);
+        tabSwitchLeftBindLabel.setDisable(!vrModeEnabled);
+        tabSwitchRightButton.setDisable(!vrModeEnabled);
+        tabSwitchRightUnbindButton.setDisable(!vrModeEnabled);
+        tabSwitchRightBindLabel.setDisable(!vrModeEnabled);
+        
+        // Appliquer un style grisé si désactivé
+        if (vrModeEnabled) {
+            bindingsContainer.getStyleClass().remove("disabled-container");
+        } else {
+            if (!bindingsContainer.getStyleClass().contains("disabled-container")) {
+                bindingsContainer.getStyleClass().add("disabled-container");
+            }
+        }
     }
 
     @FXML
@@ -413,8 +453,10 @@ public class ConfigDialogController implements Initializable {
         int newJournalDays = journalDaysSpinner.getValue();
         preferencesService.setJournalDays(newJournalDays);
         
-        // Sauvegarder les paramètres du toggle de fenêtre
-        preferencesService.setWindowToggleEnabled(windowToggleEnabledCheckBox.isSelected());
+        // Sauvegarder les paramètres VR mode
+        boolean vrModeEnabled = vrModeEnabledCheckBox.isSelected();
+        preferencesService.setWindowToggleEnabled(vrModeEnabled);
+        preferencesService.setTabSwitchEnabled(vrModeEnabled);
         
         if (isKeyboardBind && capturedKeyCode != -1) {
             // Sauvegarder bind clavier
@@ -435,9 +477,6 @@ public class ConfigDialogController implements Initializable {
             preferencesService.setWindowToggleHotasController("");
             preferencesService.setWindowToggleHotasComponent("");
         }
-        
-        // Sauvegarder les paramètres du changement de tab
-        preferencesService.setTabSwitchEnabled(tabSwitchEnabledCheckBox.isSelected());
         
         // Tab left
         if (isTabLeftKeyboardBind && capturedTabLeftKeyCode != -1) {
@@ -541,7 +580,9 @@ public class ConfigDialogController implements Initializable {
         currentBindType = "windowToggle";
         isCapturingBind = true;
         windowToggleBindButton.setText("BIND...");
-        windowToggleBindValueLabel.setText("Appuyez sur une touche clavier ou un bouton/composant HOTAS...");
+        windowToggleBindValueLabel.setText(localizationService.getString("config.window.toggle.bind.capturing"));
+        // Changer le style du bouton en orange pendant la capture
+        windowToggleBindButton.getStyleClass().add("elite-button-capturing");
 
         // Démarrer la capture clavier
         startKeyboardCapture();
@@ -560,7 +601,9 @@ public class ConfigDialogController implements Initializable {
         currentBindType = "tabSwitchLeft";
         isCapturingBind = true;
         tabSwitchLeftButton.setText("BIND...");
-        tabSwitchLeftBindLabel.setText("Appuyez sur une touche clavier ou un bouton/composant HOTAS...");
+        tabSwitchLeftBindLabel.setText(localizationService.getString("config.window.toggle.bind.capturing"));
+        // Changer le style du bouton en orange pendant la capture
+        tabSwitchLeftButton.getStyleClass().add("elite-button-capturing");
 
         startKeyboardCapture();
         startHotasCapture();
@@ -576,7 +619,9 @@ public class ConfigDialogController implements Initializable {
         currentBindType = "tabSwitchRight";
         isCapturingBind = true;
         tabSwitchRightButton.setText("BIND...");
-        tabSwitchRightBindLabel.setText("Appuyez sur une touche clavier ou un bouton/composant HOTAS...");
+        tabSwitchRightBindLabel.setText(localizationService.getString("config.window.toggle.bind.capturing"));
+        // Changer le style du bouton en orange pendant la capture
+        tabSwitchRightButton.getStyleClass().add("elite-button-capturing");
 
         startKeyboardCapture();
         startHotasCapture();
@@ -908,12 +953,16 @@ public class ConfigDialogController implements Initializable {
         } catch (Exception ignored) {}
         
         // Réinitialiser les boutons selon le type
+        String bindButtonText = localizationService.getString("config.window.toggle.bind.button");
         if ("windowToggle".equals(currentBindType)) {
-            windowToggleBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+            windowToggleBindButton.setText(bindButtonText);
+            windowToggleBindButton.getStyleClass().remove("elite-button-capturing");
         } else if ("tabSwitchLeft".equals(currentBindType)) {
-            tabSwitchLeftButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+            tabSwitchLeftButton.setText(bindButtonText);
+            tabSwitchLeftButton.getStyleClass().remove("elite-button-capturing");
         } else if ("tabSwitchRight".equals(currentBindType)) {
-            tabSwitchRightButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+            tabSwitchRightButton.setText(bindButtonText);
+            tabSwitchRightButton.getStyleClass().remove("elite-button-capturing");
         }
         
         if (keyCaptureListener != null) {

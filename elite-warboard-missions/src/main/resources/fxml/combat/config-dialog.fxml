@@ -64,66 +64,57 @@
                    styleClass="config-description"/>
         </VBox>
 
-        <!-- Section Hide/Show Dashboard -->
+        <!-- Section VR Mode -->
         <VBox spacing="10.0" styleClass="config-section">
-            <Label fx:id="windowToggleSectionLabel" text="HIDE/SHOW DASHBOARD" styleClass="config-section-title"/>
+            <Label fx:id="vrModeSectionLabel" text="VR MODE" styleClass="config-section-title"/>
             
-            <!-- Checkbox pour activer/désactiver -->
-            <CheckBox fx:id="windowToggleEnabledCheckBox" text="Activer le hide/show dashboard" 
-                    styleClass="config-checkbox"/>
+            <!-- Checkbox pour activer/désactiver VR mode -->
+            <CheckBox fx:id="vrModeEnabledCheckBox" text="Enable VR mode" 
+                    onAction="#onVrModeChanged" styleClass="config-checkbox" disable="false"/>
             
-            <!-- Bind unifié -->
-            <VBox spacing="5.0" styleClass="config-subsection">
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <Label fx:id="windowToggleBindLabel" text="Bind:" styleClass="config-label"/>
-                    <Button fx:id="windowToggleBindButton" text="BIND" 
-                           onAction="#captureWindowToggleBind" styleClass="elite-button"/>
-                    <Label fx:id="windowToggleBindValueLabel" styleClass="config-label" 
-                           text="Aucun bind" minWidth="200"/>
-                    <Button fx:id="windowToggleUnbindButton" text="✕" 
-                           onAction="#unbindWindowToggle" styleClass="elite-button-secondary" 
-                           visible="false" managed="false"/>
-                </HBox>
-                <Label fx:id="windowToggleBindDescriptionLabel" 
-                       text="Cliquez sur BIND puis appuyez sur une touche clavier ou un bouton/composant HOTAS" 
-                       styleClass="config-description"/>
-            </VBox>
-        </VBox>
-
-        <!-- Section Changement de Tab -->
-        <VBox spacing="10.0" styleClass="config-section">
-            <Label fx:id="tabSwitchSectionLabel" text="CHANGEMENT D'ONGLET" styleClass="config-section-title"/>
-            
-            <!-- Checkbox pour activer/désactiver -->
-            <CheckBox fx:id="tabSwitchEnabledCheckBox" text="Activer le changement d'onglet" 
-                    styleClass="config-checkbox"/>
-            
-            <!-- Bind gauche -->
-            <VBox spacing="5.0" styleClass="config-subsection">
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <Label fx:id="tabSwitchLeftLabel" text="Onglet précédent:" styleClass="config-label"/>
-                    <Button fx:id="tabSwitchLeftButton" text="BIND" 
-                           onAction="#captureTabSwitchLeftBind" styleClass="elite-button"/>
-                    <Label fx:id="tabSwitchLeftBindLabel" styleClass="config-label" 
-                           text="Aucun bind" minWidth="200"/>
-                    <Button fx:id="tabSwitchLeftUnbindButton" text="✕" 
-                           onAction="#unbindTabSwitchLeft" styleClass="elite-button-secondary" 
-                           visible="false" managed="false"/>
-                </HBox>
-            </VBox>
-            
-            <!-- Bind droite -->
-            <VBox spacing="5.0" styleClass="config-subsection">
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <Label fx:id="tabSwitchRightLabel" text="Onglet suivant:" styleClass="config-label"/>
-                    <Button fx:id="tabSwitchRightButton" text="BIND" 
-                           onAction="#captureTabSwitchRightBind" styleClass="elite-button"/>
-                    <Label fx:id="tabSwitchRightBindLabel" styleClass="config-label" 
-                           text="Aucun bind" minWidth="200"/>
-                    <Button fx:id="tabSwitchRightUnbindButton" text="✕" 
-                           onAction="#unbindTabSwitchRight" styleClass="elite-button-secondary" 
-                           visible="false" managed="false"/>
-                </HBox>
+            <!-- Bindings groupés -->
+            <VBox spacing="15.0" styleClass="config-subsection" fx:id="bindingsContainer">
+                <!-- Bind Hide/Show Dashboard -->
+                <VBox spacing="5.0">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label fx:id="windowToggleBindLabel" text="Hide/Show Dashboard:" styleClass="config-label" prefWidth="180"/>
+                        <Button fx:id="windowToggleBindButton" text="BIND" 
+                               onAction="#captureWindowToggleBind" styleClass="elite-button" prefWidth="80"/>
+                        <Label fx:id="windowToggleBindValueLabel" styleClass="config-label" 
+                               text="Aucun bind" minWidth="200"/>
+                        <Button fx:id="windowToggleUnbindButton" text="✕" 
+                               onAction="#unbindWindowToggle" styleClass="elite-button-secondary" 
+                               visible="false" managed="false"/>
+                    </HBox>
+                </VBox>
+                
+                <!-- Bind Onglet précédent -->
+                <VBox spacing="5.0">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label fx:id="tabSwitchLeftLabel" text="Previous tab:" styleClass="config-label" prefWidth="180"/>
+                        <Button fx:id="tabSwitchLeftButton" text="BIND" 
+                               onAction="#captureTabSwitchLeftBind" styleClass="elite-button" prefWidth="80"/>
+                        <Label fx:id="tabSwitchLeftBindLabel" styleClass="config-label" 
+                               text="Aucun bind" minWidth="200"/>
+                        <Button fx:id="tabSwitchLeftUnbindButton" text="✕" 
+                               onAction="#unbindTabSwitchLeft" styleClass="elite-button-secondary" 
+                               visible="false" managed="false"/>
+                    </HBox>
+                </VBox>
+                
+                <!-- Bind Onglet suivant -->
+                <VBox spacing="5.0">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label fx:id="tabSwitchRightLabel" text="Next tab:" styleClass="config-label" prefWidth="180"/>
+                        <Button fx:id="tabSwitchRightButton" text="BIND" 
+                               onAction="#captureTabSwitchRightBind" styleClass="elite-button" prefWidth="80"/>
+                        <Label fx:id="tabSwitchRightBindLabel" styleClass="config-label" 
+                               text="Aucun bind" minWidth="200"/>
+                        <Button fx:id="tabSwitchRightUnbindButton" text="✕" 
+                               onAction="#unbindTabSwitchRight" styleClass="elite-button-secondary" 
+                               visible="false" managed="false"/>
+                    </HBox>
+                </VBox>
             </VBox>
         </VBox>
 
