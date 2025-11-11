@@ -237,99 +237,149 @@ public class ConfigDialogController implements Initializable {
     }
     
     private void updateWindowToggleBindDisplay() {
-        String controllerName = preferencesService.getWindowToggleHotasController();
-        String componentName = preferencesService.getWindowToggleHotasComponent();
-        
-        if (controllerName != null && !controllerName.isEmpty() && 
-            componentName != null && !componentName.isEmpty()) {
-            // Bind HOTAS
-            float value = preferencesService.getWindowToggleHotasValue();
-            windowToggleBindValueLabel.setText(controllerName + " - " + componentName + " (" + String.format("%.2f", value) + ")");
+        // Utiliser les variables capturées en priorité (pour gérer le unbind)
+        if (capturedControllerName != null && !capturedControllerName.isEmpty() && 
+            capturedComponentName != null && !capturedComponentName.isEmpty()) {
+            // Bind HOTAS (depuis variables capturées)
+            windowToggleBindValueLabel.setText(capturedControllerName + " - " + capturedComponentName + " (" + String.format("%.2f", capturedComponentValue) + ")");
             windowToggleUnbindButton.setVisible(true);
             windowToggleUnbindButton.setManaged(true);
             isKeyboardBind = false;
-            capturedControllerName = controllerName;
-            capturedComponentName = componentName;
-            capturedComponentValue = value;
+        } else if (capturedKeyCode > 0) {
+            // Bind clavier (depuis variables capturées)
+            windowToggleBindValueLabel.setText(getKeyName(capturedKeyCode));
+            windowToggleUnbindButton.setVisible(true);
+            windowToggleUnbindButton.setManaged(true);
+            isKeyboardBind = true;
         } else {
-            // Bind clavier
-            int keyCode = preferencesService.getWindowToggleKeyboardKey();
-            if (keyCode > 0) {
-                windowToggleBindValueLabel.setText(getKeyName(keyCode));
+            // Charger depuis les préférences si les variables capturées ne sont pas définies
+            String controllerName = preferencesService.getWindowToggleHotasController();
+            String componentName = preferencesService.getWindowToggleHotasComponent();
+            
+            if (controllerName != null && !controllerName.isEmpty() && 
+                componentName != null && !componentName.isEmpty()) {
+                // Bind HOTAS (depuis préférences)
+                float value = preferencesService.getWindowToggleHotasValue();
+                windowToggleBindValueLabel.setText(controllerName + " - " + componentName + " (" + String.format("%.2f", value) + ")");
                 windowToggleUnbindButton.setVisible(true);
                 windowToggleUnbindButton.setManaged(true);
-                isKeyboardBind = true;
-                capturedKeyCode = keyCode;
-            } else {
-                windowToggleBindValueLabel.setText(localizationService.getString("config.window.toggle.bind.none"));
-                windowToggleUnbindButton.setVisible(false);
-                windowToggleUnbindButton.setManaged(false);
                 isKeyboardBind = false;
-                capturedKeyCode = -1;
+                capturedControllerName = controllerName;
+                capturedComponentName = componentName;
+                capturedComponentValue = value;
+            } else {
+                // Bind clavier (depuis préférences)
+                int keyCode = preferencesService.getWindowToggleKeyboardKey();
+                if (keyCode > 0) {
+                    windowToggleBindValueLabel.setText(getKeyName(keyCode));
+                    windowToggleUnbindButton.setVisible(true);
+                    windowToggleUnbindButton.setManaged(true);
+                    isKeyboardBind = true;
+                    capturedKeyCode = keyCode;
+                } else {
+                    // Aucun bind
+                    windowToggleBindValueLabel.setText(localizationService.getString("config.window.toggle.bind.none"));
+                    windowToggleUnbindButton.setVisible(false);
+                    windowToggleUnbindButton.setManaged(false);
+                    isKeyboardBind = false;
+                    capturedKeyCode = -1;
+                }
             }
         }
     }
     
     private void updateTabSwitchBindDisplays() {
-        // Tab left
-        String leftControllerName = preferencesService.getTabSwitchLeftHotasController();
-        String leftComponentName = preferencesService.getTabSwitchLeftHotasComponent();
-        
-        if (leftControllerName != null && !leftControllerName.isEmpty() && 
-            leftComponentName != null && !leftComponentName.isEmpty()) {
-            float value = preferencesService.getTabSwitchLeftHotasValue();
-            tabSwitchLeftBindLabel.setText(leftControllerName + " - " + leftComponentName + " (" + String.format("%.2f", value) + ")");
+        // Tab left - Utiliser les variables capturées en priorité
+        if (capturedTabLeftControllerName != null && !capturedTabLeftControllerName.isEmpty() && 
+            capturedTabLeftComponentName != null && !capturedTabLeftComponentName.isEmpty()) {
+            // Bind HOTAS (depuis variables capturées)
+            tabSwitchLeftBindLabel.setText(capturedTabLeftControllerName + " - " + capturedTabLeftComponentName + " (" + String.format("%.2f", capturedTabLeftComponentValue) + ")");
             tabSwitchLeftUnbindButton.setVisible(true);
             tabSwitchLeftUnbindButton.setManaged(true);
             isTabLeftKeyboardBind = false;
-            capturedTabLeftControllerName = leftControllerName;
-            capturedTabLeftComponentName = leftComponentName;
-            capturedTabLeftComponentValue = value;
+        } else if (capturedTabLeftKeyCode > 0) {
+            // Bind clavier (depuis variables capturées)
+            tabSwitchLeftBindLabel.setText(getKeyName(capturedTabLeftKeyCode));
+            tabSwitchLeftUnbindButton.setVisible(true);
+            tabSwitchLeftUnbindButton.setManaged(true);
+            isTabLeftKeyboardBind = true;
         } else {
-            int keyCode = preferencesService.getTabSwitchLeftKeyboardKey();
-            if (keyCode > 0) {
-                tabSwitchLeftBindLabel.setText(getKeyName(keyCode));
+            // Charger depuis les préférences
+            String leftControllerName = preferencesService.getTabSwitchLeftHotasController();
+            String leftComponentName = preferencesService.getTabSwitchLeftHotasComponent();
+            
+            if (leftControllerName != null && !leftControllerName.isEmpty() && 
+                leftComponentName != null && !leftComponentName.isEmpty()) {
+                float value = preferencesService.getTabSwitchLeftHotasValue();
+                tabSwitchLeftBindLabel.setText(leftControllerName + " - " + leftComponentName + " (" + String.format("%.2f", value) + ")");
                 tabSwitchLeftUnbindButton.setVisible(true);
                 tabSwitchLeftUnbindButton.setManaged(true);
-                isTabLeftKeyboardBind = true;
-                capturedTabLeftKeyCode = keyCode;
-            } else {
-                tabSwitchLeftBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
-                tabSwitchLeftUnbindButton.setVisible(false);
-                tabSwitchLeftUnbindButton.setManaged(false);
                 isTabLeftKeyboardBind = false;
-                capturedTabLeftKeyCode = -1;
+                capturedTabLeftControllerName = leftControllerName;
+                capturedTabLeftComponentName = leftComponentName;
+                capturedTabLeftComponentValue = value;
+            } else {
+                int keyCode = preferencesService.getTabSwitchLeftKeyboardKey();
+                if (keyCode > 0) {
+                    tabSwitchLeftBindLabel.setText(getKeyName(keyCode));
+                    tabSwitchLeftUnbindButton.setVisible(true);
+                    tabSwitchLeftUnbindButton.setManaged(true);
+                    isTabLeftKeyboardBind = true;
+                    capturedTabLeftKeyCode = keyCode;
+                } else {
+                    tabSwitchLeftBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
+                    tabSwitchLeftUnbindButton.setVisible(false);
+                    tabSwitchLeftUnbindButton.setManaged(false);
+                    isTabLeftKeyboardBind = false;
+                    capturedTabLeftKeyCode = -1;
+                }
             }
         }
         
-        // Tab right
-        String rightControllerName = preferencesService.getTabSwitchRightHotasController();
-        String rightComponentName = preferencesService.getTabSwitchRightHotasComponent();
-        
-        if (rightControllerName != null && !rightControllerName.isEmpty() && 
-            rightComponentName != null && !rightComponentName.isEmpty()) {
-            float value = preferencesService.getTabSwitchRightHotasValue();
-            tabSwitchRightBindLabel.setText(rightControllerName + " - " + rightComponentName + " (" + String.format("%.2f", value) + ")");
+        // Tab right - Utiliser les variables capturées en priorité
+        if (capturedTabRightControllerName != null && !capturedTabRightControllerName.isEmpty() && 
+            capturedTabRightComponentName != null && !capturedTabRightComponentName.isEmpty()) {
+            // Bind HOTAS (depuis variables capturées)
+            tabSwitchRightBindLabel.setText(capturedTabRightControllerName + " - " + capturedTabRightComponentName + " (" + String.format("%.2f", capturedTabRightComponentValue) + ")");
             tabSwitchRightUnbindButton.setVisible(true);
             tabSwitchRightUnbindButton.setManaged(true);
             isTabRightKeyboardBind = false;
-            capturedTabRightControllerName = rightControllerName;
-            capturedTabRightComponentName = rightComponentName;
-            capturedTabRightComponentValue = value;
+        } else if (capturedTabRightKeyCode > 0) {
+            // Bind clavier (depuis variables capturées)
+            tabSwitchRightBindLabel.setText(getKeyName(capturedTabRightKeyCode));
+            tabSwitchRightUnbindButton.setVisible(true);
+            tabSwitchRightUnbindButton.setManaged(true);
+            isTabRightKeyboardBind = true;
         } else {
-            int keyCode = preferencesService.getTabSwitchRightKeyboardKey();
-            if (keyCode > 0) {
-                tabSwitchRightBindLabel.setText(getKeyName(keyCode));
+            // Charger depuis les préférences
+            String rightControllerName = preferencesService.getTabSwitchRightHotasController();
+            String rightComponentName = preferencesService.getTabSwitchRightHotasComponent();
+            
+            if (rightControllerName != null && !rightControllerName.isEmpty() && 
+                rightComponentName != null && !rightComponentName.isEmpty()) {
+                float value = preferencesService.getTabSwitchRightHotasValue();
+                tabSwitchRightBindLabel.setText(rightControllerName + " - " + rightComponentName + " (" + String.format("%.2f", value) + ")");
                 tabSwitchRightUnbindButton.setVisible(true);
                 tabSwitchRightUnbindButton.setManaged(true);
-                isTabRightKeyboardBind = true;
-                capturedTabRightKeyCode = keyCode;
-            } else {
-                tabSwitchRightBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
-                tabSwitchRightUnbindButton.setVisible(false);
-                tabSwitchRightUnbindButton.setManaged(false);
                 isTabRightKeyboardBind = false;
-                capturedTabRightKeyCode = -1;
+                capturedTabRightControllerName = rightControllerName;
+                capturedTabRightComponentName = rightComponentName;
+                capturedTabRightComponentValue = value;
+            } else {
+                int keyCode = preferencesService.getTabSwitchRightKeyboardKey();
+                if (keyCode > 0) {
+                    tabSwitchRightBindLabel.setText(getKeyName(keyCode));
+                    tabSwitchRightUnbindButton.setVisible(true);
+                    tabSwitchRightUnbindButton.setManaged(true);
+                    isTabRightKeyboardBind = true;
+                    capturedTabRightKeyCode = keyCode;
+                } else {
+                    tabSwitchRightBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
+                    tabSwitchRightUnbindButton.setVisible(false);
+                    tabSwitchRightUnbindButton.setManaged(false);
+                    isTabRightKeyboardBind = false;
+                    capturedTabRightKeyCode = -1;
+                }
             }
         }
     }
@@ -379,6 +429,11 @@ public class ConfigDialogController implements Initializable {
             preferencesService.setWindowToggleHotasValue(capturedComponentValue);
             // Effacer bind clavier pour indiquer qu'on utilise le HOTAS (mettre une valeur invalide)
             preferencesService.setWindowToggleKeyboardKey(-1);
+        } else {
+            // Unbind : effacer tous les binds
+            preferencesService.setWindowToggleKeyboardKey(-1);
+            preferencesService.setWindowToggleHotasController("");
+            preferencesService.setWindowToggleHotasComponent("");
         }
         
         // Sauvegarder les paramètres du changement de tab
@@ -394,6 +449,11 @@ public class ConfigDialogController implements Initializable {
             preferencesService.setTabSwitchLeftHotasComponent(capturedTabLeftComponentName);
             preferencesService.setTabSwitchLeftHotasValue(capturedTabLeftComponentValue);
             preferencesService.setTabSwitchLeftKeyboardKey(-1);
+        } else {
+            // Unbind : effacer tous les binds
+            preferencesService.setTabSwitchLeftKeyboardKey(-1);
+            preferencesService.setTabSwitchLeftHotasController("");
+            preferencesService.setTabSwitchLeftHotasComponent("");
         }
         
         // Tab right
@@ -406,6 +466,11 @@ public class ConfigDialogController implements Initializable {
             preferencesService.setTabSwitchRightHotasComponent(capturedTabRightComponentName);
             preferencesService.setTabSwitchRightHotasValue(capturedTabRightComponentValue);
             preferencesService.setTabSwitchRightKeyboardKey(-1);
+        } else {
+            // Unbind : effacer tous les binds
+            preferencesService.setTabSwitchRightKeyboardKey(-1);
+            preferencesService.setTabSwitchRightHotasController("");
+            preferencesService.setTabSwitchRightHotasComponent("");
         }
         
         // Si le dossier journal ou le nombre de jours a changé, relancer le chargement des missions
@@ -522,8 +587,12 @@ public class ConfigDialogController implements Initializable {
         capturedKeyCode = -1;
         capturedControllerName = null;
         capturedComponentName = null;
+        capturedComponentValue = 0.0f;
         isKeyboardBind = false;
-        updateWindowToggleBindDisplay();
+        // Mettre à jour directement l'affichage sans recharger depuis les préférences
+        windowToggleBindValueLabel.setText(localizationService.getString("config.window.toggle.bind.none"));
+        windowToggleUnbindButton.setVisible(false);
+        windowToggleUnbindButton.setManaged(false);
     }
     
     @FXML
@@ -531,8 +600,12 @@ public class ConfigDialogController implements Initializable {
         capturedTabLeftKeyCode = -1;
         capturedTabLeftControllerName = null;
         capturedTabLeftComponentName = null;
+        capturedTabLeftComponentValue = 0.0f;
         isTabLeftKeyboardBind = false;
-        updateTabSwitchBindDisplays();
+        // Mettre à jour directement l'affichage sans recharger depuis les préférences
+        tabSwitchLeftBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
+        tabSwitchLeftUnbindButton.setVisible(false);
+        tabSwitchLeftUnbindButton.setManaged(false);
     }
     
     @FXML
@@ -540,8 +613,12 @@ public class ConfigDialogController implements Initializable {
         capturedTabRightKeyCode = -1;
         capturedTabRightControllerName = null;
         capturedTabRightComponentName = null;
+        capturedTabRightComponentValue = 0.0f;
         isTabRightKeyboardBind = false;
-        updateTabSwitchBindDisplays();
+        // Mettre à jour directement l'affichage sans recharger depuis les préférences
+        tabSwitchRightBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
+        tabSwitchRightUnbindButton.setVisible(false);
+        tabSwitchRightUnbindButton.setManaged(false);
     }
 
     private void startKeyboardCapture() {
@@ -581,19 +658,19 @@ public class ConfigDialogController implements Initializable {
             if ("windowToggle".equals(currentBindType)) {
                 capturedKeyCode = nativeKeyCode;
                 isKeyboardBind = true;
-                windowToggleBindValueLabel.setText(keyCode.getName());
+                windowToggleBindValueLabel.setText(getKeyName(nativeKeyCode));
                 windowToggleUnbindButton.setVisible(true);
                 windowToggleUnbindButton.setManaged(true);
             } else if ("tabSwitchLeft".equals(currentBindType)) {
                 capturedTabLeftKeyCode = nativeKeyCode;
                 isTabLeftKeyboardBind = true;
-                tabSwitchLeftBindLabel.setText(keyCode.getName());
+                tabSwitchLeftBindLabel.setText(getKeyName(nativeKeyCode));
                 tabSwitchLeftUnbindButton.setVisible(true);
                 tabSwitchLeftUnbindButton.setManaged(true);
             } else if ("tabSwitchRight".equals(currentBindType)) {
                 capturedTabRightKeyCode = nativeKeyCode;
                 isTabRightKeyboardBind = true;
-                tabSwitchRightBindLabel.setText(keyCode.getName());
+                tabSwitchRightBindLabel.setText(getKeyName(nativeKeyCode));
                 tabSwitchRightUnbindButton.setVisible(true);
                 tabSwitchRightUnbindButton.setManaged(true);
             }
@@ -636,17 +713,45 @@ public class ConfigDialogController implements Initializable {
             case SHIFT: return NativeKeyEvent.VC_SHIFT;
             case CONTROL: return NativeKeyEvent.VC_CONTROL;
             case ALT: return NativeKeyEvent.VC_ALT;
+            // Mapping explicite pour toutes les lettres
+            case A: return NativeKeyEvent.VC_A;
+            case B: return NativeKeyEvent.VC_B;
+            case C: return NativeKeyEvent.VC_C;
+            case D: return NativeKeyEvent.VC_D;
+            case E: return NativeKeyEvent.VC_E;
+            case F: return NativeKeyEvent.VC_F;
+            case G: return NativeKeyEvent.VC_G;
+            case H: return NativeKeyEvent.VC_H;
+            case I: return NativeKeyEvent.VC_I;
+            case J: return NativeKeyEvent.VC_J;
+            case K: return NativeKeyEvent.VC_K;
+            case L: return NativeKeyEvent.VC_L;
+            case M: return NativeKeyEvent.VC_M;
+            case N: return NativeKeyEvent.VC_N;
+            case O: return NativeKeyEvent.VC_O;
+            case P: return NativeKeyEvent.VC_P;
+            case Q: return NativeKeyEvent.VC_Q;
+            case R: return NativeKeyEvent.VC_R;
+            case S: return NativeKeyEvent.VC_S;
+            case T: return NativeKeyEvent.VC_T;
+            case U: return NativeKeyEvent.VC_U;
+            case V: return NativeKeyEvent.VC_V;
+            case W: return NativeKeyEvent.VC_W;
+            case X: return NativeKeyEvent.VC_X;
+            case Y: return NativeKeyEvent.VC_Y;
+            case Z: return NativeKeyEvent.VC_Z;
+            // Mapping explicite pour les chiffres
+            case DIGIT0: return NativeKeyEvent.VC_0;
+            case DIGIT1: return NativeKeyEvent.VC_1;
+            case DIGIT2: return NativeKeyEvent.VC_2;
+            case DIGIT3: return NativeKeyEvent.VC_3;
+            case DIGIT4: return NativeKeyEvent.VC_4;
+            case DIGIT5: return NativeKeyEvent.VC_5;
+            case DIGIT6: return NativeKeyEvent.VC_6;
+            case DIGIT7: return NativeKeyEvent.VC_7;
+            case DIGIT8: return NativeKeyEvent.VC_8;
+            case DIGIT9: return NativeKeyEvent.VC_9;
             default:
-                // Pour les lettres (A-Z)
-                if (keyCode.isLetterKey()) {
-                    char c = Character.toUpperCase(keyCode.getName().charAt(0));
-                    return NativeKeyEvent.VC_A + (c - 'A');
-                }
-                // Pour les chiffres (0-9)
-                if (keyCode.isDigitKey()) {
-                    int digit = Character.getNumericValue(keyCode.getName().charAt(0));
-                    return NativeKeyEvent.VC_0 + digit;
-                }
                 return -1;
         }
     }
@@ -711,6 +816,17 @@ public class ConfigDialogController implements Initializable {
                                     // Créer des copies finales pour la lambda
                                     final String finalControllerName = ctrl.getName();
                                     final String finalComponentName = name;
+                                    //SI analogique, on prend valeur max
+                                    if (comp.isAnalog()) {
+                                        if (value > 0f) {
+                                            value = 1f;
+                                        } else if (value < 0f) {
+                                            value = -1f;
+                                        } else {
+                                            value = 0f;
+                                        }
+                                    }
+
                                     final float finalValue = value;
                                     final String finalBindType = currentBindType;
                                     

@@ -77,13 +77,13 @@ public class WindowToggleService {
         this.mainStage = stage;
         this.comboBox = comboBox;
         this.rootPane = rootPane;
-        
+
         // Sauvegarder les dimensions initiales
         this.savedWidth = stage.getWidth();
         this.savedHeight = stage.getHeight();
         this.savedX = stage.getX();
         this.savedY = stage.getY();
-        
+
         // Ajouter des listeners JavaFX sur la scène pour capturer les touches même quand l'app a le focus
         Platform.runLater(() -> {
             if (stage.getScene() != null) {
@@ -95,7 +95,7 @@ public class WindowToggleService {
             }
         });
     }
-    
+
     /**
      * Initialise le TabPane pour le changement d'onglet
      */
@@ -111,7 +111,7 @@ public class WindowToggleService {
     public void start() {
         boolean windowToggleEnabled = preferencesService.isWindowToggleEnabled();
         boolean tabSwitchEnabled = preferencesService.isTabSwitchEnabled();
-        
+
         if (!windowToggleEnabled && !tabSwitchEnabled) {
             System.out.println("⚠️ Aucun service activé dans les préférences");
             return;
@@ -130,13 +130,14 @@ public class WindowToggleService {
         if (keyboardListener != null) {
             try {
                 GlobalScreen.removeNativeKeyListener(keyboardListener);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             keyboardListener = null;
         }
-        
+
         // Ne pas dé-enregistrer le hook car d'autres composants peuvent l'utiliser
         // (comme ConfigDialogController pour la capture de touche)
-        
+
         if (hotasThread != null && hotasThread.isAlive()) {
             hotasThread.interrupt();
         }
@@ -172,16 +173,16 @@ public class WindowToggleService {
             int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
             int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
             int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
-            
+
             // Ne pas démarrer si aucun keyCode n'est configuré
             if (windowToggleKeyCode <= 0 && tabLeftKeyCode <= 0 && tabRightKeyCode <= 0) {
                 System.out.println("⚠️ Pas de bind clavier configuré");
                 return;
             }
-            
+
             Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
             logger.setLevel(Level.OFF);
-            
+
             // Enregistrer le hook seulement s'il n'est pas déjà enregistré
             if (!GlobalScreen.isNativeHookRegistered()) {
                 GlobalScreen.registerNativeHook();
@@ -193,15 +194,15 @@ public class WindowToggleService {
                 public void nativeKeyPressed(NativeKeyEvent e) {
                     int keyCode = e.getKeyCode();
                     boolean isFocused = mainStage.isFocused();
-                    
+
                     System.out.println("🔑 Touche pressée (GlobalScreen): " + keyCode + " (app focused: " + isFocused + ")");
-                    
+
                     // Ne traiter que si l'app n'a pas le focus (sinon c'est le listener JavaFX qui gère)
                     if (isFocused) {
                         System.out.println("⏭️ Ignoré car l'app a le focus (JavaFX listener gère)");
                         return;
                     }
-                    
+
                     if (keyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
                         System.out.println("✅ Touche window toggle détectée (GlobalScreen)! (code: " + windowToggleKeyCode + ")");
                         Platform.runLater(() -> toggleWindowAndOpenCombo());
@@ -216,11 +217,11 @@ public class WindowToggleService {
                     }
                 }
             };
-            
+
             GlobalScreen.addNativeKeyListener(keyboardListener);
 
-            System.out.println("🎧 Hook clavier global actif (window: " + windowToggleKeyCode + 
-                             ", tab left: " + tabLeftKeyCode + ", tab right: " + tabRightKeyCode + ").");
+            System.out.println("🎧 Hook clavier global actif (window: " + windowToggleKeyCode +
+                    ", tab left: " + tabLeftKeyCode + ", tab right: " + tabRightKeyCode + ").");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -233,13 +234,13 @@ public class WindowToggleService {
         if (isPaused) {
             return;
         }
-        
+
         // Convertir KeyCode JavaFX en code NativeKeyEvent pour comparaison
         int eventKeyCode = convertJavaFXKeyCodeToNative(event.getCode());
         KeyCode keyCode = event.getCode();
-        
+
         System.out.println("🔑 Touche pressée (JavaFX): " + keyCode.getName() + " (code: " + eventKeyCode + ")");
-        
+
         // Vérifier le bind window toggle
         int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
         if (eventKeyCode == windowToggleKeyCode && windowToggleKeyCode > 0 && preferencesService.isWindowToggleEnabled()) {
@@ -248,14 +249,14 @@ public class WindowToggleService {
             event.consume();
             return;
         }
-        
+
         // Vérifier les binds de changement d'onglet
         if (preferencesService.isTabSwitchEnabled()) {
             int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
             int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
-            
+
             System.out.println("📋 Binds configurés - Left: " + tabLeftKeyCode + ", Right: " + tabRightKeyCode);
-            
+
             if (eventKeyCode == tabLeftKeyCode && tabLeftKeyCode > 0) {
                 System.out.println("✅ Touche tab left détectée! (code: " + tabLeftKeyCode + ")");
                 switchToPreviousTab();
@@ -280,39 +281,39 @@ public class WindowToggleService {
         if (event.isConsumed()) {
             return;
         }
-        
+
         // Ne pas bloquer si le service est en pause (fenêtre de config ouverte)
         if (isPaused) {
             return;
         }
-        
+
         KeyCode keyCode = event.getCode();
         int eventKeyCode = convertJavaFXKeyCodeToNative(keyCode);
-        
+
         // Vérifier si c'est une touche de bind configurée
         int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
         int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
         int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
-        
+
         // Ne pas bloquer les touches de bind
-        if (eventKeyCode == windowToggleKeyCode || 
-            eventKeyCode == tabLeftKeyCode || 
-            eventKeyCode == tabRightKeyCode) {
+        if (eventKeyCode == windowToggleKeyCode ||
+                eventKeyCode == tabLeftKeyCode ||
+                eventKeyCode == tabRightKeyCode) {
             return;
         }
-        
+
         // Bloquer toutes les touches de navigation au clavier
         if (keyCode == KeyCode.TAB ||
-            keyCode == KeyCode.UP ||
-            keyCode == KeyCode.DOWN ||
-            keyCode == KeyCode.LEFT ||
-            keyCode == KeyCode.RIGHT ||
-            keyCode == KeyCode.HOME ||
-            keyCode == KeyCode.END ||
-            keyCode == KeyCode.PAGE_UP ||
-            keyCode == KeyCode.PAGE_DOWN ||
-            keyCode == KeyCode.ENTER ||
-            keyCode == KeyCode.SPACE) {
+                keyCode == KeyCode.UP ||
+                keyCode == KeyCode.DOWN ||
+                keyCode == KeyCode.LEFT ||
+                keyCode == KeyCode.RIGHT ||
+                keyCode == KeyCode.HOME ||
+                keyCode == KeyCode.END ||
+                keyCode == KeyCode.PAGE_UP ||
+                keyCode == KeyCode.PAGE_DOWN ||
+                keyCode == KeyCode.ENTER ||
+                keyCode == KeyCode.SPACE) {
             event.consume(); // Consommer l'événement pour empêcher la navigation
         }
     }
@@ -322,39 +323,89 @@ public class WindowToggleService {
      */
     private int convertJavaFXKeyCodeToNative(KeyCode keyCode) {
         switch (keyCode) {
-            case SPACE: return NativeKeyEvent.VC_SPACE;
-            case ENTER: return NativeKeyEvent.VC_ENTER;
-            case ESCAPE: return NativeKeyEvent.VC_ESCAPE;
-            case TAB: return NativeKeyEvent.VC_TAB;
-            case BACK_SPACE: return NativeKeyEvent.VC_BACKSPACE;
-            case DELETE: return NativeKeyEvent.VC_DELETE;
-            case UP: return NativeKeyEvent.VC_UP;
-            case DOWN: return NativeKeyEvent.VC_DOWN;
-            case LEFT: return NativeKeyEvent.VC_LEFT;
-            case RIGHT: return NativeKeyEvent.VC_RIGHT;
-            case F1: return NativeKeyEvent.VC_F1;
-            case F2: return NativeKeyEvent.VC_F2;
-            case F3: return NativeKeyEvent.VC_F3;
-            case F4: return NativeKeyEvent.VC_F4;
-            case F5: return NativeKeyEvent.VC_F5;
-            case F6: return NativeKeyEvent.VC_F6;
-            case F7: return NativeKeyEvent.VC_F7;
-            case F8: return NativeKeyEvent.VC_F8;
-            case F9: return NativeKeyEvent.VC_F9;
-            case F10: return NativeKeyEvent.VC_F10;
-            case F11: return NativeKeyEvent.VC_F11;
-            case F12: return NativeKeyEvent.VC_F12;
+            case SPACE:
+                return NativeKeyEvent.VC_SPACE;
+            case ENTER:
+                return NativeKeyEvent.VC_ENTER;
+            case ESCAPE:
+                return NativeKeyEvent.VC_ESCAPE;
+            case TAB:
+                return NativeKeyEvent.VC_TAB;
+            case BACK_SPACE:
+                return NativeKeyEvent.VC_BACKSPACE;
+            case DELETE:
+                return NativeKeyEvent.VC_DELETE;
+            case UP:
+                return NativeKeyEvent.VC_UP;
+            case DOWN:
+                return NativeKeyEvent.VC_DOWN;
+            case LEFT:
+                return NativeKeyEvent.VC_LEFT;
+            case RIGHT:
+                return NativeKeyEvent.VC_RIGHT;
+            case F1:
+                return NativeKeyEvent.VC_F1;
+            case F2:
+                return NativeKeyEvent.VC_F2;
+            case F3:
+                return NativeKeyEvent.VC_F3;
+            case F4:
+                return NativeKeyEvent.VC_F4;
+            case F5:
+                return NativeKeyEvent.VC_F5;
+            case F6:
+                return NativeKeyEvent.VC_F6;
+            case F7:
+                return NativeKeyEvent.VC_F7;
+            case F8:
+                return NativeKeyEvent.VC_F8;
+            case F9:
+                return NativeKeyEvent.VC_F9;
+            case F10:
+                return NativeKeyEvent.VC_F10;
+            case F11:
+                return NativeKeyEvent.VC_F11;
+            case F12:
+                return NativeKeyEvent.VC_F12;
+            // Mapping explicite pour toutes les lettres
+            case A: return NativeKeyEvent.VC_A;
+            case B: return NativeKeyEvent.VC_B;
+            case C: return NativeKeyEvent.VC_C;
+            case D: return NativeKeyEvent.VC_D;
+            case E: return NativeKeyEvent.VC_E;
+            case F: return NativeKeyEvent.VC_F;
+            case G: return NativeKeyEvent.VC_G;
+            case H: return NativeKeyEvent.VC_H;
+            case I: return NativeKeyEvent.VC_I;
+            case J: return NativeKeyEvent.VC_J;
+            case K: return NativeKeyEvent.VC_K;
+            case L: return NativeKeyEvent.VC_L;
+            case M: return NativeKeyEvent.VC_M;
+            case N: return NativeKeyEvent.VC_N;
+            case O: return NativeKeyEvent.VC_O;
+            case P: return NativeKeyEvent.VC_P;
+            case Q: return NativeKeyEvent.VC_Q;
+            case R: return NativeKeyEvent.VC_R;
+            case S: return NativeKeyEvent.VC_S;
+            case T: return NativeKeyEvent.VC_T;
+            case U: return NativeKeyEvent.VC_U;
+            case V: return NativeKeyEvent.VC_V;
+            case W: return NativeKeyEvent.VC_W;
+            case X: return NativeKeyEvent.VC_X;
+            case Y: return NativeKeyEvent.VC_Y;
+            case Z: return NativeKeyEvent.VC_Z;
+            // Mapping explicite pour les chiffres
+            case DIGIT0: return NativeKeyEvent.VC_0;
+            case DIGIT1: return NativeKeyEvent.VC_1;
+            case DIGIT2: return NativeKeyEvent.VC_2;
+            case DIGIT3: return NativeKeyEvent.VC_3;
+            case DIGIT4: return NativeKeyEvent.VC_4;
+            case DIGIT5: return NativeKeyEvent.VC_5;
+            case DIGIT6: return NativeKeyEvent.VC_6;
+            case DIGIT7: return NativeKeyEvent.VC_7;
+            case DIGIT8: return NativeKeyEvent.VC_8;
+            case DIGIT9: return NativeKeyEvent.VC_9;
             default:
-                // Pour les lettres (A-Z)
-                if (keyCode.isLetterKey()) {
-                    char c = Character.toUpperCase(keyCode.getName().charAt(0));
-                    return NativeKeyEvent.VC_A + (c - 'A');
-                }
-                // Pour les chiffres (0-9)
-                if (keyCode.isDigitKey()) {
-                    int digit = Character.getNumericValue(keyCode.getName().charAt(0));
-                    return NativeKeyEvent.VC_0 + digit;
-                }
                 return -1;
         }
     }
@@ -367,23 +418,23 @@ public class WindowToggleService {
         String windowToggleController = preferencesService.getWindowToggleHotasController();
         String windowToggleComponent = preferencesService.getWindowToggleHotasComponent();
         float windowToggleValue = preferencesService.getWindowToggleHotasValue();
-        
+
         String tabLeftController = preferencesService.getTabSwitchLeftHotasController();
         String tabLeftComponent = preferencesService.getTabSwitchLeftHotasComponent();
         float tabLeftValue = preferencesService.getTabSwitchLeftHotasValue();
-        
+
         String tabRightController = preferencesService.getTabSwitchRightHotasController();
         String tabRightComponent = preferencesService.getTabSwitchRightHotasComponent();
         float tabRightValue = preferencesService.getTabSwitchRightHotasValue();
 
         // Si aucune configuration HOTAS, ne pas démarrer
-        boolean hasWindowToggle = windowToggleController != null && !windowToggleController.isEmpty() && 
-                                  windowToggleComponent != null && !windowToggleComponent.isEmpty();
-        boolean hasTabLeft = tabLeftController != null && !tabLeftController.isEmpty() && 
-                            tabLeftComponent != null && !tabLeftComponent.isEmpty();
-        boolean hasTabRight = tabRightController != null && !tabRightController.isEmpty() && 
-                             tabRightComponent != null && !tabRightComponent.isEmpty();
-        
+        boolean hasWindowToggle = windowToggleController != null && !windowToggleController.isEmpty() &&
+                windowToggleComponent != null && !windowToggleComponent.isEmpty();
+        boolean hasTabLeft = tabLeftController != null && !tabLeftController.isEmpty() &&
+                tabLeftComponent != null && !tabLeftComponent.isEmpty();
+        boolean hasTabRight = tabRightController != null && !tabRightController.isEmpty() &&
+                tabRightComponent != null && !tabRightComponent.isEmpty();
+
         if (!hasWindowToggle && !hasTabLeft && !hasTabRight) {
             System.out.println("⚠️ Aucune configuration HOTAS");
             return;
@@ -439,27 +490,29 @@ public class WindowToggleService {
                             if (prevValues[i] != value) {
                                 prevValues[i] = value;
 
+                                System.out.println(ctrl.getName() + " - " + name + ": " + value + " ( analogique : " + comp.isAnalog() + ")" + comp.getDeadZone() + " " + comp.isRelative());
+
                                 // Vérifier window toggle
                                 if (hasWindowToggle && preferencesService.isWindowToggleEnabled() &&
-                                    windowToggleController.equalsIgnoreCase(ctrl.getName()) &&
-                                    windowToggleComponent.equalsIgnoreCase(name) &&
-                                    Math.abs(value - windowToggleValue) < 0.01f) {
+                                        windowToggleController.equalsIgnoreCase(ctrl.getName()) &&
+                                        windowToggleComponent.equalsIgnoreCase(name) &&
+                                        Math.abs(value - windowToggleValue) < 0.01f) {
                                     Platform.runLater(() -> toggleWindowAndOpenCombo());
                                 }
-                                
+
                                 // Vérifier tab left
                                 if (hasTabLeft && preferencesService.isTabSwitchEnabled() &&
-                                    tabLeftController.equalsIgnoreCase(ctrl.getName()) &&
-                                    tabLeftComponent.equalsIgnoreCase(name) &&
-                                    Math.abs(value - tabLeftValue) < 0.01f) {
+                                        tabLeftController.equalsIgnoreCase(ctrl.getName()) &&
+                                        tabLeftComponent.equalsIgnoreCase(name) &&
+                                        Math.abs(value - tabLeftValue) < 0.01f) {
                                     Platform.runLater(() -> switchToPreviousTab());
                                 }
-                                
+
                                 // Vérifier tab right
                                 if (hasTabRight && preferencesService.isTabSwitchEnabled() &&
-                                    tabRightController.equalsIgnoreCase(ctrl.getName()) &&
-                                    tabRightComponent.equalsIgnoreCase(name) &&
-                                    Math.abs(value - tabRightValue) < 0.01f) {
+                                        tabRightController.equalsIgnoreCase(ctrl.getName()) &&
+                                        tabRightComponent.equalsIgnoreCase(name) &&
+                                        Math.abs(value - tabRightValue) < 0.01f) {
                                     Platform.runLater(() -> switchToNextTab());
                                 }
                             }
@@ -475,7 +528,7 @@ public class WindowToggleService {
                 e.printStackTrace();
             }
         }, "HotasUnifiedListenerThread");
-        
+
         hotasThread.start();
     }
 
@@ -487,18 +540,16 @@ public class WindowToggleService {
         if (isPaused) {
             return;
         }
-        
+
         if (isAnimating) {
             return;
         }
 
         try {
-            Robot robot = new Robot();
-
             if (hidden) {
-                restoreWindowWithAnimation(robot);
+                restoreWindowWithAnimation();
             } else {
-                minimizeWindowWithAnimation(robot);
+                minimizeWindowWithAnimation();
             }
 
         } catch (Exception e) {
@@ -509,27 +560,14 @@ public class WindowToggleService {
     /**
      * Restaure la fenêtre avec animation
      */
-    private void restoreWindowWithAnimation(Robot robot) {
+    private void restoreWindowWithAnimation() {
         if (mainStage.isMaximized()) {
             mainStage.setMaximized(false);
         }
 
         mainStage.toFront();
-
-        isAnimating = true;
         hidden = false;
-        
-        // Rendre la scène transparente pendant l'animation
-        if (mainStage.getScene() != null) {
-            Scene scene = mainStage.getScene();
-            if (savedSceneFill == null) {
-                Paint fill = scene.getFill();
-                // Si la scène n'a pas de couleur définie, elle a un fond blanc par défaut
-                // On sauvegarde null pour indiquer qu'il faut restaurer à transparent
-                savedSceneFill = fill;
-            }
-            scene.setFill(Color.TRANSPARENT);
-        }
+
 
         double startWidth = 1;
         double startHeight = 1;
@@ -549,82 +587,17 @@ public class WindowToggleService {
         mainStage.setHeight(startHeight);
         mainStage.setOpacity(1.0);
 
-        Interpolator interpolator = Interpolator.SPLINE(0.4, 0.0, 0.2, 1.0);
-        Duration windowDuration = Duration.millis(100);
-        Duration triangleDuration = Duration.millis(200);
 
-        Timeline windowTimeline = new Timeline();
-        windowTimeline.setCycleCount(1);
-
-        windowTimeline.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
-            double progress = Math.min(1.0, newTime.toMillis() / windowDuration.toMillis());
-            double interpolatedProgress = interpolator.interpolate(0.0, 1.0, progress);
-            
-            double currentWidth = startWidth + (endWidth - startWidth) * interpolatedProgress;
-            double currentHeight = startHeight + (endHeight - startHeight) * interpolatedProgress;
-            double currentX = startX + (endX - startX) * interpolatedProgress;
-            double currentY = startY + (endY - startY) * interpolatedProgress;
-            
-            mainStage.setWidth(currentWidth);
-            mainStage.setHeight(currentHeight);
-            mainStage.setX(currentX);
-            mainStage.setY(currentY);
-        });
-
-        windowTimeline.setOnFinished(event -> {
             mainStage.setWidth(endWidth);
             mainStage.setHeight(endHeight);
             mainStage.setX(endX);
             mainStage.setY(endY);
-            PauseTransition delay = new PauseTransition(Duration.millis(200));
-            delay.setOnFinished(e -> comboBox.show());
-            delay.play();
-        });
-
-        Pane triangleOverlay = createTriangleAnimationOverlay();
-        rootPane.getChildren().add(triangleOverlay);
-        
-        // Rendre le contenu du dashboard invisible
-        hideDashboardContent(triangleOverlay);
-
-        windowTimeline.play();
-
-        Timeline triangleTimeline = new Timeline();
-        triangleTimeline.setCycleCount(1);
-        
-        KeyValue overlayOpacityStart = new KeyValue(triangleOverlay.opacityProperty(), 1.0);
-        KeyValue overlayOpacityEnd = new KeyValue(triangleOverlay.opacityProperty(), 0.0, Interpolator.EASE_OUT);
-        KeyFrame overlayFrameStart = new KeyFrame(Duration.ZERO, overlayOpacityStart);
-        KeyFrame overlayFrameEnd = new KeyFrame(Duration.millis(300), overlayOpacityEnd);
-        
-        triangleTimeline.getKeyFrames().addAll(overlayFrameStart, overlayFrameEnd);
-        
-        triangleTimeline.setOnFinished(event -> {
-            rootPane.getChildren().remove(triangleOverlay);
-            isAnimating = false;
-            // Restaurer le contenu du dashboard
-            restoreDashboardContent();
-            // Restaurer la couleur originale de la scène
-            if (mainStage.getScene() != null) {
-                if (savedSceneFill != null) {
-                    mainStage.getScene().setFill(savedSceneFill);
-                } else {
-                    // Si pas de couleur sauvegardée, utiliser transparent au lieu de null
-                    // car null peut donner un fond blanc par défaut
-                    mainStage.getScene().setFill(Color.TRANSPARENT);
-                }
-            }
-            System.out.println("🔼 Fenêtre restaurée");
-            comboBox.hide();
-           // moveMouseToCenter(robot);
-        });
-
-        PauseTransition delay = new PauseTransition(Duration.millis(100));
+        PauseTransition delay = new PauseTransition(Duration.millis(50));
         delay.setOnFinished(e -> {
-            animateTriangles(triangleOverlay, triangleDuration);
-            PauseTransition endDelay = new PauseTransition(triangleDuration);
-            endDelay.setOnFinished(ev -> triangleTimeline.play());
-            endDelay.play();
+            comboBox.show();
+            PauseTransition delay2 = new PauseTransition(Duration.millis(50));
+            delay2.setOnFinished(ev -> comboBox.hide());
+            delay2.play();
         });
         delay.play();
     }
@@ -632,26 +605,13 @@ public class WindowToggleService {
     /**
      * Réduit la fenêtre avec animation
      */
-    private void minimizeWindowWithAnimation(Robot robot) {
+    private void minimizeWindowWithAnimation() {
         savedWidth = mainStage.getWidth();
         savedHeight = mainStage.getHeight();
         savedX = mainStage.getX();
         savedY = mainStage.getY();
-        
-        isAnimating = true;
+
         hidden = true;
-        
-        // Rendre la scène transparente pendant l'animation
-        if (mainStage.getScene() != null) {
-            Scene scene = mainStage.getScene();
-            if (savedSceneFill == null) {
-                Paint fill = scene.getFill();
-                // Si la scène n'a pas de couleur définie, elle a un fond blanc par défaut
-                // On sauvegarde null pour indiquer qu'il faut restaurer à transparent
-                savedSceneFill = fill;
-            }
-            scene.setFill(Color.TRANSPARENT);
-        }
 
         double startWidth = savedWidth;
         double startHeight = savedHeight;
@@ -664,358 +624,19 @@ public class WindowToggleService {
         double endHeight = 1;
         double endX = centerX - endWidth / 2;
         double endY = centerY - endHeight / 2;
-
-        Interpolator interpolator = Interpolator.SPLINE(0.4, 0.0, 0.2, 1.0);
-        Duration windowDuration = Duration.millis(200);
-        Duration triangleDuration = Duration.millis(400);
-
-        Pane triangleOverlay = createTriangleAnimationOverlay();
-        rootPane.getChildren().add(triangleOverlay);
-        
-        // Rendre le contenu du dashboard invisible
-        hideDashboardContent(triangleOverlay);
-        
-        animateTrianglesDisappear(triangleOverlay, triangleDuration);
-
-        Timeline windowTimeline = new Timeline();
-        windowTimeline.setCycleCount(1);
-
-        windowTimeline.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
-            double progress = Math.min(1.0, newTime.toMillis() / windowDuration.toMillis());
-            double interpolatedProgress = interpolator.interpolate(0.0, 1.0, progress);
-            
-            double currentWidth = startWidth + (endWidth - startWidth) * interpolatedProgress;
-            double currentHeight = startHeight + (endHeight - startHeight) * interpolatedProgress;
-            double currentX = startX + (endX - startX) * interpolatedProgress;
-            double currentY = startY + (endY - startY) * interpolatedProgress;
-            
-            mainStage.setWidth(currentWidth);
-            mainStage.setHeight(currentHeight);
-            mainStage.setX(currentX);
-            mainStage.setY(currentY);
+        mainStage.setWidth(endWidth);
+        mainStage.setHeight(endHeight);
+        mainStage.setX(endX);
+        mainStage.setY(endY);
+        PauseTransition delay = new PauseTransition(Duration.millis(50));
+        delay.setOnFinished(e -> {
+            comboBox.show();
+            PauseTransition delay2 = new PauseTransition(Duration.millis(50));
+            delay2.setOnFinished(ev -> comboBox.hide());
+            delay2.play();
         });
+        delay.play();
 
-        windowTimeline.setOnFinished(event -> {
-            mainStage.setWidth(endWidth);
-            mainStage.setHeight(endHeight);
-            mainStage.setX(endX);
-            mainStage.setY(endY);
-        });
-
-        Timeline triangleTimeline = new Timeline();
-        triangleTimeline.setCycleCount(1);
-        
-        KeyValue overlayOpacityStart = new KeyValue(triangleOverlay.opacityProperty(), 1.0);
-        KeyValue overlayOpacityEnd = new KeyValue(triangleOverlay.opacityProperty(), 0.0, Interpolator.EASE_OUT);
-        KeyFrame overlayFrameStart = new KeyFrame(Duration.ZERO, overlayOpacityStart);
-        KeyFrame overlayFrameEnd = new KeyFrame(Duration.millis(100), overlayOpacityEnd);
-        
-        triangleTimeline.getKeyFrames().addAll(overlayFrameStart, overlayFrameEnd);
-        
-        triangleTimeline.setOnFinished(event -> {
-            rootPane.getChildren().remove(triangleOverlay);
-            isAnimating = false;
-            // Restaurer le contenu du dashboard
-            restoreDashboardContent();
-            // Restaurer la couleur originale de la scène
-            if (mainStage.getScene() != null) {
-                if (savedSceneFill != null) {
-                    mainStage.getScene().setFill(savedSceneFill);
-                } else {
-                    // Si pas de couleur sauvegardée, utiliser transparent au lieu de null
-                    // car null peut donner un fond blanc par défaut
-                    mainStage.getScene().setFill(Color.TRANSPARENT);
-                }
-            }
-            System.out.println("🔽 Fenêtre réduite");
-            if (lastMousePos != null) {
-                robot.mouseMove(lastMousePos.x, lastMousePos.y);
-                System.out.println("🖱️ Souris restaurée à (" + lastMousePos.x + ", " + lastMousePos.y + ")");
-            }
-            PauseTransition delay = new PauseTransition(Duration.millis(50));
-            delay.setOnFinished(e -> {
-                comboBox.show();
-                PauseTransition delay2 = new PauseTransition(Duration.millis(50));
-                delay2.setOnFinished(ev -> comboBox.hide());
-                delay2.play();
-            });
-            delay.play();
-        });
-
-        PauseTransition waitForTriangles = new PauseTransition(triangleDuration.add(Duration.millis(200)));
-        waitForTriangles.setOnFinished(e -> {
-            windowTimeline.play();
-            PauseTransition endDelay = new PauseTransition(windowDuration);
-            endDelay.setOnFinished(ev -> triangleTimeline.play());
-            endDelay.play();
-        });
-        waitForTriangles.play();
-    }
-
-    /**
-     * Rend tous les enfants du rootPane invisibles (sauf comboBox et overlay)
-     */
-    private void hideDashboardContent(Pane overlay) {
-        if (rootPane == null) return;
-        savedNodeOpacities.clear();
-        savedNodeStyles.clear();
-        
-        // Sauvegarder et rendre le rootPane transparent
-        if (savedRootPaneStyle == null) {
-            savedRootPaneStyle = rootPane.getStyle();
-        }
-        rootPane.setStyle("-fx-background-color: transparent;");
-        
-        for (Node child : rootPane.getChildren()) {
-            // Ne pas cacher le comboBox ni l'overlay de triangles
-            if (child != comboBox && child != overlay) {
-                savedNodeOpacities.put(child, child.getOpacity());
-                savedNodeStyles.put(child, child.getStyle());
-                child.setOpacity(0.0);
-                // Rendre aussi le fond transparent
-                String currentStyle = child.getStyle();
-                if (currentStyle == null || currentStyle.isEmpty()) {
-                    child.setStyle("-fx-background-color: transparent;");
-                } else if (!currentStyle.contains("-fx-background-color")) {
-                    child.setStyle(currentStyle + " -fx-background-color: transparent;");
-                } else {
-                    // Remplacer la couleur de fond existante par transparent
-                    child.setStyle(currentStyle.replaceAll("-fx-background-color:[^;]+;", "-fx-background-color: transparent;"));
-                }
-            }
-        }
-    }
-    
-    /**
-     * Restaure l'opacité de tous les enfants du rootPane
-     */
-    private void restoreDashboardContent() {
-        if (rootPane == null) return;
-        for (Map.Entry<Node, Double> entry : savedNodeOpacities.entrySet()) {
-            entry.getKey().setOpacity(entry.getValue());
-        }
-        savedNodeOpacities.clear();
-        
-        // Restaurer les styles originaux des nœuds
-        for (Map.Entry<Node, String> entry : savedNodeStyles.entrySet()) {
-            entry.getKey().setStyle(entry.getValue());
-        }
-        savedNodeStyles.clear();
-        
-        // Restaurer le style original du rootPane
-        if (savedRootPaneStyle != null) {
-            rootPane.setStyle(savedRootPaneStyle);
-        } else {
-            rootPane.setStyle("");
-        }
-    }
-    
-    /**
-     * Crée un overlay avec des triangles pour l'animation
-     */
-    private Pane createTriangleAnimationOverlay() {
-        Pane overlay = new Pane();
-        overlay.setStyle("-fx-background-color: transparent;");
-        overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        
-        if (mainStage.getScene() != null) {
-            overlay.prefWidthProperty().bind(mainStage.getScene().widthProperty());
-            overlay.prefHeightProperty().bind(mainStage.getScene().heightProperty());
-            overlay.maxWidthProperty().bind(mainStage.getScene().widthProperty());
-            overlay.maxHeightProperty().bind(mainStage.getScene().heightProperty());
-        }
-        
-        return overlay;
-    }
-
-    /**
-     * Anime les triangles qui apparaissent
-     */
-    private void animateTriangles(Pane overlay, Duration duration) {
-        Platform.runLater(() -> {
-            double width = mainStage.getWidth() > 0 ? mainStage.getWidth() : savedWidth;
-            double height = mainStage.getHeight() > 0 ? mainStage.getHeight() : savedHeight;
-            
-            double triangleSize = 35.0;
-            double spacing = triangleSize * 1.2;
-            
-            int cols = (int) Math.ceil(width / spacing) + 2;
-            int rows = (int) Math.ceil(height / spacing) + 2;
-            
-            java.util.List<Polygon> triangles = new java.util.ArrayList<>();
-            Random random = new Random();
-            
-            Color whiteStroke = Color.WHITE;
-            
-            for (int row = 0; row < rows; row++) {
-                for (int col = 0; col < cols; col++) {
-                    double x = col * spacing + (random.nextDouble() - 0.5) * spacing * 0.3;
-                    double y = row * spacing + (random.nextDouble() - 0.5) * spacing * 0.3;
-                    
-                    boolean pointingUp = (row + col) % 2 == 0;
-                    Polygon triangle;
-                    
-                    if (pointingUp) {
-                        triangle = new Polygon();
-                        triangle.getPoints().addAll(
-                            x, y + triangleSize,
-                            x + triangleSize / 2, y,
-                            x + triangleSize, y + triangleSize
-                        );
-                    } else {
-                        triangle = new Polygon();
-                        triangle.getPoints().addAll(
-                            x, y,
-                            x + triangleSize / 2, y + triangleSize,
-                            x + triangleSize, y
-                        );
-                    }
-                    
-                    triangle.setFill(Color.BLACK);
-                    triangle.setStroke(whiteStroke);
-                    triangle.setStrokeWidth(2.0);
-                    
-                    Glow glow = new Glow(0.6);
-                    triangle.setEffect(glow);
-                    
-                    triangle.setOpacity(0.0);
-                    triangles.add(triangle);
-                    overlay.getChildren().add(triangle);
-                }
-            }
-            
-            Collections.shuffle(triangles, random);
-            
-            java.util.List<FadeTransition> transitions = new java.util.ArrayList<>();
-            
-            for (int i = 0; i < triangles.size(); i++) {
-                Polygon triangle = triangles.get(i);
-                
-                double randomProgress = random.nextDouble();
-                Duration appearDelay = duration.multiply(randomProgress);
-                Duration fadeDuration = Duration.millis(80);
-                
-                FadeTransition fadeIn = new FadeTransition(fadeDuration, triangle);
-                fadeIn.setFromValue(0.0);
-                fadeIn.setToValue(1.0);
-                fadeIn.setDelay(appearDelay);
-                transitions.add(fadeIn);
-            }
-            
-            for (FadeTransition transition : transitions) {
-                transition.play();
-            }
-            
-            PauseTransition finalCheck = new PauseTransition(duration.add(Duration.millis(50)));
-            finalCheck.setOnFinished(e -> {
-                for (Polygon triangle : triangles) {
-                    triangle.setOpacity(1.0);
-                }
-            });
-            finalCheck.play();
-        });
-    }
-
-    /**
-     * Anime la disparition des triangles
-     */
-    private void animateTrianglesDisappear(Pane overlay, Duration duration) {
-        Platform.runLater(() -> {
-            double width = mainStage.getWidth() > 0 ? mainStage.getWidth() : savedWidth;
-            double height = mainStage.getHeight() > 0 ? mainStage.getHeight() : savedHeight;
-            
-            double triangleSize = 35.0;
-            double spacing = triangleSize * 1.2;
-            
-            int cols = (int) Math.ceil(width / spacing) + 2;
-            int rows = (int) Math.ceil(height / spacing) + 2;
-            
-            java.util.List<Polygon> triangles = new java.util.ArrayList<>();
-            Random random = new Random();
-            
-            Color whiteStroke = Color.WHITE;
-            
-            for (int row = 0; row < rows; row++) {
-                for (int col = 0; col < cols; col++) {
-                    double x = col * spacing + (random.nextDouble() - 0.5) * spacing * 0.3;
-                    double y = row * spacing + (random.nextDouble() - 0.5) * spacing * 0.3;
-                    
-                    boolean pointingUp = (row + col) % 2 == 0;
-                    Polygon triangle;
-                    
-                    if (pointingUp) {
-                        triangle = new Polygon();
-                        triangle.getPoints().addAll(
-                            x, y + triangleSize,
-                            x + triangleSize / 2, y,
-                            x + triangleSize, y + triangleSize
-                        );
-                    } else {
-                        triangle = new Polygon();
-                        triangle.getPoints().addAll(
-                            x, y,
-                            x + triangleSize / 2, y + triangleSize,
-                            x + triangleSize, y
-                        );
-                    }
-                    
-                    triangle.setFill(Color.BLACK);
-                    triangle.setStroke(whiteStroke);
-                    triangle.setStrokeWidth(2.0);
-                    
-                    Glow glow = new Glow(0.6);
-                    triangle.setEffect(glow);
-                    
-                    triangle.setOpacity(1.0);
-                    triangles.add(triangle);
-                    overlay.getChildren().add(triangle);
-                }
-            }
-            
-            Collections.shuffle(triangles, random);
-            
-            java.util.List<FadeTransition> transitions = new java.util.ArrayList<>();
-            
-            for (int i = 0; i < triangles.size(); i++) {
-                Polygon triangle = triangles.get(i);
-                
-                double randomProgress = random.nextDouble();
-                Duration disappearDelay = duration.multiply(randomProgress);
-                Duration fadeDuration = Duration.millis(80);
-                
-                FadeTransition fadeOut = new FadeTransition(fadeDuration, triangle);
-                fadeOut.setFromValue(1.0);
-                fadeOut.setToValue(0.0);
-                fadeOut.setDelay(disappearDelay);
-                transitions.add(fadeOut);
-            }
-            
-            for (FadeTransition transition : transitions) {
-                transition.play();
-            }
-            
-            PauseTransition finalCheck = new PauseTransition(duration.add(Duration.millis(50)));
-            finalCheck.setOnFinished(e -> {
-                for (Polygon triangle : triangles) {
-                    triangle.setOpacity(0.0);
-                }
-            });
-            finalCheck.play();
-        });
-    }
-
-    /**
-     * Déplace la souris au centre
-     */
-    private void moveMouseToCenter(Robot robot) {
-        lastMousePos = MouseInfo.getPointerInfo().getLocation();
-        double x = mainStage.getX();
-        double y = mainStage.getY();
-        double width = mainStage.getWidth();
-        int centerX = (int) x + (int) width / 2;
-        int centerY = (int) y + 15;
-        robot.mouseMove(centerX, centerY);
-        System.out.println("🎯 Souris déplacée au centre (" + centerX + ", " + centerY + ")");
     }
 
     /**
@@ -1026,23 +647,23 @@ public class WindowToggleService {
             System.out.println("⚠️ Changement d'onglet ignoré (service en pause)");
             return;
         }
-        
+
         // Vérifier que la fenêtre est visible (pas cachée)
         if (hidden) {
             System.out.println("⚠️ Changement d'onglet ignoré (fenêtre cachée)");
             return;
         }
-        
+
         if (tabPane == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (TabPane non initialisé)");
             return;
         }
-        
+
         if (missionsTab == null || miningTab == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
             return;
         }
-        
+
         Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
         if (selectedTab == missionsTab) {
             tabPane.getSelectionModel().select(miningTab);
@@ -1064,23 +685,23 @@ public class WindowToggleService {
             System.out.println("⚠️ Changement d'onglet ignoré (service en pause)");
             return;
         }
-        
+
         // Vérifier que la fenêtre est visible (pas cachée)
         if (hidden) {
             System.out.println("⚠️ Changement d'onglet ignoré (fenêtre cachée)");
             return;
         }
-        
+
         if (tabPane == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (TabPane non initialisé)");
             return;
         }
-        
+
         if (missionsTab == null || miningTab == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
             return;
         }
-        
+
         Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
         if (selectedTab == missionsTab) {
             tabPane.getSelectionModel().select(miningTab);
