@@ -13,7 +13,7 @@ import java.util.*;
  * Reads JSON from resources and creates BioSpecies based on histogram data.
  */
 public class BioSpeciesFactory {
-    
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -26,14 +26,14 @@ public class BioSpeciesFactory {
     public static List<BioSpecies> createFromJsonResource(
             InputStream inputStream,
             double colonyRangeMeters) {
-        
+
         List<BioSpecies> speciesList = new ArrayList<>();
-        
+
         try {
 
-            
+
             JsonNode rootNode = objectMapper.readTree(inputStream);
-            
+
             // Iterate through each variant entry in the JSON
             rootNode.fields().forEachRemaining(entry -> {
                 String id = entry.getKey();
@@ -53,14 +53,14 @@ public class BioSpeciesFactory {
                     e.printStackTrace();
                 }
             });
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         return speciesList;
     }
-    
+
     /**
      * Creates a BioSpecies from a JSON node representing one variant.
      */
@@ -68,28 +68,27 @@ public class BioSpeciesFactory {
             double colonyRangeMeters,
             JsonNode node,
             String id) {
-        
+
         // Extract variant name and material
         String baseName = extractBaseName(node);
         String specieName = extractSpecieName(node);
         String color = extractVariantName(node);
         String colorConditionName = extractSurfaceMaterial(node);
         VariantMethods variantMethod;
-        if (colorConditionName.equals("Tin") || colorConditionName.length() >=4){
+        if (colorConditionName.equals("Tin") || colorConditionName.length() >= 4) {
             variantMethod = VariantMethods.SURFACE_MATERIALS;
-        }
-        else{
-            variantMethod =VariantMethods.RADIANT_STAR;
+        } else {
+            variantMethod = VariantMethods.RADIANT_STAR;
         }
 
-        
+
         // Extract histogram data
         HistogramData histogramData = extractHistogramData(node);
 
 
-        long reward=node.get("reward").asLong();
-        int count=node.get("count").asInt();
-        
+        long reward = node.get("reward").asLong();
+        int count = node.get("count").asInt();
+
         // Create BioSpecies instance with histogram data
         return new BioSpecies(
                 baseName,
@@ -97,7 +96,7 @@ public class BioSpeciesFactory {
                 color,
                 count,
                 reward,
-                reward*5,
+                reward * 5,
                 colonyRangeMeters,
                 variantMethod,
                 colorConditionName,
@@ -105,7 +104,7 @@ public class BioSpeciesFactory {
                 histogramData
         );
     }
-    
+
     /**
      * Extracts variant name from JSON node (e.g., "Bacterium Tela - Orange" -> "Orange")
      */
@@ -119,6 +118,7 @@ public class BioSpeciesFactory {
         }
         return "Unknown";
     }
+
     private static String extractSpecieName(JsonNode node) {
         if (node.has("name")) {
             String fullName = node.get("name").asText();
@@ -129,6 +129,7 @@ public class BioSpeciesFactory {
         }
         return "Unknown";
     }
+
     private static String extractVariantName(JsonNode node) {
         if (node.has("name")) {
             String fullName = node.get("name").asText();
@@ -139,25 +140,24 @@ public class BioSpeciesFactory {
         }
         return "Unknown";
     }
-    
+
     /**
      * Extracts surface material from JSON node (from materials array)
      */
     private static String extractSurfaceMaterial(JsonNode node) {
         try {
             return node.get("fdevname").asText().split("_")[4];
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return "Unknown";
         }
     }
-    
+
     /**
      * Extracts all histogram data from JSON node
      */
     private static HistogramData extractHistogramData(JsonNode node) {
         HistogramData data = new HistogramData();
-
+        int totalCount = node.get("count").asInt();
         if (node.has("histograms") && node.get("histograms").isObject()) {
             JsonNode histograms = node.get("histograms");
 
@@ -169,11 +169,10 @@ public class BioSpeciesFactory {
                     if (atmosType != null) {
                         JsonNode valueNode = entry.getValue();
                         Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
-                        if (count != null) {
+                        if (count != null && count >= getMinimalValue(totalCount)) {
                             data.atmosTypes.put(atmosType, count);
                         }
-                    }
-                    else {
+                    } else {
                         throw new RuntimeException("Unknown atmosphere type: " + entry.getKey());
                     }
                 });
@@ -187,11 +186,10 @@ public class BioSpeciesFactory {
                     if (bodyType != null) {
                         JsonNode valueNode = entry.getValue();
                         Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
-                        if (count != null) {
+                        if (count != null && count >= getMinimalValue(totalCount)) {
                             data.bodyTypes.put(bodyType, count);
                         }
-                    }
-                    else {
+                    } else {
                         throw new RuntimeException("Unknown atmosphere type: " + entry.getKey());
                     }
                 });
@@ -205,7 +203,9 @@ public class BioSpeciesFactory {
                     gravityBin.min = getDoubleOrNull(bin, "min");
                     gravityBin.max = getDoubleOrNull(bin, "max");
                     gravityBin.value = getIntOrNull(bin, "value");
-                    data.gravity.add(gravityBin);
+                    if (gravityBin.value != null && gravityBin.value >= getMinimalValue(totalCount)) {
+                        data.gravity.add(gravityBin);
+                    }
                 });
             }
 
@@ -217,7 +217,9 @@ public class BioSpeciesFactory {
                     pressureBin.min = getDoubleOrNull(bin, "min");
                     pressureBin.max = getDoubleOrNull(bin, "max");
                     pressureBin.value = getIntOrNull(bin, "value");
-                    data.pressure.add(pressureBin);
+                    if (pressureBin.value != null && pressureBin.value >= getMinimalValue(totalCount)) {
+                        data.pressure.add(pressureBin);
+                    }
                 });
             }
 
@@ -229,7 +231,9 @@ public class BioSpeciesFactory {
                     tempBin.min = getDoubleOrNull(bin, "min");
                     tempBin.max = getDoubleOrNull(bin, "max");
                     tempBin.value = getIntOrNull(bin, "value");
-                    data.temperature.add(tempBin);
+                    if (tempBin.value != null && tempBin.value >= getMinimalValue(totalCount)) {
+                        data.temperature.add(tempBin);
+                    }
                 });
             }
 
@@ -242,7 +246,7 @@ public class BioSpeciesFactory {
                     if (volcanicBodyType != null) {
                         JsonNode valueNode = entry.getValue();
                         Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
-                        if (count != null) {
+                        if (count != null && count >= getMinimalValue(totalCount)) {
                             data.volcanicBodyTypes.put(volcanicBodyType, count);
                         }
                     } else {
@@ -255,6 +259,10 @@ public class BioSpeciesFactory {
         return data;
     }
 
+    private static int getMinimalValue(int totalCount) {
+        return totalCount / 15;
+    }
+
     /**
      * Parses a volcanic body type string (format: "Body Type - Volcanism Type")
      * and returns a VolcanicBodyType object.
@@ -263,20 +271,20 @@ public class BioSpeciesFactory {
         if (str == null || str.isEmpty()) {
             return null;
         }
-        
+
         if (str.contains(" - ")) {
             String[] parts = str.split(" - ", 2);
             BodyType bodyType = BodyType.fromString(parts[0].trim());
             VolcanismType volcanismType = VolcanismType.fromString(parts[1].trim());
-            
+
             if (bodyType != null && volcanismType != null) {
                 return new VolcanicBodyType(bodyType, volcanismType);
             }
         }
-        
+
         return null;
     }
-    
+
     // 🔧 Méthodes utilitaires pour gérer les null proprement
     private static Double getDoubleOrNull(JsonNode node, String field) {
         JsonNode value = node.get(field);
@@ -288,7 +296,7 @@ public class BioSpeciesFactory {
         return (value != null && !value.isNull()) ? value.asInt() : null;
     }
 
-    
+
     /**
      * Data structure for storing histogram data with values/quantities.
      * Contains only: atmos_types, body_types, gravity, pressure, temperature, volcanic_body_types
@@ -297,23 +305,23 @@ public class BioSpeciesFactory {
     public static class HistogramData {
         // atmos_types: Map of atmosphere type -> count
         public Map<AtmosphereType, Integer> atmosTypes;
-        
+
         // body_types: Map of body type -> count
         public Map<BodyType, Integer> bodyTypes;
-        
+
         // gravity: List of bins (min, max, count)
         public List<Bin> gravity;
-        
+
         // pressure: List of bins (min, max, count)
         public List<Bin> pressure;
-        
+
         // temperature: List of bins (min, max, count)
         public List<Bin> temperature;
-        
+
         // volcanic_body_types: Map of (body type, volcanism type) -> count
         public Map<VolcanicBodyType, Integer> volcanicBodyTypes;
     }
-    
+
     /**
      * Represents a bin in a histogram with min, max, and value/count
      */
@@ -322,7 +330,7 @@ public class BioSpeciesFactory {
         public Double max;
         public Integer value; // count/quantity
     }
-    
+
     /**
      * Represents a combination of BodyType and VolcanismType.
      * Used as a key in the volcanicBodyTypes map.
@@ -332,7 +340,7 @@ public class BioSpeciesFactory {
     public static class VolcanicBodyType {
         private final BodyType bodyType;
         private final VolcanismType volcanismType;
-        
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -340,7 +348,7 @@ public class BioSpeciesFactory {
             VolcanicBodyType that = (VolcanicBodyType) o;
             return bodyType == that.bodyType && volcanismType == that.volcanismType;
         }
-        
+
         @Override
         public int hashCode() {
             return Objects.hash(bodyType, volcanismType);
