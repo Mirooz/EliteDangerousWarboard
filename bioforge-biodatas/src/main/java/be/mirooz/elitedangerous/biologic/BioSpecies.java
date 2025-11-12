@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.species.biologic.utils;
+package be.mirooz.elitedangerous.biologic;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,7 @@ import lombok.Data;
      */
     @Data
     @AllArgsConstructor
-    public class HistogramBioSpecies  {
+    public class BioSpecies {
 
         String name;
         String specieName;

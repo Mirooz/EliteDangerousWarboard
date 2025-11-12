@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.species.biologic.utils;
+package be.mirooz.elitedangerous.biologic;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,11 +23,11 @@ public class BioSpeciesFactory {
      * @param colonyRangeMeters Colony range in meters
      * @return List of BioSpecies instances created from the JSON data
      */
-    public static List<HistogramBioSpecies> createFromJsonResource(
+    public static List<BioSpecies> createFromJsonResource(
             InputStream inputStream,
             double colonyRangeMeters) {
         
-        List<HistogramBioSpecies> speciesList = new ArrayList<>();
+        List<BioSpecies> speciesList = new ArrayList<>();
         
         try {
 
@@ -39,7 +39,7 @@ public class BioSpeciesFactory {
                 String id = entry.getKey();
                 JsonNode variantNode = entry.getValue();
                 try {
-                    HistogramBioSpecies species = createBioSpeciesFromJsonNode(
+                    BioSpecies species = createBioSpeciesFromJsonNode(
                             colonyRangeMeters,
                             variantNode,
                             id
@@ -64,7 +64,7 @@ public class BioSpeciesFactory {
     /**
      * Creates a BioSpecies from a JSON node representing one variant.
      */
-    private static HistogramBioSpecies createBioSpeciesFromJsonNode(
+    private static BioSpecies createBioSpeciesFromJsonNode(
             double colonyRangeMeters,
             JsonNode node,
             String id) {
@@ -91,7 +91,7 @@ public class BioSpeciesFactory {
         int count=node.get("count").asInt();
         
         // Create BioSpecies instance with histogram data
-        return new HistogramBioSpecies(
+        return new BioSpecies(
                 baseName,
                 specieName,
                 color,
@@ -161,23 +161,39 @@ public class BioSpeciesFactory {
         if (node.has("histograms") && node.get("histograms").isObject()) {
             JsonNode histograms = node.get("histograms");
 
-            // atmos_types: Map<String, Integer>
+            // atmos_types: Map<AtmosphereType, Integer>
             if (histograms.has("atmos_types") && histograms.get("atmos_types").isObject()) {
                 data.atmosTypes = new HashMap<>();
                 histograms.get("atmos_types").fields().forEachRemaining(entry -> {
-                    JsonNode valueNode = entry.getValue();
-                    data.atmosTypes.put(entry.getKey(),
-                            (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null);
+                    AtmosphereType atmosType = AtmosphereType.fromString(entry.getKey());
+                    if (atmosType != null) {
+                        JsonNode valueNode = entry.getValue();
+                        Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
+                        if (count != null) {
+                            data.atmosTypes.put(atmosType, count);
+                        }
+                    }
+                    else {
+                        throw new RuntimeException("Unknown atmosphere type: " + entry.getKey());
+                    }
                 });
             }
 
-            // body_types: Map<String, Integer>
+            // body_types: Map<BodyType, Integer>
             if (histograms.has("body_types") && histograms.get("body_types").isObject()) {
                 data.bodyTypes = new HashMap<>();
                 histograms.get("body_types").fields().forEachRemaining(entry -> {
-                    JsonNode valueNode = entry.getValue();
-                    data.bodyTypes.put(entry.getKey(),
-                            (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null);
+                    BodyType bodyType = BodyType.fromString(entry.getKey());
+                    if (bodyType != null) {
+                        JsonNode valueNode = entry.getValue();
+                        Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
+                        if (count != null) {
+                            data.bodyTypes.put(bodyType, count);
+                        }
+                    }
+                    else {
+                        throw new RuntimeException("Unknown atmosphere type: " + entry.getKey());
+                    }
                 });
             }
 
@@ -217,13 +233,21 @@ public class BioSpeciesFactory {
                 });
             }
 
-            // volcanic_body_types: Map<String, Integer>
+            // volcanic_body_types: Map<VolcanicBodyType, Integer>
             if (histograms.has("volcanic_body_types") && histograms.get("volcanic_body_types").isObject()) {
                 data.volcanicBodyTypes = new HashMap<>();
                 histograms.get("volcanic_body_types").fields().forEachRemaining(entry -> {
-                    JsonNode valueNode = entry.getValue();
-                    data.volcanicBodyTypes.put(entry.getKey(),
-                            (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null);
+                    String key = entry.getKey();
+                    VolcanicBodyType volcanicBodyType = parseVolcanicBodyType(key);
+                    if (volcanicBodyType != null) {
+                        JsonNode valueNode = entry.getValue();
+                        Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
+                        if (count != null) {
+                            data.volcanicBodyTypes.put(volcanicBodyType, count);
+                        }
+                    } else {
+                        throw new RuntimeException("Unknown volcanic body type: " + key);
+                    }
                 });
             }
         }
@@ -231,6 +255,28 @@ public class BioSpeciesFactory {
         return data;
     }
 
+    /**
+     * Parses a volcanic body type string (format: "Body Type - Volcanism Type")
+     * and returns a VolcanicBodyType object.
+     */
+    private static VolcanicBodyType parseVolcanicBodyType(String str) {
+        if (str == null || str.isEmpty()) {
+            return null;
+        }
+        
+        if (str.contains(" - ")) {
+            String[] parts = str.split(" - ", 2);
+            BodyType bodyType = BodyType.fromString(parts[0].trim());
+            VolcanismType volcanismType = VolcanismType.fromString(parts[1].trim());
+            
+            if (bodyType != null && volcanismType != null) {
+                return new VolcanicBodyType(bodyType, volcanismType);
+            }
+        }
+        
+        return null;
+    }
+    
     // 🔧 Méthodes utilitaires pour gérer les null proprement
     private static Double getDoubleOrNull(JsonNode node, String field) {
         JsonNode value = node.get(field);
@@ -250,10 +296,10 @@ public class BioSpeciesFactory {
     @Data
     public static class HistogramData {
         // atmos_types: Map of atmosphere type -> count
-        public Map<String, Integer> atmosTypes;
+        public Map<AtmosphereType, Integer> atmosTypes;
         
         // body_types: Map of body type -> count
-        public Map<String, Integer> bodyTypes;
+        public Map<BodyType, Integer> bodyTypes;
         
         // gravity: List of bins (min, max, count)
         public List<Bin> gravity;
@@ -264,8 +310,8 @@ public class BioSpeciesFactory {
         // temperature: List of bins (min, max, count)
         public List<Bin> temperature;
         
-        // volcanic_body_types: Map of volcanic body type -> count
-        public Map<String, Integer> volcanicBodyTypes;
+        // volcanic_body_types: Map of (body type, volcanism type) -> count
+        public Map<VolcanicBodyType, Integer> volcanicBodyTypes;
     }
     
     /**
@@ -275,5 +321,29 @@ public class BioSpeciesFactory {
         public Double min;
         public Double max;
         public Integer value; // count/quantity
+    }
+    
+    /**
+     * Represents a combination of BodyType and VolcanismType.
+     * Used as a key in the volcanicBodyTypes map.
+     */
+    @Data
+    @AllArgsConstructor
+    public static class VolcanicBodyType {
+        private final BodyType bodyType;
+        private final VolcanismType volcanismType;
+        
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            VolcanicBodyType that = (VolcanicBodyType) o;
+            return bodyType == that.bodyType && volcanismType == that.volcanismType;
+        }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(bodyType, volcanismType);
+        }
     }
 }

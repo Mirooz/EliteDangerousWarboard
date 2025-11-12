@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.species.biologic.utils;
+package be.mirooz.elitedangerous.biologic;
 
 public enum VariantMethods {
     RADIANT_STAR("Radiant Star"),

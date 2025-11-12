@@ -65,6 +65,11 @@
             <artifactId>elite-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous</groupId>
+            <artifactId>bioforge-biodatas</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- JavaFX Controls -->
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -167,8 +172,27 @@
                     </goal>
                 </goals>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <argLine>-Djava.library.path=${project.build.directory}/natives</argLine>
+                </configuration>
+            </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>../bioforge-biodatas/src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>../bioforge-biodatas/src/main/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+        </testResources>
     </build>
     <profiles>
         <profile>

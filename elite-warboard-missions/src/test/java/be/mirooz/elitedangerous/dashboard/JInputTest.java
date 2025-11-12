@@ -2,10 +2,12 @@ package be.mirooz.elitedangerous.dashboard;
 
 import net.java.games.input.Controller;
 import net.java.games.input.ControllerEnvironment;
+import org.junit.jupiter.api.Test;
 
 
 public class JInputTest {
-    public static void main(String[] args) {
+    @Test
+    public void testGetController() throws Exception {
          Controller[] controllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
         System.out.println("🎮 Contrôleurs détectés : " + controllers.length);
         for (Controller c : controllers) {
