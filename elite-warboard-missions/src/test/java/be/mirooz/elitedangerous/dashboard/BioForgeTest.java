@@ -127,15 +127,5 @@ public class BioForgeTest {
         handler.handle(root);
         System.out.println(PlaneteRegistry.getInstance().getAllPlanetes());
         Optional<PlaneteDetail> OplaneteDetail = PlaneteRegistry.getInstance().getAllPlanetes().stream().findFirst();
-        PlaneteRegistry.getInstance().getAllPlanetes().forEach(
-                e -> {
-                    if (e.getBioSpecies() != null) {
-                        System.out.println(e.getBodyName() + " - " +e.getTimestamp());
-                        e.getBioSpecies().forEach(c -> {
-                            System.out.println("     " + c.getKey().getFullName() + " -> " + c.getValue());
-                        });
-                    }
-                }
-        );
     }
 }

@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -8,6 +9,7 @@ public class FSDJumpHandler implements JournalEventHandler {
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
+    private final PlaneteRegistry planeteRegistry = PlaneteRegistry.getInstance();
 
     @Override
     public String getEventType() {
@@ -28,6 +30,7 @@ public class FSDJumpHandler implements JournalEventHandler {
                     miningStatsService.endCurrentMiningSession(timestamp);
                     System.out.println("⛏️ Session de minage terminée (FSD Jump)");
                 }
+                planeteRegistry.clear();
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());

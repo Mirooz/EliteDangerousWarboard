@@ -163,46 +163,6 @@ public class ScanHandler implements JournalEventHandler {
             // Enregistrement de la planète dans le registre
             PlaneteRegistry.getInstance().addOrUpdatePlanete(planeteDetail);
 
-            // Vérification des espèces biologiques possibles sur cette planète
-            if (landable) {
-                try {
-                    List<BioSpecies> allSpecies = BioSpeciesService.getInstance().getSpecies();
-                    List<Map.Entry<BioSpecies, Double>> matchingSpecies = allSpecies.stream()
-                            .filter(species -> BioSpeciesMatcher.matches(planeteDetail, species))
-                            .map(species -> Map.entry(species, BioSpeciesMatcher.probability(planeteDetail, species)))
-                            .sorted(Comparator.comparingDouble(Map.Entry<BioSpecies, Double>::getValue).reversed())
-                            .toList();
-
-
-                    if (!matchingSpecies.isEmpty()) {
-                        matchingSpecies =matchingSpecies
-                                .stream().filter(
-                                        species -> species.getKey().getVariantMethod().equals(VariantMethods.SURFACE_MATERIALS)
-                                                || species.getKey().getColorConditionName().equals("K")
-                                )
-                                .toList();
-                        double probaCount = matchingSpecies.stream()
-                                .mapToDouble(Map.Entry::getValue)
-                                .sum();
-
-                        System.out.printf("   🌱 Espèces biologiques possibles (%d):%n", matchingSpecies.size());
-                        System.out.println(probaCount);
-                        matchingSpecies.forEach(species ->
-                                        {
-                                            System.out.printf("      - %s - %d - proba : %f %% %n", species.getKey().getFullName(), species.getKey().getBaseValue(), species.getValue());
-
-                                        }
-                                );
-                        matchingSpecies = matchingSpecies.stream()
-                                .map(e -> Map.entry(e.getKey(), (100 / probaCount) * e.getValue()))
-                                .toList();
-                        planeteDetail.setBioSpecies(matchingSpecies);
-                    }
-                } catch (URISyntaxException | IOException e) {
-                    System.err.println("❌ Erreur lors du chargement des espèces biologiques: " + e.getMessage());
-                }
-            }
-
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement Scan: " + e.getMessage());
             e.printStackTrace();

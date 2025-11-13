@@ -1,6 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.model.registries;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
+import be.mirooz.elitedangerous.dashboard.model.exploration.PendingBiologicalSignal;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -80,6 +82,7 @@ public class PlaneteRegistry {
      */
     public void clear() {
         planetesMap.clear();
+        BiologicalSignalProcessor.getInstance().clear();
     }
 
     /**
