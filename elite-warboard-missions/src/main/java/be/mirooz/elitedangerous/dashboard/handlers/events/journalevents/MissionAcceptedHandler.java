@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
@@ -55,10 +56,6 @@ public class MissionAcceptedHandler implements JournalEventHandler {
                 // Fallback: 7 jours par défaut
                 expiryTime = parseTimestamp(timestamp).plusDays(7);
             }
-
-            if (missionId.equals("1034203225")){
-                System.out.println("la omg");
-            }
             Mission mission = new Mission();
             mission.setId(missionId);
             mission.setName(missionName);
@@ -83,6 +80,7 @@ public class MissionAcceptedHandler implements JournalEventHandler {
 
             System.out.println("Mission accepted : " + mission);
             missionList.getGlobalMissionMap().put(missionId, mission);
+            MissionEventNotificationService.getInstance().notifyOnMissionStatusChanged();
 
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de MissionAccepted: " + e.getMessage());

@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.service.CombatMissionHistoryService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class MissionCompletedHandler implements JournalEventHandler {
@@ -30,6 +31,7 @@ public class MissionCompletedHandler implements JournalEventHandler {
                 
                 // Enregistrer dans l'historique et notifier
                 historyService.registerCompletedMission(mission);
+                MissionEventNotificationService.getInstance().notifyOnMissionStatusChanged();
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de MissionCompleted: " + e.getMessage());

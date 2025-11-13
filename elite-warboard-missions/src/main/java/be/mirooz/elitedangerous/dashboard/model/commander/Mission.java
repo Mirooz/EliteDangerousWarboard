@@ -42,11 +42,6 @@ public class Mission {
         MissionEventNotificationService.getInstance().notifyOnMissionCurrentKillCountChanged();
     }
 
-    public void setStatus(MissionStatus status) {
-        this.status = status;
-        MissionEventNotificationService.getInstance().notifyOnMissionStatusChanged();
-    }
-
     public boolean isShipActivePirateMassacreMission(){
         return isShipPirateMission() && MissionStatus.ACTIVE.equals(status);
     }

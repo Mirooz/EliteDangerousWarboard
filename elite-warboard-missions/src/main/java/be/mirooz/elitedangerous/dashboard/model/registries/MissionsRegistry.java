@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.model.registries;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -40,6 +41,7 @@ public class MissionsRegistry {
                 mission.setStatus(MissionStatus.FAILED);
             }
         });
+        MissionEventNotificationService.getInstance().notifyOnMissionStatusChanged();
     }
 
 }
