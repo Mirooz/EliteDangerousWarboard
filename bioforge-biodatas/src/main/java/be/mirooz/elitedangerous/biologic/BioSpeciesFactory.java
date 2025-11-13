@@ -74,6 +74,7 @@ public class BioSpeciesFactory {
         String specieName = extractSpecieName(node);
         String color = extractVariantName(node);
         String colorConditionName = extractSurfaceMaterial(node);
+        String fdevname = node.get("fdevname").asText();
         VariantMethods variantMethod;
         if (colorConditionName.equals("Tin") || colorConditionName.length() >= 4) {
             variantMethod = VariantMethods.SURFACE_MATERIALS;
@@ -90,19 +91,21 @@ public class BioSpeciesFactory {
         int count = node.get("count").asInt();
 
         // Create BioSpecies instance with histogram data
-        return new BioSpecies(
-                baseName,
-                specieName,
-                color,
-                count,
-                reward,
-                reward * 5,
-                colonyRangeMeters,
-                variantMethod,
-                colorConditionName,
-                id,
-                histogramData
-        );
+        return BioSpecies.builder()
+                .name(baseName)
+                .specieName(specieName)
+                .color(color)
+                .count(count)
+                .fdevname(fdevname)
+                .baseValue(reward)
+                .firstLoggedValue(reward * 5)
+                .colonyRangeMeters(colonyRangeMeters)
+                .variantMethod(variantMethod)
+                .colorConditionName(colorConditionName)
+                .id(id)
+                .histogramData(histogramData)
+                .build();
+
     }
 
     /**

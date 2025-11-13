@@ -2,16 +2,12 @@ package be.mirooz.elitedangerous.dashboard.model.exploration;
 
 import be.mirooz.elitedangerous.biologic.*;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
-
-import static lombok.Builder.*;
 
 /**
  * Modèle représentant les détails d'une planète scannée dans Elite Dangerous.
@@ -19,8 +15,6 @@ import static lombok.Builder.*;
  */
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class PlaneteDetail {
     private String timestamp;
     // Informations de base
@@ -47,8 +41,10 @@ public class PlaneteDetail {
     private boolean wasMapped;
     private boolean wasFootfalled;
     private boolean wasDiscovered;
-    @Default
+    @Builder.Default
     private List<Scan> bioSpecies = new ArrayList<>();
+    @Builder.Default
+    private List<BioSpecies> confirmedSpecies = new ArrayList<>();
 
     /**
      * Convertit la pression de Pascal vers atmosphères.
@@ -139,6 +135,85 @@ public class PlaneteDetail {
             System.err.println("❌ Erreur lors du chargement des espèces biologiques: " + e.getMessage());
         }
 
+    }
+
+    /**
+     * Ajoute ou met à jour une espèce confirmée selon le type de scan.
+     *
+     * @param scanOrganicData Les données du scan organique
+     */
+    public void addConfirmedSpecies(ScanOrganicData scanOrganicData) {
+        try {
+            ScanTypeBio scanTypeBio = ScanTypeBio.fromString(scanOrganicData.getScanType());
+            if (scanTypeBio == null) {
+                System.err.println("❌ Type de scan inconnu: " + scanOrganicData.getScanType());
+                return;
+            }
+
+            // Chercher l'espèce correspondante dans la liste des espèces possibles
+            BioSpecies matchingSpecies = findMatchingSpecies(scanOrganicData);
+
+            if (matchingSpecies == null) {
+                System.err.println("❌ Espèce non trouvée pour: " + scanOrganicData.getSpeciesLocalised());
+                return;
+            }
+            // Chercher si l'espèce existe déjà dans confirmedSpecies
+            BioSpecies existingSpecies = this.confirmedSpecies.stream()
+                    .filter(s -> s.getId().equalsIgnoreCase(matchingSpecies.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            //Déja présente dans confirmedSpecies
+            if (existingSpecies != null) {
+                existingSpecies.addScanType(scanTypeBio);
+                System.out.printf("   📝 %s ajouté pour: %s%n", scanTypeBio, scanOrganicData.getSpeciesLocalised());
+            } else {
+                // Créer une copie de l'espèce avec les informations du scan
+                BioSpecies confirmedSpecies = BioSpecies.builder()
+                        .name(matchingSpecies.getName())
+                        .specieName(matchingSpecies.getSpecieName())
+                        .color(matchingSpecies.getColor())
+                        .count(matchingSpecies.getCount())
+                        .fdevname(matchingSpecies.getFdevname())
+                        .baseValue(matchingSpecies.getBaseValue())
+                        .firstLoggedValue(matchingSpecies.getFirstLoggedValue())
+                        .colonyRangeMeters(matchingSpecies.getColonyRangeMeters())
+                        .variantMethod(matchingSpecies.getVariantMethod())
+                        .colorConditionName(matchingSpecies.getColorConditionName())
+                        .id(matchingSpecies.getId())
+                        .histogramData(matchingSpecies.getHistogramData())
+                        .genus(scanOrganicData.getGenus())
+                        .variantLocalised(scanOrganicData.getVariantLocalised())
+                        .wasLogged(scanOrganicData.isWasLogged())
+                        .collected(false)
+                        .build();
+                confirmedSpecies.addScanType(ScanTypeBio.LOG);
+                this.confirmedSpecies.add(confirmedSpecies);
+                System.out.printf("   📋 Nouvelle espèce loggée: %s%n", scanOrganicData.getSpeciesLocalised());
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de l'ajout de l'espèce confirmée: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Trouve l'espèce correspondante dans la liste des espèces possibles.
+     */
+    private BioSpecies findMatchingSpecies(ScanOrganicData scanOrganicData) {
+        try {
+            List<BioSpecies> allSpecies = BioSpeciesService.getInstance().getSpecies();
+            String variant = scanOrganicData.getVariant();
+            return allSpecies.stream().filter(
+                    species -> {
+                      return   species.getFdevname().equalsIgnoreCase(variant);
+                    })
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la recherche de l'espèce: " + e.getMessage());
+            return null;
+        }
     }
 }
 
