@@ -182,12 +182,27 @@
             </plugin>
         </plugins>
         <resources>
+            <!-- Ressources du module courant -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+
+            <!-- Ressources du module bioforge-biodatas -->
             <resource>
                 <directory>../bioforge-biodatas/src/main/resources</directory>
                 <filtering>false</filtering>
             </resource>
         </resources>
+
         <testResources>
+            <!-- Ressources de test du module courant -->
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+
+            <!-- Ressources de test du module bioforge-biodatas -->
             <testResource>
                 <directory>../bioforge-biodatas/src/main/resources</directory>
                 <filtering>false</filtering>

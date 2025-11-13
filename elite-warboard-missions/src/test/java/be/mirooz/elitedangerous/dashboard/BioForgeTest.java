@@ -28,101 +28,114 @@ public class BioForgeTest {
     @Test
     public void scanPlanet() throws IOException, URISyntaxException {
         String jsonNode = """
-{
-  "timestamp" : "2025-11-04T21:53:20Z",
-  "event" : "Scan",
-  "ScanType" : "Detailed",
-  "BodyName" : "Swoilz UL-S b22-2 7",
-  "BodyID" : 10,
-  "Parents" : [ {
-    "Star" : 0
-  } ],
-  "StarSystem" : "Swoilz UL-S b22-2",
-  "SystemAddress" : 5079468746433,
-  "DistanceFromArrivalLS" : 5228.281524,
-  "TidalLock" : false,
-  "TerraformState" : "",
-  "PlanetClass" : "Icy body",
-  "Atmosphere" : "thin neon atmosphere",
-  "AtmosphereType" : "Neon",
-  "AtmosphereComposition" : [ {
-    "Name" : "Neon",
-    "Percent" : 100.0
-  } ],
-  "Volcanism" : "",
-  "MassEM" : 0.295608,
-  "Radius" : 5347970.5,
-  "SurfaceGravity" : 4.11953,
-  "SurfaceTemperature" : 27.384855,
-  "SurfacePressure" : 201.871338,
-  "Landable" : true,
-  "Materials" : [ {
-    "Name" : "sulphur",
-    "Name_Localised" : "Soufre",
-    "Percent" : 22.395512
-  }, {
-    "Name" : "carbon",
-    "Name_Localised" : "Carbone",
-    "Percent" : 18.832306
-  }, {
-    "Name" : "iron",
-    "Name_Localised" : "Fer",
-    "Percent" : 15.543619
-  }, {
-    "Name" : "phosphorus",
-    "Name_Localised" : "Phosphore",
-    "Percent" : 12.056766
-  }, {
-    "Name" : "nickel",
-    "Percent" : 11.756542
-  }, {
-    "Name" : "chromium",
-    "Name_Localised" : "Chrome",
-    "Percent" : 6.990481
-  }, {
-    "Name" : "manganese",
-    "Name_Localised" : "Manganèse",
-    "Percent" : 6.419356
-  }, {
-    "Name" : "germanium",
-    "Percent" : 3.242417
-  }, {
-    "Name" : "niobium",
-    "Percent" : 1.062323
-  }, {
-    "Name" : "molybdenum",
-    "Name_Localised" : "Molybdène",
-    "Percent" : 1.014989
-  }, {
-    "Name" : "antimony",
-    "Name_Localised" : "Antimoine",
-    "Percent" : 0.685688
-  } ],
-  "Composition" : {
-    "Ice" : 0.683027,
-    "Rock" : 0.212245,
-    "Metal" : 0.104728
-  },
-  "SemiMajorAxis" : 1.5657658576965332E12,
-  "Eccentricity" : 0.002992,
-  "OrbitalInclination" : 1.557112,
-  "Periapsis" : 232.975796,
-  "OrbitalPeriod" : 1.763253033161163E9,
-  "AscendingNode" : 10.035679,
-  "MeanAnomaly" : 249.750288,
-  "RotationPeriod" : 93730.787254,
-  "AxialTilt" : 0.680795,
-  "WasDiscovered" : false,
-  "WasMapped" : false,
-  "WasFootfalled" : false
-}""";
+                {
+                   "timestamp" : "2025-11-04T23:03:00Z",
+                   "event" : "Scan",
+                   "ScanType" : "Detailed",
+                   "BodyName" : "Swoilz EC-Y c16-1 A 1 a",
+                   "BodyID" : 20,
+                   "Parents" : [ {
+                     "Planet" : 17
+                   }, {
+                     "Null" : 16
+                   }, {
+                     "Star" : 1
+                   }, {
+                     "Null" : 0
+                   } ],
+                   "StarSystem" : "Swoilz EC-Y c16-1",
+                   "SystemAddress" : 360273548178,
+                   "DistanceFromArrivalLS" : 2388.501901,
+                   "TidalLock" : true,
+                   "TerraformState" : "",
+                   "PlanetClass" : "Rocky body",
+                   "Atmosphere" : "thin ammonia atmosphere",
+                   "AtmosphereType" : "Ammonia",
+                   "AtmosphereComposition" : [ {
+                     "Name" : "Ammonia",
+                     "Percent" : 100.0
+                   } ],
+                   "Volcanism" : "",
+                   "MassEM" : 0.006733,
+                   "Radius" : 1320585.625,
+                   "SurfaceGravity" : 1.538739,
+                   "SurfaceTemperature" : 161.149033,
+                   "SurfacePressure" : 153.413422,
+                   "Landable" : true,
+                   "Materials" : [ {
+                     "Name" : "iron",
+                     "Name_Localised" : "Fer",
+                     "Percent" : 19.08436
+                   }, {
+                     "Name" : "sulphur",
+                     "Name_Localised" : "Soufre",
+                     "Percent" : 18.751884
+                   }, {
+                     "Name" : "carbon",
+                     "Name_Localised" : "Carbone",
+                     "Percent" : 15.768391
+                   }, {
+                     "Name" : "nickel",
+                     "Percent" : 14.43461
+                   }, {
+                     "Name" : "phosphorus",
+                     "Name_Localised" : "Phosphore",
+                     "Percent" : 10.095194
+                   }, {
+                     "Name" : "manganese",
+                     "Name_Localised" : "Manganèse",
+                     "Percent" : 7.881647
+                   }, {
+                     "Name" : "germanium",
+                     "Percent" : 5.51991
+                   }, {
+                     "Name" : "zinc",
+                     "Percent" : 5.186415
+                   }, {
+                     "Name" : "niobium",
+                     "Percent" : 1.304314
+                   }, {
+                     "Name" : "yttrium",
+                     "Percent" : 1.139886
+                   }, {
+                     "Name" : "mercury",
+                     "Name_Localised" : "Mercure",
+                     "Percent" : 0.833383
+                   } ],
+                   "Composition" : {
+                     "Ice" : 0.0,
+                     "Rock" : 0.911083,
+                     "Metal" : 0.088917
+                   },
+                   "SemiMajorAxis" : 3.874166488647461E9,
+                   "Eccentricity" : 0.006662,
+                   "OrbitalInclination" : 0.054466,
+                   "Periapsis" : 142.389042,
+                   "OrbitalPeriod" : 1454081.058502,
+                   "AscendingNode" : 160.612219,
+                   "MeanAnomaly" : 136.238151,
+                   "RotationPeriod" : 1454085.276453,
+                   "AxialTilt" : -0.3138,
+                   "WasDiscovered" : true,
+                   "WasMapped" : false,
+                   "WasFootfalled" : false
+                 }
+                """;
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(jsonNode);
         ScanHandler handler = new ScanHandler();
         handler.handle(root);
         System.out.println(PlaneteRegistry.getInstance().getAllPlanetes());
         Optional<PlaneteDetail> OplaneteDetail = PlaneteRegistry.getInstance().getAllPlanetes().stream().findFirst();
-
-
+        PlaneteRegistry.getInstance().getAllPlanetes().forEach(
+                e -> {
+                    if (e.getBioSpecies() != null) {
+                        System.out.println(e.getBodyName() + " - " +e.getTimestamp());
+                        e.getBioSpecies().forEach(c -> {
+                            System.out.println("     " + c.getKey().getFullName() + " -> " + c.getValue());
+                        });
+                    }
+                }
+        );
     }
 }

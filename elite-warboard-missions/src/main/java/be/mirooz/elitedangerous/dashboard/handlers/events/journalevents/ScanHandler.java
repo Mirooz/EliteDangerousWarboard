@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +44,7 @@ public class ScanHandler implements JournalEventHandler {
             BodyType bodyType = BodyType.fromString(planetClassStr);
 
             String atmosphereStr = jsonNode.path("Atmosphere").asText();
-            String atmosphereTypeStr = jsonNode.path("AtmosphereType").asText();
-            AtmosphereType atmosphereType = parseAtmosphereType(atmosphereStr, atmosphereTypeStr);
+            AtmosphereType atmosphereType = parseAtmosphereType(atmosphereStr);
 
             String volcanismStr = jsonNode.path("Volcanism").asText();
             VolcanismType volcanismType = VolcanismType.fromString(volcanismStr);
@@ -125,13 +125,14 @@ public class ScanHandler implements JournalEventHandler {
             // Création de l'objet PlaneteDetail
             PlaneteDetail planeteDetail = PlaneteDetail.builder()
                     .bodyName(bodyName)
+                    .timestamp(timestamp)
                     .starSystem(starSystem)
                     .systemAddress(systemAddress)
                     .bodyID(bodyID)
                     .planetClass(bodyType)
-                    .temperature(surfaceTemperature > 0 ? surfaceTemperature : null)
-                    .pressureAtm(pressureAtm > 0 ? pressureAtm : null)
-                    .gravityG(gravityG > 0 ? gravityG : null)
+                    .temperature(surfaceTemperature >= 0 ? surfaceTemperature : null)
+                    .pressureAtm(pressureAtm >= 0 ? pressureAtm : null)
+                    .gravityG(gravityG >= 0 ? gravityG : null)
                     .landable(landable)
                     .atmosphere(atmosphereType)
                     .volcanism(volcanismType)
@@ -142,12 +143,12 @@ public class ScanHandler implements JournalEventHandler {
                     .build();
 
             // Log des informations principales
-            System.out.printf("🔍 Scan: %s (%s) in %s%n", bodyName,
+         /*   System.out.printf("🔍 Scan: %s (%s) in %s%n", bodyName,
                     bodyType != null ? bodyType.getDisplayName() : planetClassStr, starSystem);
             if (atmosphereType != null) {
                 System.out.printf("   Atmosphere: %s%n", atmosphereType.getDisplayName());
             } else if (!atmosphereStr.isEmpty()) {
-                System.out.printf("   Atmosphere: %s (%s)%n", atmosphereStr, atmosphereTypeStr);
+                System.out.printf("   Atmosphere: null %n");
             }
             if (volcanismType != null) {
                 System.out.printf("   Volcanism: %s%n", volcanismType.getDisplayName());
@@ -157,7 +158,7 @@ public class ScanHandler implements JournalEventHandler {
             if (landable) {
                 System.out.printf("   Landable: Yes (Gravity: %.2fG, Temp: %.1fK, Pressure: %.4f atm)%n",
                         gravityG, surfaceTemperature, pressureAtm);
-            }
+            }*/
 
             // Enregistrement de la planète dans le registre
             PlaneteRegistry.getInstance().addOrUpdatePlanete(planeteDetail);
@@ -166,19 +167,36 @@ public class ScanHandler implements JournalEventHandler {
             if (landable) {
                 try {
                     List<BioSpecies> allSpecies = BioSpeciesService.getInstance().getSpecies();
-                    List<BioSpecies> matchingSpecies = allSpecies.stream()
+                    List<Map.Entry<BioSpecies, Double>> matchingSpecies = allSpecies.stream()
                             .filter(species -> BioSpeciesMatcher.matches(planeteDetail, species))
-                            .collect(Collectors.toList());
+                            .map(species -> Map.entry(species, BioSpeciesMatcher.probability(planeteDetail, species)))
+                            .sorted(Comparator.comparingDouble(Map.Entry<BioSpecies, Double>::getValue).reversed())
+                            .toList();
+
 
                     if (!matchingSpecies.isEmpty()) {
+                        matchingSpecies =matchingSpecies
+                                .stream().filter(
+                                        species -> species.getKey().getVariantMethod().equals(VariantMethods.SURFACE_MATERIALS)
+                                                || species.getKey().getColorConditionName().equals("K")
+                                )
+                                .toList();
+                        double probaCount = matchingSpecies.stream()
+                                .mapToDouble(Map.Entry::getValue)
+                                .sum();
+
                         System.out.printf("   🌱 Espèces biologiques possibles (%d):%n", matchingSpecies.size());
+                        System.out.println(probaCount);
                         matchingSpecies.forEach(species ->
-                                {
-                                    if (species.getVariantMethod().equals(VariantMethods.SURFACE_MATERIALS) || species.getColorConditionName().equals("M")) {
-                                        System.out.printf("      - %s - %d%n", species.getFullName(), species.getBaseValue());
-                                    }
-                                }
-                        );
+                                        {
+                                            System.out.printf("      - %s - %d - proba : %f %% %n", species.getKey().getFullName(), species.getKey().getBaseValue(), species.getValue());
+
+                                        }
+                                );
+                        matchingSpecies = matchingSpecies.stream()
+                                .map(e -> Map.entry(e.getKey(), (100 / probaCount) * e.getValue()))
+                                .toList();
+                        planeteDetail.setBioSpecies(matchingSpecies);
                     }
                 } catch (URISyntaxException | IOException e) {
                     System.err.println("❌ Erreur lors du chargement des espèces biologiques: " + e.getMessage());
@@ -196,53 +214,16 @@ public class ScanHandler implements JournalEventHandler {
      * Le format dans le journal est "thin ammonia atmosphere" avec AtmosphereType="Ammonia".
      * On doit construire "Thin Ammonia" pour matcher l'enum.
      */
-    private AtmosphereType parseAtmosphereType(String atmosphere, String atmosphereType) {
+    private AtmosphereType parseAtmosphereType(String atmosphere) {
         if (atmosphere == null || atmosphere.isEmpty()) {
             return AtmosphereType.NO_ATMOSPHERE;
         }
 
-        if (atmosphereType == null || atmosphereType.isEmpty()) {
-            // Si pas d'AtmosphereType mais qu'il y a une atmosphère, essayer de parser directement
-            return AtmosphereType.fromString(atmosphere);
+        if (atmosphere.contains(" atmosphere")) {
+            atmosphere = atmosphere.replace(" atmosphere", "");
         }
+        return AtmosphereType.fromString(atmosphere);
 
-        String normalized = atmosphere.toLowerCase().trim();
-        String type = atmosphereType.trim();
-
-        // Déterminer la densité (thin/thick/hot)
-        String density = "";
-        if (normalized.contains("thin")) {
-            density = "Thin ";
-        } else if (normalized.contains("thick")) {
-            density = "Thick ";
-        } else if (normalized.contains("hot")) {
-            density = "Hot ";
-        }
-
-        // Vérifier si c'est "rich"
-        boolean isRich = normalized.contains("rich");
-
-        // Construire la chaîne complète
-        String fullAtmosphereType;
-        if (isRich) {
-            fullAtmosphereType = density + type + "-rich";
-        } else {
-            fullAtmosphereType = density + type;
-        }
-
-        // Essayer de matcher avec l'enum
-        AtmosphereType result = AtmosphereType.fromString(fullAtmosphereType);
-
-        // Si pas de match, essayer sans la densité
-        if (result == null) {
-            if (isRich) {
-                result = AtmosphereType.fromString(type + "-rich");
-            } else {
-                result = AtmosphereType.fromString(type);
-            }
-        }
-
-        return result;
     }
 }
 

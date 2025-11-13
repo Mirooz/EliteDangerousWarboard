@@ -11,6 +11,33 @@ import java.util.Map;
  */
 public class BioSpeciesMatcher {
 
+    public static double probability(PlaneteDetail planete, BioSpecies species){
+        try {
+            BioSpeciesFactory.HistogramData histogramData = species.getHistogramData();
+            matchesBodyType(planete.getPlanetClass(), histogramData.bodyTypes);
+            Double bodyValue = histogramData.bodyTypes.get(planete.getPlanetClass());
+            Double atmosValue = histogramData.atmosTypes.get(planete.getAtmosphere());
+            Double volcanismValue = histogramData.volcanicBodyTypes.get(new BioSpeciesFactory.VolcanicBodyType(planete.getPlanetClass(), planete.getVolcanism()));
+
+            Double temperatureValue = histogramData.temperature.stream().filter(bin ->
+                            bin.min != null && bin.max != null &&
+                                    planete.getTemperature() >= bin.min && planete.getTemperature() <= bin.max)
+                    .findFirst().map(bin -> bin.value).orElse(0.0);
+            Double gravityValue = histogramData.gravity.stream().filter(bin ->
+                            bin.min != null && bin.max != null &&
+                                    planete.getGravityG() >= bin.min && planete.getGravityG() <= bin.max)
+                    .findFirst().map(bin -> bin.value).orElse(0.0);
+            Double pressureValue = histogramData.pressure.stream().filter(bin ->
+                            bin.min != null && bin.max != null &&
+                                    planete.getPressureAtm() >= bin.min && planete.getPressureAtm() <= bin.max)
+                    .findFirst().map(bin -> bin.value).orElse(0.0);
+            return Math.min(bodyValue, Math.min(atmosValue, Math.min(volcanismValue, Math.min(temperatureValue, Math.min(gravityValue, pressureValue)))));
+        }
+        catch (Exception e){
+            System.out.println("Error in probability");
+            return 0.0;
+        }
+        }
     /**
      * Vérifie si une planète correspond aux conditions d'une espèce biologique.
      * 
@@ -19,6 +46,7 @@ public class BioSpeciesMatcher {
      * @return true si la planète correspond aux conditions, false sinon
      */
     public static boolean matches(PlaneteDetail planete, BioSpecies species) {
+
         if (planete == null || species == null || species.getHistogramData() == null) {
             return false;
         }
@@ -61,13 +89,15 @@ public class BioSpeciesMatcher {
             //CAS STAR
         }
 
+
+
         return true;
     }
 
     /**
      * Vérifie si le type de corps correspond.
      */
-    private static boolean matchesBodyType(BodyType planetClass, Map<BodyType, Integer> allowedBodyTypes) {
+    private static boolean matchesBodyType(BodyType planetClass, Map<BodyType, Double> allowedBodyTypes) {
         if (planetClass == null) {
             return false;
         }
@@ -77,10 +107,14 @@ public class BioSpeciesMatcher {
         return allowedBodyTypes.containsKey(planetClass);
     }
 
+    private static double probabilityBodyType(BodyType planetClass, Map<BodyType, Double> allowedBodyTypes){
+        return allowedBodyTypes.get(planetClass);
+    }
+
     /**
      * Vérifie si l'atmosphère correspond.
      */
-    private static boolean matchesAtmosphere(AtmosphereType atmosphere, Map<AtmosphereType, Integer> allowedAtmosTypes) {
+    private static boolean matchesAtmosphere(AtmosphereType atmosphere, Map<AtmosphereType, Double> allowedAtmosTypes) {
         if (atmosphere == null) {
             // Si pas d'atmosphère, vérifier si "No atmosphere" est autorisé
             if (allowedAtmosTypes == null || allowedAtmosTypes.isEmpty()) {
@@ -98,7 +132,7 @@ public class BioSpeciesMatcher {
      * Vérifie si le volcanisme correspond.
      */
     private static boolean matchesVolcanism(BodyType planetClass, VolcanismType volcanism, 
-                                           Map<BioSpeciesFactory.VolcanicBodyType, Integer> volcanicBodyTypes) {
+                                           Map<BioSpeciesFactory.VolcanicBodyType, Double> volcanicBodyTypes) {
         if (volcanicBodyTypes == null || volcanicBodyTypes.isEmpty()) {
             return true; // Pas de restriction
         }

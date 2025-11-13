@@ -61,6 +61,16 @@ public class DashboardService {
             } finally {
                 listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
                 DashboardContext.getInstance().refreshUI();
+                PlaneteRegistry.getInstance().getAllPlanetes().forEach(
+                        e -> {
+                            if (e.getBioSpecies() != null) {
+                                System.out.println(e.getBodyName() + " - " +e.getTimestamp());
+                                e.getBioSpecies().forEach(c -> {
+                                    System.out.println("     " + c.getKey().getFullName() + " -> " + c.getValue());
+                                });
+                            }
+                        }
+                );
             }
         }).start();
     }

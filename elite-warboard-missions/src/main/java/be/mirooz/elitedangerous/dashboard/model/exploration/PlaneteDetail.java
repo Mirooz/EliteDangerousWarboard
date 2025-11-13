@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
 import be.mirooz.elitedangerous.biologic.AtmosphereType;
+import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.biologic.BodyType;
 import be.mirooz.elitedangerous.biologic.VolcanismType;
 import lombok.AllArgsConstructor;
@@ -8,8 +9,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static lombok.Builder.*;
 
 /**
  * Modèle représentant les détails d'une planète scannée dans Elite Dangerous.
@@ -20,7 +26,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlaneteDetail {
-    
+    private String timestamp;
     // Informations de base
     private String bodyName;
     private String starSystem;
@@ -45,6 +51,8 @@ public class PlaneteDetail {
     private boolean wasMapped;
     private boolean wasFootfalled;
     private boolean wasDiscovered;
+    @Default
+    private List<Map.Entry<BioSpecies, Double>> bioSpecies = new ArrayList<>();
     
     /**
      * Convertit la pression de Pascal vers atmosphères.

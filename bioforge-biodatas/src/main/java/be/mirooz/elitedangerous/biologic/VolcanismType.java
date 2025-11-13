@@ -67,7 +67,7 @@ public enum VolcanismType {
      */
     public static VolcanismType fromString(String str) {
         if (str == null || str.isEmpty()) {
-            return null;
+            return NO_VOLCANISM;
         }
         
         String normalized = str.trim();
@@ -76,7 +76,9 @@ public enum VolcanismType {
         if (normalized.contains(" - ")) {
             normalized = normalized.substring(normalized.lastIndexOf(" - ") + 3);
         }
-        
+        if (normalized.contains(" volcanism") && !normalized.equalsIgnoreCase("no volcanism")) {
+            normalized = normalized.replace(" volcanism", "");
+        }
         for (VolcanismType type : values()) {
             if (type.displayName.equalsIgnoreCase(normalized)) {
                 return type;

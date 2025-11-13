@@ -168,9 +168,9 @@ public class BioSpeciesFactory {
                     AtmosphereType atmosType = AtmosphereType.fromString(entry.getKey());
                     if (atmosType != null) {
                         JsonNode valueNode = entry.getValue();
-                        Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
-                        if (count != null && count >= getMinimalValue(totalCount)) {
-                            data.atmosTypes.put(atmosType, count);
+                        Double count = (valueNode != null && !valueNode.isNull()) ? valueNode.asDouble() : null;
+                        if (count != null) {
+                            data.atmosTypes.put(atmosType,  count);
                         }
                     } else {
                         throw new RuntimeException("Unknown atmosphere type: " + entry.getKey());
@@ -185,9 +185,10 @@ public class BioSpeciesFactory {
                     BodyType bodyType = BodyType.fromString(entry.getKey());
                     if (bodyType != null) {
                         JsonNode valueNode = entry.getValue();
-                        Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
-                        if (count != null && count >= getMinimalValue(totalCount)) {
+                        Double count = (valueNode != null && !valueNode.isNull()) ? valueNode.asDouble() : null;
+                        if (count != null) {
                             data.bodyTypes.put(bodyType, count);
+
                         }
                     } else {
                         throw new RuntimeException("Unknown atmosphere type: " + entry.getKey());
@@ -202,8 +203,8 @@ public class BioSpeciesFactory {
                     Bin gravityBin = new Bin();
                     gravityBin.min = getDoubleOrNull(bin, "min");
                     gravityBin.max = getDoubleOrNull(bin, "max");
-                    gravityBin.value = getIntOrNull(bin, "value");
-                    if (gravityBin.value != null && gravityBin.value >= getMinimalValue(totalCount)) {
+                    gravityBin.value = getDoubleOrNull(bin,"value");
+                    if (gravityBin.value != 0) {
                         data.gravity.add(gravityBin);
                     }
                 });
@@ -216,13 +217,12 @@ public class BioSpeciesFactory {
                     Bin pressureBin = new Bin();
                     pressureBin.min = getDoubleOrNull(bin, "min");
                     pressureBin.max = getDoubleOrNull(bin, "max");
-                    pressureBin.value = getIntOrNull(bin, "value");
-                    if (pressureBin.value != null && pressureBin.value >= getMinimalValue(totalCount)) {
+                    pressureBin.value = getDoubleOrNull(bin,"value");
+                    if (pressureBin.value != 0) {
                         data.pressure.add(pressureBin);
                     }
                 });
             }
-
             // temperature: List<Bin>
             if (histograms.has("temperature") && histograms.get("temperature").isArray()) {
                 data.temperature = new ArrayList<>();
@@ -230,8 +230,8 @@ public class BioSpeciesFactory {
                     Bin tempBin = new Bin();
                     tempBin.min = getDoubleOrNull(bin, "min");
                     tempBin.max = getDoubleOrNull(bin, "max");
-                    tempBin.value = getIntOrNull(bin, "value");
-                    if (tempBin.value != null && tempBin.value >= getMinimalValue(totalCount)) {
+                    tempBin.value = getDoubleOrNull(bin,"value");
+                    if (tempBin.value != 0 ) {
                         data.temperature.add(tempBin);
                     }
                 });
@@ -245,8 +245,8 @@ public class BioSpeciesFactory {
                     VolcanicBodyType volcanicBodyType = parseVolcanicBodyType(key);
                     if (volcanicBodyType != null) {
                         JsonNode valueNode = entry.getValue();
-                        Integer count = (valueNode != null && !valueNode.isNull()) ? valueNode.asInt() : null;
-                        if (count != null && count >= getMinimalValue(totalCount)) {
+                        Double count = (valueNode != null && !valueNode.isNull()) ? valueNode.asDouble() : null;
+                        if (count != null) {
                             data.volcanicBodyTypes.put(volcanicBodyType, count);
                         }
                     } else {
@@ -259,9 +259,6 @@ public class BioSpeciesFactory {
         return data;
     }
 
-    private static int getMinimalValue(int totalCount) {
-        return totalCount / 15;
-    }
 
     /**
      * Parses a volcanic body type string (format: "Body Type - Volcanism Type")
@@ -288,12 +285,7 @@ public class BioSpeciesFactory {
     // 🔧 Méthodes utilitaires pour gérer les null proprement
     private static Double getDoubleOrNull(JsonNode node, String field) {
         JsonNode value = node.get(field);
-        return (value != null && !value.isNull()) ? value.asDouble() : null;
-    }
-
-    private static Integer getIntOrNull(JsonNode node, String field) {
-        JsonNode value = node.get(field);
-        return (value != null && !value.isNull()) ? value.asInt() : null;
+        return (value != null && !value.isNull()) ? value.asDouble() : 0;
     }
 
 
@@ -304,10 +296,10 @@ public class BioSpeciesFactory {
     @Data
     public static class HistogramData {
         // atmos_types: Map of atmosphere type -> count
-        public Map<AtmosphereType, Integer> atmosTypes;
+        public Map<AtmosphereType, Double> atmosTypes;
 
         // body_types: Map of body type -> count
-        public Map<BodyType, Integer> bodyTypes;
+        public Map<BodyType, Double> bodyTypes;
 
         // gravity: List of bins (min, max, count)
         public List<Bin> gravity;
@@ -319,7 +311,7 @@ public class BioSpeciesFactory {
         public List<Bin> temperature;
 
         // volcanic_body_types: Map of (body type, volcanism type) -> count
-        public Map<VolcanicBodyType, Integer> volcanicBodyTypes;
+        public Map<VolcanicBodyType, Double> volcanicBodyTypes;
     }
 
     /**
@@ -328,7 +320,7 @@ public class BioSpeciesFactory {
     public static class Bin {
         public Double min;
         public Double max;
-        public Integer value; // count/quantity
+        public Double value; // proportion
     }
 
     /**
