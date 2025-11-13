@@ -57,9 +57,9 @@ public class SAASignalsFoundHandler implements JournalEventHandler {
                         List<String> genuses = new ArrayList<>();
                         if (jsonNode.has("Genuses") && jsonNode.get("Genuses").isArray()) {
                             jsonNode.get("Genuses").forEach(genus -> {
-                                String genusLocalised = genus.path("Genus_Localised").asText();
-                                if (!genusLocalised.isEmpty()) {
-                                    genuses.add(genusLocalised);
+                                String genusCodex = genus.path("Genus").asText();
+                                if (!genusCodex.isEmpty()) {
+                                    genuses.add(genusCodex);
                                 }
                             });
                         }

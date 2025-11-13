@@ -100,8 +100,8 @@ public class PlaneteDetail {
                         .stream().filter(
                                 species -> (species.getKey().getVariantMethod().equals(VariantMethods.SURFACE_MATERIALS)
                                         && this.getMaterials() != null
-                                        && this.getMaterials().containsKey(species.getKey().getColorConditionName()))
-                                        || species.getKey().getColorConditionName().equals("K")
+                                        && this.getMaterials().containsKey(species.getKey().getColorConditionName().toLowerCase()))
+                                        || species.getKey().getColorConditionName().equals("K") //TODO
                         )
                         .toList();
                 if (level == 2 && genuses != null && !genuses.isEmpty()) {
@@ -111,7 +111,8 @@ public class PlaneteDetail {
                             .filter(species -> {
                                 String speciesName = species.getKey().getName();
                                 return genuses.stream()
-                                        .anyMatch(genus -> speciesName.contains(genus) || genus.contains(speciesName));
+                                        .anyMatch(genus -> genus.toLowerCase().contains(speciesName.toLowerCase()));
+
                             })
                             .toList();
                 }
