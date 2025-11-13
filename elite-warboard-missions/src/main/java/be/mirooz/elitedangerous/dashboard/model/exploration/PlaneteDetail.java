@@ -67,11 +67,24 @@ public class PlaneteDetail {
     }
 
     /**
-     * Calcule les informations biologiques pour cette planète.
+     * Calcule les informations biologiques pour cette planète (niveau 1 - FSSBodySignals).
      * Cette méthode est appelée lorsqu'un signal biologique est détecté
      * et que la planète est disponible dans le registre.
      */
     public void calculBioFirstScan(Integer count) {
+        calculBioScan(count, 1, null);
+    }
+
+    /**
+     * Calcule les informations biologiques pour cette planète.
+     * Cette méthode est appelée lorsqu'un signal biologique est détecté
+     * et que la planète est disponible dans le registre.
+     *
+     * @param count   Le nombre de signaux biologiques
+     * @param level   Le niveau du scan (1 pour FSSBodySignals, 2 pour SAASignalsFound)
+     * @param genuses La liste des genuses détectés (null pour level 1)
+     */
+    public void calculBioScan(Integer count, int level, List<String> genuses) {
         // Vérification des espèces biologiques possibles sur cette planète
         try {
             List<BioSpecies> allSpecies = BioSpeciesService.getInstance().getSpecies();
@@ -81,20 +94,33 @@ public class PlaneteDetail {
                     .sorted(Comparator.comparingDouble(Map.Entry<BioSpecies, Double>::getValue).reversed())
                     .toList();
 
-
             if (!matchingSpecies.isEmpty()) {
+                // Filtrage selon le niveau
                 matchingSpecies = matchingSpecies
                         .stream().filter(
                                 species -> (species.getKey().getVariantMethod().equals(VariantMethods.SURFACE_MATERIALS)
+                                        && this.getMaterials() != null
                                         && this.getMaterials().containsKey(species.getKey().getColorConditionName()))
                                         || species.getKey().getColorConditionName().equals("K")
                         )
                         .toList();
+                if (level == 2 && genuses != null && !genuses.isEmpty()) {
+                    // Niveau 2 : filtre par genuses détectés
+                    matchingSpecies = matchingSpecies
+                            .stream()
+                            .filter(species -> {
+                                String speciesName = species.getKey().getName();
+                                return genuses.stream()
+                                        .anyMatch(genus -> speciesName.contains(genus) || genus.contains(speciesName));
+                            })
+                            .toList();
+                }
+
                 double probaCount = matchingSpecies.stream()
                         .mapToDouble(Map.Entry::getValue)
                         .sum();
 
-                System.out.printf("   🌱 Espèces biologiques possibles (%d):%n", matchingSpecies.size());
+                System.out.printf("   🌱 Espèces biologiques possibles (niveau %d, %d espèces):%n", level, matchingSpecies.size());
                 System.out.println(probaCount);
                 matchingSpecies.forEach(species ->
                         {
@@ -105,7 +131,7 @@ public class PlaneteDetail {
                 List<SpeciesProbability> probabilities = matchingSpecies.stream()
                         .map(e -> new SpeciesProbability(e.getKey(), (100.0 / probaCount) * e.getValue()))
                         .toList();
-                Scan scan = new Scan(1, probabilities);
+                Scan scan = new Scan(level, probabilities);
                 this.getBioSpecies().add(scan);
             }
         } catch (URISyntaxException | IOException e) {

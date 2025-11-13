@@ -45,7 +45,7 @@ public class FSSBodySignalsHandler implements JournalEventHandler {
                     // Si c'est un signal biologique, l'ajouter au processeur
                     if ("$SAA_SignalType_Biological;".equals(signalType)) {
                         int count = signal.path("Count").asInt(1);
-                        signalProcessor.addPendingBiologicalSignal(bodyID, systemAddress, bodyName, count);
+                        signalProcessor.addPendingBiologicalSignal(bodyID, systemAddress, bodyName, count,1);
                         System.out.printf("🌱 Signal biologique détecté: %s (BodyID: %d, Count: %d)%n", 
                                 bodyName, bodyID, count);
                     }

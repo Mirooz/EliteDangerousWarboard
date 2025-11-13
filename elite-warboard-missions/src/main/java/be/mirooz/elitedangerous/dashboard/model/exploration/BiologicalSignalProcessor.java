@@ -41,13 +41,21 @@ public class BiologicalSignalProcessor {
     }
 
     /**
-     * Ajoute un signal biologique en attente.
+     * Ajoute un signal biologique en attente (niveau 1 - FSSBodySignals).
      * Démarre le scheduler si ce n'est pas déjà fait.
      */
-    public synchronized void addPendingBiologicalSignal(int bodyID, long systemAddress, String bodyName, int count) {
-        PendingBiologicalSignal signal = new PendingBiologicalSignal(bodyID, systemAddress, bodyName, count);
+    public synchronized void addPendingBiologicalSignal(int bodyID, long systemAddress, String bodyName, int count, int level) {
+        addPendingBiologicalSignal(bodyID, systemAddress, bodyName, count, level, null);
+    }
+
+    /**
+     * Ajoute un signal biologique en attente avec genuses (niveau 2 - SAASignalsFound).
+     * Démarre le scheduler si ce n'est pas déjà fait.
+     */
+    public synchronized void addPendingBiologicalSignal(int bodyID, long systemAddress, String bodyName, int count, int level, List<String> genuses) {
+        PendingBiologicalSignal signal = new PendingBiologicalSignal(bodyID, systemAddress, bodyName, count, level, genuses);
         pendingSignals.add(signal);
-        System.out.printf("📋 Signal biologique ajouté à la file d'attente: BodyID=%d, BodyName=%s%n", bodyID, bodyName);
+        System.out.printf("📋 Signal biologique (niveau %d) ajouté à la file d'attente: BodyID=%d, BodyName=%s%n", level, bodyID, bodyName);
         
         // Démarrer le scheduler si ce n'est pas déjà fait
         startProcessingIfNeeded();
@@ -101,10 +109,10 @@ public class BiologicalSignalProcessor {
                 PlaneteDetail planete = planeteOpt.get();
                 signalsToProcess.add(signal);
                 
-                // Appliquer le calcul biologique
-                planete.calculBioFirstScan(signal.getCount());
-                System.out.printf("✅ Calcul biologique appliqué pour: %s (BodyID: %d)%n", 
-                        signal.getBodyName(), signal.getBodyID());
+                // Appliquer le calcul biologique avec le niveau et les genuses
+                planete.calculBioScan(signal.getCount(), signal.getLevel(), signal.getGenuses());
+                System.out.printf("✅ Calcul biologique (niveau %d) appliqué pour: %s (BodyID: %d)%n", 
+                        signal.getLevel(), signal.getBodyName(), signal.getBodyID());
             }
         }
         
@@ -120,6 +128,28 @@ public class BiologicalSignalProcessor {
      */
     public void shutdown() {
         scheduler.shutdown();
+    }
+
+    /**
+     * Classe interne pour représenter un signal biologique en attente.
+     */
+    @Data
+    private static class PendingBiologicalSignal {
+        private final int bodyID;
+        private final long systemAddress;
+        private final String bodyName;
+        private final int count;
+        private final int level; // 1 pour FSSBodySignals, 2 pour SAASignalsFound
+        private final List<String> genuses; // null pour level 1, liste des genuses pour level 2
+
+        public PendingBiologicalSignal(int bodyID, long systemAddress, String bodyName, int count, int level, List<String> genuses) {
+            this.bodyID = bodyID;
+            this.systemAddress = systemAddress;
+            this.bodyName = bodyName;
+            this.count = count;
+            this.level = level;
+            this.genuses = genuses != null ? new ArrayList<>(genuses) : null;
+        }
     }
 }
 
