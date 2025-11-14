@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
-import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
@@ -14,11 +14,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Contrôleur pour le pied de page du dashboard

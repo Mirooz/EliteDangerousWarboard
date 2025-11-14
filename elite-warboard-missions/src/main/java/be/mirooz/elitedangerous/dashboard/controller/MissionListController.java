@@ -12,7 +12,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
-import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.MissionCardComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent;

@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public interface JournalEventHandler {

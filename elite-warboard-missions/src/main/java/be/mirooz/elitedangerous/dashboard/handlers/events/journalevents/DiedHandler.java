@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import com.fasterxml.jackson.databind.JsonNode;
 

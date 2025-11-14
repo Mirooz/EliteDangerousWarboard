@@ -4,7 +4,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;

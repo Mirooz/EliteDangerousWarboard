@@ -2,17 +2,16 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
-import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
-import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
-import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
-import be.mirooz.elitedangerous.dashboard.model.registries.*;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.ShipTargetRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.mining.MiningStatRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
 import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Platform;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

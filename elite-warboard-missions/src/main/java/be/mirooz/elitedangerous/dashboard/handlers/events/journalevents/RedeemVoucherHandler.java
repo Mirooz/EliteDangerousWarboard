@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class RedeemVoucherHandler implements JournalEventHandler {

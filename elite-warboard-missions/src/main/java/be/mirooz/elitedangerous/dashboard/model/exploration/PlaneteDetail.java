@@ -1,8 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
 import be.mirooz.elitedangerous.biologic.*;
-import be.mirooz.elitedangerous.dashboard.model.registries.OrganicDataSaleRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
 import lombok.Builder;
 import lombok.Data;
@@ -276,7 +276,6 @@ public class PlaneteDetail extends AbstractCelesteBody {
 
             if (existing != null) {
                 existing.addScanType(scanTypeBio);
-                
                 // Si c'est une analyse, ajouter au crédit de données organiques
                 if (scanTypeBio == ScanTypeBio.ANALYSE) {
                     OrganicDataSaleRegistry.getInstance()
@@ -308,17 +307,6 @@ public class PlaneteDetail extends AbstractCelesteBody {
                     .build();
             confirmed.addScanType(scanTypeBio);
             confirmedSpecies.add(confirmed);
-            
-            // Si c'est une analyse, ajouter au crédit de données organiques
-            if (scanTypeBio == ScanTypeBio.ANALYSE) {
-                be.mirooz.elitedangerous.dashboard.model.registries.OrganicDataSaleRegistry.getInstance()
-                        .addAnalyzedOrganicData(
-                                confirmed.getBaseValue(),
-                                confirmed.getBonusValue(),
-                                this.isWasFootfalled()
-                        );
-            }
-
         } catch (Exception e) {
             System.err.println("❌ Erreur addConfirmedSpecies: " + e.getMessage());
         }

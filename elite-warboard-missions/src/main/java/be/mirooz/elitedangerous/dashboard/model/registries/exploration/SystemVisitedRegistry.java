@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.registries;
+package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import javafx.collections.FXCollections;

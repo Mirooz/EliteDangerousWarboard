@@ -7,8 +7,8 @@ import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedConflictShip;
 import be.mirooz.elitedangerous.dashboard.model.ships.Reward;
 import be.mirooz.elitedangerous.dashboard.model.ships.ShipTarget;
 import be.mirooz.elitedangerous.dashboard.util.comparator.MissionTimestampComparator;
-import be.mirooz.elitedangerous.dashboard.model.registries.DestroyedShipsRegistery;
-import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 

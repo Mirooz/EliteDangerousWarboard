@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SoldBioData;
-import be.mirooz.elitedangerous.dashboard.model.registries.OrganicDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;

@@ -3,7 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidListener;
+import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidListener;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;

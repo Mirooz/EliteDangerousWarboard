@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.registries;
+package be.mirooz.elitedangerous.dashboard.model.registries.mining;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningSessionNotificationService;

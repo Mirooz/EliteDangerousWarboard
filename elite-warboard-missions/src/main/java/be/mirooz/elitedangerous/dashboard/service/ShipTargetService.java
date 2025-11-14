@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.ships.ShipTarget;
-import be.mirooz.elitedangerous.dashboard.model.registries.ShipTargetRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.ShipTargetRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Collection;

@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.model.registries.ProspectedAsteroidRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralFactory;

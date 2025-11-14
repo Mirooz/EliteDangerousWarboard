@@ -1,8 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.DiscoveredSystem;
-import be.mirooz.elitedangerous.dashboard.model.registries.ExplorationDataSaleRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.SystemVisitedRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;

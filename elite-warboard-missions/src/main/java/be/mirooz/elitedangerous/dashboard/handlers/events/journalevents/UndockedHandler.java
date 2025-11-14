@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.registries.ExplorationDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class UndockedHandler implements JournalEventHandler {

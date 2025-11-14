@@ -1,9 +1,8 @@
-package be.mirooz.elitedangerous.dashboard.model.registries;
+package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.exploration.AbstractCelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
-import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;

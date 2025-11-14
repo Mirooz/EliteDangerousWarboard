@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.registries;
+package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataSale;
 import javafx.collections.FXCollections;

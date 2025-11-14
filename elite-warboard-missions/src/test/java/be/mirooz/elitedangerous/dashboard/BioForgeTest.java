@@ -3,14 +3,10 @@ package be.mirooz.elitedangerous.dashboard;
 import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.ScanHandler;
 import be.mirooz.elitedangerous.dashboard.model.exploration.AbstractCelesteBody;
-import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
-import be.mirooz.elitedangerous.dashboard.model.registries.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.java.games.input.Controller;
-import net.java.games.input.ControllerEnvironment;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

@@ -7,7 +7,7 @@ import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
-import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

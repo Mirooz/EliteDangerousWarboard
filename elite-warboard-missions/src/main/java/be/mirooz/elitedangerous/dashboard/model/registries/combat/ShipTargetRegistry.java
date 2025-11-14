@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.registries;
+package be.mirooz.elitedangerous.dashboard.model.registries.combat;
 
 import be.mirooz.elitedangerous.dashboard.model.ships.ShipTarget;
 

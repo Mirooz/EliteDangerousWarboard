@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import lombok.Data;
 
 import java.util.ArrayList;

@@ -1,5 +1,6 @@
-package be.mirooz.elitedangerous.dashboard.model.registries;
+package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
+import be.mirooz.elitedangerous.dashboard.model.exploration.DiscoveredSystem;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -31,7 +32,7 @@ public class ExplorationDataSaleRegistry {
     /**
      * Ajoute ou met à jour la vente en cours avec de nouvelles données.
      */
-    public void addToCurrentSale(List<be.mirooz.elitedangerous.dashboard.model.exploration.DiscoveredSystem> discoveredSystems,
+    public void addToCurrentSale(List<DiscoveredSystem> discoveredSystems,
                                  long baseValue, long bonus, long totalEarnings, String timestamp) {
         if (currentSale == null) {
             // Créer une nouvelle vente en cours

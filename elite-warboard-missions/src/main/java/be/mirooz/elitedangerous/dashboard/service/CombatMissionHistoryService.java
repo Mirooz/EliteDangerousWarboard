@@ -4,10 +4,8 @@ import be.mirooz.elitedangerous.dashboard.model.combat.CombatMissionStats;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
-import be.mirooz.elitedangerous.dashboard.model.registries.MissionsRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import javafx.application.Platform;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
