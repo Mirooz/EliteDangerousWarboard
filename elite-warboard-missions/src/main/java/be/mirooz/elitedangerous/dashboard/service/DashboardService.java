@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
+import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.registries.*;
 import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -30,6 +31,7 @@ public class DashboardService {
     public void addBatchListener(IBatchListener controller) {
         listeners.add(controller);
     }
+
     public static DashboardService getInstance() {
         return INSTANCE;
     }
@@ -61,6 +63,7 @@ public class DashboardService {
             } finally {
                 listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
                 DashboardContext.getInstance().refreshUI();
+
             }
         }).start();
     }

@@ -1,7 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.SystemVisitedRegistry;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -18,7 +20,10 @@ public class FSDJumpHandler implements JournalEventHandler {
 
     @Override
     public void handle(JsonNode jsonNode) {
+
         try {
+
+            SystemVisitedRegistry.getInstance().addOrUpdateSystem(commanderStatus.getCurrentStarSystem(), 0,false);
             if (jsonNode.has("StarSystem")) {
                 String starSystem = jsonNode.get("StarSystem").asText();
                 commanderStatus.setCurrentStarSystem(starSystem);

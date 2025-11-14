@@ -295,8 +295,7 @@ public class PlaneteDetail extends AbstractCelesteBody {
                     .wasLogged(scanOrganicData.isWasLogged())
                     .collected(false)
                     .build();
-
-            confirmed.addScanType(ScanTypeBio.LOG);
+            confirmed.addScanType(scanTypeBio);
             confirmedSpecies.add(confirmed);
 
         } catch (Exception e) {

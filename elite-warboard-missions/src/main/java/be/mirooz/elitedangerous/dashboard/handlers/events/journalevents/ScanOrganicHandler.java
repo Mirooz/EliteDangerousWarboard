@@ -13,18 +13,18 @@ import java.util.Optional;
  * Traite les scans organiques effectués sur les espèces biologiques.
  * Exemple d'événement :
  * {
- *   "timestamp" : "2025-11-04T23:17:01Z",
- *   "event" : "ScanOrganic",
- *   "ScanType" : "Analyse",
- *   "Genus" : "$Codex_Ent_Osseus_Genus_Name;",
- *   "Genus_Localised" : "Osseus",
- *   "Species" : "$Codex_Ent_Osseus_03_Name;",
- *   "Species_Localised" : "Osseus Spiralis",
- *   "Variant" : "$Codex_Ent_Osseus_03_K_Name;",
- *   "Variant_Localised" : "Osseus Spiralis - Indigo",
- *   "WasLogged" : false,
- *   "SystemAddress" : 360273548178,
- *   "Body" : 20
+ * "timestamp" : "2025-11-04T23:17:01Z",
+ * "event" : "ScanOrganic",
+ * "ScanType" : "Analyse",
+ * "Genus" : "$Codex_Ent_Osseus_Genus_Name;",
+ * "Genus_Localised" : "Osseus",
+ * "Species" : "$Codex_Ent_Osseus_03_Name;",
+ * "Species_Localised" : "Osseus Spiralis",
+ * "Variant" : "$Codex_Ent_Osseus_03_K_Name;",
+ * "Variant_Localised" : "Osseus Spiralis - Indigo",
+ * "WasLogged" : false,
+ * "SystemAddress" : 360273548178,
+ * "Body" : 20
  * }
  */
 public class ScanOrganicHandler implements JournalEventHandler {
@@ -53,7 +53,6 @@ public class ScanOrganicHandler implements JournalEventHandler {
                     .systemAddress(jsonNode.path("SystemAddress").asLong())
                     .body(jsonNode.path("Body").asInt())
                     .build();
-
             // Trouver la planète dans le registry via BodyID
             Optional<PlaneteDetail> planeteOpt = planeteRegistry.getByBodyID(scanOrganicData.getBody())
                     .filter(body -> body instanceof PlaneteDetail)

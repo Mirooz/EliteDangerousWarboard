@@ -36,11 +36,18 @@ public class PlaneteRegistry {
      * Ajoute ou met à jour une planète dans le registre.
      * Utilise le bodyID comme clé unique.
      */
-    public void addOrUpdateBody(AbstractCelesteBody planete) {
-        if (planete != null) {
-            planetesMap.put(planete.getBodyID(), planete);
+    public void addOrUpdateBody(AbstractCelesteBody body) {
+        if (body == null) return;
+        AbstractCelesteBody existing = planetesMap.get(body.getBodyID());
+        if (existing != null) {
+            // On préserve les flags déjà connus
+            body.setWasFootfalled(body.isWasFootfalled() || existing.isWasFootfalled());
+            body.setWasMapped(body.isWasMapped() || existing.isWasMapped());
+            body.setWasDiscovered(body.isWasDiscovered() || existing.isWasDiscovered());
         }
+        planetesMap.put(body.getBodyID(), body);
     }
+
 
     /**
      * Récupère une planète par son bodyID.
