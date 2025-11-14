@@ -55,14 +55,16 @@ public class ScanOrganicHandler implements JournalEventHandler {
                     .build();
 
             // Trouver la planète dans le registry via BodyID
-            Optional<PlaneteDetail> planeteOpt = planeteRegistry.getPlaneteByBodyID(scanOrganicData.getBody());
+            Optional<PlaneteDetail> planeteOpt = planeteRegistry.getByBodyID(scanOrganicData.getBody())
+                    .filter(body -> body instanceof PlaneteDetail)
+                    .map(body -> (PlaneteDetail) body);
 
             if (planeteOpt.isPresent()) {
                 PlaneteDetail planete = planeteOpt.get();
                 planete.addConfirmedSpecies(scanOrganicData);
                 System.out.printf("🔬 Scan organique traité: %s (BodyID: %d, ScanType: %s, Species: %s)%n",
                         planete.getBodyName(), scanOrganicData.getBody(), scanOrganicData.getScanType(),
-                        scanOrganicData.getSpeciesLocalised());
+                        scanOrganicData.getVariantLocalised());
             } else {
                 System.out.printf("⚠️ Planète non trouvée dans le registry pour BodyID: %d (ScanOrganic)%n",
                         scanOrganicData.getBody());

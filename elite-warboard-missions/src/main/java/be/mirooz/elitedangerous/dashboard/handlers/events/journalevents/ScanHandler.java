@@ -1,19 +1,16 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.biologic.*;
-import be.mirooz.elitedangerous.dashboard.model.exploration.BioSpeciesMatcher;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ParentBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
+import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.registries.PlaneteRegistry;
-import be.mirooz.elitedangerous.service.BioSpeciesService;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Handler pour l'événement Scan du journal Elite Dangerous
@@ -73,15 +70,6 @@ public class ScanHandler implements JournalEventHandler {
                 });
             }
 
-            // Matériaux de surface
-            if (jsonNode.has("Materials") && jsonNode.get("Materials").isArray()) {
-                jsonNode.get("Materials").forEach(material -> {
-                    String name = material.path("Name").asText();
-                    double percent = material.path("Percent").asDouble(0.0);
-                    // Traiter les matériaux si nécessaire
-                });
-            }
-
             // Composition (Ice, Rock, Metal)
             if (jsonNode.has("Composition")) {
                 JsonNode composition = jsonNode.get("Composition");
@@ -91,20 +79,25 @@ public class ScanHandler implements JournalEventHandler {
                 // Traiter la composition si nécessaire
             }
 
-            // Paramètres orbitaux
-            if (jsonNode.has("SemiMajorAxis")) {
-                double semiMajorAxis = jsonNode.path("SemiMajorAxis").asDouble(0.0);
-                double eccentricity = jsonNode.path("Eccentricity").asDouble(0.0);
-                double orbitalInclination = jsonNode.path("OrbitalInclination").asDouble(0.0);
-                double periapsis = jsonNode.path("Periapsis").asDouble(0.0);
-                double orbitalPeriod = jsonNode.path("OrbitalPeriod").asDouble(0.0);
-                // Traiter les paramètres orbitaux si nécessaire
-            }
-
             // Statut de découverte
             boolean wasDiscovered = jsonNode.path("WasDiscovered").asBoolean(false);
             boolean wasMapped = jsonNode.path("WasMapped").asBoolean(false);
             boolean wasFootfalled = jsonNode.path("WasFootfalled").asBoolean(false);
+
+            // Extraction des parents
+            List<ParentBody> parents = new ArrayList<>();
+            if (jsonNode.has("Parents") && jsonNode.get("Parents").isArray()) {
+                jsonNode.get("Parents").forEach(parent -> {
+                    // Les parents peuvent avoir différents types : "Planet", "Star", "Null", etc.
+                    if (parent.has("Planet")) {
+                        int planetID = parent.path("Planet").asInt();
+                        parents.add(ParentBody.builder().type("Planet").bodyID(planetID).build());
+                    } else if (parent.has("Star")) {
+                        int starID = parent.path("Star").asInt();
+                        parents.add(ParentBody.builder().type("Star").bodyID(starID).build());
+                    }
+                });
+            }
 
             // Extraction des matériaux
             Map<String, Double> materials = new HashMap<>();
@@ -122,47 +115,50 @@ public class ScanHandler implements JournalEventHandler {
             double pressureAtm = PlaneteDetail.pascalToAtm(surfacePressure);
             double gravityG = PlaneteDetail.ms2ToG(surfaceGravity);
 
-            // Création de l'objet PlaneteDetail
-            PlaneteDetail planeteDetail = PlaneteDetail.builder()
-                    .bodyName(bodyName)
-                    .timestamp(timestamp)
-                    .starSystem(starSystem)
-                    .systemAddress(systemAddress)
-                    .bodyID(bodyID)
-                    .planetClass(bodyType)
-                    .temperature(surfaceTemperature >= 0 ? surfaceTemperature : null)
-                    .pressureAtm(pressureAtm >= 0 ? pressureAtm : null)
-                    .gravityG(gravityG >= 0 ? gravityG : null)
-                    .landable(landable)
-                    .atmosphere(atmosphereType)
-                    .volcanism(volcanismType)
-                    .materials(materials.isEmpty() ? null : materials)
-                    .wasMapped(wasMapped)
-                    .wasFootfalled(wasFootfalled)
-                    .wasDiscovered(wasDiscovered)
-                    .build();
+            if (jsonNode.has("StarType")) {
+                String starType = jsonNode.get("StarType").asText();
+                // Création de l'objet PlaneteDetail
+                StarDetail planeteDetail = StarDetail.builder()
+                        .bodyName(bodyName)
+                        .timestamp(timestamp)
+                        .starSystem(starSystem)
+                        .systemAddress(systemAddress)
+                        .starType(starType)
+                        .bodyID(bodyID)
+                        .parents(parents)
+                        .wasMapped(wasMapped)
+                        .wasFootfalled(wasFootfalled)
+                        .wasDiscovered(wasDiscovered)
+                        .build();
 
-            // Log des informations principales
-         /*   System.out.printf("🔍 Scan: %s (%s) in %s%n", bodyName,
-                    bodyType != null ? bodyType.getDisplayName() : planetClassStr, starSystem);
-            if (atmosphereType != null) {
-                System.out.printf("   Atmosphere: %s%n", atmosphereType.getDisplayName());
-            } else if (!atmosphereStr.isEmpty()) {
-                System.out.printf("   Atmosphere: null %n");
+                // Enregistrement de la planète dans le registre
+                PlaneteRegistry.getInstance().addOrUpdateBody(planeteDetail);
             }
-            if (volcanismType != null) {
-                System.out.printf("   Volcanism: %s%n", volcanismType.getDisplayName());
-            } else if (!volcanismStr.isEmpty()) {
-                System.out.printf("   Volcanism: %s%n", volcanismStr);
+            else {
+                // Création de l'objet PlaneteDetail
+                PlaneteDetail planeteDetail = PlaneteDetail.builder()
+                        .bodyName(bodyName)
+                        .timestamp(timestamp)
+                        .starSystem(starSystem)
+                        .systemAddress(systemAddress)
+                        .bodyID(bodyID)
+                        .parents(parents)
+                        .planetClass(bodyType)
+                        .temperature(surfaceTemperature >= 0 ? surfaceTemperature : null)
+                        .pressureAtm(pressureAtm >= 0 ? pressureAtm : null)
+                        .gravityG(gravityG >= 0 ? gravityG : null)
+                        .landable(landable)
+                        .atmosphere(atmosphereType)
+                        .volcanism(volcanismType)
+                        .materials(materials.isEmpty() ? null : materials)
+                        .wasMapped(wasMapped)
+                        .wasFootfalled(wasFootfalled)
+                        .wasDiscovered(wasDiscovered)
+                        .build();
+
+                // Enregistrement de la planète dans le registre
+                PlaneteRegistry.getInstance().addOrUpdateBody(planeteDetail);
             }
-            if (landable) {
-                System.out.printf("   Landable: Yes (Gravity: %.2fG, Temp: %.1fK, Pressure: %.4f atm)%n",
-                        gravityG, surfaceTemperature, pressureAtm);
-            }*/
-
-            // Enregistrement de la planète dans le registre
-            PlaneteRegistry.getInstance().addOrUpdatePlanete(planeteDetail);
-
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement Scan: " + e.getMessage());
             e.printStackTrace();

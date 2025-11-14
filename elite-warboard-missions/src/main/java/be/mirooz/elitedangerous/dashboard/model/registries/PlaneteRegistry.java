@@ -1,8 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.model.registries;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.model.exploration.AbstractCelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
-import be.mirooz.elitedangerous.dashboard.model.exploration.PendingBiologicalSignal;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -10,6 +10,7 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import lombok.Data;
 
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -21,7 +22,7 @@ public class PlaneteRegistry {
 
     private static final PlaneteRegistry INSTANCE = new PlaneteRegistry();
 
-    private final ObservableMap<Integer, PlaneteDetail> planetesMap =
+    private final ObservableMap<Integer, AbstractCelesteBody> planetesMap =
             FXCollections.observableHashMap();
 
     private PlaneteRegistry() {
@@ -35,8 +36,8 @@ public class PlaneteRegistry {
      * Ajoute ou met à jour une planète dans le registre.
      * Utilise le bodyID comme clé unique.
      */
-    public void addOrUpdatePlanete(PlaneteDetail planete) {
-        if (planete != null && planete.getBodyID() > 0) {
+    public void addOrUpdateBody(AbstractCelesteBody planete) {
+        if (planete != null) {
             planetesMap.put(planete.getBodyID(), planete);
         }
     }
@@ -44,14 +45,14 @@ public class PlaneteRegistry {
     /**
      * Récupère une planète par son bodyID.
      */
-    public Optional<PlaneteDetail> getPlaneteByBodyID(int bodyID) {
+    public Optional<AbstractCelesteBody> getByBodyID(int bodyID) {
         return Optional.ofNullable(planetesMap.get(bodyID));
     }
 
     /**
      * Récupère une planète par son nom et système stellaire.
      */
-    public Optional<PlaneteDetail> getPlaneteByName(String bodyName, String starSystem) {
+    public Optional<AbstractCelesteBody> getPlaneteByName(String bodyName, String starSystem) {
         return planetesMap.values().stream()
                 .filter(p -> p.getBodyName().equals(bodyName) && p.getStarSystem().equals(starSystem))
                 .findFirst();
@@ -60,7 +61,7 @@ public class PlaneteRegistry {
     /**
      * Récupère toutes les planètes d'un système stellaire.
      */
-    public java.util.List<PlaneteDetail> getPlanetesBySystem(String starSystem) {
+    public java.util.List<AbstractCelesteBody> getPlanetesBySystem(String starSystem) {
         return planetesMap.values().stream()
                 .filter(p -> p.getStarSystem().equals(starSystem))
                 .toList();
@@ -70,7 +71,7 @@ public class PlaneteRegistry {
      * Ajoute un listener pour les changements du registre.
      */
     public void addPlaneteMapListener(Runnable action) {
-        planetesMap.addListener((MapChangeListener<Integer, PlaneteDetail>) change -> {
+        planetesMap.addListener((MapChangeListener<Integer, AbstractCelesteBody>) change -> {
             if (!DashboardContext.getInstance().isBatchLoading()) {
                 Platform.runLater(action);
             }
@@ -95,7 +96,7 @@ public class PlaneteRegistry {
     /**
      * Retourne toutes les planètes.
      */
-    public java.util.Collection<PlaneteDetail> getAllPlanetes() {
+    public Collection<AbstractCelesteBody> getAllPlanetes() {
         return planetesMap.values();
     }
 }

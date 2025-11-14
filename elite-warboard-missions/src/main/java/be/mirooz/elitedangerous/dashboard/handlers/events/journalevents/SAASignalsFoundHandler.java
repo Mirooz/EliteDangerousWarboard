@@ -56,10 +56,14 @@ public class SAASignalsFoundHandler implements JournalEventHandler {
                         // Extraire les genuses
                         List<String> genuses = new ArrayList<>();
                         if (jsonNode.has("Genuses") && jsonNode.get("Genuses").isArray()) {
-                            jsonNode.get("Genuses").forEach(genus -> {
-                                String genusCodex = genus.path("Genus").asText();
-                                if (!genusCodex.isEmpty()) {
-                                    genuses.add(genusCodex);
+                            jsonNode.get("Genuses").forEach(genusNode -> {
+                                String genusCodex = genusNode.path("Genus").asText();
+                                if (genusCodex != null && !genusCodex.isBlank()) {
+                                    String[] parts = genusCodex.split("_");
+                                    // On vérifie qu'il y a bien au moins 4 "_"
+                                    if (parts.length > 3 && "Genus".equalsIgnoreCase(parts[3])) {
+                                        genuses.add(genusCodex);
+                                    }
                                 }
                             });
                         }

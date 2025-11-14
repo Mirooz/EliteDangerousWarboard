@@ -20,16 +20,16 @@ import java.util.concurrent.TimeUnit;
 public class BiologicalSignalProcessor {
 
     private static final BiologicalSignalProcessor INSTANCE = new BiologicalSignalProcessor();
-    
-    private static final long CHECK_INTERVAL_MS = 1000; // Vérifie toutes les 1 secondes
-    
+
+    private static final long CHECK_INTERVAL_MS = 300; // Vérifie toutes les 1 secondes
+
     private final List<PendingBiologicalSignal> pendingSignals = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread t = new Thread(r, "BiologicalSignalProcessor");
         t.setDaemon(true);
         return t;
     });
-    
+
     private ScheduledFuture<?> scheduledTask = null;
 
     private BiologicalSignalProcessor() {
@@ -56,7 +56,6 @@ public class BiologicalSignalProcessor {
         PendingBiologicalSignal signal = new PendingBiologicalSignal(bodyID, systemAddress, bodyName, count, level, genuses);
         pendingSignals.add(signal);
         System.out.printf("📋 Signal biologique (niveau %d) ajouté à la file d'attente: BodyID=%d, BodyName=%s%n", level, bodyID, bodyName);
-        
         // Démarrer le scheduler si ce n'est pas déjà fait
         startProcessingIfNeeded();
     }
@@ -67,10 +66,10 @@ public class BiologicalSignalProcessor {
     private void startProcessingIfNeeded() {
         if (scheduledTask == null || scheduledTask.isCancelled() || scheduledTask.isDone()) {
             scheduledTask = scheduler.scheduleWithFixedDelay(
-                this::checkIfPlanetInRegistry,
-                300,
+                    this::checkIfPlanetInRegistry,
+                    300,
                     CHECK_INTERVAL_MS,
-                TimeUnit.MILLISECONDS
+                    TimeUnit.MILLISECONDS
             );
         }
     }
@@ -79,12 +78,13 @@ public class BiologicalSignalProcessor {
         pendingSignals.clear();
         stopProcessingIfEmpty();
     }
+
     /**
      * Arrête le scheduler si la liste est vide.
      */
     private void stopProcessingIfEmpty() {
         if (pendingSignals.isEmpty() && scheduledTask != null && !scheduledTask.isCancelled()) {
-            scheduledTask.cancel(false);
+            scheduledTask.cancel(true);
             scheduledTask = null;
         }
     }
@@ -100,25 +100,25 @@ public class BiologicalSignalProcessor {
         }
 
         List<PendingBiologicalSignal> signalsToProcess = new ArrayList<>();
-        
+
         for (PendingBiologicalSignal signal : pendingSignals) {
             PlaneteRegistry registry = PlaneteRegistry.getInstance();
-            var planeteOpt = registry.getPlaneteByBodyID(signal.getBodyID());
-            
-            if (planeteOpt.isPresent()) {
-                PlaneteDetail planete = planeteOpt.get();
-                signalsToProcess.add(signal);
-                
-                // Appliquer le calcul biologique avec le niveau et les genuses
-                planete.calculBioScan(signal.getCount(), signal.getLevel(), signal.getGenuses());
-                System.out.printf("✅ Calcul biologique (niveau %d) appliqué pour: %s (BodyID: %d)%n", 
-                        signal.getLevel(), signal.getBodyName(), signal.getBodyID());
-            }
+            registry.getByBodyID(signal.getBodyID())
+                    .filter(body -> body instanceof PlaneteDetail)
+                    .map(body -> (PlaneteDetail) body)
+                    .ifPresent(planete -> {
+                        signalsToProcess.add(signal);
+                        // Appliquer le calcul biologique avec le niveau et les genuses
+                        planete.calculBioScan(signal.getCount(), signal.getLevel(), signal.getGenuses());
+                        System.out.printf("✅ Calcul biologique (niveau %d) appliqué pour: %s (BodyID: %d)%n",
+                                signal.getLevel(), signal.getBodyName(), signal.getBodyID());
+                    });
+
         }
-        
+
         // Retirer les signaux traités
         pendingSignals.removeAll(signalsToProcess);
-        
+
         // Arrêter le scheduler si la liste est maintenant vide
         stopProcessingIfEmpty();
     }
