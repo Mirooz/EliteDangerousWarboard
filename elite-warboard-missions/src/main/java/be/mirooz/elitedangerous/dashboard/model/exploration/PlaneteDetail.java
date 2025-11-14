@@ -229,8 +229,7 @@ public class PlaneteDetail extends ACelesteBody {
                 if (scanTypeBio == ScanTypeBio.ANALYSE) {
                     OrganicDataSaleRegistry.getInstance()
                             .addAnalyzedOrganicData(
-                                    existing.getBaseValue(),
-                                    existing.getBonusValue(),
+                                    existing,
                                     this.isWasFootfalled()
                             );
                 }

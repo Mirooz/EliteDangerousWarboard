@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
+import be.mirooz.elitedangerous.biologic.BioSpecies;
+import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataSale;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,7 +21,7 @@ public class OrganicDataSaleRegistry {
     private final ObservableList<OrganicDataSale> sales = FXCollections.observableArrayList();
     
     // Vente en cours (accumule les données organiques analysées jusqu'à la vente)
-    private OrganicDataSale currentOrganicDataCredit = null;
+    private OrganicDataOnHold currentOrganicDataCredit = null;
 
     private OrganicDataSaleRegistry() {
     }
@@ -36,23 +38,22 @@ public class OrganicDataSaleRegistry {
      * @param bonusValue La valeur de bonus (première découverte)
      * @param wasFootfalled Indique si la planète a déjà été foulée (si false, c'est une première découverte)
      */
-    public void addAnalyzedOrganicData(long baseValue, long bonusValue, boolean wasFootfalled) {
+    public void addAnalyzedOrganicData(BioSpecies bioSpecies, boolean wasFootfalled) {
         if (currentOrganicDataCredit == null) {
             // Créer une nouvelle vente en cours
-            currentOrganicDataCredit = OrganicDataSale.builder()
-                    .timestamp(null) // Sera défini lors de la vente réelle
-                    .marketID(0) // Sera défini lors de la vente réelle
+            currentOrganicDataCredit = OrganicDataOnHold.builder()
                     .totalValue(0)
                     .totalBonus(0)
                     .build();
         }
+        currentOrganicDataCredit.getBioData().add(bioSpecies);
         
         // Toujours ajouter la baseValue
-        currentOrganicDataCredit.setTotalValue(currentOrganicDataCredit.getTotalValue() + baseValue);
+        currentOrganicDataCredit.setTotalValue(currentOrganicDataCredit.getTotalValue() + bioSpecies.getBaseValue());
         
         // Ajouter le bonusValue seulement si wasFootfalled est false (première découverte)
         if (!wasFootfalled) {
-            currentOrganicDataCredit.setTotalBonus(currentOrganicDataCredit.getTotalBonus() + bonusValue);
+            currentOrganicDataCredit.setTotalBonus(currentOrganicDataCredit.getTotalBonus() + bioSpecies.getBonusValue());
         }
     }
 
@@ -69,7 +70,7 @@ public class OrganicDataSaleRegistry {
     /**
      * Récupère la vente en cours (crédit de données organiques actuelles).
      */
-    public OrganicDataSale getCurrentOrganicDataCredit() {
+    public OrganicDataOnHold getCurrentOrganicDataCredit() {
         return currentOrganicDataCredit;
     }
 

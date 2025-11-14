@@ -34,7 +34,7 @@ public class FSDJumpHandler implements JournalEventHandler {
                 }
                 //Ajoute l'ancien dans les visited
                 if (planeteRegistry.getCurrentStarSystem()!= null)
-                    SystemVisitedRegistry.getInstance().addOrUpdateSystem(planeteRegistry,timestamp);
+                    SystemVisitedRegistry.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(),planeteRegistry.getAllPlanetes(),timestamp);
                 //Recupere l'ancien
                 planeteRegistry.clear();
                 planeteRegistry.setCurrentStarSystem(starSystem);
