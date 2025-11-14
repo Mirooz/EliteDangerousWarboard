@@ -51,7 +51,6 @@ public class PlaneteRegistry {
     }
 
 
-
     /**
      * Récupère une planète par son bodyID.
      */
@@ -110,9 +109,12 @@ public class PlaneteRegistry {
     public Collection<ACelesteBody> getAllPlanetes() {
         return planetesMap.values();
     }
+
     public void setAllPlanetes(Collection<ACelesteBody> planetes) {
-       clear();
-        planetes.forEach(this::addOrUpdateBody);
+        clear();
+        planetes.forEach( planete ->
+                planetesMap.put(planete.getBodyID(), planete)
+        );
     }
 }
 
