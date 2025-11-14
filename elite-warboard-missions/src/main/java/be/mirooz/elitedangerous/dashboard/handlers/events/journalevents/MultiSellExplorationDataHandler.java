@@ -36,8 +36,16 @@ public class MultiSellExplorationDataHandler implements JournalEventHandler {
             if (jsonNode.has("Discovered") && jsonNode.get("Discovered").isArray()) {
                 jsonNode.get("Discovered").forEach(discoveredNode -> {
                     String systemName = discoveredNode.path("SystemName").asText();
+                    int numBodies = discoveredNode.path("NumBodies").asInt();
+                    if (!SystemVisitedRegistry.getInstance().getSystems().containsKey(systemName)){
+                        SystemVisited systemVisited = new SystemVisited();
+                        systemVisited.setNumBodies(numBodies);
+                        systemVisited.setSold(true);
+                        systemVisited.setFirstVisitedTime(timestamp);
+                        systemVisited.setLastVisitedTime(timestamp);
+                        SystemVisitedRegistry.getInstance().getSystems().put(systemName,systemVisited);
+                    }
                     SystemVisited systemVisited = SystemVisitedRegistry.getInstance().getSystem(systemName);
-
                     discoveredSystems.add(systemVisited);
                     systemVisited.setSold(true);
                 });
