@@ -19,7 +19,7 @@ import java.util.List;
         String fdevname;
         int count;
         long baseValue;
-        long firstLoggedValue;
+        long bonusValue;
         double colonyRangeMeters;
         VariantMethods variantMethod;
         String colorConditionName;

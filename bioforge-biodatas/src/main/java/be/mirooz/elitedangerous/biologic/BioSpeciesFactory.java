@@ -98,7 +98,7 @@ public class BioSpeciesFactory {
                 .count(count)
                 .fdevname(fdevname)
                 .baseValue(reward)
-                .firstLoggedValue(reward * 5)
+                .bonusValue(reward * 4)
                 .colonyRangeMeters(colonyRangeMeters)
                 .variantMethod(variantMethod)
                 .colorConditionName(colorConditionName)

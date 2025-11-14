@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
 import be.mirooz.elitedangerous.biologic.*;
+import be.mirooz.elitedangerous.dashboard.model.registries.OrganicDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.PlaneteRegistry;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
 import lombok.Builder;
@@ -275,6 +276,16 @@ public class PlaneteDetail extends AbstractCelesteBody {
 
             if (existing != null) {
                 existing.addScanType(scanTypeBio);
+                
+                // Si c'est une analyse, ajouter au crédit de données organiques
+                if (scanTypeBio == ScanTypeBio.ANALYSE) {
+                    OrganicDataSaleRegistry.getInstance()
+                            .addAnalyzedOrganicData(
+                                    existing.getBaseValue(),
+                                    existing.getBonusValue(),
+                                    this.isWasFootfalled()
+                            );
+                }
                 return;
             }
 
@@ -284,7 +295,7 @@ public class PlaneteDetail extends AbstractCelesteBody {
                     .color(matchingSpecies.getColor())
                     .count(matchingSpecies.getCount())
                     .baseValue(matchingSpecies.getBaseValue())
-                    .firstLoggedValue(matchingSpecies.getFirstLoggedValue())
+                    .bonusValue(matchingSpecies.getBonusValue())
                     .colonyRangeMeters(matchingSpecies.getColonyRangeMeters())
                     .variantMethod(matchingSpecies.getVariantMethod())
                     .colorConditionName(matchingSpecies.getColorConditionName())
@@ -297,6 +308,16 @@ public class PlaneteDetail extends AbstractCelesteBody {
                     .build();
             confirmed.addScanType(scanTypeBio);
             confirmedSpecies.add(confirmed);
+            
+            // Si c'est une analyse, ajouter au crédit de données organiques
+            if (scanTypeBio == ScanTypeBio.ANALYSE) {
+                be.mirooz.elitedangerous.dashboard.model.registries.OrganicDataSaleRegistry.getInstance()
+                        .addAnalyzedOrganicData(
+                                confirmed.getBaseValue(),
+                                confirmed.getBonusValue(),
+                                this.isWasFootfalled()
+                        );
+            }
 
         } catch (Exception e) {
             System.err.println("❌ Erreur addConfirmedSpecies: " + e.getMessage());

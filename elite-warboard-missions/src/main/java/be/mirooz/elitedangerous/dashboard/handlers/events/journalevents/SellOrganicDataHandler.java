@@ -83,6 +83,9 @@ public class SellOrganicDataHandler implements JournalEventHandler {
 
             // Ajouter au registry
             registry.addSale(sale);
+            
+            // Réinitialiser le crédit actuel après la vente
+            registry.resetCurrentCredit();
 
             System.out.printf("💰 Vente de données organiques enregistrée: %d espèces, Total Value: %d, Total Bonus: %d%n",
                     bioDataList.size(), totalValue, totalBonus);

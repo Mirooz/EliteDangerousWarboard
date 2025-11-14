@@ -17,6 +17,9 @@ public class OrganicDataSaleRegistry {
     private static final OrganicDataSaleRegistry INSTANCE = new OrganicDataSaleRegistry();
 
     private final ObservableList<OrganicDataSale> sales = FXCollections.observableArrayList();
+    
+    // Vente en cours (accumule les données organiques analysées jusqu'à la vente)
+    private OrganicDataSale currentOrganicDataCredit = null;
 
     private OrganicDataSaleRegistry() {
     }
@@ -26,12 +29,55 @@ public class OrganicDataSaleRegistry {
     }
 
     /**
+     * Ajoute des données organiques analysées à la vente en cours.
+     * Appelé lorsqu'un scanType ANALYSE est ajouté.
+     * 
+     * @param baseValue La valeur de base de l'espèce
+     * @param bonusValue La valeur de bonus (première découverte)
+     * @param wasFootfalled Indique si la planète a déjà été foulée (si false, c'est une première découverte)
+     */
+    public void addAnalyzedOrganicData(long baseValue, long bonusValue, boolean wasFootfalled) {
+        if (currentOrganicDataCredit == null) {
+            // Créer une nouvelle vente en cours
+            currentOrganicDataCredit = OrganicDataSale.builder()
+                    .timestamp(null) // Sera défini lors de la vente réelle
+                    .marketID(0) // Sera défini lors de la vente réelle
+                    .totalValue(0)
+                    .totalBonus(0)
+                    .build();
+        }
+        
+        // Toujours ajouter la baseValue
+        currentOrganicDataCredit.setTotalValue(currentOrganicDataCredit.getTotalValue() + baseValue);
+        
+        // Ajouter le bonusValue seulement si wasFootfalled est false (première découverte)
+        if (!wasFootfalled) {
+            currentOrganicDataCredit.setTotalBonus(currentOrganicDataCredit.getTotalBonus() + bonusValue);
+        }
+    }
+
+    /**
      * Ajoute une vente de données organiques au registry.
+     * Utilisé par SellOrganicDataHandler pour enregistrer une vente complète.
      */
     public void addSale(OrganicDataSale sale) {
         if (sale != null) {
             sales.add(sale);
         }
+    }
+
+    /**
+     * Récupère la vente en cours (crédit de données organiques actuelles).
+     */
+    public OrganicDataSale getCurrentOrganicDataCredit() {
+        return currentOrganicDataCredit;
+    }
+
+    /**
+     * Réinitialise la vente en cours (après une vente complète).
+     */
+    public void resetCurrentCredit() {
+        currentOrganicDataCredit = null;
     }
 
     /**
@@ -46,6 +92,7 @@ public class OrganicDataSaleRegistry {
      */
     public void clear() {
         sales.clear();
+        currentOrganicDataCredit = null;
     }
 
     /**
