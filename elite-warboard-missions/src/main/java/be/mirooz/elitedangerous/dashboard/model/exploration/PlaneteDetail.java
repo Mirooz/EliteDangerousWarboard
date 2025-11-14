@@ -327,4 +327,21 @@ public class PlaneteDetail extends AbstractCelesteBody {
             return null;
         }
     }
+
+    public void updateFrom(PlaneteDetail src) {
+        this.planetClass = src.planetClass;
+        this.temperature = src.temperature;
+        this.pressureAtm = src.pressureAtm;
+        this.gravityG = src.gravityG;
+        this.landable = src.landable;
+        this.atmosphere = src.atmosphere;
+        this.volcanism = src.volcanism;
+        this.materials = src.materials;
+
+        // flags comme avant :
+        this.wasMapped |= src.wasMapped;
+        this.wasDiscovered |= src.wasDiscovered;
+        this.wasFootfalled |= src.wasFootfalled;
+    }
+
 }

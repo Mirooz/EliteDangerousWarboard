@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.exploration.AbstractCelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
+import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -37,17 +38,18 @@ public class PlaneteRegistry {
      * Utilise le bodyID comme clé unique.
      */
     public void addOrUpdateBody(AbstractCelesteBody body) {
-        if (body == null) return;
         AbstractCelesteBody existing = planetesMap.get(body.getBodyID());
-        if (existing != null) {
-            // On préserve les flags déjà connus
-            body.setWasFootfalled(body.isWasFootfalled() || existing.isWasFootfalled());
-            body.setWasMapped(body.isWasMapped() || existing.isWasMapped());
-            body.setWasDiscovered(body.isWasDiscovered() || existing.isWasDiscovered());
+
+        if (existing instanceof PlaneteDetail oldP
+                && body instanceof PlaneteDetail newP) {
+            // Au lieu de remplacer l'objet, on met juste à jour les champs
+            oldP.updateFrom(newP);
+            return;
         }
-        currentStarSystem =body.getStarSystem();
+
         planetesMap.put(body.getBodyID(), body);
     }
+
 
 
     /**
