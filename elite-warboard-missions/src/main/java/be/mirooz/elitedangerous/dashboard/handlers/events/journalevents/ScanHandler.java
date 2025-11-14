@@ -110,6 +110,7 @@ public class ScanHandler implements JournalEventHandler {
                     }
                 });
             }
+            double lsDistance = jsonNode.path("DistanceFromArrivalLS").asDouble(0);
 
             // Conversion des unités
             double pressureAtm = PlaneteDetail.pascalToAtm(surfacePressure);
@@ -124,6 +125,7 @@ public class ScanHandler implements JournalEventHandler {
                         .starSystem(starSystem)
                         .systemAddress(systemAddress)
                         .starType(starType)
+                        .lsDistance(lsDistance)
                         .bodyID(bodyID)
                         .parents(parents)
                         .wasMapped(wasMapped)
@@ -139,6 +141,7 @@ public class ScanHandler implements JournalEventHandler {
                 PlaneteDetail planeteDetail = PlaneteDetail.builder()
                         .bodyName(bodyName)
                         .timestamp(timestamp)
+                        .lsDistance(lsDistance)
                         .starSystem(starSystem)
                         .systemAddress(systemAddress)
                         .bodyID(bodyID)

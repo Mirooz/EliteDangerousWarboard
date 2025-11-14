@@ -26,6 +26,7 @@ public class PlaneteRegistry {
 
     private PlaneteRegistry() {
     }
+    private String currentStarSystem;
 
     public static PlaneteRegistry getInstance() {
         return INSTANCE;
@@ -44,6 +45,7 @@ public class PlaneteRegistry {
             body.setWasMapped(body.isWasMapped() || existing.isWasMapped());
             body.setWasDiscovered(body.isWasDiscovered() || existing.isWasDiscovered());
         }
+        currentStarSystem =body.getStarSystem();
         planetesMap.put(body.getBodyID(), body);
     }
 
@@ -90,6 +92,7 @@ public class PlaneteRegistry {
     public void clear() {
         planetesMap.clear();
         BiologicalSignalProcessor.getInstance().clear();
+        currentStarSystem = null;
     }
 
     /**
@@ -104,6 +107,10 @@ public class PlaneteRegistry {
      */
     public Collection<AbstractCelesteBody> getAllPlanetes() {
         return planetesMap.values();
+    }
+    public void setAllPlanetes(Collection<AbstractCelesteBody> planetes) {
+       clear();
+        planetes.forEach(this::addOrUpdateBody);
     }
 }
 

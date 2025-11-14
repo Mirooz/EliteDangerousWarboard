@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.exploration.DiscoveredSystem;
+import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,8 +17,6 @@ import java.util.List;
 public class MultiSellExplorationDataHandler implements JournalEventHandler {
 
     private final ExplorationDataSaleRegistry saleRegistry = ExplorationDataSaleRegistry.getInstance();
-    private final SystemVisitedRegistry systemRegistry = SystemVisitedRegistry.getInstance();
-
     @Override
     public String getEventType() {
         return "MultiSellExplorationData";
@@ -33,22 +31,15 @@ public class MultiSellExplorationDataHandler implements JournalEventHandler {
             long totalEarnings = jsonNode.path("TotalEarnings").asLong(0);
 
             // Extraire tous les systèmes découverts
-            List<DiscoveredSystem> discoveredSystems = new ArrayList<>();
+            List<SystemVisited> discoveredSystems = new ArrayList<>();
             
             if (jsonNode.has("Discovered") && jsonNode.get("Discovered").isArray()) {
                 jsonNode.get("Discovered").forEach(discoveredNode -> {
                     String systemName = discoveredNode.path("SystemName").asText();
-                    int numBodies = discoveredNode.path("NumBodies").asInt(0);
-                    
-                    DiscoveredSystem system = DiscoveredSystem.builder()
-                            .systemName(systemName)
-                            .numBodies(numBodies)
-                            .build();
-                    
-                    discoveredSystems.add(system);
-                    
-                    // Mettre à jour le registry des systèmes visités
-                    systemRegistry.addOrUpdateSystem(systemName, numBodies,true);
+                    SystemVisited systemVisited = SystemVisitedRegistry.getInstance().getSystem(systemName);
+
+                    discoveredSystems.add(systemVisited);
+                    systemVisited.setSold(true);
                 });
             }
 

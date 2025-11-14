@@ -59,16 +59,17 @@ public class PlaneteDetail extends AbstractCelesteBody {
     }
 
     /**
-     * Calcul niveau 1 : signaux FSS (nombre de bio possibles)
-     */
-    public void calculBioFirstScan(Integer count) {
-        calculBioScan(count, 1, null);
-    }
-
-    /**
      * Calcul complet des espèces biologiques possibles pour cette planète.
      */
     public void calculBioScan(Integer count, int level, List<String> genuses) {
+        if (this.bioSpecies != null && !this.bioSpecies.isEmpty()){
+            for (Scan scan : this.bioSpecies) {
+                //Scan level déja fait
+                if (scan.getScanNumber() == level){
+                    return;
+                }
+            }
+        }
         try {
             List<BioSpecies> allSpecies = BioSpeciesService.getInstance().getSpecies();
 
@@ -288,7 +289,7 @@ public class PlaneteDetail extends AbstractCelesteBody {
                 return;
             }
 
-            BioSpecies confirmed = BioSpecies.builder()
+            BioSpecies newSpecie = BioSpecies.builder()
                     .name(matchingSpecies.getName())
                     .specieName(matchingSpecies.getSpecieName())
                     .color(matchingSpecies.getColor())
@@ -305,8 +306,8 @@ public class PlaneteDetail extends AbstractCelesteBody {
                     .wasLogged(scanOrganicData.isWasLogged())
                     .collected(false)
                     .build();
-            confirmed.addScanType(scanTypeBio);
-            confirmedSpecies.add(confirmed);
+            newSpecie.addScanType(scanTypeBio);
+            confirmedSpecies.add(newSpecie);
         } catch (Exception e) {
             System.err.println("❌ Erreur addConfirmedSpecies: " + e.getMessage());
         }

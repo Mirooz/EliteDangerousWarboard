@@ -21,7 +21,7 @@ public class ExplorationDataSale {
     private String endTimestamp; // Timestamp de la dernière vente (Undocked)
     
     @Builder.Default
-    private List<DiscoveredSystem> discoveredSystems = new ArrayList<>();
+    private List<SystemVisited> systemsVisited = new ArrayList<>();
     
     private long baseValue; // Somme de tous les BaseValue
     private long bonus; // Somme de tous les Bonus

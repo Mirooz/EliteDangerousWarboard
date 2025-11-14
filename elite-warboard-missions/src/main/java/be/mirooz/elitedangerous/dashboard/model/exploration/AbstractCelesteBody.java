@@ -17,6 +17,7 @@ public abstract class AbstractCelesteBody {
 
     protected String timestamp;
 
+    protected Double lsDistance;
     // Informations de base
     protected String bodyName;
     protected String starSystem;

@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
-import be.mirooz.elitedangerous.dashboard.model.exploration.DiscoveredSystem;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
+import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
@@ -32,14 +32,14 @@ public class ExplorationDataSaleRegistry {
     /**
      * Ajoute ou met à jour la vente en cours avec de nouvelles données.
      */
-    public void addToCurrentSale(List<DiscoveredSystem> discoveredSystems,
+    public void addToCurrentSale(List<SystemVisited> discoveredSystems,
                                  long baseValue, long bonus, long totalEarnings, String timestamp) {
         if (currentSale == null) {
             // Créer une nouvelle vente en cours
             currentSale = ExplorationDataSale.builder()
                     .timestamp(timestamp)
                     .endTimestamp(timestamp)
-                    .discoveredSystems(new java.util.ArrayList<>())
+                    .systemsVisited(new java.util.ArrayList<>())
                     .baseValue(0)
                     .bonus(0)
                     .totalEarnings(0)
@@ -48,7 +48,7 @@ public class ExplorationDataSaleRegistry {
         }
         
         // Ajouter les systèmes découverts
-        currentSale.getDiscoveredSystems().addAll(discoveredSystems);
+        currentSale.getSystemsVisited().addAll(discoveredSystems);
         
         // Accumuler les valeurs
         currentSale.setBaseValue(currentSale.getBaseValue() + baseValue);

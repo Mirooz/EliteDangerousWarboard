@@ -22,19 +22,24 @@ public class FSDJumpHandler implements JournalEventHandler {
 
         try {
 
-            SystemVisitedRegistry.getInstance().addOrUpdateSystem(commanderStatus.getCurrentStarSystem(), 0,false);
             if (jsonNode.has("StarSystem")) {
                 String starSystem = jsonNode.get("StarSystem").asText();
                 commanderStatus.setCurrentStarSystem(starSystem);
                 System.out.println("FSD Jump detected to - " + starSystem);
-                
+                String timestamp = jsonNode.has("timestamp") ? jsonNode.get("timestamp").asText() : null;
                 // Terminer la session de minage en cours si elle existe
                 if (miningStatsService.isMiningInProgress()) {
-                    String timestamp = jsonNode.has("timestamp") ? jsonNode.get("timestamp").asText() : null;
                     miningStatsService.endCurrentMiningSession(timestamp);
                     System.out.println("⛏️ Session de minage terminée (FSD Jump)");
                 }
+                //Ajoute l'ancien dans les visited
+                if (planeteRegistry.getCurrentStarSystem()!= null)
+                    SystemVisitedRegistry.getInstance().addOrUpdateSystem(planeteRegistry,timestamp);
+                //Recupere l'ancien
                 planeteRegistry.clear();
+                if (SystemVisitedRegistry.getInstance().getSystems().containsKey(starSystem)){
+                    planeteRegistry.setAllPlanetes(SystemVisitedRegistry.getInstance().getSystems().get(starSystem).getCelesteBodies());
+                }
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());
