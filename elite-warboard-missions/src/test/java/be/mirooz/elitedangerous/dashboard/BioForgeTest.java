@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard;
 
 import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.ScanHandler;
-import be.mirooz.elitedangerous.dashboard.model.exploration.AbstractCelesteBody;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -123,6 +123,6 @@ public class BioForgeTest {
         ScanHandler handler = new ScanHandler();
         handler.handle(root);
         System.out.println(PlaneteRegistry.getInstance().getAllPlanetes());
-        Optional<AbstractCelesteBody> OplaneteDetail = PlaneteRegistry.getInstance().getAllPlanetes().stream().findFirst();
+        Optional<ACelesteBody> OplaneteDetail = PlaneteRegistry.getInstance().getAllPlanetes().stream().findFirst();
     }
 }

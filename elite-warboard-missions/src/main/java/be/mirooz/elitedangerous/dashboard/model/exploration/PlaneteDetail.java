@@ -21,17 +21,18 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
-public class PlaneteDetail extends AbstractCelesteBody {
+public class PlaneteDetail extends ACelesteBody {
 
     // Propriétés spécifiques à une planète
     private BodyType planetClass;
-
+    private Double massEM;
     // Propriétés physiques
     private Double temperature;     // Kelvin
     private Double pressureAtm;     // Atmosphères
     private Double gravityG;        // En G
     private boolean landable;
 
+    private boolean terraformable;
     // Atmosphère & volcanisme
     private AtmosphereType atmosphere;
     private VolcanismType volcanism;
@@ -105,7 +106,7 @@ public class PlaneteDetail extends AbstractCelesteBody {
                                                         .map(body -> (StarDetail) body)
                                                         .anyMatch(star ->
                                                                 star.getBodyID() == parent.getBodyID()
-                                                                        && star.getStarType().equalsIgnoreCase(species.getColorConditionName())
+                                                                        && star.getStarTypeString().equalsIgnoreCase(species.getColorConditionName())
                                                         )
                                 );
 
@@ -205,59 +206,6 @@ public class PlaneteDetail extends AbstractCelesteBody {
     }
 
 
-    private void applyAccurateProbabilities(List<SpeciesProbability> probabilities, int count) {
-
-        if (probabilities == null || probabilities.isEmpty()) {
-            return;
-        }
-
-        // -- 0) Filtrer les valeurs trop faibles (< 1%) --
-        List<SpeciesProbability> filtered = probabilities.stream()
-                .filter(p -> p.getProbability() >= 1.0)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        if (filtered.isEmpty()) {
-            probabilities.clear(); // plus rien
-            return;
-        }
-
-        // -- 1) Grouper par nom et garder la plus probable --
-        Map<String, SpeciesProbability> bestByName =
-                filtered.stream()
-                        .collect(Collectors.toMap(
-                                p -> p.getBioSpecies().getName(), // ← ajuster : genus si nécessaire
-                                p -> p,
-                                (p1, p2) -> p1.getProbability() >= p2.getProbability() ? p1 : p2
-                        ));
-
-        // -- 2) Normaliser les probabilités --
-        List<SpeciesProbability> normalized = new ArrayList<>(bestByName.values());
-
-        double totalProba = normalized.stream()
-                .mapToDouble(SpeciesProbability::getProbability)
-                .sum();
-
-        if (totalProba > 0) {
-            normalized.forEach(sp ->
-                    sp.setProbability((100.0 / totalProba) * sp.getProbability())
-            );
-        }
-
-        // -- 3) Si le nombre d’espèces ≤ count → 100% --
-        if (normalized.size() <= count) {
-            normalized.forEach(sp -> sp.setProbability(100.0));
-        }
-
-        // -- 4) Trier par proba décroissante --
-        normalized.sort(Comparator.comparingDouble(SpeciesProbability::getProbability).reversed());
-
-        // -- 5) Réinjecter dans la liste d'origine --
-        probabilities.clear();
-        probabilities.addAll(normalized);
-    }
-
-
-
     /**
      * Ajoute ou met à jour une espèce confirmée suite à un ScanOrganic.
      */
@@ -333,6 +281,8 @@ public class PlaneteDetail extends AbstractCelesteBody {
         this.temperature = src.temperature;
         this.pressureAtm = src.pressureAtm;
         this.gravityG = src.gravityG;
+        this.massEM = src.massEM;
+        this.terraformable = src.terraformable;
         this.landable = src.landable;
         this.atmosphere = src.atmosphere;
         this.volcanism = src.volcanism;
@@ -344,4 +294,49 @@ public class PlaneteDetail extends AbstractCelesteBody {
         this.wasFootfalled |= src.wasFootfalled;
     }
 
+    @Override
+    public int computeValue(boolean firstDiscover, boolean firstMapped, boolean mapped) {
+        boolean isFleetCarrierSale = false;
+        boolean isOdyssey =true;
+        boolean isEfficiencyBonus = true;
+        double kValue = this.terraformable ? planetClass.getTerraformableK() : planetClass.getBaseK();
+        final double q = 0.56591828;
+
+        double mappingMultiplier = 1.0;
+
+        if (mapped) {
+            if (firstDiscover && firstMapped) {
+                mappingMultiplier = 3.699622554;
+            } else if (firstMapped) {
+                mappingMultiplier = 8.0956;
+            } else {
+                mappingMultiplier = 3.3333333333;
+            }
+        }
+
+        double value = (kValue + kValue * q * Math.pow(massEM, 0.2)) * mappingMultiplier;
+
+        if (mapped) {
+            if (isOdyssey) {
+                double bonus = value * 0.3;
+                value += Math.max(bonus, 555);
+            }
+
+            if (isEfficiencyBonus) {
+                value *= 1.25;
+            }
+        }
+
+        value = Math.max(500, value);
+
+        if (firstDiscover) {
+            value *= 2.6;
+        }
+
+        if (isFleetCarrierSale) {
+            value *= 0.75;
+        }
+
+        return (int) Math.round(value);
+    }
 }

@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
-import be.mirooz.elitedangerous.dashboard.model.exploration.AbstractCelesteBody;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -70,11 +70,18 @@ public class SystemVisitedRegistry {
                 .build();
 
         // Définition du premier body (utile pour timestamp & firstDiscover)
-        planets.getAllPlanetes().stream().findFirst().ifPresent(p -> {
-            system.setFirstDiscover(!p.isWasDiscovered());
-            system.setFirstVisitedTime(p.getTimestamp());
-            system.setLastVisitedTime(p.getTimestamp());
-        });
+        planets.getAllPlanetes().stream().findFirst().ifPresentOrElse(
+                p -> {
+                    system.setFirstDiscover(!p.isWasDiscovered());
+                    system.setFirstVisitedTime(p.getTimestamp());
+                    system.setLastVisitedTime(p.getTimestamp());
+                },
+                () -> {
+                    system.setFirstVisitedTime(timestamp);
+                    system.setLastVisitedTime(timestamp);
+                }
+        );
+
 
         // Mise à jour si déjà visité
         if (previous != null) {
@@ -91,10 +98,10 @@ public class SystemVisitedRegistry {
         systems.put(systemName, system);
     }
 
-    private static List<AbstractCelesteBody> getCelesteBodiesClone(PlaneteRegistry pr) {
-        List<AbstractCelesteBody> sortedBodies =
+    private static List<ACelesteBody> getCelesteBodiesClone(PlaneteRegistry pr) {
+        List<ACelesteBody> sortedBodies =
                 new ArrayList<>(pr.getAllPlanetes());
-        sortedBodies.sort(Comparator.comparing(AbstractCelesteBody::getBodyID));
+        sortedBodies.sort(Comparator.comparing(ACelesteBody::getBodyID));
         return sortedBodies;
     }
 

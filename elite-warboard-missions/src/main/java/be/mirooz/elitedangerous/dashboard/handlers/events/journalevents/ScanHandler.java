@@ -37,8 +37,6 @@ public class ScanHandler implements JournalEventHandler {
             long systemAddress = jsonNode.path("SystemAddress").asLong();
 
             // Informations sur le corps - conversion en enums
-            String planetClassStr = jsonNode.path("PlanetClass").asText();
-            BodyType bodyType = BodyType.fromString(planetClassStr);
 
             String atmosphereStr = jsonNode.path("Atmosphere").asText();
             AtmosphereType atmosphereType = parseAtmosphereType(atmosphereStr);
@@ -47,7 +45,6 @@ public class ScanHandler implements JournalEventHandler {
             VolcanismType volcanismType = VolcanismType.fromString(volcanismStr);
 
             // Propriétés physiques
-            double massEM = jsonNode.path("MassEM").asDouble(0.0);
             double radius = jsonNode.path("Radius").asDouble(0.0);
             double surfaceGravity = jsonNode.path("SurfaceGravity").asDouble(0.0);
             double surfaceTemperature = jsonNode.path("SurfaceTemperature").asDouble(0.0);
@@ -60,7 +57,6 @@ public class ScanHandler implements JournalEventHandler {
             // Tidal lock et terraform state
             boolean tidalLock = jsonNode.path("TidalLock").asBoolean(false);
             String terraformState = jsonNode.path("TerraformState").asText();
-
             // Composition de l'atmosphère
             if (jsonNode.has("AtmosphereComposition") && jsonNode.get("AtmosphereComposition").isArray()) {
                 jsonNode.get("AtmosphereComposition").forEach(comp -> {
@@ -117,26 +113,35 @@ public class ScanHandler implements JournalEventHandler {
             double gravityG = PlaneteDetail.ms2ToG(surfaceGravity);
 
             if (jsonNode.has("StarType")) {
-                String starType = jsonNode.get("StarType").asText();
+                String starTypeValue = jsonNode.get("StarType").asText();
+                double stellarMass = jsonNode.get("StellarMass").asDouble();
+                StarType starType = StarType.fromString(starTypeValue);
                 // Création de l'objet PlaneteDetail
                 StarDetail planeteDetail = StarDetail.builder()
                         .bodyName(bodyName)
                         .timestamp(timestamp)
                         .starSystem(starSystem)
                         .systemAddress(systemAddress)
+                        .starTypeString(starTypeValue)
                         .starType(starType)
+                        .stellarMass(stellarMass)
                         .lsDistance(lsDistance)
                         .bodyID(bodyID)
                         .parents(parents)
                         .wasMapped(wasMapped)
                         .wasFootfalled(wasFootfalled)
                         .wasDiscovered(wasDiscovered)
+                        .jsonNode(jsonNode)
                         .build();
 
                 // Enregistrement de la planète dans le registre
                 PlaneteRegistry.getInstance().addOrUpdateBody(planeteDetail);
-            }
-            else {
+            } else {
+                double massEm = jsonNode.has("MassEM") ? jsonNode.get("MassEM").asDouble() : 0.0;
+                boolean terraformable = terraformState != null && !terraformState.isEmpty();
+                String planetClassStr = jsonNode.path("PlanetClass").asText();
+                BodyType bodyType = BodyType.fromString(planetClassStr);
+
                 // Création de l'objet PlaneteDetail
                 PlaneteDetail planeteDetail = PlaneteDetail.builder()
                         .bodyName(bodyName)
@@ -145,18 +150,21 @@ public class ScanHandler implements JournalEventHandler {
                         .starSystem(starSystem)
                         .systemAddress(systemAddress)
                         .bodyID(bodyID)
+                        .massEM(massEm)
                         .parents(parents)
                         .planetClass(bodyType)
                         .temperature(surfaceTemperature >= 0 ? surfaceTemperature : null)
                         .pressureAtm(pressureAtm >= 0 ? pressureAtm : null)
                         .gravityG(gravityG >= 0 ? gravityG : null)
                         .landable(landable)
+                        .terraformable(terraformable)
                         .atmosphere(atmosphereType)
                         .volcanism(volcanismType)
                         .materials(materials.isEmpty() ? null : materials)
                         .wasMapped(wasMapped)
                         .wasFootfalled(wasFootfalled)
                         .wasDiscovered(wasDiscovered)
+                        .jsonNode(jsonNode)
                         .build();
 
                 // Enregistrement de la planète dans le registre

@@ -37,6 +37,7 @@ public class FSDJumpHandler implements JournalEventHandler {
                     SystemVisitedRegistry.getInstance().addOrUpdateSystem(planeteRegistry,timestamp);
                 //Recupere l'ancien
                 planeteRegistry.clear();
+                planeteRegistry.setCurrentStarSystem(starSystem);
                 if (SystemVisitedRegistry.getInstance().getSystems().containsKey(starSystem)){
                     planeteRegistry.setAllPlanetes(SystemVisitedRegistry.getInstance().getSystems().get(starSystem).getCelesteBodies());
                 }

@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -13,10 +14,11 @@ import java.util.List;
  */
 @Data
 @SuperBuilder
-public abstract class AbstractCelesteBody {
+public abstract class ACelesteBody {
 
     protected String timestamp;
 
+    protected JsonNode jsonNode;
     protected Double lsDistance;
     // Informations de base
     protected String bodyName;
@@ -32,4 +34,7 @@ public abstract class AbstractCelesteBody {
     protected boolean wasMapped;
     protected boolean wasFootfalled;
     protected boolean wasDiscovered;
+
+
+    public abstract int computeValue(boolean firstDiscover, boolean firstMapped, boolean mapped);
 }
