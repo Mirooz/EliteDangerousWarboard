@@ -49,7 +49,7 @@ public enum StarType {
             return BROWN_DWARF;
 
         // Wolf-Rayet
-        if (v.equals("W") || v.equals("WN") || v.equals("WNC") || v.equals("WC") || v.equals("WO"))
+        if (v.startsWith("W"))
             return WOLF_RAYET;
 
         // fallback (O, B, A, F, G, K, M, TTS…)
