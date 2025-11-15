@@ -100,13 +100,7 @@ public class ExplorationDataSaleRegistry {
         return sales;
     }
 
-    /**
-     * Vide le registry.
-     */
-    public void clear() {
-        sales.clear();
-        currentSale = null;
-    }
+
     public void clearOnHold() {
         explorationDataOnHold = null;
     }

@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -19,6 +20,7 @@ public class DiedHandler implements JournalEventHandler {
     public void handle(JsonNode event) {
         try {
             destroyedShipsRegistery.clearBounty();
+            ExplorationDataSaleRegistry.getInstance().clearOnHold();
             commanderStatus.getShip().resetCargo();
             // Terminer la session de minage en cours si elle existe
             if (miningStatsService.isMiningInProgress()) {
