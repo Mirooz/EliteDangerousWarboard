@@ -53,7 +53,8 @@ public class MultiSellExplorationDataHandler implements JournalEventHandler {
 
             // Ajouter à la vente en cours
             saleRegistry.addToCurrentSale(discoveredSystems, baseValue, bonus, totalEarnings, timestamp);
-
+            // Supprimer tout les credit d'exploration on Hold
+            ExplorationDataSaleRegistry.getInstance().clearOnHold();
             System.out.printf("📊 Données d'exploration ajoutées: %d systèmes, BaseValue: %d, Bonus: %d, Total: %d%n",
                     discoveredSystems.size(), baseValue, bonus, totalEarnings);
         } catch (Exception e) {

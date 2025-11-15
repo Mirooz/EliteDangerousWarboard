@@ -294,10 +294,12 @@ public class PlaneteDetail extends ACelesteBody {
     }
 
     @Override
-    public int computeValue(boolean firstDiscover, boolean firstMapped, boolean mapped) {
+    public int computeValue() {
+        boolean firstDiscover = !wasDiscovered;
+        boolean firstMapped = !wasMapped;
         boolean isFleetCarrierSale = false;
         boolean isOdyssey =true;
-        boolean isEfficiencyBonus = true;
+        boolean isEfficiencyBonus = efficiencyTargetMap;
         double kValue = this.terraformable ? planetClass.getTerraformableK() : planetClass.getBaseK();
         final double q = 0.56591828;
 

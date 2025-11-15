@@ -18,13 +18,13 @@ public class StarDetail extends ACelesteBody {
     private StarType starType;
     private double stellarMass;
     @Override
-    public int computeValue(boolean firstDiscover, boolean firstMapped, boolean mapped) {
+    public int computeValue() {
 
+        boolean firstDiscover = !wasDiscovered;
         boolean isFleetCarrierSale = false;
 
         // Formule officielle (communauté reverse-engineered)
-        double value = 1200 + (starType.getKValue() * stellarMass);
-
+        double value = starType.getKValue() + (stellarMass * starType.getKValue() / 66.25);
         if (firstDiscover) {
             value *= 2.6;
         }

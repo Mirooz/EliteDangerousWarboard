@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
+import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import javafx.collections.FXCollections;
@@ -22,6 +24,8 @@ public class ExplorationDataSaleRegistry {
     // Vente en cours (accumule les MultiSellExplorationData jusqu'à Undocked)
     private ExplorationDataSale currentSale = null;
 
+    private ExplorationDataOnHold explorationDataOnHold = null;
+
     private ExplorationDataSaleRegistry() {
     }
 
@@ -29,6 +33,27 @@ public class ExplorationDataSaleRegistry {
         return INSTANCE;
     }
 
+    public void addToOnHold(SystemVisited systemVisited) {
+        if (explorationDataOnHold == null) {
+            explorationDataOnHold = ExplorationDataOnHold.builder()
+                    .value(0)
+                    .build();
+        }
+        // Si déja ajouté : on enleve les anciennes valeur pour ajouter les nouvelles
+        if (explorationDataOnHold.getSystemsVisited().containsKey(systemVisited.getSystemName())){
+            long value = 0;
+            for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
+                value+= celesteBody.computeValue();
+            }
+            explorationDataOnHold.setValue(explorationDataOnHold.getValue()-value);
+        }
+        explorationDataOnHold.getSystemsVisited().put(systemVisited.getSystemName(),systemVisited);
+        long value = 0;
+        for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
+            value+= celesteBody.computeValue();
+        }
+        explorationDataOnHold.setValue(explorationDataOnHold.getValue()+value);
+    }
     /**
      * Ajoute ou met à jour la vente en cours avec de nouvelles données.
      */
@@ -81,6 +106,9 @@ public class ExplorationDataSaleRegistry {
     public void clear() {
         sales.clear();
         currentSale = null;
+    }
+    public void clearOnHold() {
+        explorationDataOnHold = null;
     }
 
     /**

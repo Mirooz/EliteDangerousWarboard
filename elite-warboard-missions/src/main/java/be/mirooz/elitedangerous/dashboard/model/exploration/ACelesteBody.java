@@ -23,6 +23,8 @@ public abstract class ACelesteBody {
     // Informations de base
     protected String bodyName;
     protected String starSystem;
+    protected boolean mapped;
+    protected boolean efficiencyTargetMap;
     protected long systemAddress;
     protected int bodyID;
 
@@ -35,6 +37,5 @@ public abstract class ACelesteBody {
     protected boolean wasFootfalled;
     protected boolean wasDiscovered;
 
-
-    public abstract int computeValue(boolean firstDiscover, boolean firstMapped, boolean mapped);
+    public abstract int computeValue();
 }

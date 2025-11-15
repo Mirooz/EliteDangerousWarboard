@@ -21,12 +21,6 @@ public class SystemVisited {
     private boolean firstDiscover;
     private String firstVisitedTime;
     private String lastVisitedTime;
-    public String getLastVisitedTime() {
-        if (lastVisitedTime == null) {
-            System.out.println("ici");
-        }
-        return lastVisitedTime;
-    }
     @Builder.Default
     private int numberVisited=1;
     private boolean sold; // Indique si les données du système ont été vendues

@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
@@ -33,9 +34,10 @@ public class FSDJumpHandler implements JournalEventHandler {
                     System.out.println("⛏️ Session de minage terminée (FSD Jump)");
                 }
                 //Ajoute l'ancien dans les visited
-                if (planeteRegistry.getCurrentStarSystem()!= null)
-                    SystemVisitedRegistry.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(),planeteRegistry.getAllPlanetes(),timestamp);
-                //Recupere l'ancien
+                if (planeteRegistry.getCurrentStarSystem()!= null) {
+                    SystemVisitedRegistry.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(), planeteRegistry.getAllPlanetes(), timestamp);
+                    ExplorationDataSaleRegistry.getInstance().addToOnHold(SystemVisitedRegistry.getInstance().getSystem(planeteRegistry.getCurrentStarSystem()));
+                }
                 planeteRegistry.clear();
                 planeteRegistry.setCurrentStarSystem(starSystem);
                 if (SystemVisitedRegistry.getInstance().getSystems().containsKey(starSystem)){
