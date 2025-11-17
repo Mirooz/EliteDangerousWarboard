@@ -47,16 +47,25 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private Tab miningTab;
     
     @FXML
+    private Tab explorationTab;
+    
+    @FXML
     private ImageView missionsTabImage;
     
     @FXML
     private ImageView miningTabImage;
     
     @FXML
+    private ImageView explorationTabImage;
+    
+    @FXML
     private BorderPane missionsPane;
     
     @FXML
     private BorderPane miningPane;
+    
+    @FXML
+    private BorderPane explorationPane;
 
     @FXML
     private StackPane popupContainer;
@@ -88,7 +97,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
         
         // Initialiser le TabPane dans le service de bind unifié
-        windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab);
+        windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab, explorationTab);
     }
 
     private void loadComponents() {
@@ -103,6 +112,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             
             // Charger l'onglet Mining
             createMiningPanel();
+            
+            // Charger l'onglet Exploration
+            createExplorationPanel();
 
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement des composants: " + e.getMessage());
@@ -148,6 +160,14 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         miningPane.setCenter(miningPanel);
     }
 
+    private void createExplorationPanel() throws IOException {
+        // Charger le panneau d'exploration
+        FXMLLoader explorationLoader = new FXMLLoader(getClass().getResource("/fxml/exploration/exploration-panel.fxml"));
+        VBox explorationPanel = explorationLoader.load();
+        ExplorationController explorationController = explorationLoader.getController();
+        explorationPane.setCenter(explorationPanel);
+    }
+
     private void loadMissions() {
         dashboardService.initActiveMissions();
     }
@@ -173,6 +193,13 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             miningTabImage.setPreserveRatio(true); // Conserver les proportions
             miningTabImage.setSmooth(true);
             
+            // Charger l'image pour l'onglet Exploration
+            Image explorationImage = new Image(getClass().getResourceAsStream("/images/dashboard/exploration.png"));
+            explorationTabImage.setImage(explorationImage);
+            explorationTabImage.setFitWidth(60);
+            explorationTabImage.setFitHeight(60);
+            explorationTabImage.setPreserveRatio(true);
+            explorationTabImage.setSmooth(true);
             
             // Configurer les effets élégants
             setupEliteTabEffects();
@@ -190,6 +217,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         // Ajouter les classes CSS de base
         missionsTabImage.getStyleClass().add("tab-image");
         miningTabImage.getStyleClass().add("tab-image");
+        explorationTabImage.getStyleClass().add("tab-image");
         
         // Gestion simple de la sélection des onglets
         setupSimpleTabSelection();
@@ -201,22 +229,30 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void setupSimpleTabSelection() {
         // Écouter les changements de sélection des onglets
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            // Réinitialiser tous les styles
+            missionsTabImage.getStyleClass().remove("tab-image-selected");
+            miningTabImage.getStyleClass().remove("tab-image-selected");
+            explorationTabImage.getStyleClass().remove("tab-image-selected");
+            
             if (newTab == missionsTab) {
                 // Onglet Missions sélectionné
                 missionsTabImage.getStyleClass().add("tab-image-selected");
-                miningTabImage.getStyleClass().remove("tab-image-selected");
                 System.out.println("✅ Missions sélectionné");
             } else if (newTab == miningTab) {
                 // Onglet Mining sélectionné
                 miningTabImage.getStyleClass().add("tab-image-selected");
-                missionsTabImage.getStyleClass().remove("tab-image-selected");
                 System.out.println("✅ Mining sélectionné");
+            } else if (newTab == explorationTab) {
+                // Onglet Exploration sélectionné
+                explorationTabImage.getStyleClass().add("tab-image-selected");
+                System.out.println("✅ Exploration sélectionné");
             }
         });
         
         // Désactiver la fermeture des onglets
         missionsTab.setClosable(false);
         miningTab.setClosable(false);
+        explorationTab.setClosable(false);
         
         // Sélectionner l'onglet Missions par défaut
         mainTabPane.getSelectionModel().select(missionsTab);

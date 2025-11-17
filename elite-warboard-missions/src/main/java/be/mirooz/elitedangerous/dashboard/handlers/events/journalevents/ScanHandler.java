@@ -140,7 +140,7 @@ public class ScanHandler implements JournalEventHandler {
 
                 // Enregistrement de la planète dans le registre
                 PlaneteRegistry.getInstance().addOrUpdateBody(planeteDetail);
-            } else {
+            } else if (jsonNode.has("PlanetClass")){
                 double massEm = jsonNode.has("MassEM") ? jsonNode.get("MassEM").asDouble() : 0.0;
                 boolean terraformable = terraformState != null && !terraformState.isEmpty();
                 String planetClassStr = jsonNode.path("PlanetClass").asText();

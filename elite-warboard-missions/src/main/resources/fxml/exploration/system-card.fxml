@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.SystemCardController"
+      fx:id="root" spacing="5" styleClass="exploration-system-card" style="-fx-cursor: hand">
+    <padding>
+        <Insets top="3" right="3" bottom="3" left="3"/>
+    </padding>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label fx:id="systemNameLabel" styleClass="exploration-system-card-name" HBox.hgrow="ALWAYS"/>
+        <Label fx:id="expandIcon" text="▼" styleClass="exploration-system-card-expand"/>
+    </HBox>
+    
+    <!-- Dropdown avec les corps célestes (caché par défaut) -->
+    <VBox fx:id="bodiesContainer" spacing="5" styleClass="exploration-system-card-bodies" visible="false" managed="false">
+        <!-- Les corps seront ajoutés dynamiquement -->
+    </VBox>
+</VBox>
+

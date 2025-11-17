@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.CurrentSystemInfoComponent"
+      spacing="5" styleClass="exploration-top-system-panel" minWidth="400" maxHeight="200">
+
+    <HBox spacing="20" alignment="TOP_LEFT" HBox.hgrow="ALWAYS">
+        <!-- Colonne gauche : Système actuel -->
+        <VBox spacing="5" HBox.hgrow="ALWAYS">
+            <Label text="SYSTÈME ACTUEL" styleClass="exploration-section-title"/>
+            
+            <!-- Nom du système -->
+            <Label fx:id="systemNameLabel" styleClass="exploration-system-name"/>
+            
+            <!-- Panel unique regroupé : Planètes mappables + Exobio + Boussole dans une seule case -->
+            <HBox spacing="10" styleClass="exploration-system-grouped-panel" alignment="TOP_LEFT">
+                <!-- Planètes mappables -->
+                <VBox spacing="3" HBox.hgrow="ALWAYS" styleClass="exploration-system-section-compact">
+                    <Label text="PLANÈTES MAPPABLES" styleClass="exploration-subsection-title-small"/>
+                    <ScrollPane fx:id="mappablePlanetsScrollPane" styleClass="exploration-system-scroll-compact" 
+                               fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" maxHeight="120">
+                        <VBox fx:id="mappablePlanetsList" spacing="3" styleClass="exploration-planets-list"/>
+                    </ScrollPane>
+                </VBox>
+                
+                <!-- Exobiologie -->
+                <VBox spacing="3" HBox.hgrow="ALWAYS" styleClass="exploration-system-section-compact">
+                    <Label text="EXOBIOLOGIE" styleClass="exploration-subsection-title-small"/>
+                    <ScrollPane fx:id="exobiologyScrollPane" styleClass="exploration-system-scroll-compact" 
+                               fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" maxHeight="120">
+                        <VBox fx:id="exobiologyList" spacing="3" styleClass="exploration-exobiology-list"/>
+                    </ScrollPane>
+                </VBox>
+                
+                <!-- Boussole/Radar (si sur planète avec sample) -->
+                <VBox spacing="3" HBox.hgrow="ALWAYS" styleClass="exploration-system-section-compact">
+                    <Label text="POSITION ACTUELLE" styleClass="exploration-subsection-title-small"/>
+                    <Region fx:id="radarPlaceholder" styleClass="exploration-radar-placeholder-compact" minHeight="120" maxHeight="120"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Colonne droite : Statistiques courantes -->
+        <VBox fx:id="statsContainer" spacing="5" minWidth="250" maxWidth="300">
+            <Label text="STATISTIQUES COURANTES" styleClass="exploration-section-title"/>
+            
+            <!-- Stats d'exploration -->
+            <VBox spacing="5" styleClass="exploration-stats-summary">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="currentExplorationCreditsLabel" text="0 Cr" styleClass="exploration-stat-number"/>
+                    <Label text="Crédits d'exploration" styleClass="exploration-stat-label"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="currentBiologyCreditsLabel" text="0 Cr" styleClass="exploration-stat-number"/>
+                    <Label text="Crédits biologie" styleClass="exploration-stat-label"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="totalCreditsLabel" text="0 Cr" styleClass="exploration-stat-number"/>
+                    <Label text="Total crédits" styleClass="exploration-stat-label"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </HBox>
+</VBox>
+

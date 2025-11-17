@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.ExplorationHistoryItemController"
+      fx:id="root" spacing="5" styleClass="exploration-history-item" style="-fx-cursor: hand">
+    <padding>
+        <Insets top="5" right="5" bottom="5" left="5"/>
+    </padding>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label fx:id="timestampLabel" styleClass="exploration-history-timestamp"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="totalEarningsLabel" styleClass="exploration-history-earnings"/>
+        <!-- Flèche vers la gauche (visible quand sélectionné) -->
+        <Label fx:id="arrowLabel" text="←" styleClass="exploration-history-arrow" visible="false"/>
+    </HBox>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label fx:id="systemsCountLabel" styleClass="exploration-history-count"/>
+        <Label fx:id="currentLabel" text="EN COURS" styleClass="exploration-history-current" visible="false"/>
+    </HBox>
+</VBox>
+

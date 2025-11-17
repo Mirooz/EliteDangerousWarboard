@@ -42,6 +42,14 @@
                         </graphic>
                         <BorderPane fx:id="miningPane" styleClass="main-content" />
                     </Tab>
+                    
+                    <!-- Onglet Exploration -->
+                    <Tab fx:id="explorationTab" style="-fx-cursor: hand">
+                        <graphic>
+                            <ImageView fx:id="explorationTabImage" styleClass="tab-image" />
+                        </graphic>
+                        <BorderPane fx:id="explorationPane" styleClass="main-content" />
+                    </Tab>
                 </TabPane>
                 
                 <!-- Footer -->

@@ -113,6 +113,14 @@ public class PlaneteRegistry {
         return planetesMap.values();
     }
 
+    public String getCurrentStarSystem() {
+        return currentStarSystem;
+    }
+
+    public void setCurrentStarSystem(String currentStarSystem) {
+        this.currentStarSystem = currentStarSystem;
+    }
+
     public void setAllPlanetes(Collection<ACelesteBody> planetes) {
         clear();
         planetes.forEach( planete ->

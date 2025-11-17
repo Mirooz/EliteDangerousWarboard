@@ -69,7 +69,6 @@ public class DashboardService {
                 listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
                 DashboardContext.getInstance().refreshUI();
 
-
             }
         }).start();
     }

@@ -44,6 +44,7 @@ public class WindowToggleService {
     private TabPane tabPane;
     private Tab missionsTab;
     private Tab miningTab;
+    private Tab explorationTab;
     private boolean hidden = false;
     private boolean isAnimating = false;
     private double savedWidth = 1200;
@@ -99,10 +100,11 @@ public class WindowToggleService {
     /**
      * Initialise le TabPane pour le changement d'onglet
      */
-    public void initializeTabPane(TabPane tabPane, Tab missionsTab, Tab miningTab) {
+    public void initializeTabPane(TabPane tabPane, Tab missionsTab, Tab miningTab, Tab explorationTab) {
         this.tabPane = tabPane;
         this.missionsTab = missionsTab;
         this.miningTab = miningTab;
+        this.explorationTab = explorationTab;
     }
 
     /**
@@ -659,18 +661,21 @@ public class WindowToggleService {
             return;
         }
 
-        if (missionsTab == null || miningTab == null) {
+        if (missionsTab == null || miningTab == null || explorationTab == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
             return;
         }
 
         Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
         if (selectedTab == missionsTab) {
-            tabPane.getSelectionModel().select(miningTab);
-            System.out.println("📑 Changement vers onglet Mining");
+            tabPane.getSelectionModel().select(explorationTab);
+            System.out.println("📑 Changement vers onglet Exploration");
         } else if (selectedTab == miningTab) {
             tabPane.getSelectionModel().select(missionsTab);
             System.out.println("📑 Changement vers onglet Missions");
+        } else if (selectedTab == explorationTab) {
+            tabPane.getSelectionModel().select(miningTab);
+            System.out.println("📑 Changement vers onglet Mining");
         } else {
             tabPane.getSelectionModel().select(missionsTab);
             System.out.println("📑 Sélection de l'onglet Missions (aucun onglet sélectionné)");
@@ -678,7 +683,7 @@ public class WindowToggleService {
     }
 
     /**
-     * Change vers l'onglet suivant (cycle: Missions -> Mining -> Missions)
+     * Change vers l'onglet suivant (cycle: Missions -> Mining -> Exploration -> Missions)
      */
     private void switchToNextTab() {
         if (isPaused) {
@@ -697,7 +702,7 @@ public class WindowToggleService {
             return;
         }
 
-        if (missionsTab == null || miningTab == null) {
+        if (missionsTab == null || miningTab == null || explorationTab == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
             return;
         }
@@ -707,6 +712,9 @@ public class WindowToggleService {
             tabPane.getSelectionModel().select(miningTab);
             System.out.println("📑 Changement vers onglet Mining");
         } else if (selectedTab == miningTab) {
+            tabPane.getSelectionModel().select(explorationTab);
+            System.out.println("📑 Changement vers onglet Exploration");
+        } else if (selectedTab == explorationTab) {
             tabPane.getSelectionModel().select(missionsTab);
             System.out.println("📑 Changement vers onglet Missions");
         } else {

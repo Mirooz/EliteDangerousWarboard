@@ -3767,3 +3767,545 @@
     -fx-background-color: rgba(0, 255, 255, 0.2);
     -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.3), 4, 0, 0, 0);
 }
+
+/* ====== STYLES POUR LE PANNEAU D'EXPLORATION ====== */
+
+/* Panneau principal d'exploration */
+.exploration-panel {
+    -fx-background-color: -fx-elite-dark;
+    -fx-z-index: 10;
+    -fx-spacing: 8;
+}
+
+.exploration-content {
+    -fx-spacing: 10px;
+}
+
+/* Panel en haut */
+.exploration-top-panel {
+    -fx-spacing: 20px;
+    -fx-padding: 0 0 10px 0;
+}
+
+.exploration-top-system-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 10px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.exploration-system-grouped-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px;
+    -fx-spacing: 8px;
+}
+
+.exploration-system-section-compact {
+    -fx-padding: 5px;
+}
+
+.exploration-subsection-title-small {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 3px 0;
+}
+
+.exploration-system-scroll-compact {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.exploration-radar-placeholder-compact {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-style: dashed;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+/* Panneaux latéraux */
+.exploration-right-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 15px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+/* Titres de sections */
+.exploration-section-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10px 0;
+}
+
+.exploration-subsection-title {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 5px 0;
+}
+
+/* Vue visuelle du système */
+.exploration-visual-view {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 15px;
+}
+
+.exploration-visual-placeholder {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-style: dashed;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.exploration-visual-scroll {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.exploration-visual-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.exploration-visual-pane {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.exploration-visual-body {
+    -fx-cursor: hand;
+}
+
+.exploration-visual-body:hover {
+    -fx-opacity: 0.8;
+}
+
+.exploration-visual-star {
+    /* Styles spécifiques pour les étoiles si nécessaire */
+}
+
+.exploration-visual-planet {
+    /* Styles spécifiques pour les planètes si nécessaire */
+}
+
+.exploration-visual-connection {
+    -fx-stroke: -fx-elite-cyan;
+    -fx-stroke-width: 2px;
+    -fx-opacity: 0.5;
+}
+
+/* Statistiques d'exploration */
+.exploration-stats-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+}
+
+.exploration-stats-summary {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.exploration-stat-number {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.exploration-stat-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+}
+
+/* Historique d'exploration */
+.exploration-history-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 15px;
+}
+
+.exploration-history-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-border-radius: 0px;
+    -fx-background-radius: 0px;
+}
+
+.exploration-history-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.exploration-history-list {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+    -fx-spacing: 5px;
+}
+
+.exploration-history-item {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.exploration-history-item:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.exploration-history-item-selected {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 2px;
+}
+
+.exploration-history-timestamp {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+}
+
+.exploration-history-earnings {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.exploration-history-count {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 11px;
+}
+
+.exploration-history-current {
+    -fx-text-fill: -fx-elite-warning;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 170, 0, 0.2);
+    -fx-border-color: -fx-elite-warning;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px 6px;
+}
+
+.exploration-history-arrow {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 5px;
+}
+
+/* Détails d'exploration */
+.exploration-detail-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 15px;
+}
+
+.exploration-detail-section {
+    -fx-spacing: 5px;
+    -fx-padding: 5px 0;
+}
+
+.exploration-detail-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+}
+
+.exploration-detail-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-border-radius: 0px;
+    -fx-background-radius: 0px;
+}
+
+.exploration-detail-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.exploration-systems-list {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+    -fx-spacing: 5px;
+}
+
+.exploration-system-item {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-padding: 3px 5px;
+    -fx-background-color: rgba(0, 255, 255, 0.05);
+    -fx-border-color: transparent;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.exploration-system-item:hover {
+    -fx-background-color: rgba(0, 255, 255, 0.1);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 1px;
+}
+
+/* Cartes système */
+.exploration-system-card {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-spacing: 5px;
+}
+
+.exploration-system-card:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.exploration-system-card-expanded {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+}
+
+.exploration-system-card-name {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.exploration-system-card-expand {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.exploration-system-card-bodies {
+    -fx-spacing: 3px;
+    -fx-padding: 5px 0 0 15px;
+}
+
+.exploration-system-card-body-container {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.exploration-system-card-body {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-padding: 2px 5px;
+}
+
+.exploration-system-card-body-exobio {
+    -fx-text-fill: -fx-elite-green;
+    -fx-font-weight: bold;
+}
+
+/* Infos système actuel */
+.exploration-system-info-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 15px;
+}
+
+.exploration-system-section {
+    -fx-spacing: 5px;
+    -fx-padding: 5px 0;
+}
+
+.exploration-system-name {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10px 0;
+}
+
+.exploration-system-scroll {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.exploration-system-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.exploration-planets-list {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 5px;
+    -fx-spacing: 5px;
+}
+
+.exploration-planet-item {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-padding: 3px 5px;
+    -fx-background-color: rgba(255, 107, 0, 0.05);
+    -fx-border-color: transparent;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.exploration-planet-item:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+}
+
+.exploration-exobiology-list {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 5px;
+    -fx-spacing: 5px;
+}
+
+.exploration-exobiology-planet-name {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 3px 0;
+}
+
+.exploration-exobiology-species {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-padding: 2px 0;
+}
+
+.exploration-radar-placeholder {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-style: dashed;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+/* Scrollbars pour l'exploration */
+.exploration-history-scroll .scroll-bar:vertical,
+.exploration-detail-scroll .scroll-bar:vertical,
+.exploration-system-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .thumb,
+.exploration-detail-scroll .scroll-bar:vertical .thumb,
+.exploration-system-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .thumb:hover,
+.exploration-detail-scroll .scroll-bar:vertical .thumb:hover,
+.exploration-system-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .track,
+.exploration-detail-scroll .scroll-bar:vertical .track,
+.exploration-system-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .increment-button,
+.exploration-history-scroll .scroll-bar:vertical .decrement-button,
+.exploration-detail-scroll .scroll-bar:vertical .increment-button,
+.exploration-detail-scroll .scroll-bar:vertical .decrement-button,
+.exploration-system-scroll .scroll-bar:vertical .increment-button,
+.exploration-system-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .increment-button:hover,
+.exploration-history-scroll .scroll-bar:vertical .decrement-button:hover,
+.exploration-detail-scroll .scroll-bar:vertical .increment-button:hover,
+.exploration-detail-scroll .scroll-bar:vertical .decrement-button:hover,
+.exploration-system-scroll .scroll-bar:vertical .increment-button:hover,
+.exploration-system-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .decrement-arrow,
+.exploration-detail-scroll .scroll-bar:vertical .decrement-arrow,
+.exploration-system-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .increment-arrow,
+.exploration-detail-scroll .scroll-bar:vertical .increment-arrow,
+.exploration-system-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.exploration-history-scroll .scroll-bar:vertical .increment-arrow:hover,
+.exploration-history-scroll .scroll-bar:vertical .decrement-arrow:hover,
+.exploration-detail-scroll .scroll-bar:vertical .increment-arrow:hover,
+.exploration-detail-scroll .scroll-bar:vertical .decrement-arrow:hover,
+.exploration-system-scroll .scroll-bar:vertical .increment-arrow:hover,
+.exploration-system-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.exploration-history-scroll .scroll-bar:horizontal,
+.exploration-detail-scroll .scroll-bar:horizontal,
+.exploration-system-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}

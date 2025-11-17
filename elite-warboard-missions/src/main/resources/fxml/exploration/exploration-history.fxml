@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.ExplorationHistoryComponent"
+      spacing="10" styleClass="exploration-history-panel" VBox.vgrow="ALWAYS" minWidth="300" maxWidth="400">
+
+    <Label text="HISTORIQUE DES GROUPES D'EXPLORATION" styleClass="exploration-section-title"/>
+    
+    <!-- Liste des groupes d'exploration -->
+    <StackPane VBox.vgrow="ALWAYS">
+        <ScrollPane fx:id="explorationHistoryScrollPane" styleClass="exploration-history-scroll" 
+                   fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+            <VBox fx:id="explorationHistoryList" spacing="5" styleClass="exploration-history-list"/>
+        </ScrollPane>
+    </StackPane>
+</VBox>
+

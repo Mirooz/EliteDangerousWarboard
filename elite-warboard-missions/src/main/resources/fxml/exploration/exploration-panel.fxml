@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ExplorationController"
+      styleClass="exploration-panel" spacing="10">
+
+    <!-- Zone principale : Panel haut + Panel gauche (Vue visuelle) + Panel droit (Détails + Historique) -->
+    <HBox spacing="20" styleClass="exploration-content" VBox.vgrow="ALWAYS">
+        
+        <!-- Colonne gauche : Panel haut (Info système avec Stats intégrées) + Vue visuelle -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+            <!-- Panel en haut : Information système (avec statistiques courantes intégrées) -->
+            <VBox fx:id="currentSystemInfoContainer" spacing="5" styleClass="exploration-top-system-panel" maxHeight="200"/>
+            
+            <!-- Panneau de gauche : Vue visuelle du système -->
+            <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" minWidth="400"/>
+        </VBox>
+        
+        <!-- Panneau de droite : Détails (à gauche) + Historique (à droite) - va jusqu'en haut -->
+        <HBox spacing="10" styleClass="exploration-right-panel" minWidth="600" maxWidth="800" VBox.vgrow="ALWAYS">
+            <!-- Liste de systèmes visités (courant ou historique selon sélection) -->
+            <VBox fx:id="explorationDetailContainer" spacing="10" styleClass="exploration-detail-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="300"/>
+            
+            <!-- Historique des groupes d'exploration -->
+            <VBox fx:id="explorationHistoryContainer" spacing="10" styleClass="exploration-history-panel" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="300"/>
+        </HBox>
+    </HBox>
+</VBox>
+
