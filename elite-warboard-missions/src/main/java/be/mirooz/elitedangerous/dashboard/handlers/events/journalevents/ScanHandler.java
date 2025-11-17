@@ -92,6 +92,10 @@ public class ScanHandler implements JournalEventHandler {
                         int starID = parent.path("Star").asInt();
                         parents.add(ParentBody.builder().type("Star").bodyID(starID).build());
                     }
+                    else if (parent.has("Null")) {
+                        int starID = parent.path("Null").asInt();
+                        parents.add(ParentBody.builder().type("Null").bodyID(starID).build());
+                    }
                 });
             }
 

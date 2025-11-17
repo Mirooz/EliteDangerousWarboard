@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -26,7 +30,6 @@ public class DirectionReaderService {
     private static final String STATUS_FILE = "Status.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
-
     private final ScheduledExecutorService scheduler =
             Executors.newSingleThreadScheduledExecutor();
 
@@ -39,6 +42,8 @@ public class DirectionReaderService {
         return INSTANCE;
     }
 
+    @Getter
+    private final List<Position> currentBiologicalSamplePositions = new ArrayList<>();
     private ScheduledFuture<?> statusWatcherTask;
     // Thread de surveillance
     private volatile boolean watching = false;
@@ -48,7 +53,7 @@ public class DirectionReaderService {
      *
      * @return La position actuelle ou null si le fichier n'existe pas ou si les données sont invalides
      */
-    public Position readCurrentPosition() {
+    public Position readCurrentPosition(double radius) {
         try {
             String journalFolder = preferencesService.getJournalFolder();
             if (journalFolder == null || journalFolder.isEmpty()) {
@@ -86,7 +91,7 @@ public class DirectionReaderService {
             Integer heading = statusNode.has("Heading") ? statusNode.path("Heading").asInt() : null;
             String timestamp = statusNode.has("timestamp") ? statusNode.path("timestamp").asText() : null;
 
-            return new Position(latitude, longitude, heading, timestamp);
+            return new Position(latitude, longitude, radius,heading, timestamp);
 
         } catch (Exception e) {
             System.err.println("❌ Erreur lors de la lecture du fichier Status.json: " + e.getMessage());
@@ -96,7 +101,7 @@ public class DirectionReaderService {
 
     private volatile long lastModified = 0;
 
-    public void startWatchingStatusFile() {
+    public void startWatchingStatusFile(double radius) {
         if (watching) {
             System.out.println("⚠️ La surveillance de Status.json est déjà active");
             return;
@@ -105,7 +110,7 @@ public class DirectionReaderService {
         watching = true;
 
         // Lire la position initiale
-        Position initialPosition = readCurrentPosition();
+        Position initialPosition = readCurrentPosition(radius);
         if (initialPosition != null) {
             currentPosition.set(initialPosition);
             previousPosition = initialPosition;
@@ -137,7 +142,7 @@ public class DirectionReaderService {
                 if (currentModified != lastModified) {
                     lastModified = currentModified;
 
-                    Position newPosition = readCurrentPosition();
+                    Position newPosition = readCurrentPosition(radius);
 
                     if (newPosition != null) {
                         // Vérifier si la position a changé
@@ -145,6 +150,9 @@ public class DirectionReaderService {
                                 newPosition.isDifferentFrom(currentPosition.get(), 0.000001)) {
 
                             previousPosition = currentPosition.get();
+                            for (Position position : currentBiologicalSamplePositions) {
+                                position.setDistanceFromCurrent(getDistanceTo(newPosition,position));
+                            }
                             currentPosition.set(newPosition);
 
                             if (previousPosition != null) {
@@ -175,8 +183,10 @@ public class DirectionReaderService {
      */
     public void stopWatchingStatusFile() {
         watching = false;
-        statusWatcherTask.cancel(true);
-        statusWatcherTask = null;
+        if (statusWatcherTask != null){
+            statusWatcherTask.cancel(true);
+            statusWatcherTask = null;
+        }
         currentPosition.set(null);
         previousPosition = null;
     }
@@ -203,5 +213,36 @@ public class DirectionReaderService {
                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
         int index = (int) Math.round(degrees / 22.5) % 16;
         return directions[index];
+    }
+
+    public double getDistanceTo(Position current,Position targetPosition) {
+        if (current == null || targetPosition == null) {
+            return -1;
+        }
+
+        return computeSurfaceDistanceMeters(
+                targetPosition.getRadius(),
+                current.getLatitude(), current.getLongitude(),
+                targetPosition.getLatitude(), targetPosition.getLongitude()
+        );
+    }
+    private double computeSurfaceDistanceMeters(
+            double radiusMeters,
+            double lat1, double lon1,
+            double lat2, double lon2
+    ) {
+        double R = radiusMeters; // ton rayon est déjà en mètres
+
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                        + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                        * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
     }
 }

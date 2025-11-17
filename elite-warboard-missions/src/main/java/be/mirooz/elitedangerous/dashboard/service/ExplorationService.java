@@ -6,20 +6,19 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Position;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
+import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class ExplorationService {
     private static final ExplorationService INSTANCE = new ExplorationService();
 
     private final SystemVisitedRegistry systemVisitedRegistry = SystemVisitedRegistry.getInstance();
 
+    @Getter
     // Analyse biologique en cours
     private PlaneteDetail currentAnalysisPlanet = null;
     private BioSpecies currentAnalysisSpecies = null;
-    private List<Position> currentBiologicalSamplePositions = new ArrayList<>();
 
     private ExplorationService() {}
     public static ExplorationService getInstance() {
@@ -72,8 +71,9 @@ public class ExplorationService {
                 species.removeAllSamples();
                 clearCurrentBiologicalAnalysis();
             }
-            currentBiologicalSamplePositions.add(DirectionReaderService.getInstance().readCurrentPosition());
-            DirectionReaderService.getInstance().startWatchingStatusFile();
+            Position samplePosition = DirectionReaderService.getInstance().readCurrentPosition(planeteDetail.getRadius());
+            DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().add(samplePosition);
+            DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius());
 
         }
         this.currentAnalysisPlanet = planeteDetail;
@@ -81,13 +81,13 @@ public class ExplorationService {
     }
 
     public List<Position> getCurrentBiologicalSamplesPosition() {
-        if (currentBiologicalSamplePositions.isEmpty()) {
+        if (DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().isEmpty()) {
             return null;
         }
-        return currentBiologicalSamplePositions;
+        return DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions();
     }
     public Position getCurrentPosition(){
-        return DirectionReaderService.getInstance().readCurrentPosition();
+        return DirectionReaderService.getInstance().getCurrentPosition();
     }
     /**
      * Réinitialise l'analyse biologique en cours (quand l'analyse est terminée).
@@ -96,7 +96,7 @@ public class ExplorationService {
         DirectionReaderService.getInstance().stopWatchingStatusFile();
         this.currentAnalysisPlanet = null;
         this.currentAnalysisSpecies = null;
-        this.currentBiologicalSamplePositions.clear();
+        DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().clear();
     }
 
     /**
@@ -109,5 +109,4 @@ public class ExplorationService {
     public boolean isCurrentBiologicalAnalysisOnCurrentPlanet(String planeteName) {
         return currentAnalysisPlanet != null && currentAnalysisPlanet.getBodyName().equals(planeteName);
     }
-
 }

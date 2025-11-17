@@ -1,17 +1,26 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Classe pour représenter une position (latitude, longitude, heading)
  */
 public class Position {
     private final double latitude;
     private final double longitude;
+    @Getter
+    private final double radius;
     private final Integer heading;
     private final String timestamp;
+    @Setter
+    @Getter
+    private double distanceFromCurrent;
 
-    public Position(double latitude, double longitude, Integer heading, String timestamp) {
+    public Position(double latitude, double longitude, double radius, Integer heading, String timestamp) {
         this.latitude = latitude;
         this.longitude = longitude;
+        this.radius = radius;
         this.heading = heading;
         this.timestamp = timestamp;
     }
