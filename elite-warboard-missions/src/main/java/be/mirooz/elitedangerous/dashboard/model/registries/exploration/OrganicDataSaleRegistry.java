@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataSale;
+import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class OrganicDataSaleRegistry {
     private static final OrganicDataSaleRegistry INSTANCE = new OrganicDataSaleRegistry();
 
     private final ObservableList<OrganicDataSale> sales = FXCollections.observableArrayList();
+    private final ExplorationService explorationService = ExplorationService.getInstance();
     
     // Vente en cours (accumule les données organiques analysées jusqu'à la vente)
     private OrganicDataOnHold currentOrganicDataOnHold = null;
@@ -30,15 +32,8 @@ public class OrganicDataSaleRegistry {
         return INSTANCE;
     }
 
-    /**
-     * Ajoute des données organiques analysées à la vente en cours.
-     * Appelé lorsqu'un scanType ANALYSE est ajouté.
-     * 
-     * @param baseValue La valeur de base de l'espèce
-     * @param bonusValue La valeur de bonus (première découverte)
-     * @param wasFootfalled Indique si la planète a déjà été foulée (si false, c'est une première découverte)
-     */
     public void addAnalyzedOrganicData(BioSpecies bioSpecies, boolean wasFootfalled) {
+        explorationService.clearCurrentBiologicalAnalysis();
         if (currentOrganicDataOnHold == null) {
             // Créer une nouvelle vente en cours
             currentOrganicDataOnHold = OrganicDataOnHold.builder()

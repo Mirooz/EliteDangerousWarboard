@@ -57,46 +57,7 @@ public class SystemVisitedRegistry {
         return INSTANCE;
     }
 
-    /**
-     * Ajoute ou met à jour un système visité.
-     */
-    public void addOrUpdateSystem(String currentSystem, Collection<ACelesteBody> planets, String timestamp) {
-;
-        SystemVisited previous = systems.get(currentSystem);
 
-        SystemVisited system = SystemVisited.builder()
-                .systemName(currentSystem)
-                .numBodies(planets.size())
-                .build();
-
-        // Définition du premier body (utile pour timestamp & firstDiscover)
-        planets.stream().findFirst().ifPresentOrElse(
-                p -> {
-                    system.setFirstDiscover(!p.isWasDiscovered());
-                    system.setFirstVisitedTime(p.getTimestamp());
-                    system.setLastVisitedTime(p.getTimestamp());
-                },
-                () -> {
-                    system.setFirstVisitedTime(timestamp);
-                    system.setLastVisitedTime(timestamp);
-                }
-        );
-
-
-        // Mise à jour si déjà visité
-        if (previous != null) {
-            system.setFirstDiscover(previous.isFirstDiscover());
-            system.setFirstVisitedTime(previous.getFirstVisitedTime());
-            system.setLastVisitedTime(timestamp);
-            system.setNumberVisited(previous.getNumberVisited() + 1);
-        }
-
-        // Copie triée des planètes
-        system.setCelesteBodies(new ArrayList<>(planets));
-
-        // Stockage
-        systems.put(currentSystem, system);
-    }
 
     private static List<ACelesteBody> getCelesteBodiesClone(PlaneteRegistry pr) {
         List<ACelesteBody> sortedBodies =

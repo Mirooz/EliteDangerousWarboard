@@ -1,8 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
+import be.mirooz.elitedangerous.biologic.ScanTypeBio;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ScanOrganicData;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Optional;
@@ -61,6 +63,8 @@ public class ScanOrganicHandler implements JournalEventHandler {
             if (planeteOpt.isPresent()) {
                 PlaneteDetail planete = planeteOpt.get();
                 planete.addConfirmedSpecies(scanOrganicData);
+                
+
                 System.out.printf("🔬 Scan organique traité: %s (BodyID: %d, ScanType: %s, Species: %s)%n",
                         planete.getBodyName(), scanOrganicData.getBody(), scanOrganicData.getScanType(),
                         scanOrganicData.getVariantLocalised());

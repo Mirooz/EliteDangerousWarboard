@@ -4,6 +4,8 @@ import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
+import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
+import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -13,6 +15,7 @@ public class FSDJumpHandler implements JournalEventHandler {
     private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
     private final PlaneteRegistry planeteRegistry = PlaneteRegistry.getInstance();
 
+    private final DirectionReaderService directionReaderService = DirectionReaderService.getInstance();
     @Override
     public String getEventType() {
         return "FSDJump";
@@ -22,7 +25,6 @@ public class FSDJumpHandler implements JournalEventHandler {
     public void handle(JsonNode jsonNode) {
 
         try {
-
             if (jsonNode.has("StarSystem")) {
                 String starSystem = jsonNode.get("StarSystem").asText();
                 commanderStatus.setCurrentStarSystem(starSystem);
@@ -35,7 +37,7 @@ public class FSDJumpHandler implements JournalEventHandler {
                 }
                 //Ajoute l'ancien dans les visited
                 if (planeteRegistry.getCurrentStarSystem()!= null) {
-                    SystemVisitedRegistry.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(), planeteRegistry.getAllPlanetes(), timestamp);
+                    ExplorationService.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(), planeteRegistry.getAllPlanetes(), timestamp);
                     ExplorationDataSaleRegistry.getInstance().addToOnHold(SystemVisitedRegistry.getInstance().getSystem(planeteRegistry.getCurrentStarSystem()));
                 }
                 planeteRegistry.clear();
@@ -43,6 +45,7 @@ public class FSDJumpHandler implements JournalEventHandler {
                 if (SystemVisitedRegistry.getInstance().getSystems().containsKey(starSystem)){
                     planeteRegistry.setAllPlanetes(SystemVisitedRegistry.getInstance().getSystems().get(starSystem).getCelesteBodies());
                 }
+                directionReaderService.stopWatchingStatusFile();
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());

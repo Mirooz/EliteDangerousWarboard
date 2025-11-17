@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.model.exploration;
 import be.mirooz.elitedangerous.biologic.*;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @SuperBuilder
 public class PlaneteDetail extends ACelesteBody {
 
+    private final ExplorationService explorationService = ExplorationService.getInstance();
     // Propriétés spécifiques à une planète
     private BodyType planetClass;
     private Double massEM;
@@ -32,6 +34,7 @@ public class PlaneteDetail extends ACelesteBody {
     private Double gravityG;        // En G
     private boolean landable;
 
+    private double radius;
     private boolean terraformable;
     // Atmosphère & volcanisme
     private AtmosphereType atmosphere;
@@ -210,7 +213,6 @@ public class PlaneteDetail extends ACelesteBody {
      * Ajoute ou met à jour une espèce confirmée suite à un ScanOrganic.
      */
     public void addConfirmedSpecies(ScanOrganicData scanOrganicData) {
-
         try {
             ScanTypeBio scanTypeBio = ScanTypeBio.fromString(scanOrganicData.getScanType());
             if (scanTypeBio == null) return;
@@ -218,43 +220,17 @@ public class PlaneteDetail extends ACelesteBody {
             BioSpecies matchingSpecies = findMatchingSpecies(scanOrganicData);
             if (matchingSpecies == null) return;
 
-            BioSpecies existing = confirmedSpecies.stream()
+            BioSpecies specie = confirmedSpecies.stream()
                     .filter(s -> s.getId().equalsIgnoreCase(matchingSpecies.getId()))
                     .findFirst()
-                    .orElse(null);
+                    .orElseGet(() -> createNewSpecies(matchingSpecies, scanOrganicData));
 
-            if (existing != null) {
-                existing.addScanType(scanTypeBio);
-                // Si c'est une analyse, ajouter au crédit de données organiques
-                if (scanTypeBio == ScanTypeBio.ANALYSE) {
-                    OrganicDataSaleRegistry.getInstance()
-                            .addAnalyzedOrganicData(
-                                    existing,
-                                    this.isWasFootfalled()
-                            );
-                }
-                return;
-            }
+            // Ajoute le scan type
+            specie.addScanType(scanTypeBio);
 
-            BioSpecies newSpecie = BioSpecies.builder()
-                    .name(matchingSpecies.getName())
-                    .specieName(matchingSpecies.getSpecieName())
-                    .color(matchingSpecies.getColor())
-                    .count(matchingSpecies.getCount())
-                    .baseValue(matchingSpecies.getBaseValue())
-                    .bonusValue(matchingSpecies.getBonusValue())
-                    .colonyRangeMeters(matchingSpecies.getColonyRangeMeters())
-                    .variantMethod(matchingSpecies.getVariantMethod())
-                    .colorConditionName(matchingSpecies.getColorConditionName())
-                    .id(matchingSpecies.getId())
-                    .histogramData(matchingSpecies.getHistogramData())
-                    .genus(scanOrganicData.getGenus())
-                    .variantLocalised(scanOrganicData.getVariantLocalised())
-                    .wasLogged(scanOrganicData.isWasLogged())
-                    .collected(false)
-                    .build();
-            newSpecie.addScanType(scanTypeBio);
-            confirmedSpecies.add(newSpecie);
+            // Actions selon le type
+            handleScanTypeActions(scanTypeBio, specie, matchingSpecies);
+
         } catch (Exception e) {
             System.err.println("❌ Erreur addConfirmedSpecies: " + e.getMessage());
         }
@@ -272,6 +248,45 @@ public class PlaneteDetail extends ACelesteBody {
                     .orElse(null);
         } catch (Exception e) {
             return null;
+        }
+    }
+    private BioSpecies createNewSpecies(BioSpecies base, ScanOrganicData scanData) {
+        BioSpecies newSpecie = BioSpecies.builder()
+                .name(base.getName())
+                .specieName(base.getSpecieName())
+                .color(base.getColor())
+                .count(base.getCount())
+                .baseValue(base.getBaseValue())
+                .bonusValue(base.getBonusValue())
+                .colonyRangeMeters(base.getColonyRangeMeters())
+                .variantMethod(base.getVariantMethod())
+                .colorConditionName(base.getColorConditionName())
+                .id(base.getId())
+                .histogramData(base.getHistogramData())
+                .genus(scanData.getGenus())
+                .variantLocalised(scanData.getVariantLocalised())
+                .wasLogged(scanData.isWasLogged())
+                .collected(false)
+                .build();
+
+        confirmedSpecies.add(newSpecie);
+        return newSpecie;
+    }
+    private void handleScanTypeActions(ScanTypeBio scanTypeBio, BioSpecies specie, BioSpecies matchingSpecies) {
+
+        switch (scanTypeBio) {
+            case ANALYSE -> {
+                OrganicDataSaleRegistry.getInstance()
+                        .addAnalyzedOrganicData(specie, this.isWasFootfalled());
+            }
+
+            case SAMPLE -> {
+                explorationService.setCurrentBiologicalAnalysis(this, matchingSpecies);
+            }
+
+            default -> {
+                // Rien à faire pour les autres types
+            }
         }
     }
 

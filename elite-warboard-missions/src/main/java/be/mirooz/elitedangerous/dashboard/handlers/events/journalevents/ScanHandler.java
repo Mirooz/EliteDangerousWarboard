@@ -153,6 +153,7 @@ public class ScanHandler implements JournalEventHandler {
                         .massEM(massEm)
                         .parents(parents)
                         .planetClass(bodyType)
+                        .radius(radius)
                         .temperature(surfaceTemperature >= 0 ? surfaceTemperature : null)
                         .pressureAtm(pressureAtm >= 0 ? pressureAtm : null)
                         .gravityG(gravityG >= 0 ? gravityG : null)
