@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.ExplorationHistoryComponent"
-      spacing="10" styleClass="exploration-history-panel" VBox.vgrow="ALWAYS" minWidth="300" maxWidth="400">
+      spacing="10" styleClass="exploration-history-panel" VBox.vgrow="ALWAYS" minWidth="400" maxWidth="400">
 
     <Label text="HISTORIQUE DES GROUPES D'EXPLORATION" styleClass="exploration-section-title"/>
     

@@ -1,6 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
+import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
+import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
@@ -39,6 +42,7 @@ public class FSDJumpHandler implements JournalEventHandler {
                 if (planeteRegistry.getCurrentStarSystem()!= null) {
                     ExplorationService.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(), planeteRegistry.getAllPlanetes(), timestamp);
                     ExplorationDataSaleRegistry.getInstance().addToOnHold(SystemVisitedRegistry.getInstance().getSystem(planeteRegistry.getCurrentStarSystem()));
+
                 }
                 planeteRegistry.clear();
                 planeteRegistry.setCurrentStarSystem(starSystem);

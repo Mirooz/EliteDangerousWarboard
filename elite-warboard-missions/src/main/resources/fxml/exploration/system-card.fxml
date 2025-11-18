@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
@@ -13,7 +14,6 @@
     
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label fx:id="systemNameLabel" styleClass="exploration-system-card-name" HBox.hgrow="ALWAYS"/>
-        <Label fx:id="expandIcon" text="▼" styleClass="exploration-system-card-expand"/>
     </HBox>
     
     <!-- Dropdown avec les corps célestes (caché par défaut) -->

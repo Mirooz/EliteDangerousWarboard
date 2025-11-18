@@ -13,7 +13,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
-import java.util.Comparator;
+import java.util.*;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.function.Consumer;
@@ -31,6 +31,9 @@ public class ExplorationHistoryComponent implements Initializable, IRefreshable 
     private final ExplorationDataSaleRegistry registry = ExplorationDataSaleRegistry.getInstance();
     private Consumer<ExplorationDataSale> onSaleSelected;
     private ExplorationDataSale selectedSale;
+    
+    // Cache des items pour éviter de les recréer
+    private final Map<ExplorationDataSale, VBox> saleItemCache = new HashMap<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -44,30 +47,47 @@ public class ExplorationHistoryComponent implements Initializable, IRefreshable 
 
     public void refresh() {
         Platform.runLater(() -> {
-            explorationHistoryList.getChildren().clear();
-            
-            // Ajouter la vente en cours en premier (si elle existe)
+            // Obtenir toutes les ventes triées
+            List<ExplorationDataSale> allSales = new ArrayList<>();
             if (registry.getCurrentSale() != null) {
-                addSaleItem(registry.getCurrentSale(), true);
+                allSales.add(registry.getCurrentSale());
             }
             
-            // Ajouter les ventes finalisées triées par timestamp décroissant (plus récentes en premier)
             var sortedSales = registry.getAllSales().stream()
                     .filter(sale -> sale != registry.getCurrentSale())
                     .sorted(Comparator.comparing((ExplorationDataSale sale) -> {
-                        // Utiliser endTimestamp si disponible, sinon timestamp
                         String ts = sale.getEndTimestamp() != null ? sale.getEndTimestamp() : sale.getTimestamp();
                         return ts != null ? ts : "";
-                    }).reversed()) // Ordre décroissant
+                    }).reversed())
                     .collect(Collectors.toList());
+            allSales.addAll(sortedSales);
             
-            for (ExplorationDataSale sale : sortedSales) {
-                addSaleItem(sale, false);
+            // Nettoyer le cache des items qui n'existent plus
+            Set<ExplorationDataSale> currentSales = new HashSet<>(allSales);
+            saleItemCache.entrySet().removeIf(entry -> !currentSales.contains(entry.getKey()));
+            
+            // Réorganiser la liste pour correspondre à l'ordre trié
+            explorationHistoryList.getChildren().clear();
+            
+            for (ExplorationDataSale sale : allSales) {
+                VBox item = saleItemCache.get(sale);
+                if (item == null) {
+                    // Créer un nouvel item seulement s'il n'existe pas
+                    item = createSaleItem(sale, sale == registry.getCurrentSale());
+                    saleItemCache.put(sale, item);
+                } else {
+                    // Mettre à jour l'état "current" si nécessaire
+                    ExplorationHistoryItemController controller = (ExplorationHistoryItemController) item.getUserData();
+                    if (controller != null) {
+                        controller.setSale(sale, sale == registry.getCurrentSale());
+                    }
+                }
+                explorationHistoryList.getChildren().add(item);
             }
         });
     }
 
-    private void addSaleItem(ExplorationDataSale sale, boolean isCurrent) {
+    private VBox createSaleItem(ExplorationDataSale sale, boolean isCurrent) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/exploration-history-item.fxml"));
             VBox item = loader.load();
@@ -102,10 +122,11 @@ public class ExplorationHistoryComponent implements Initializable, IRefreshable 
                 }
             });
             
-            explorationHistoryList.getChildren().add(item);
+            return item;
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'ajout d'un élément d'historique: " + e.getMessage());
+            System.err.println("Erreur lors de la création d'un élément d'historique: " + e.getMessage());
             e.printStackTrace();
+            return null;
         }
     }
     

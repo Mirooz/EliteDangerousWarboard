@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
+import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
@@ -8,6 +9,8 @@ import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRe
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -27,8 +30,6 @@ public class SystemCardController implements Initializable {
     @FXML
     private Label systemNameLabel;
     @FXML
-    private Label expandIcon;
-    @FXML
     private VBox bodiesContainer;
 
     private SystemVisited system;
@@ -36,16 +37,57 @@ public class SystemCardController implements Initializable {
     private final PlaneteRegistry planeteRegistry = PlaneteRegistry.getInstance();
     private java.util.function.Consumer<SystemVisited> onSystemClicked;
     private Runnable onCardExpanded;
+    private Image exobioImage;
+    private Image mappedImage;
+    
+    // Méthodes pour initialisation manuelle (sans FXML)
+    public void setRoot(VBox root) {
+        this.root = root;
+    }
+    
+    public void setSystemNameLabel(Label systemNameLabel) {
+        this.systemNameLabel = systemNameLabel;
+    }
+    
+    public void setBodiesContainer(VBox bodiesContainer) {
+        this.bodiesContainer = bodiesContainer;
+    }
+    
+    public boolean isExpanded() {
+        return expanded;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        root.setOnMouseClicked(this::onCardClicked);
+        if (root != null) {
+            root.setOnMouseClicked(this::onCardClicked);
+        }
+        loadImages();
+    }
+    
+    private void loadImages() {
+        // Charger les images (une seule fois)
+        if (exobioImage == null) {
+            try {
+                exobioImage = new Image(getClass().getResourceAsStream("/images/exploration/exobio.png"));
+            } catch (Exception e) {
+                System.err.println("Erreur lors du chargement de l'image exobio.png: " + e.getMessage());
+            }
+        }
+        if (mappedImage == null) {
+            try {
+                mappedImage = new Image(getClass().getResourceAsStream("/images/exploration/mapped.png"));
+            } catch (Exception e) {
+                System.err.println("Erreur lors du chargement de l'image mapped.png: " + e.getMessage());
+            }
+        }
     }
 
     public void setSystem(SystemVisited system) {
         this.system = system;
-        if (system != null) {
+        if (system != null && systemNameLabel != null) {
             systemNameLabel.setText(system.getSystemName());
+            //loadImages(); // S'assurer que les images sont chargées
             updateBodiesList();
         }
     }
@@ -85,7 +127,6 @@ public class SystemCardController implements Initializable {
     private void updateExpandedState() {
         bodiesContainer.setVisible(expanded);
         bodiesContainer.setManaged(expanded);
-        expandIcon.setText(expanded ? "▲" : "▼");
         
         if (expanded) {
             root.getStyleClass().add("exploration-system-card-expanded");
@@ -256,6 +297,7 @@ public class SystemCardController implements Initializable {
         }
         
         container.getChildren().add(bodyLabel);
+        
         bodiesContainer.getChildren().add(container);
     }
 }

@@ -5,14 +5,14 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Composant pour afficher les détails d'un groupe d'exploration
@@ -32,7 +32,7 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
 
     private ExplorationDataSale currentSale;
     private java.util.function.Consumer<SystemVisited> onSystemSelected;
-    private java.util.List<SystemCardController> systemCardControllers = new java.util.ArrayList<>();
+    private SystemCardController currentExpandedController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -56,33 +56,72 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
             detailTotalEarningsLabel.setText("Total: " + String.format("%,d Cr", currentSale.getTotalEarnings()));
             detailSystemsCountLabel.setText("Systèmes: " + currentSale.getSystemsVisited().size());
 
-            // Afficher les systèmes visités sous forme de cartes
+            // Vider la liste
             systemsList.getChildren().clear();
-            systemCardControllers.clear();
+            
+            // Créer les cartes directement en Java (beaucoup plus rapide que FXML)
             for (SystemVisited system : currentSale.getSystemsVisited()) {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-card.fxml"));
-                    VBox card = loader.load();
-                    SystemCardController controller = loader.getController();
-                    controller.setSystem(system);
-                    // Connecter le callback pour afficher dans la vue visuelle
-                    if (onSystemSelected != null) {
-                        controller.setOnSystemClicked(systemVisited -> {
-                            // Fermer toutes les autres cartes avant d'ouvrir celle-ci
-                            closeAllCardsExcept(controller);
-                            onSystemSelected.accept(systemVisited);
-                        });
-                    }
-                    // Ajouter un callback pour fermer les autres quand cette carte est cliquée
-                    controller.setOnCardExpanded(() -> closeAllCardsExcept(controller));
-                    systemCardControllers.add(controller);
+                VBox card = createSystemCardDirectly(system);
+                if (card != null) {
                     systemsList.getChildren().add(card);
-                } catch (Exception e) {
-                    System.err.println("Erreur lors du chargement d'une carte système: " + e.getMessage());
-                    e.printStackTrace();
                 }
             }
         });
+    }
+    
+    private VBox createSystemCardDirectly(SystemVisited system) {
+        // Créer directement les composants en Java (pas de FXML = beaucoup plus rapide)
+        VBox root = new VBox(5);
+        root.getStyleClass().add("exploration-system-card");
+        root.setStyle("-fx-cursor: hand");
+        root.setPadding(new javafx.geometry.Insets(3));
+        
+        HBox headerBox = new HBox(10);
+        headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        
+        Label systemNameLabel = new Label(system.getSystemName());
+        systemNameLabel.getStyleClass().add("exploration-system-card-name");
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        headerBox.getChildren().addAll(systemNameLabel, spacer);
+        
+        VBox bodiesContainer = new VBox(5);
+        bodiesContainer.getStyleClass().add("exploration-system-card-bodies");
+        bodiesContainer.setVisible(false);
+        bodiesContainer.setManaged(false);
+        
+        root.getChildren().addAll(headerBox, bodiesContainer);
+        
+        // Créer le contrôleur et l'initialiser manuellement
+        SystemCardController controller = new SystemCardController();
+        controller.setRoot(root);
+        controller.setSystemNameLabel(systemNameLabel);
+        controller.setBodiesContainer(bodiesContainer);
+        controller.setSystem(system);
+        
+        // Stocker le contrôleur dans le userData
+        root.setUserData(controller);
+        
+        // Gérer le clic sur la carte
+        root.setOnMouseClicked(e -> {
+            boolean wasExpanded = controller.isExpanded();
+            controller.setExpanded(!wasExpanded);
+            
+            if (controller.isExpanded() && !wasExpanded) {
+                // Fermer les autres cartes
+                if (currentExpandedController != null && currentExpandedController != controller) {
+                    currentExpandedController.setExpanded(false);
+                }
+                currentExpandedController = controller;
+            }
+            
+            // Notifier le clic sur le système
+            if (onSystemSelected != null) {
+                onSystemSelected.accept(system);
+            }
+        });
+        
+        return root;
     }
 
     public void setExplorationDataSale(ExplorationDataSale sale) {
@@ -92,17 +131,6 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
     
     public void setOnSystemSelected(java.util.function.Consumer<SystemVisited> callback) {
         this.onSystemSelected = callback;
-    }
-    
-    /**
-     * Ferme toutes les cartes sauf celle spécifiée
-     */
-    private void closeAllCardsExcept(SystemCardController exceptController) {
-        for (SystemCardController controller : systemCardControllers) {
-            if (controller != exceptController) {
-                controller.setExpanded(false);
-            }
-        }
     }
 }
 

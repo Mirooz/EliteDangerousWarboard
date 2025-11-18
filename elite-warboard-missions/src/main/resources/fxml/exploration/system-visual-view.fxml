@@ -11,16 +11,38 @@
 
     <Label text="VUE VISUELLE DU SYSTÈME" styleClass="exploration-section-title"/>
     
-    <!-- Zone d'affichage des corps célestes -->
-    <ScrollPane fx:id="bodiesScrollPane" styleClass="exploration-visual-scroll" 
-                fitToWidth="false" fitToHeight="false" VBox.vgrow="ALWAYS" 
-                minWidth="800" minHeight="600" prefWidth="800" prefHeight="600"
-                hbarPolicy="NEVER" vbarPolicy="NEVER">
-        <Group fx:id="bodiesGroup">
-            <Pane fx:id="bodiesPane" styleClass="exploration-visual-pane" 
-                  minWidth="800" minHeight="600" prefWidth="800" prefHeight="600"
-                  maxWidth="800" maxHeight="600"/>
-        </Group>
-    </ScrollPane>
+    <!-- Conteneur principal : Vue visuelle + Panneau JSON latéral -->
+    <HBox spacing="10" VBox.vgrow="ALWAYS">
+        <!-- Zone d'affichage des corps célestes -->
+        <ScrollPane fx:id="bodiesScrollPane" styleClass="exploration-visual-scroll" 
+                    fitToWidth="false" fitToHeight="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"
+                    minWidth="500" minHeight="300" prefWidth="800" prefHeight="450"
+                    hbarPolicy="NEVER" vbarPolicy="NEVER">
+            <Group fx:id="bodiesGroup">
+                <Pane fx:id="bodiesPane" styleClass="exploration-visual-pane" 
+                      minWidth="500" minHeight="300" prefWidth="800" prefHeight="450"
+                      maxWidth="800" maxHeight="600"/>
+            </Group>
+        </ScrollPane>
+        
+        <!-- Panneau JSON latéral (caché par défaut) -->
+        <VBox fx:id="jsonDetailPanel" styleClass="exploration-json-panel" 
+              visible="false" managed="false" minWidth="400" maxWidth="500"
+              HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
+            <!-- En-tête avec titre et bouton fermer -->
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="exploration-json-header">
+                <Label fx:id="jsonBodyNameLabel" text="Détails JSON" styleClass="exploration-json-title" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="closeJsonPanelButton" text="✕" styleClass="exploration-json-close-button" 
+                        onAction="#closeJsonPanel"/>
+            </HBox>
+            
+            <!-- TreeView pour afficher le JSON de manière hiérarchique -->
+            <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" 
+                        styleClass="exploration-json-scroll" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                <TreeView fx:id="jsonTreeView" styleClass="exploration-json-tree" 
+                          showRoot="true" VBox.vgrow="ALWAYS"/>
+            </ScrollPane>
+        </VBox>
+    </HBox>
 </VBox>
 

@@ -1,12 +1,14 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
+import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
 /**
@@ -37,7 +39,19 @@ public class ExplorationHistoryItemController implements Initializable {
     public void setSale(ExplorationDataSale sale, boolean isCurrent) {
         this.sale = sale;
         if (sale != null) {
-            timestampLabel.setText(sale.getTimestamp() != null ? sale.getTimestamp() : "N/A");
+            // Formater la date correctement
+            String timestamp = sale.getTimestamp() != null ? sale.getTimestamp() : null;
+            if (timestamp != null) {
+                try {
+                    var dateTime = DateUtil.parseTimestamp(timestamp);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                    timestampLabel.setText(dateTime.format(formatter));
+                } catch (Exception e) {
+                    timestampLabel.setText(timestamp);
+                }
+            } else {
+                timestampLabel.setText("N/A");
+            }
             totalEarningsLabel.setText(String.format("%,d Cr", sale.getTotalEarnings()));
             systemsCountLabel.setText(sale.getSystemsVisited().size() + " systèmes");
             currentLabel.setVisible(isCurrent);

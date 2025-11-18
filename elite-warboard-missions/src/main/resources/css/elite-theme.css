@@ -3956,9 +3956,9 @@
 
 .exploration-history-scroll {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-border-width: 0px;
-    -fx-border-radius: 0px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 1px;
     -fx-background-radius: 0px;
 }
 
@@ -4308,4 +4308,211 @@
     -fx-pref-height: 0;
     -fx-min-height: 0;
     -fx-max-height: 0;
+}
+
+/* Panneau JSON latéral */
+.exploration-json-panel {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-spacing: 10px;
+}
+
+.exploration-json-header {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 8px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-radius: 0;
+    -fx-background-radius: 3px 3px 0 0;
+}
+
+.exploration-json-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
+.exploration-json-close-button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+    -fx-min-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-max-width: 40px;
+    -fx-min-height: 32px;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
+}
+
+.exploration-json-close-button:hover {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.exploration-json-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.exploration-json-scroll .viewport {
+    -fx-background-color: -fx-elite-darker;
+}
+
+/* Scrollbar verticale pour le panneau JSON - Style Elite Dangerous */
+.exploration-json-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .increment-button,
+.exploration-json-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .increment-button:hover,
+.exploration-json-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.exploration-json-scroll .scroll-bar:vertical .increment-arrow:hover,
+.exploration-json-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.exploration-json-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.exploration-json-tree {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.exploration-json-tree .tree-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-family: "Courier New", monospace;
+    -fx-font-size: 12px;
+    -fx-padding: 2px 5px;
+    -fx-pref-width: -1;
+}
+
+.exploration-json-tree .tree-cell:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+}
+
+.exploration-json-tree .tree-cell:selected {
+    -fx-background-color: rgba(255, 107, 0, 0.2);
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.exploration-json-tree .tree-cell:expanded {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.exploration-json-tree .tree-cell:expanded .tree-disclosure-node {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.exploration-json-tree .tree-disclosure-node {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.exploration-json-tree .tree-disclosure-node:hover {
+    -fx-background-color: -fx-elite-orange;
+}
+
+/* Styles pour les labels dans les cellules JSON */
+.json-key-label {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-font-family: "Courier New", monospace;
+}
+
+.json-value-label {
+    -fx-font-size: 12px;
+    -fx-font-family: "Courier New", monospace;
+}
+
+.json-value-string {
+    -fx-text-fill: -fx-elite-green;
+}
+
+.json-value-number {
+    -fx-text-fill: #FFD700;
+}
+
+.json-value-boolean {
+    -fx-text-fill: #FF69B4;
+}
+
+.json-value-null {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-style: italic;
+}
+
+.json-value-object {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+}
+
+.json-value-array {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
 }

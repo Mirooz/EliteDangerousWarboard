@@ -1,20 +1,23 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
+import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
+import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Scale;
 
@@ -33,9 +36,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private Group bodiesGroup;
     @FXML
     private Pane bodiesPane;
+    @FXML
+    private VBox jsonDetailPanel;
+    @FXML
+    private Label jsonBodyNameLabel;
+    @FXML
+    private Button closeJsonPanelButton;
+    @FXML
+    private TreeView<JsonTreeItem> jsonTreeView;
 
     private Image gasImage;
     private Image starImage;
+    private Image exobioImage;
+    private Image mappedImage;
     private SystemVisited currentSystem;
     private Map<Integer, BodyPosition> bodyPositions = new HashMap<>();
     private Scale zoomTransform;
@@ -43,15 +56,30 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private static final double MIN_ZOOM = 0.1;
     private static final double MAX_ZOOM = 5.0;
     private static final double ZOOM_FACTOR = 0.1;
+    private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Charger les images
         try {
             gasImage = new Image(getClass().getResourceAsStream("/images/exploration/gas.png"));
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image gas.png: " + e.getMessage());
+        }
+        try {
             starImage = new Image(getClass().getResourceAsStream("/images/exploration/star.png"));
         } catch (Exception e) {
-            System.err.println("Erreur lors du chargement des images: " + e.getMessage());
+            System.err.println("Erreur lors du chargement de l'image star.png: " + e.getMessage());
+        }
+        try {
+            exobioImage = new Image(getClass().getResourceAsStream("/images/exploration/exobio.png"));
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image exobio.png: " + e.getMessage());
+        }
+        try {
+            mappedImage = new Image(getClass().getResourceAsStream("/images/exploration/mapped.png"));
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image mapped.png: " + e.getMessage());
         }
         
         // Initialiser la transformation de zoom
@@ -223,6 +251,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
      */
     public void displaySystem(SystemVisited system) {
         Platform.runLater(() -> {
+            // Fermer le panneau JSON si un nouveau système est sélectionné
+            if (this.currentSystem != null && system != null && 
+                !this.currentSystem.equals(system)) {
+                closeJsonPanel();
+            }
+            
+            // Réinitialiser le corps JSON affiché si on change de système
+            if (system == null || (this.currentSystem != null && system != null && 
+                !this.currentSystem.equals(system))) {
+                currentJsonBody = null;
+            }
+            
             this.currentSystem = system;
             bodiesPane.getChildren().clear();
             bodyPositions.clear();
@@ -342,6 +382,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                     int planetX = startX + horizontalSpacing;
                     int planetY = currentStarY;
                     
+                    // Ensuite, positionner chaque planète et ses lunes
                     for (int i = 0; i < directPlanets.size(); i++) {
                         ACelesteBody planet = directPlanets.get(i);
                         
@@ -349,9 +390,24 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                         bodyPositions.put(planet.getBodyID(), new BodyPosition(planetX, planetY, planet));
                         ImageView planetView = createBodyImageView(planet, planetX, planetY);
                         bodiesPane.getChildren().add(planetView);
+                        
+                        // Ajouter les icônes sous la planète (exobio et mapped)
+                        addPlanetIcons(planet, planetX, planetY);
 
-                        // Positionner les lunes de cette planète verticalement en dessous
+                        // Vérifier si cette planète a des lunes avec des sub-lunes
+                        boolean hasSubMoons = false;
                         List<ACelesteBody> moons = planetToMoons.get(planet);
+                        if (moons != null && !moons.isEmpty()) {
+                            for (ACelesteBody moon : moons) {
+                                List<ACelesteBody> subMoons = moonToSubMoons.get(moon);
+                                if (subMoons != null && !subMoons.isEmpty()) {
+                                    hasSubMoons = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Positionner les lunes de cette planète verticalement en dessous
                         if (moons != null && !moons.isEmpty()) {
                             int moonY = planetY + moonVerticalSpacing;
                             for (ACelesteBody moon : moons) {
@@ -359,6 +415,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                 bodyPositions.put(moon.getBodyID(), new BodyPosition(planetX, moonY, moon));
                                 ImageView moonView = createBodyImageView(moon, planetX, moonY);
                                 bodiesPane.getChildren().add(moonView);
+                                
+                                // Ajouter les icônes sous la lune (exobio et mapped)
+                                addPlanetIcons(moon, planetX, moonY);
 
                                 // Positionner les lunes de lune (sub-lunes) horizontalement à droite de la lune
                                 List<ACelesteBody> subMoons = moonToSubMoons.get(moon);
@@ -368,6 +427,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                         bodyPositions.put(subMoon.getBodyID(), new BodyPosition(subMoonX, moonY, subMoon));
                                         ImageView subMoonView = createBodyImageView(subMoon, subMoonX, moonY);
                                         bodiesPane.getChildren().add(subMoonView);
+                                        
+                                        // Ajouter les icônes sous la lune de lune (exobio et mapped)
+                                        addPlanetIcons(subMoon, subMoonX, moonY);
+                                        
                                         subMoonX += horizontalSpacing;
                                     }
                                     maxX = Math.max(maxX, subMoonX);
@@ -376,8 +439,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                 moonY += moonVerticalSpacing;
                             }
                         }
-
-                        planetX += horizontalSpacing;
+                        
+                        // Calculer la position X pour la planète suivante
+                        // Si cette planète a des sub-lunes, décaler la planète suivante vers la droite
+                        if (i + 1 < directPlanets.size()) {
+                            if (hasSubMoons) {
+                                // Il y a des sub-lunes, donc décaler la prochaine planète d'un espacement supplémentaire
+                                planetX += horizontalSpacing * 2; // Double l'espacement
+                            } else {
+                                planetX += horizontalSpacing;
+                            }
+                        }
                     }
                     maxX = Math.max(maxX, planetX);
                 }
@@ -430,6 +502,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                             bodyPositions.put(body.getBodyID(), new BodyPosition(subMoonX, subMoonY, body));
                                             ImageView subMoonView = createBodyImageView(body, subMoonX, subMoonY);
                                             bodiesPane.getChildren().add(subMoonView);
+                                            
+                                            // Ajouter les icônes sous la lune de lune (exobio et mapped)
+                                            addPlanetIcons(body, subMoonX, subMoonY);
+                                            
                                             maxX = Math.max(maxX, subMoonX + horizontalSpacing);
                                         }
                                         break;
@@ -445,15 +521,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             drawConnectionsHierarchical(bodiesMap, stars, starToDirectPlanets, planetToMoons, moonToSubMoons);
 
             // Fixer une taille constante pour le pane (ne pas adapter au contenu)
-            // Utiliser une taille fixe de 800x600 pour tous les systèmes
+            // Utiliser une taille fixe de 800x450 pour tous les systèmes
             double fixedWidth = 800;
-            double fixedHeight = 600;
-            bodiesPane.setMinWidth(fixedWidth);
-            bodiesPane.setMinHeight(fixedHeight);
+            double fixedHeight = 450;
+            bodiesPane.setMinWidth(600);
+            bodiesPane.setMinHeight(300);
             bodiesPane.setPrefWidth(fixedWidth);
             bodiesPane.setPrefHeight(fixedHeight);
             bodiesPane.setMaxWidth(fixedWidth);
-            bodiesPane.setMaxHeight(fixedHeight);
+            bodiesPane.setMaxHeight(600);
             
             // Calculer et appliquer le zoom optimal pour afficher tout le contenu
             // Utiliser plusieurs Platform.runLater pour s'assurer que les dimensions sont mises à jour
@@ -514,7 +590,176 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             imageView.getStyleClass().add("exploration-visual-planet");
         }
 
+        // Gestionnaire de clic pour afficher le JSON
+        imageView.setOnMouseClicked(event -> showJsonDialog(body, event));
+
         return imageView;
+    }
+
+    /**
+     * Ajoute les icônes exobio et mapped sous une planète
+     */
+    private void addPlanetIcons(ACelesteBody body, double planetX, double planetY) {
+        if (!(body instanceof PlaneteDetail planet)) {
+            return;
+        }
+
+        // Position des icônes : légèrement en dessous de la planète
+        double iconY = planetY + 40; // 40px sous le centre de la planète (qui fait 60px de haut)
+        double iconSize = 20; // Taille des icônes
+        double iconSpacing = 5; // Espacement entre les icônes
+        
+        // Calculer la position X pour centrer les icônes sous la planète
+        int iconCount = 0;
+        if (exobioImage != null && planet.getConfirmedSpecies() != null &&
+            !planet.getConfirmedSpecies().isEmpty()) {
+            iconCount++;
+        }
+        if (mappedImage != null && planet.isMapped()) {
+            iconCount++;
+        }
+        
+        if (iconCount == 0) {
+            return; // Pas d'icônes à afficher
+        }
+        
+        // Centrer les icônes sous la planète
+        double totalWidth = (iconCount * iconSize) + ((iconCount - 1) * iconSpacing);
+        double startX = planetX - (totalWidth / 2);
+        
+        double currentX = startX;
+        
+        // Icône exobio
+        if (exobioImage != null && planet.getConfirmedSpecies() != null &&
+            !planet.getConfirmedSpecies().isEmpty()) {
+            ImageView exobioIcon = new ImageView(exobioImage);
+            exobioIcon.setFitWidth(iconSize);
+            exobioIcon.setFitHeight(iconSize);
+            exobioIcon.setPreserveRatio(true);
+            exobioIcon.setX(currentX);
+            exobioIcon.setY(iconY);
+            bodiesPane.getChildren().add(exobioIcon);
+            currentX += iconSize + iconSpacing;
+        }
+        
+        // Icône mapped
+        if (mappedImage != null && planet.isMapped()) {
+            ImageView mappedIcon = new ImageView(mappedImage);
+            mappedIcon.setFitWidth(iconSize);
+            mappedIcon.setFitHeight(iconSize);
+            mappedIcon.setPreserveRatio(true);
+            mappedIcon.setX(currentX);
+            mappedIcon.setY(iconY);
+            bodiesPane.getChildren().add(mappedIcon);
+        }
+    }
+
+    /**
+     * Affiche le panneau JSON pour un corps céleste
+     */
+    private void showJsonDialog(ACelesteBody body, MouseEvent event) {
+        if (body == null || jsonDetailPanel == null) {
+            return;
+        }
+
+        // Si on clique sur le même corps et que le panneau est ouvert, le fermer
+        if (currentJsonBody != null && currentJsonBody.getBodyID() == body.getBodyID() && 
+            jsonDetailPanel.isVisible()) {
+            closeJsonPanel();
+            return;
+        }
+
+        // Mémoriser le corps actuellement affiché
+        currentJsonBody = body;
+
+        // Définir le nom du corps
+        String bodyName = body.getBodyName() != null ? body.getBodyName() : "Corps céleste";
+        jsonBodyNameLabel.setText(bodyName);
+
+        // Configurer la cellule personnalisée pour le TreeView
+        jsonTreeView.setCellFactory(treeView -> new JsonTreeCell());
+        
+        // Construire le TreeView à partir du JSON
+        JsonNode jsonNode = body.getJsonNode();
+        if (jsonNode != null) {
+            TreeItem<JsonTreeItem> root = buildJsonTree(jsonNode, "");
+            jsonTreeView.setRoot(root);
+            jsonTreeView.setShowRoot(false); // Masquer le root pour un affichage plus propre
+            // Développer seulement le premier niveau (pas les arrays)
+            root.setExpanded(true);
+            if (root.getChildren() != null && !root.getChildren().isEmpty()) {
+                root.getChildren().forEach(child -> {
+                    JsonTreeItem childValue = child.getValue();
+                    // Ne pas développer les arrays par défaut
+                    if (childValue != null && childValue.getValueType() != JsonTreeItem.JsonValueType.ARRAY) {
+                        child.setExpanded(true);
+                        // Ne pas développer le niveau suivant
+                        if (child.getChildren() != null && !child.getChildren().isEmpty()) {
+                            child.getChildren().forEach(grandChild -> grandChild.setExpanded(false));
+                        }
+                    } else {
+                        child.setExpanded(false);
+                    }
+                });
+            }
+        } else {
+            JsonTreeItem emptyItem = new JsonTreeItem("", null);
+            TreeItem<JsonTreeItem> root = new TreeItem<>(emptyItem);
+            root.setValue(new JsonTreeItem("Aucun JSON disponible", null));
+            jsonTreeView.setRoot(root);
+            jsonTreeView.setShowRoot(true);
+        }
+
+        // Afficher le panneau
+        jsonDetailPanel.setVisible(true);
+        jsonDetailPanel.setManaged(true);
+    }
+
+    /**
+     * Construit un TreeItem à partir d'un JsonNode avec un affichage plus joli
+     */
+    private TreeItem<JsonTreeItem> buildJsonTree(JsonNode node, String key) {
+        JsonTreeItem jsonItem = new JsonTreeItem(key, node);
+        TreeItem<JsonTreeItem> item = new TreeItem<>(jsonItem);
+        
+        if (node == null || node.isNull()) {
+            return item;
+        }
+
+        if (node.isObject()) {
+            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> field = fields.next();
+                String fieldKey = field.getKey();
+                // Filtrer les champs event, timestamp, scantype, parents
+                if (!"event".equalsIgnoreCase(fieldKey) && 
+                    !"timestamp".equalsIgnoreCase(fieldKey) && 
+                    !"scantype".equalsIgnoreCase(fieldKey) &&
+                    !"parents".equalsIgnoreCase(fieldKey)) {
+                    TreeItem<JsonTreeItem> child = buildJsonTree(field.getValue(), fieldKey);
+                    item.getChildren().add(child);
+                }
+            }
+        } else if (node.isArray()) {
+            for (int i = 0; i < node.size(); i++) {
+                TreeItem<JsonTreeItem> child = buildJsonTree(node.get(i), "[" + i + "]");
+                item.getChildren().add(child);
+            }
+        }
+        
+        return item;
+    }
+
+    /**
+     * Ferme le panneau JSON
+     */
+    @FXML
+    private void closeJsonPanel() {
+        if (jsonDetailPanel != null) {
+            jsonDetailPanel.setVisible(false);
+            jsonDetailPanel.setManaged(false);
+            currentJsonBody = null; // Réinitialiser le corps affiché
+        }
     }
 
     /**

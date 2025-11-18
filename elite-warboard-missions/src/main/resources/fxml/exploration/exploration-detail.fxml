@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.ExplorationDetailComponent"
-      spacing="10" styleClass="exploration-detail-panel" VBox.vgrow="ALWAYS" minWidth="300">
+      spacing="10" styleClass="exploration-detail-panel" VBox.vgrow="ALWAYS" minWidth="350">
 
     <Label text="DÉTAILS DU GROUPE" styleClass="exploration-section-title"/>
     
