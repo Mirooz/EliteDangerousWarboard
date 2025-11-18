@@ -47,6 +47,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
 
     private Image gasImage;
     private Image starImage;
+    // Images par type de planète
+    private final Map<be.mirooz.elitedangerous.biologic.BodyType, Image> planetImages = new HashMap<>();
     private Image exobioImage;
     private Image mappedImage;
     private SystemVisited currentSystem;
@@ -81,6 +83,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de l'image mapped.png: " + e.getMessage());
         }
+        
+        // Charger les images par type de planète
+        loadPlanetImages();
         
         // Initialiser la transformation de zoom
         zoomTransform = new Scale(1.0, 1.0);
@@ -562,10 +567,65 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     }
     
     /**
+     * Charge les images par type de planète
+     */
+    private void loadPlanetImages() {
+        be.mirooz.elitedangerous.biologic.BodyType[] types = be.mirooz.elitedangerous.biologic.BodyType.values();
+        for (be.mirooz.elitedangerous.biologic.BodyType type : types) {
+            String imageName = getImageNameForBodyType(type);
+            try {
+                Image image = new Image(getClass().getResourceAsStream("/images/exploration/" + imageName));
+                planetImages.put(type, image);
+            } catch (Exception e) {
+                // Si l'image n'existe pas, utiliser l'image par défaut (gas.png)
+                System.err.println("Image non trouvée pour " + type + " (" + imageName + "), utilisation de gas.png par défaut");
+            }
+        }
+    }
+    
+    /**
+     * Retourne le nom de l'image correspondant au type de planète
+     */
+    private String getImageNameForBodyType(be.mirooz.elitedangerous.biologic.BodyType type) {
+        return switch (type) {
+            case METAL_RICH -> "metal-rich.png";
+            case HIGH_METAL_CONTENT -> "high-metal-content.png";
+            case ROCKY -> "rocky.png";
+            case ROCKY_ICE -> "rocky-ice.png";
+            case ICY -> "icy.png";
+            case WATER_WORLD -> "water-world.png";
+            case EARTHLIKE -> "earthlike.png";
+            case AMMONIA -> "ammonia.png";
+            case GAS_GIANT, GAS_GIANT_I, GAS_GIANT_II, GAS_GIANT_III, GAS_GIANT_IV, GAS_GIANT_V -> "gas.png";
+            case HELIUM_RICH_GG, HELIUM_GG -> "helium-gas.png";
+            case ICE_GIANT -> "ice-giant.png";
+            case CLUSTER -> "cluster.png";
+            case UNKNOWN -> "gas.png"; // Par défaut
+        };
+    }
+    
+    /**
+     * Obtient l'image appropriée pour un corps céleste
+     */
+    private Image getImageForBody(ACelesteBody body) {
+        if (body instanceof StarDetail) {
+            return starImage;
+        } else if (body instanceof PlaneteDetail planet) {
+            be.mirooz.elitedangerous.biologic.BodyType planetClass = planet.getPlanetClass();
+            if (planetClass != null && planetImages.containsKey(planetClass)) {
+                return planetImages.get(planetClass);
+            }
+            // Fallback sur gas.png si l'image n'est pas trouvée
+            return gasImage;
+        }
+        return gasImage;
+    }
+    
+    /**
      * Crée une ImageView pour un corps céleste
      */
     private ImageView createBodyImageView(ACelesteBody body, double x, double y) {
-        Image image = (body instanceof StarDetail) ? starImage : gasImage;
+        Image image = getImageForBody(body);
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(60);
         imageView.setFitHeight(60);
