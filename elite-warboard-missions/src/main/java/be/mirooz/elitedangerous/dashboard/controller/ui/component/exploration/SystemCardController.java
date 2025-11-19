@@ -40,6 +40,14 @@ public class SystemCardController implements Initializable {
     private Image exobioImage;
     private Image mappedImage;
     
+    /**
+     * Définit les images depuis le parent (évite de les recharger)
+     */
+    public void setImages(Image exobioImage, Image mappedImage) {
+        this.exobioImage = exobioImage;
+        this.mappedImage = mappedImage;
+    }
+    
     // Méthodes pour initialisation manuelle (sans FXML)
     public void setRoot(VBox root) {
         this.root = root;
@@ -62,11 +70,14 @@ public class SystemCardController implements Initializable {
         if (root != null) {
             root.setOnMouseClicked(this::onCardClicked);
         }
-        loadImages();
+        // Charger les images seulement si elles n'ont pas été fournies par le parent
+        if (exobioImage == null || mappedImage == null) {
+            loadImages();
+        }
     }
     
     private void loadImages() {
-        // Charger les images (une seule fois)
+        // Charger les images seulement si elles n'ont pas été fournies
         if (exobioImage == null) {
             try {
                 exobioImage = new Image(getClass().getResourceAsStream("/images/exploration/exobio.png"));
@@ -86,8 +97,21 @@ public class SystemCardController implements Initializable {
     public void setSystem(SystemVisited system) {
         this.system = system;
         if (system != null && systemNameLabel != null) {
-            systemNameLabel.setText(system.getSystemName());
-            //loadImages(); // S'assurer que les images sont chargées
+            // Vérifier si le système a des planètes avec exobio ou mapped
+            boolean[] icons = LabelIconHelper.checkSystemIcons(system.getCelesteBodies());
+            boolean hasExobio = icons[0];
+            boolean hasMapped = icons[1];
+            
+            // Mettre à jour le label avec les icônes
+            LabelIconHelper.updateLabelWithIcons(
+                systemNameLabel, 
+                system.getSystemName(), 
+                hasExobio, 
+                hasMapped, 
+                exobioImage, 
+                mappedImage
+            );
+            
             updateBodiesList();
         }
     }
@@ -285,18 +309,43 @@ public class SystemCardController implements Initializable {
             bodyType = "● ";
         }
         
-        bodyLabel.setText(bodyType + getBodyNameWithoutSystem(body));
+        String bodyName = bodyType + getBodyNameWithoutSystem(body);
+        bodyLabel.setText(bodyName);
         bodyLabel.getStyleClass().add("exploration-system-card-body");
         
-        // Ajouter des infos supplémentaires si c'est une planète avec exobio
-        if (body instanceof PlaneteDetail planet) {
-            if (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) {
-                bodyLabel.setText(bodyLabel.getText() + " (Exobio)");
-                bodyLabel.getStyleClass().add("exploration-system-card-body-exobio");
-            }
-        }
+        // Vérifier si c'est une planète avec exobio ou mapped
+        boolean[] icons = LabelIconHelper.checkPlanetIcons(body);
+        boolean hasExobio = icons[0];
+        boolean hasMapped = icons[1];
         
-        container.getChildren().add(bodyLabel);
+        // Ajouter les icônes si c'est une planète
+        if ((hasExobio || hasMapped) && (exobioImage != null || mappedImage != null)) {
+            // Créer un HBox pour contenir le label et les icônes
+            HBox labelContainer = new HBox(5);
+            labelContainer.getChildren().add(bodyLabel);
+            
+            // Ajouter les icônes
+            if (hasExobio && exobioImage != null) {
+                ImageView exobioIcon = new ImageView(exobioImage);
+                exobioIcon.setFitWidth(14);
+                exobioIcon.setFitHeight(14);
+                exobioIcon.setPreserveRatio(true);
+                labelContainer.getChildren().add(exobioIcon);
+            }
+            
+            if (hasMapped && mappedImage != null) {
+                ImageView mappedIcon = new ImageView(mappedImage);
+                mappedIcon.setFitWidth(14);
+                mappedIcon.setFitHeight(14);
+                mappedIcon.setPreserveRatio(true);
+                labelContainer.getChildren().add(mappedIcon);
+            }
+            
+            container.getChildren().add(labelContainer);
+        } else {
+            // Pas d'icônes, ajouter le label directement
+            container.getChildren().add(bodyLabel);
+        }
         
         bodiesContainer.getChildren().add(container);
     }

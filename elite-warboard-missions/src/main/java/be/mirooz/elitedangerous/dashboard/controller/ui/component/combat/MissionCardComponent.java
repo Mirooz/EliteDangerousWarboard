@@ -254,7 +254,7 @@ public class MissionCardComponent extends VBox {
             wingPane.getChildren().add(imageView);
             wingPane.getStyleClass().add("wing-icon");
 
-            Tooltip tooltip = new Tooltip(localizationService.getString("tooltip.wing_mission"));
+            Tooltip tooltip = new TooltipComponent(localizationService.getString("tooltip.wing_mission"));
             Tooltip.install(wingPane, tooltip); // ✅ tooltip sur le pane
         }
 

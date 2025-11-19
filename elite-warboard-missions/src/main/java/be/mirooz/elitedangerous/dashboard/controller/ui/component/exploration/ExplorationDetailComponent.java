@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -33,10 +34,26 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
     private ExplorationDataSale currentSale;
     private java.util.function.Consumer<SystemVisited> onSystemSelected;
     private SystemCardController currentExpandedController;
+    private Image exobioImage;
+    private Image mappedImage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialisation
+        // Charger les images une seule fois pour toutes les cartes
+        loadImages();
+    }
+    
+    private void loadImages() {
+        try {
+            exobioImage = new Image(getClass().getResourceAsStream("/images/exploration/exobio.png"));
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image exobio.png: " + e.getMessage());
+        }
+        try {
+            mappedImage = new Image(getClass().getResourceAsStream("/images/exploration/mapped.png"));
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de l'image mapped.png: " + e.getMessage());
+        }
     }
 
     @Override
@@ -97,6 +114,8 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
         controller.setRoot(root);
         controller.setSystemNameLabel(systemNameLabel);
         controller.setBodiesContainer(bodiesContainer);
+        // Passer les images depuis le parent (évite de les recharger à chaque carte)
+        controller.setImages(exobioImage, mappedImage);
         controller.setSystem(system);
         
         // Stocker le contrôleur dans le userData

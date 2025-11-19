@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
 import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
@@ -16,8 +17,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Scale;
 
@@ -168,7 +173,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             minX = Math.min(minX, pos.x - bodyRadius);
             maxX = Math.max(maxX, pos.x + bodyRadius);
             minY = Math.min(minY, pos.y - bodyRadius);
-            maxY = Math.max(maxY, pos.y + bodyRadius);
+            maxY = Math.max(maxY, pos.y);
         }
         
         // Si aucun corps n'a été trouvé, utiliser les dimensions du pane
@@ -183,7 +188,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             offsetX = minX - 50; // Marge de 50px à gauche
             offsetY = minY - 50; // Marge de 50px en haut
             contentWidth = (maxX - minX) + 100; // Marge de 50px de chaque côté
-            contentHeight = (maxY - minY) + 100;
+            contentHeight = (maxY - minY) + 50;
         } else {
             // Fallback sur les dimensions du pane
             contentWidth = Math.max(bodiesPane.getPrefWidth(), bodiesPane.getMinWidth());
@@ -319,19 +324,20 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                     var parents = body.getParents();
                     if (parents != null && !parents.isEmpty()) {
                         // Trouver le parent direct en utilisant le type
-                        // Le parent direct est le premier parent de type "Planet" ou "Star" (pas "Null")
+                        // Le parent direct est le parent avec le bodyID le plus élevé de type "Planet" ou "Star" (pas "Null")
                         ACelesteBody directParent = null;
                         String directParentType = null;
+                        int maxBodyID = -1;
                         
                         for (var parent : parents) {
                             if ("Null".equalsIgnoreCase(parent.getType())) {
                                 continue; // Ignorer les parents "Null"
                             }
                             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
-                            if (parentBody != null) {
+                            if (parentBody != null && parent.getBodyID() > maxBodyID) {
                                 directParent = parentBody;
                                 directParentType = parent.getType();
-                                break; // Prendre le premier parent non-Null comme parent direct
+                                maxBodyID = parent.getBodyID();
                             }
                         }
                         
@@ -343,14 +349,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                             } else if ("Planet".equalsIgnoreCase(directParentType) && directParent instanceof PlaneteDetail) {
                                 // C'est une lune ou une lune de lune
                                 // Vérifier si le parent direct est une planète directe (a une étoile comme parent)
-                                boolean isDirectPlanet = false;
+                                boolean isDirectPlanet = true;
                                 var parentParents = directParent.getParents();
                                 if (parentParents != null && !parentParents.isEmpty()) {
                                     for (var pp : parentParents) {
-                                        if ("Star".equalsIgnoreCase(pp.getType())) {
+                                        if ("Planet".equalsIgnoreCase(pp.getType())) {
                                             ACelesteBody ppBody = bodiesMap.get(pp.getBodyID());
-                                            if (ppBody instanceof StarDetail) {
-                                                isDirectPlanet = true;
+                                            if (ppBody instanceof PlaneteDetail) {
+                                                isDirectPlanet = false;
                                                 break;
                                             }
                                         }
@@ -399,20 +405,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                         // Ajouter les icônes sous la planète (exobio et mapped)
                         addPlanetIcons(planet, planetX, planetY);
 
-                        // Vérifier si cette planète a des lunes avec des sub-lunes
-                        boolean hasSubMoons = false;
-                        List<ACelesteBody> moons = planetToMoons.get(planet);
-                        if (moons != null && !moons.isEmpty()) {
-                            for (ACelesteBody moon : moons) {
-                                List<ACelesteBody> subMoons = moonToSubMoons.get(moon);
-                                if (subMoons != null && !subMoons.isEmpty()) {
-                                    hasSubMoons = true;
-                                    break;
-                                }
-                            }
-                        }
-                        
                         // Positionner les lunes de cette planète verticalement en dessous
+                        // et calculer la position X maximale atteinte par les sub-lunes
+                        int maxSubMoonX = planetX; // Position X maximale des sub-lunes
+                        List<ACelesteBody> moons = planetToMoons.get(planet);
                         if (moons != null && !moons.isEmpty()) {
                             int moonY = planetY + moonVerticalSpacing;
                             for (ACelesteBody moon : moons) {
@@ -437,6 +433,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                         addPlanetIcons(subMoon, subMoonX, moonY);
                                         
                                         subMoonX += horizontalSpacing;
+                                        maxSubMoonX = Math.max(maxSubMoonX, subMoonX);
                                     }
                                     maxX = Math.max(maxX, subMoonX);
                                 }
@@ -446,12 +443,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                         }
                         
                         // Calculer la position X pour la planète suivante
-                        // Si cette planète a des sub-lunes, décaler la planète suivante vers la droite
+                        // Si cette planète a des sub-lunes, décaler la planète suivante pour qu'elle soit
+                        // au-delà de la position maximale des sub-lunes, avec une marge de sécurité
                         if (i + 1 < directPlanets.size()) {
-                            if (hasSubMoons) {
-                                // Il y a des sub-lunes, donc décaler la prochaine planète d'un espacement supplémentaire
-                                planetX += horizontalSpacing * 2; // Double l'espacement
+                            if (maxSubMoonX > planetX) {
+                                // Il y a des sub-lunes, positionner la planète suivante après la dernière sub-lune
+                                // avec une marge de sécurité (horizontalSpacing) pour éviter les superpositions
+                                planetX = maxSubMoonX ;
                             } else {
+                                // Pas de sub-lunes, espacement normal
                                 planetX += horizontalSpacing;
                             }
                         }
@@ -640,7 +640,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         } else if (body instanceof PlaneteDetail) {
             bodyName = "● " + bodyName;
         }
-        Tooltip tooltip = new Tooltip(bodyName);
+        Tooltip tooltip = new TooltipComponent(bodyName);
         Tooltip.install(imageView, tooltip);
 
         imageView.getStyleClass().add("exploration-visual-body");
@@ -657,61 +657,77 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     }
 
     /**
-     * Ajoute les icônes exobio et mapped sous une planète
+     * Ajoute les icônes exobio et mapped en haut à droite d'une planète dans un badge
      */
     private void addPlanetIcons(ACelesteBody body, double planetX, double planetY) {
         if (!(body instanceof PlaneteDetail planet)) {
             return;
         }
 
-        // Position des icônes : légèrement en dessous de la planète
-        double iconY = planetY + 40; // 40px sous le centre de la planète (qui fait 60px de haut)
-        double iconSize = 20; // Taille des icônes
-        double iconSpacing = 5; // Espacement entre les icônes
+        // Vérifier quelles icônes afficher
+        boolean hasExobio = exobioImage != null && planet.getConfirmedSpecies() != null &&
+            !planet.getConfirmedSpecies().isEmpty();
+        boolean hasMapped = mappedImage != null && planet.isMapped();
         
-        // Calculer la position X pour centrer les icônes sous la planète
-        int iconCount = 0;
-        if (exobioImage != null && planet.getConfirmedSpecies() != null &&
-            !planet.getConfirmedSpecies().isEmpty()) {
-            iconCount++;
-        }
-        if (mappedImage != null && planet.isMapped()) {
-            iconCount++;
-        }
-        
-        if (iconCount == 0) {
+        if (!hasExobio && !hasMapped) {
             return; // Pas d'icônes à afficher
         }
+
+        // Taille des icônes
+        double iconSize = 14; // Taille des icônes
+        double iconSpacing = 2; // Espacement vertical entre les icônes
+        double padding = 3; // Padding du badge
         
-        // Centrer les icônes sous la planète
-        double totalWidth = (iconCount * iconSize) + ((iconCount - 1) * iconSpacing);
-        double startX = planetX - (totalWidth / 2);
+        // Créer un conteneur vertical pour les icônes
+        VBox iconsContainer = new VBox(iconSpacing);
+        iconsContainer.setAlignment(javafx.geometry.Pos.CENTER);
         
-        double currentX = startX;
-        
-        // Icône exobio
-        if (exobioImage != null && planet.getConfirmedSpecies() != null &&
-            !planet.getConfirmedSpecies().isEmpty()) {
+        // Ajouter les icônes
+        if (hasExobio) {
             ImageView exobioIcon = new ImageView(exobioImage);
             exobioIcon.setFitWidth(iconSize);
             exobioIcon.setFitHeight(iconSize);
             exobioIcon.setPreserveRatio(true);
-            exobioIcon.setX(currentX);
-            exobioIcon.setY(iconY);
-            bodiesPane.getChildren().add(exobioIcon);
-            currentX += iconSize + iconSpacing;
+            iconsContainer.getChildren().add(exobioIcon);
         }
         
-        // Icône mapped
-        if (mappedImage != null && planet.isMapped()) {
+        if (hasMapped) {
             ImageView mappedIcon = new ImageView(mappedImage);
             mappedIcon.setFitWidth(iconSize);
             mappedIcon.setFitHeight(iconSize);
             mappedIcon.setPreserveRatio(true);
-            mappedIcon.setX(currentX);
-            mappedIcon.setY(iconY);
-            bodiesPane.getChildren().add(mappedIcon);
+            iconsContainer.getChildren().add(mappedIcon);
         }
+        
+        // Créer un badge avec fond semi-transparent
+        StackPane badge = new StackPane();
+        badge.getChildren().add(iconsContainer);
+        
+        // Fond du badge avec coins arrondis
+        double badgeWidth = iconSize + (padding * 2);
+        double badgeHeight = (hasExobio && hasMapped ? 
+            (iconSize * 2) + iconSpacing : iconSize) + (padding * 2);
+        
+        Rectangle background = new Rectangle(badgeWidth, badgeHeight);
+        background.setArcWidth(8);
+        background.setArcHeight(8);
+        background.setFill(Color.rgb(0, 0, 0, 0.7)); // Fond noir semi-transparent
+        background.setStroke(Color.rgb(255, 255, 255, 0.3)); // Bordure blanche légère
+        background.setStrokeWidth(1);
+        
+        badge.getChildren().add(0, background); // Ajouter le fond en premier
+        
+        // Position du badge : coin supérieur droit de la planète
+        // La planète fait 60x60 et est centrée sur (planetX, planetY)
+        double offsetX = 4; // Décalage depuis le bord droit
+        double offsetY = 4; // Décalage depuis le bord supérieur
+        double badgeX = planetX + 30 - badgeWidth + offsetX; // 30px = demi-largeur de la planète
+        double badgeY = planetY - 30 - offsetY; // -30px = demi-hauteur de la planète
+        
+        badge.setLayoutX(badgeX);
+        badge.setLayoutY(badgeY);
+        
+        bodiesPane.getChildren().add(badge);
     }
 
     /**
@@ -732,9 +748,23 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         // Mémoriser le corps actuellement affiché
         currentJsonBody = body;
 
-        // Définir le nom du corps
+        // Définir le nom du corps avec les icônes si c'est une planète
         String bodyName = body.getBodyName() != null ? body.getBodyName() : "Corps céleste";
-        jsonBodyNameLabel.setText(bodyName);
+        
+        // Vérifier si c'est une planète avec exobio ou mapped
+        boolean[] icons = LabelIconHelper.checkPlanetIcons(body);
+        boolean hasExobio = icons[0];
+        boolean hasMapped = icons[1];
+        
+        // Mettre à jour le label avec les icônes
+        LabelIconHelper.updateLabelWithIcons(
+            jsonBodyNameLabel, 
+            bodyName, 
+            hasExobio, 
+            hasMapped, 
+            exobioImage, 
+            mappedImage
+        );
 
         // Configurer la cellule personnalisée pour le TreeView
         jsonTreeView.setCellFactory(treeView -> new JsonTreeCell());
