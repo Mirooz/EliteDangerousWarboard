@@ -36,23 +36,23 @@ public class ExplorationDataSaleRegistry {
     public void addToOnHold(SystemVisited systemVisited) {
         if (explorationDataOnHold == null) {
             explorationDataOnHold = ExplorationDataOnHold.builder()
-                    .value(0)
+                    .totalEarnings(0)
                     .build();
         }
         // Si déja ajouté : on enleve les anciennes valeur pour ajouter les nouvelles
-        if (explorationDataOnHold.getSystemsVisited().containsKey(systemVisited.getSystemName())){
+        if (explorationDataOnHold.getSystemsVisitedMap().containsKey(systemVisited.getSystemName())){
             long value = 0;
             for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
                 value+= celesteBody.computeValue();
             }
-            explorationDataOnHold.setValue(explorationDataOnHold.getValue()-value);
+            explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings()-value);
         }
-        explorationDataOnHold.getSystemsVisited().put(systemVisited.getSystemName(),systemVisited);
+        explorationDataOnHold.getSystemsVisitedMap().put(systemVisited.getSystemName(),systemVisited);
         long value = 0;
         for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
             value+= celesteBody.computeValue();
         }
-        explorationDataOnHold.setValue(explorationDataOnHold.getValue()+value);
+        explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings()+value);
     }
     /**
      * Ajoute ou met à jour la vente en cours avec de nouvelles données.
@@ -64,14 +64,13 @@ public class ExplorationDataSaleRegistry {
             String startTimeStamp = null;
             if (!sales.isEmpty()) {
                 ExplorationDataSale previousSale = sales.get(sales.size() - 1);
-                startTimeStamp = previousSale.getEndTimestamp();
+                startTimeStamp = previousSale.getEndTimeStamp();
             }
             
             // Créer une nouvelle vente en cours
             currentSale = ExplorationDataSale.builder()
-                    .timestamp(timestamp)
                     .startTimeStamp(startTimeStamp)
-                    .endTimestamp(timestamp)
+                    .endTimeStamp(timestamp)
                     .systemsVisited(new java.util.ArrayList<>())
                     .baseValue(0)
                     .bonus(0)
@@ -87,7 +86,7 @@ public class ExplorationDataSaleRegistry {
         currentSale.setBaseValue(currentSale.getBaseValue() + baseValue);
         currentSale.setBonus(currentSale.getBonus() + bonus);
         currentSale.setTotalEarnings(currentSale.getTotalEarnings() + totalEarnings);
-        currentSale.setEndTimestamp(timestamp);
+        currentSale.setEndTimeStamp(timestamp);
     }
 
     /**
@@ -96,7 +95,7 @@ public class ExplorationDataSaleRegistry {
      */
     public void finalizeCurrentSale(String timestamp) {
         if (currentSale != null) {
-            currentSale.setEndTimestamp(timestamp);
+            currentSale.setEndTimeStamp(timestamp);
             currentSale = null;
         }
     }

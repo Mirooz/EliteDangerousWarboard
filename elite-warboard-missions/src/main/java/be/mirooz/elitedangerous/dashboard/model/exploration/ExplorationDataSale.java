@@ -16,10 +16,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExplorationDataSale {
-    private String timestamp; // Timestamp de la première vente
+public class ExplorationDataSale implements ExplorationData{
     private String startTimeStamp;
-    private String endTimestamp; // Timestamp de la dernière vente (Undocked)
+    private String endTimeStamp; // Timestamp de la dernière vente (Undocked)
     
     @Builder.Default
     private List<SystemVisited> systemsVisited = new ArrayList<>();

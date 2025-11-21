@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +17,24 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExplorationDataOnHold {
+public class ExplorationDataOnHold implements ExplorationData {
     @Builder.Default
-    private Map<String,SystemVisited> systemsVisited = new HashMap<>();
-    private long value; // Somme de tous les BaseValue
+    private Map<String,SystemVisited> systemsVisitedMap = new HashMap<>();
+    private long totalEarnings; // Somme de tous les BaseValue
+
+
+    @Override
+    public List<SystemVisited> getSystemsVisited(){
+        return systemsVisitedMap.values().stream().toList();
+    }
+    @Override
+    public String getStartTimeStamp() {
+        return "";
+    }
+
+    @Override
+    public String getEndTimeStamp() {
+        return "";
+    }
 }
 

@@ -1,10 +1,13 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
+import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationData;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
  * Composant fusionné pour afficher l'historique des groupes d'exploration avec navigation
  * et la liste des systèmes visités du groupe sélectionné
  */
-public class ExplorationHistoryDetailComponent implements Initializable, IRefreshable {
+public class ExplorationHistoryDetailComponent implements Initializable, IRefreshable, IBatchListener {
 
     @FXML
     private Button previousButton;
@@ -50,9 +53,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     private VBox systemsList;
 
     private final ExplorationDataSaleRegistry registry = ExplorationDataSaleRegistry.getInstance();
-    private List<ExplorationDataSale> allSales = new ArrayList<>();
+    private List<ExplorationData> allSales = new ArrayList<>();
     private int currentIndex = -1;
-    private ExplorationDataSale selectedSale;
+    private ExplorationData selectedSale;
     private Consumer<SystemVisited> onSystemSelected;
     private Image exobioImage;
     private Image mappedImage;
@@ -61,6 +64,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     public void initialize(URL location, ResourceBundle resources) {
         loadImages();
         refresh();
+        DashboardService.getInstance().addBatchListener(this);
     }
 
     private void loadImages() {
@@ -78,6 +82,10 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
 
     @Override
     public void refreshUI() {
+        //refresh();
+    }
+    @Override
+    public void onBatchEnd() {
         refresh();
     }
 
@@ -85,29 +93,22 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         Platform.runLater(() -> {
             // Obtenir toutes les ventes triées
             allSales.clear();
-            if (registry.getCurrentSale() != null) {
-                allSales.add(registry.getCurrentSale());
+
+            //TODO delete
+            ExplorationDataSaleRegistry.getInstance().addToOnHold(registry.getAllSales().get(1).getSystemsVisited().get(0));
+
+            if (registry.getExplorationDataOnHold() != null) {
+                allSales.add(registry.getExplorationDataOnHold());
             }
-            
             var sortedSales = registry.getAllSales().stream()
                     .filter(sale -> sale != registry.getCurrentSale())
                     .sorted(Comparator.comparing((ExplorationDataSale sale) -> {
-                        String ts = sale.getEndTimestamp() != null ? sale.getEndTimestamp() : sale.getTimestamp();
+                        String ts = sale.getEndTimeStamp();
                         return ts != null ? ts : "";
                     }).reversed())
                     .collect(Collectors.toList());
             allSales.addAll(sortedSales);
-            
-            // Si aucune vente n'est sélectionnée, sélectionner la première (ou la vente en cours)
-            if (currentIndex == -1 && !allSales.isEmpty()) {
-                // Trouver l'index de la vente en cours si elle existe
-                ExplorationDataSale currentSale = registry.getCurrentSale();
-                if (currentSale != null) {
-                    currentIndex = allSales.indexOf(currentSale);
-                } else {
-                    currentIndex = 0;
-                }
-            }
+
             
             // S'assurer que l'index est valide
             if (currentIndex >= allSales.size()) {
@@ -150,7 +151,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         systemsCountLabel.setText(String.format("%d systèmes", selectedSale.getSystemsVisited().size()));
         
         // Formater les timestamps
-        String timeRange = formatTimeRange(selectedSale.getStartTimeStamp(), selectedSale.getEndTimestamp());
+        String timeRange = formatTimeRange(selectedSale.getStartTimeStamp(), selectedSale.getEndTimeStamp());
         timeRangeLabel.setText(timeRange);
         
         // Mettre à jour la liste des systèmes visités
