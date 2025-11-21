@@ -6,7 +6,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -23,15 +22,12 @@ public class ExplorationController implements Initializable, IRefreshable {
     @FXML
     private VBox currentSystemInfoContainer;
     @FXML
-    private VBox explorationHistoryContainer;
-    @FXML
-    private VBox explorationDetailContainer;
+    private VBox explorationHistoryDetailContainer;
 
     // Composants
     private SystemVisualViewComponent systemVisualView;
     private CurrentSystemInfoComponent currentSystemInfo;
-    private ExplorationHistoryComponent explorationHistory;
-    private ExplorationDetailComponent explorationDetail;
+    private ExplorationHistoryDetailComponent explorationHistoryDetail;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -61,20 +57,12 @@ public class ExplorationController implements Initializable, IRefreshable {
                 currentSystemInfoContainer.getChildren().add(systemInfoPanel);
             }
 
-            // Charger le composant d'historique d'exploration
-            FXMLLoader historyLoader = new FXMLLoader(getClass().getResource("/fxml/exploration/exploration-history.fxml"));
-            VBox historyPanel = historyLoader.load();
-            explorationHistory = historyLoader.getController();
-            if (explorationHistoryContainer != null) {
-                explorationHistoryContainer.getChildren().add(historyPanel);
-            }
-
-            // Charger le composant de détails d'exploration
-            FXMLLoader detailLoader = new FXMLLoader(getClass().getResource("/fxml/exploration/exploration-detail.fxml"));
-            VBox detailPanel = detailLoader.load();
-            explorationDetail = detailLoader.getController();
-            if (explorationDetailContainer != null) {
-                explorationDetailContainer.getChildren().add(detailPanel);
+            // Charger le composant fusionné historique/détails d'exploration
+            FXMLLoader historyDetailLoader = new FXMLLoader(getClass().getResource("/fxml/exploration/exploration-history-detail.fxml"));
+            VBox historyDetailPanel = historyDetailLoader.load();
+            explorationHistoryDetail = historyDetailLoader.getController();
+            if (explorationHistoryDetailContainer != null) {
+                explorationHistoryDetailContainer.getChildren().add(historyDetailPanel);
             }
 
             System.out.println("✅ Composants exploration chargés avec succès");
@@ -88,14 +76,9 @@ public class ExplorationController implements Initializable, IRefreshable {
      * Configure les callbacks entre les composants
      */
     private void setupComponentCallbacks() {
-        if (explorationHistory != null && explorationDetail != null) {
-            // Quand un groupe d'exploration est sélectionné, afficher ses détails
-            explorationHistory.setOnSaleSelected(explorationDetail::setExplorationDataSale);
-        }
-        
-        if (explorationDetail != null && systemVisualView != null) {
+        if (explorationHistoryDetail != null && systemVisualView != null) {
             // Quand un système est cliqué dans le détail, l'afficher dans la vue visuelle
-            explorationDetail.setOnSystemSelected(systemVisualView::displaySystem);
+            explorationHistoryDetail.setOnSystemSelected(systemVisualView::displaySystem);
         }
     }
 
@@ -108,11 +91,8 @@ public class ExplorationController implements Initializable, IRefreshable {
             if (currentSystemInfo != null) {
                 currentSystemInfo.refresh();
             }
-            if (explorationHistory != null) {
-                explorationHistory.refresh();
-            }
-            if (explorationDetail != null) {
-                explorationDetail.refresh();
+            if (explorationHistoryDetail != null) {
+                explorationHistoryDetail.refresh();
             }
         });
     }

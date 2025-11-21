@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ExplorationDataSale {
     private String timestamp; // Timestamp de la première vente
+    private String startTimeStamp;
     private String endTimestamp; // Timestamp de la dernière vente (Undocked)
     
     @Builder.Default

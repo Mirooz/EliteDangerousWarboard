@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.ExplorationHistoryDetailComponent"
+      spacing="10" styleClass="exploration-history-detail-panel" VBox.vgrow="ALWAYS" minWidth="450" maxWidth="500">
+
+    <Label text="HISTORIQUE DES GROUPES D'EXPLORATION" styleClass="exploration-section-title"/>
+    
+    <!-- Zone de navigation avec flèches -->
+    <HBox spacing="10" alignment="CENTER" styleClass="exploration-history-navigation">
+        <Button fx:id="previousButton" text="◀" styleClass="exploration-nav-button" onAction="#navigatePrevious"/>
+        <VBox fx:id="selectedSaleContainer" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="5">
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label fx:id="groupNumberLabel" styleClass="exploration-group-number"/>
+                <Label fx:id="currentLabel" text="EN COURS" styleClass="exploration-current-badge" visible="false"/>
+            </HBox>
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="💰" styleClass="exploration-info-icon"/>
+                    <Label fx:id="totalEarningsLabel" styleClass="exploration-info-value"/>
+                </HBox>
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="🌌" styleClass="exploration-info-icon"/>
+                    <Label fx:id="systemsCountLabel" styleClass="exploration-info-value"/>
+                </HBox>
+            </HBox>
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Label text="🕐" styleClass="exploration-info-icon"/>
+                <Label fx:id="timeRangeLabel" styleClass="exploration-time-range"/>
+            </HBox>
+        </VBox>
+        <Button fx:id="nextButton" text="▶" styleClass="exploration-nav-button" onAction="#navigateNext"/>
+    </HBox>
+    
+    <!-- Liste des systèmes visités de l'historique sélectionné -->
+    <VBox spacing="5" styleClass="exploration-detail-section" VBox.vgrow="ALWAYS">
+        <Label text="SYSTÈMES VISITÉS" styleClass="exploration-subsection-title"/>
+        <ScrollPane fx:id="systemsScrollPane" styleClass="exploration-detail-scroll" 
+                   fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+            <VBox fx:id="systemsList" spacing="3" styleClass="exploration-systems-list"/>
+        </ScrollPane>
+    </VBox>
+</VBox>
+

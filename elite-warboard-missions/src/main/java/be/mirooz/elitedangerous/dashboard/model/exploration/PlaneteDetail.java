@@ -186,11 +186,11 @@ public class PlaneteDetail extends ACelesteBody {
             return List.of();
         }
 
-        // -- 4) Regrouper par nom (= genus ou name) et garder la plus probable --
+        // -- 4) Regrouper par nom (= genus ou name) et par genre et garder la plus probable --
         Map<String, SpeciesProbability> bestByName =
                 rawList.stream()
                         .collect(Collectors.toMap(
-                                sp -> sp.getBioSpecies().getName(), // clé de regroupement
+                                sp -> sp.getBioSpecies().getName()+ " " +sp.getBioSpecies().getSpecieName(), // clé de regroupement
                                 sp -> sp,
                                 (p1, p2) -> p1.getProbability() >= p2.getProbability() ? p1 : p2
                         ));

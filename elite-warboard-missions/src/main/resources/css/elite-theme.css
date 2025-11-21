@@ -4133,6 +4133,36 @@
     -fx-font-weight: bold;
 }
 
+/* Cartes système compactes (style mission) */
+.exploration-system-card-compact {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.exploration-system-card-compact:hover {
+    -fx-background-color: rgba(255, 140, 0, 0.12);
+}
+
+.exploration-system-name-compact {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.exploration-bodies-count {
+    -fx-font-size: 11px;
+    -fx-text-fill: -fx-elite-text;
+}
+
+.exploration-system-value {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
 /* Infos système actuel */
 .exploration-system-info-panel {
     -fx-background-color: -fx-elite-gray;
@@ -4215,6 +4245,82 @@
     -fx-border-style: dashed;
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
+}
+
+/* Panneau fusionné historique/détails */
+.exploration-history-detail-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 15px;
+}
+
+/* Navigation historique */
+.exploration-history-navigation {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+}
+
+.exploration-nav-button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 5px 15px;
+    -fx-cursor: hand;
+}
+
+.exploration-nav-button:hover {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.exploration-nav-button:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+.exploration-group-number {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.exploration-current-badge {
+    -fx-text-fill: -fx-elite-dark;
+    -fx-background-color: -fx-elite-orange;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2px 8px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+}
+
+.exploration-info-icon {
+    -fx-font-size: 14px;
+    -fx-padding: 0;
+}
+
+.exploration-info-value {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.exploration-time-range {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-family: "Consolas", "Monaco", monospace;
 }
 
 /* Scrollbars pour l'exploration */

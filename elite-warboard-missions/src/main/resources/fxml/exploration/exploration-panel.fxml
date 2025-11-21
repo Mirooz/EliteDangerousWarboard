@@ -20,14 +20,10 @@
             <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" minWidth="400"/>
         </VBox>
         
-        <!-- Panneau de droite : Détails (à gauche) + Historique (à droite) - va jusqu'en haut -->
-        <HBox spacing="10" styleClass="exploration-right-panel" minWidth="800" maxWidth="800" VBox.vgrow="ALWAYS">
-            <!-- Liste de systèmes visités (courant ou historique selon sélection) -->
-            <VBox fx:id="explorationDetailContainer" spacing="10"  HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="300"/>
-            
-            <!-- Historique des groupes d'exploration -->
-            <VBox fx:id="explorationHistoryContainer" spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="400"/>
-        </HBox>
+        <!-- Panneau de droite : Historique avec navigation + Liste des systèmes visités -->
+        <VBox spacing="10" styleClass="exploration-right-panel" minWidth="450" maxWidth="500" VBox.vgrow="ALWAYS">
+            <VBox fx:id="explorationHistoryDetailContainer" spacing="10" VBox.vgrow="ALWAYS"/>
+        </VBox>
     </HBox>
 </VBox>
 

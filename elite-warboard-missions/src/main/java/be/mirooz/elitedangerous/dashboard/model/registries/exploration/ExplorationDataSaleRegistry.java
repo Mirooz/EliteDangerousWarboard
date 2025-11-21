@@ -60,9 +60,17 @@ public class ExplorationDataSaleRegistry {
     public void addToCurrentSale(List<SystemVisited> discoveredSystems,
                                  long baseValue, long bonus, long totalEarnings, String timestamp) {
         if (currentSale == null) {
+            // Récupérer le endTimestamp du précédent dans le registry (null si pas de précédent)
+            String startTimeStamp = null;
+            if (!sales.isEmpty()) {
+                ExplorationDataSale previousSale = sales.get(sales.size() - 1);
+                startTimeStamp = previousSale.getEndTimestamp();
+            }
+            
             // Créer une nouvelle vente en cours
             currentSale = ExplorationDataSale.builder()
                     .timestamp(timestamp)
+                    .startTimeStamp(startTimeStamp)
                     .endTimestamp(timestamp)
                     .systemsVisited(new java.util.ArrayList<>())
                     .baseValue(0)
