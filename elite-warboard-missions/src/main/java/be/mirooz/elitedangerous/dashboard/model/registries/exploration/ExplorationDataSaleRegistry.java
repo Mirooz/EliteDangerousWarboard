@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
@@ -97,8 +98,10 @@ public class ExplorationDataSaleRegistry {
         if (currentSale != null) {
             currentSale.setEndTimeStamp(timestamp);
             currentSale = null;
+            addToOnHold(SystemVisitedRegistry.getInstance().getSystem(CommanderStatus.getInstance().getCurrentStarSystem()));
+
         }
-    }
+          }
 
     /**
      * Récupère toutes les ventes.

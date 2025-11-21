@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
 import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationData;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
@@ -35,6 +36,8 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     private Button previousButton;
     @FXML
     private Button nextButton;
+    @FXML
+    private Button seeCurrentSystemButton;
     @FXML
     private VBox selectedSaleContainer;
     @FXML
@@ -93,10 +96,6 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         Platform.runLater(() -> {
             // Obtenir toutes les ventes triées
             allSales.clear();
-
-            //TODO delete
-            ExplorationDataSaleRegistry.getInstance().addToOnHold(registry.getAllSales().get(1).getSystemsVisited().get(0));
-
             if (registry.getExplorationDataOnHold() != null) {
                 allSales.add(registry.getExplorationDataOnHold());
             }
@@ -203,6 +202,33 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         if (currentIndex < allSales.size() - 1) {
             currentIndex++;
             updateUI();
+        }
+    }
+
+    @FXML
+    private void seeCurrentSystem() {
+        // Vérifier qu'il y a au moins un élément (l'exploration en cours en position 0)
+        if (allSales.isEmpty()) {
+            return;
+        }
+        
+        // Placer l'historique sur l'élément 0 (exploration en cours)
+        currentIndex = 0;
+        updateUI();
+        
+        // Trouver le système courant dans la liste
+        String currentStarSystem = CommanderStatus.getInstance().getCurrentStarSystem();
+        if (currentStarSystem != null && !currentStarSystem.isEmpty() && selectedSale != null) {
+            // Chercher le système correspondant dans la liste des systèmes visités
+            SystemVisited currentSystem = selectedSale.getSystemsVisited().stream()
+                    .filter(system -> currentStarSystem.equals(system.getSystemName()))
+                    .findFirst()
+                    .orElse(null);
+            
+            // Si le système est trouvé, le sélectionner
+            if (currentSystem != null && onSystemSelected != null) {
+                onSystemSelected.accept(currentSystem);
+            }
         }
     }
 

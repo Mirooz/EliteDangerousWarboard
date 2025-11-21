@@ -9,7 +9,8 @@
       spacing="10" styleClass="exploration-history-detail-panel" VBox.vgrow="ALWAYS" minWidth="450" maxWidth="500">
 
     <Label text="HISTORIQUE DES GROUPES D'EXPLORATION" styleClass="exploration-section-title"/>
-    
+
+    <Button fx:id="seeCurrentSystemButton" text="See current system" styleClass="exploration-nav-button" onAction="#seeCurrentSystem"/>
     <!-- Zone de navigation avec flèches -->
     <HBox spacing="10" alignment="CENTER" styleClass="exploration-history-navigation">
         <Button fx:id="previousButton" text="◀" styleClass="exploration-nav-button" onAction="#navigatePrevious"/>
