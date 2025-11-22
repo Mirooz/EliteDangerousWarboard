@@ -245,9 +245,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         mainRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         mainRow.setFillHeight(false);
         
-        // Nom du système avec icônes
-        HBox systemNameContainer = new HBox(5);
-        systemNameContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        // 1. Nom du système
         Label systemNameLabel = new Label(system.getSystemName());
         systemNameLabel.getStyleClass().add("exploration-system-name-compact");
         systemNameLabel.setPrefWidth(180);
@@ -255,79 +253,121 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         systemNameLabel.setMaxWidth(180);
         systemNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
         systemNameLabel.setWrapText(false);
-        systemNameContainer.getChildren().add(systemNameLabel);
         
-        // Vérifier et ajouter les icônes exobio/mapped
-        boolean[] icons = LabelIconHelper.checkSystemIcons(system.getCelesteBodies());
-        boolean hasExobio = icons[0];
-        boolean hasMapped = icons[1];
-        
-        if (hasExobio && exobioImage != null) {
-            javafx.scene.image.ImageView exobioIcon = new javafx.scene.image.ImageView(exobioImage);
-            exobioIcon.setFitWidth(16);
-            exobioIcon.setFitHeight(16);
-            exobioIcon.setPreserveRatio(true);
-            systemNameContainer.getChildren().add(exobioIcon);
-            
-            // Calculer le nombre d'espèces collectées et détectées
-            int confirmedSpeciesCount = 0;
-            int numSpeciesDetected = 0;
-            
-            for (ACelesteBody body : system.getCelesteBodies()) {
-                if (body instanceof PlaneteDetail planet) {
-                    // Compter les espèces confirmées collectées (avec ANALYSE)
-                    if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
-                        confirmedSpeciesCount += (int) planet.getConfirmedSpecies().stream()
-                                .filter(species -> species.isCollected())
-                                .count();
-                    }
-                    // Compter le nombre total d'espèces détectées
-                    if (planet.getNumSpeciesDetected() != null) {
-                        numSpeciesDetected += planet.getNumSpeciesDetected();
-                    }
-                }
-            }
-            
-            // Ajouter le label avec le format X/Y
-            Label speciesCountLabel = new Label(String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected));
-            speciesCountLabel.getStyleClass().add("exploration-species-count");
-            // S'assurer que le label est visible avec une couleur verte et une taille appropriée
-            speciesCountLabel.setStyle("-fx-text-fill: #00FF88; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 2px;");
-            // S'assurer que le label n'est pas masqué par des contraintes de largeur
-            speciesCountLabel.setMinWidth(javafx.scene.control.Label.USE_PREF_SIZE);
-            speciesCountLabel.setPrefWidth(javafx.scene.control.Label.USE_PREF_SIZE);
-            speciesCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
-            systemNameContainer.getChildren().add(speciesCountLabel);
-        }
-        
-        if (hasMapped && mappedImage != null) {
-            javafx.scene.image.ImageView mappedIcon = new javafx.scene.image.ImageView(mappedImage);
-            mappedIcon.setFitWidth(16);
-            mappedIcon.setFitHeight(16);
-            mappedIcon.setPreserveRatio(true);
-            systemNameContainer.getChildren().add(mappedIcon);
-        }
-        
-        // Nombre de corps
+        // 2. Nombre de corps
         Label bodiesCountLabel = new Label(system.getNumBodies() + " corps");
         bodiesCountLabel.getStyleClass().add("exploration-bodies-count");
         bodiesCountLabel.setPrefWidth(80);
         bodiesCountLabel.setMinWidth(60);
         bodiesCountLabel.setMaxWidth(80);
         
-        // Calculer la valeur totale du système
+        // Vérifier et ajouter les icônes exobio/mapped
+        boolean[] icons = LabelIconHelper.checkSystemIcons(system.getCelesteBodies());
+        boolean hasExobio = icons[0];
+        boolean hasMapped = icons[1];
+        
+        // Calculer le nombre d'espèces collectées et détectées pour TOUTES les planètes du système
+        int confirmedSpeciesCount = 0;
+        int numSpeciesDetected = 0;
+        
+        for (ACelesteBody body : system.getCelesteBodies()) {
+            if (body instanceof PlaneteDetail planet) {
+                // Compter les espèces confirmées collectées (avec ANALYSE)
+                if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                    confirmedSpeciesCount += (int) planet.getConfirmedSpecies().stream()
+                            .filter(species -> species.isCollected())
+                            .count();
+                }
+                // Compter le nombre total d'espèces détectées
+                if (planet.getNumSpeciesDetected() != null) {
+                    numSpeciesDetected += planet.getNumSpeciesDetected();
+                }
+            }
+        }
+        
+        // 3. Icône exobio (si nécessaire)
+        javafx.scene.image.ImageView exobioIcon = null;
+        if (hasExobio && exobioImage != null) {
+            exobioIcon = new javafx.scene.image.ImageView(exobioImage);
+            exobioIcon.setFitWidth(16);
+            exobioIcon.setFitHeight(16);
+            exobioIcon.setPreserveRatio(true);
+        }
+        
+        // 4. Compteur X/Y (si exobio est présent) - TOUJOURS afficher si exobio est présent
+        Label speciesCountLabel = null;
+        if (hasExobio && exobioImage != null) {
+            // Déterminer la couleur selon le nombre d'espèces collectées
+            String color;
+            if (confirmedSpeciesCount == 0) {
+                // 0/Y → rouge
+                color = "#FF4444";
+            } else if (numSpeciesDetected > 0 && confirmedSpeciesCount == numSpeciesDetected) {
+                // Y/Y → vert
+                color = "#00FF88";
+            } else {
+                // Entre 1 et Y-1 → orange
+                color = "#FF8800";
+            }
+            
+            // Toujours créer le label, même si les valeurs sont 0/0
+            String countText = String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected);
+            speciesCountLabel = new Label(countText);
+            
+            // Appliquer la couleur conditionnelle avec un style très visible
+            speciesCountLabel.setStyle(String.format(
+                "-fx-text-fill: %s; " +
+                "-fx-font-size: 12px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-padding: 2px 4px; " +
+                "-fx-background-color: rgba(0, 0, 0, 0.6); " +
+                "-fx-background-radius: 3px; " +
+                "-fx-border-color: %s; " +
+                "-fx-border-width: 1px; " +
+                "-fx-border-radius: 3px;",
+                color, color));
+            
+            // Forcer la visibilité et la gestion
+            speciesCountLabel.setVisible(true);
+            speciesCountLabel.setManaged(true);
+            // S'assurer que le label a une taille minimale visible
+            speciesCountLabel.setMinWidth(35);
+            speciesCountLabel.setPrefWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            speciesCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+        }
+        
+        // 5. Icône mapped (si nécessaire)
+        javafx.scene.image.ImageView mappedIcon = null;
+        if (hasMapped && mappedImage != null) {
+            mappedIcon = new javafx.scene.image.ImageView(mappedImage);
+            mappedIcon.setFitWidth(16);
+            mappedIcon.setFitHeight(16);
+            mappedIcon.setPreserveRatio(true);
+        }
+        
+        // 6. Valeur en Cr
         long totalValue = system.getCelesteBodies().stream()
                 .mapToLong(ACelesteBody::computeValue)
                 .sum();
-        
-        // Valeur récupérée / valeur totale
         Label valueLabel = new Label(String.format("%,d Cr", totalValue));
         valueLabel.getStyleClass().add("exploration-system-value");
         valueLabel.setPrefWidth(120);
         valueLabel.setMinWidth(80);
         valueLabel.setMaxWidth(120);
         
-        mainRow.getChildren().addAll(systemNameContainer, bodiesCountLabel, valueLabel);
+        // Ajouter tous les éléments dans l'ordre
+        mainRow.getChildren().add(systemNameLabel);
+        mainRow.getChildren().add(bodiesCountLabel);
+        if (exobioIcon != null) {
+            mainRow.getChildren().add(exobioIcon);
+        }
+        if (speciesCountLabel != null) {
+            mainRow.getChildren().add(speciesCountLabel);
+        }
+        if (mappedIcon != null) {
+            mainRow.getChildren().add(mappedIcon);
+        }
+        mainRow.getChildren().add(valueLabel);
         root.getChildren().add(mainRow);
         
         // Gérer le clic sur la carte

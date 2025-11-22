@@ -708,9 +708,22 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                 numSpeciesDetected = planet.getNumSpeciesDetected();
             }
             
+            // Déterminer la couleur selon le nombre d'espèces collectées
+            String color;
+            if (confirmedSpeciesCount == 0) {
+                // 0/Y → rouge
+                color = "#FF4444";
+            } else if (numSpeciesDetected > 0 && confirmedSpeciesCount == numSpeciesDetected) {
+                // Y/Y → vert
+                color = "#00FF88";
+            } else {
+                // Entre 1 et Y-1 → orange
+                color = "#FF8800";
+            }
+            
             // Ajouter le label avec le format X/Y
             Label speciesCountLabel = new Label(String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected));
-            speciesCountLabel.setStyle("-fx-text-fill: #00FF88; -fx-font-size: 9px; -fx-font-weight: bold;");
+            speciesCountLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-size: 9px; -fx-font-weight: bold;", color));
             exobioContainer.getChildren().add(speciesCountLabel);
             
             iconsContainer.getChildren().add(exobioContainer);
