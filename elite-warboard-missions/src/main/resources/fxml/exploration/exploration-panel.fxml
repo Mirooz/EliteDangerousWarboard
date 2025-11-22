@@ -13,9 +13,6 @@
         
         <!-- Colonne gauche : Panel haut (Info système avec Stats intégrées) + Vue visuelle -->
         <VBox spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
-            <!-- Panel en haut : Information système (avec statistiques courantes intégrées) -->
-            <VBox fx:id="currentSystemInfoContainer" spacing="5" styleClass="exploration-top-system-panel" maxHeight="200"/>
-            
             <!-- Panneau de gauche : Vue visuelle du système -->
             <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" minWidth="400"/>
         </VBox>

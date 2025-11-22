@@ -20,8 +20,6 @@ public class ExplorationController implements Initializable, IRefreshable {
     @FXML
     private VBox systemVisualViewContainer;
     @FXML
-    private VBox currentSystemInfoContainer;
-    @FXML
     private VBox explorationHistoryDetailContainer;
 
     // Composants
@@ -47,14 +45,6 @@ public class ExplorationController implements Initializable, IRefreshable {
             systemVisualView = visualLoader.getController();
             if (systemVisualViewContainer != null) {
                 systemVisualViewContainer.getChildren().add(visualPanel);
-            }
-
-            // Charger le composant d'infos du système actuel (avec statistiques intégrées)
-            FXMLLoader systemInfoLoader = new FXMLLoader(getClass().getResource("/fxml/exploration/current-system-info.fxml"));
-            VBox systemInfoPanel = systemInfoLoader.load();
-            currentSystemInfo = systemInfoLoader.getController();
-            if (currentSystemInfoContainer != null) {
-                //currentSystemInfoContainer.getChildren().add(systemInfoPanel);
             }
 
             // Charger le composant fusionné historique/détails d'exploration
