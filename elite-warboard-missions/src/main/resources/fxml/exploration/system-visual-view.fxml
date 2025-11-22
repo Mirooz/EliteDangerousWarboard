@@ -11,8 +11,18 @@
 
     <Label text="VUE VISUELLE DU SYSTÈME" styleClass="exploration-section-title"/>
     
-    <!-- Conteneur principal : Vue visuelle + Panneau JSON latéral -->
+    <!-- Conteneur principal : Panneau gauche + Vue visuelle + Panneau JSON latéral -->
     <HBox spacing="10" VBox.vgrow="ALWAYS">
+        <!-- Panneau gauche : Liste des corps du système -->
+        <VBox fx:id="bodiesListPanel" styleClass="exploration-bodies-list-panel" 
+              minWidth="450" maxWidth="550" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
+            <Label text="CORPS DU SYSTÈME" styleClass="exploration-section-title"/>
+            <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" 
+                        styleClass="exploration-bodies-list-scroll" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                <VBox fx:id="bodiesListContainer" spacing="5" styleClass="exploration-bodies-list-container"/>
+            </ScrollPane>
+        </VBox>
+        
         <!-- Zone d'affichage des corps célestes -->
         <ScrollPane fx:id="bodiesScrollPane" styleClass="exploration-visual-scroll" 
                     fitToWidth="false" fitToHeight="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"

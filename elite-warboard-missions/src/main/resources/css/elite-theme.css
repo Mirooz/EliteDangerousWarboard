@@ -3913,6 +3913,167 @@
     -fx-opacity: 0.5;
 }
 
+/* Panneau de liste des corps */
+.exploration-bodies-list-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 10px;
+}
+
+.exploration-bodies-list-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.exploration-bodies-list-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Scrollbar style Elite pour le panneau de liste des corps */
+.exploration-bodies-list-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .increment-button,
+.exploration-bodies-list-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .increment-button:hover,
+.exploration-bodies-list-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:vertical .increment-arrow:hover,
+.exploration-bodies-list-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.exploration-bodies-list-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.exploration-bodies-list-container {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+}
+
+.exploration-body-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 8px;
+}
+
+.exploration-body-card:hover {
+    -fx-background-color: rgba(255, 140, 0, 0.1);
+    -fx-border-color: -fx-elite-orange;
+}
+
+.exploration-body-card-name {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Conteneur exobio plus visible */
+.exploration-body-exobio-container {
+    -fx-background-color: rgba(0, 255, 136, 0.15);
+    -fx-border-color: rgba(0, 255, 136, 0.4);
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.exploration-body-exobio-count {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.exploration-body-first-discovery {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(0, 255, 255, 0.2);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 4px 10px;
+}
+
+/* Liste des espèces biologiques */
+.exploration-body-species-list {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+    -fx-border-color: rgba(0, 255, 136, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 5px;
+}
+
+.exploration-body-species-row {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+    -fx-background-radius: 2px;
+}
+
+.exploration-body-species-row:hover {
+    -fx-background-color: rgba(0, 255, 136, 0.1);
+}
+
+.exploration-body-species-prob {
+    -fx-text-fill: #00FF88;
+    -fx-font-weight: bold;
+}
+
 /* Statistiques d'exploration */
 .exploration-stats-panel {
     -fx-background-color: -fx-elite-darker;

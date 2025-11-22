@@ -5,6 +5,8 @@ import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
+import be.mirooz.elitedangerous.dashboard.model.exploration.Scan;
+import be.mirooz.elitedangerous.dashboard.model.exploration.SpeciesProbability;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,10 +19,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Line;
@@ -35,6 +34,10 @@ import java.util.stream.Collectors;
  */
 public class SystemVisualViewComponent implements Initializable, IRefreshable {
 
+    @FXML
+    private VBox bodiesListPanel;
+    @FXML
+    private VBox bodiesListContainer;
     @FXML
     private ScrollPane bodiesScrollPane;
     @FXML
@@ -276,6 +279,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             this.currentSystem = system;
             bodiesPane.getChildren().clear();
             bodyPositions.clear();
+            
+            // Mettre à jour la liste des corps à gauche
+            updateBodiesList(system);
             
             // Le zoom optimal sera calculé après le positionnement des corps
 
@@ -1161,6 +1167,494 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     }
 
     /**
+     * Met à jour la liste des corps à gauche
+     */
+    private void updateBodiesList(SystemVisited system) {
+        if (bodiesListContainer == null) {
+            return;
+        }
+        
+        bodiesListContainer.getChildren().clear();
+        
+        if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
+            return;
+        }
+        
+        // Créer une map pour lookup rapide
+        Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
+                .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
+        
+        // Trier les corps hiérarchiquement
+        List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
+        
+        // Créer une map pour savoir si un corps a des frères suivants au même niveau
+        Map<Integer, Boolean> hasNextSibling = new HashMap<>();
+        
+        // Pour chaque corps, trouver son parent direct et vérifier s'il a des frères suivants
+        for (int i = 0; i < sortedBodies.size(); i++) {
+            ACelesteBody body = sortedBodies.get(i);
+            int depth = calculateBodyDepth(body, bodiesMap);
+            
+            // Trouver le parent direct (celui qui est à depth-1)
+            ACelesteBody directParent = findDirectParent(body, bodiesMap, depth);
+            
+            if (directParent != null) {
+                // Trouver tous les frères de ce corps (enfants du même parent au même niveau)
+                List<ACelesteBody> siblings = sortedBodies.stream()
+                        .filter(b -> {
+                            int bDepth = calculateBodyDepth(b, bodiesMap);
+                            if (bDepth != depth) return false;
+                            ACelesteBody bParent = findDirectParent(b, bodiesMap, bDepth);
+                            return bParent != null && bParent.getBodyID() == directParent.getBodyID();
+                        })
+                        .sorted(Comparator.comparing(ACelesteBody::getBodyID))
+                        .collect(Collectors.toList());
+                
+                // Trouver l'index de ce corps dans ses frères
+                int siblingIndex = siblings.indexOf(body);
+                hasNextSibling.put(body.getBodyID(), siblingIndex >= 0 && siblingIndex < siblings.size() - 1);
+            } else {
+                // Pas de parent, donc pas de frère suivant
+                hasNextSibling.put(body.getBodyID(), false);
+            }
+        }
+        
+        // Créer une map pour savoir si un parent a des frères suivants (pour les lignes verticales)
+        Map<Integer, Boolean> parentHasNextSibling = new HashMap<>();
+        for (ACelesteBody body : sortedBodies) {
+            int depth = calculateBodyDepth(body, bodiesMap);
+            for (int d = 0; d < depth; d++) {
+                final int level = d; // Variable finale pour la lambda
+                // Pour chaque niveau, trouver le parent à ce niveau
+                ACelesteBody parentAtLevel = findParentAtDepth(body, bodiesMap, level);
+                if (parentAtLevel != null && !parentHasNextSibling.containsKey(parentAtLevel.getBodyID())) {
+                    // Vérifier si ce parent a un frère suivant
+                    ACelesteBody parentParent = findDirectParent(parentAtLevel, bodiesMap, level);
+                    if (parentParent != null) {
+                        List<ACelesteBody> parentSiblings = sortedBodies.stream()
+                                .filter(b -> {
+                                    int bDepth = calculateBodyDepth(b, bodiesMap);
+                                    if (bDepth != level) return false;
+                                    ACelesteBody bParent = findDirectParent(b, bodiesMap, bDepth);
+                                    return bParent != null && bParent.getBodyID() == parentParent.getBodyID();
+                                })
+                                .sorted(Comparator.comparing(ACelesteBody::getBodyID))
+                                .collect(Collectors.toList());
+                        int parentSiblingIndex = parentSiblings.indexOf(parentAtLevel);
+                        parentHasNextSibling.put(parentAtLevel.getBodyID(), 
+                                parentSiblingIndex >= 0 && parentSiblingIndex < parentSiblings.size() - 1);
+                    }
+                }
+            }
+        }
+        
+        // Créer les cartes avec les lignes hiérarchiques
+        for (int i = 0; i < sortedBodies.size(); i++) {
+            ACelesteBody body = sortedBodies.get(i);
+            int depth = calculateBodyDepth(body, bodiesMap);
+            boolean hasNext = hasNextSibling.getOrDefault(body.getBodyID(), false);
+            
+            // Créer une map pour chaque niveau de profondeur
+            Map<Integer, Boolean> levelHasNext = new HashMap<>();
+            for (int d = 0; d < depth; d++) {
+                ACelesteBody parentAtLevel = findParentAtDepth(body, bodiesMap, d);
+                if (parentAtLevel != null) {
+                    levelHasNext.put(d, parentHasNextSibling.getOrDefault(parentAtLevel.getBodyID(), false));
+                }
+            }
+            levelHasNext.put(depth, hasNext);
+            
+            VBox card = createBodyCard(body, depth, levelHasNext, bodiesMap);
+            if (card != null) {
+                bodiesListContainer.getChildren().add(card);
+            }
+        }
+    }
+    
+    /**
+     * Calcule la profondeur hiérarchique d'un corps (nombre de niveaux de parents)
+     */
+    private int calculateBodyDepth(ACelesteBody body, Map<Integer, ACelesteBody> bodiesMap) {
+        var parents = body.getParents();
+        if (parents == null || parents.isEmpty()) {
+            return 0;
+        }
+        
+        int maxDepth = 0;
+        for (var parent : parents) {
+            if ("Null".equalsIgnoreCase(parent.getType())) {
+                continue;
+            }
+            ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
+            if (parentBody != null) {
+                int parentDepth = calculateBodyDepth(parentBody, bodiesMap);
+                maxDepth = Math.max(maxDepth, parentDepth + 1);
+            }
+        }
+        
+        return maxDepth;
+    }
+    
+    /**
+     * Trouve le parent direct d'un corps (celui qui est à depth-1)
+     */
+    private ACelesteBody findDirectParent(ACelesteBody body, Map<Integer, ACelesteBody> bodiesMap, int depth) {
+        if (depth == 0) {
+            return null;
+        }
+        
+        var parents = body.getParents();
+        if (parents == null || parents.isEmpty()) {
+            return null;
+        }
+        
+        // Trouver le parent qui a la profondeur depth-1
+        for (var parent : parents) {
+            if ("Null".equalsIgnoreCase(parent.getType())) {
+                continue;
+            }
+            ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
+            if (parentBody != null) {
+                int parentDepth = calculateBodyDepth(parentBody, bodiesMap);
+                if (parentDepth == depth - 1) {
+                    return parentBody;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Trouve le parent d'un corps à un niveau de profondeur donné
+     */
+    private ACelesteBody findParentAtDepth(ACelesteBody body, Map<Integer, ACelesteBody> bodiesMap, int targetDepth) {
+        if (targetDepth < 0) {
+            return null;
+        }
+        
+        int currentDepth = calculateBodyDepth(body, bodiesMap);
+        if (targetDepth >= currentDepth) {
+            return null;
+        }
+        
+        // Remonter la chaîne de parents jusqu'au niveau cible
+        ACelesteBody current = body;
+        int currentD = currentDepth;
+        
+        while (currentD > targetDepth && current != null) {
+            ACelesteBody parent = findDirectParent(current, bodiesMap, currentD);
+            if (parent == null) {
+                break;
+            }
+            current = parent;
+            currentD--;
+        }
+        
+        return (currentD == targetDepth) ? current : null;
+    }
+    
+    /**
+     * Crée une carte pour un corps céleste avec toutes les informations
+     */
+    private VBox createBodyCard(ACelesteBody body, int depth, Map<Integer, Boolean> levelHasNext, Map<Integer, ACelesteBody> bodiesMap) {
+        VBox card = new VBox(5);
+        card.getStyleClass().add("exploration-body-card");
+        
+        // Créer un conteneur pour les lignes hiérarchiques et le contenu
+        HBox mainContainer = new HBox(0);
+        mainContainer.setAlignment(javafx.geometry.Pos.TOP_LEFT);
+        
+        // Créer les lignes verticales pour la hiérarchie
+        VBox hierarchyLines = new VBox(0);
+        hierarchyLines.setAlignment(javafx.geometry.Pos.TOP_LEFT);
+        hierarchyLines.setMinWidth(20 * depth);
+        hierarchyLines.setPrefWidth(20 * depth);
+        hierarchyLines.setMaxWidth(20 * depth);
+        
+        // Ajouter les lignes pour chaque niveau de profondeur
+        for (int i = 0; i < depth; i++) {
+            HBox lineContainer = new HBox(0);
+            lineContainer.setMinHeight(20);
+            lineContainer.setPrefHeight(20);
+            lineContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            
+            // Vérifier si on doit continuer la ligne verticale
+            // On continue si ce niveau a un frère suivant
+            boolean continueLine = levelHasNext.getOrDefault(i, false);
+            
+            // Ligne verticale
+            javafx.scene.shape.Line verticalLine = new javafx.scene.shape.Line();
+            verticalLine.setStartX(10);
+            verticalLine.setStartY(0);
+            verticalLine.setEndX(10);
+            verticalLine.setEndY(continueLine ? 20 : 10);
+            verticalLine.setStroke(javafx.scene.paint.Color.rgb(255, 140, 0, 0.5));
+            verticalLine.setStrokeWidth(1);
+            
+            // Ligne horizontale (sauf pour le dernier niveau)
+            if (i == depth - 1) {
+                javafx.scene.shape.Line horizontalLine = new javafx.scene.shape.Line();
+                horizontalLine.setStartX(10);
+                horizontalLine.setStartY(10);
+                horizontalLine.setEndX(20);
+                horizontalLine.setEndY(10);
+                horizontalLine.setStroke(javafx.scene.paint.Color.rgb(255, 140, 0, 0.5));
+                horizontalLine.setStrokeWidth(1);
+                
+                StackPane linePane = new StackPane();
+                linePane.getChildren().addAll(verticalLine, horizontalLine);
+                lineContainer.getChildren().add(linePane);
+            } else {
+                lineContainer.getChildren().add(verticalLine);
+            }
+            
+            hierarchyLines.getChildren().add(lineContainer);
+        }
+        
+        // Contenu de la carte
+        VBox cardContent = new VBox(5);
+        cardContent.setPadding(new javafx.geometry.Insets(8));
+        
+        // Nom du corps
+        HBox headerRow = new HBox(5);
+        headerRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        
+        String bodyName = getBodyNameWithoutSystem(body);
+        Label nameLabel = new Label(bodyName);
+        nameLabel.getStyleClass().add("exploration-body-card-name");
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
+        headerRow.getChildren().add(nameLabel);
+        
+        // Ajouter l'icône mapped si nécessaire (pour les planètes)
+        if (body instanceof PlaneteDetail planet) {
+            // Vérifier si la planète respecte les conditions pour mapped
+            boolean shouldShowMappedIcon = false;
+            boolean isMapped = planet.isMapped();
+            
+            if (isMapped) {
+                shouldShowMappedIcon = true;
+            } else if (planet.getPlanetClass() != null) {
+                int baseK = planet.getPlanetClass().getBaseK();
+                shouldShowMappedIcon = planet.isTerraformable() || baseK > 50000;
+            }
+            
+            if (shouldShowMappedIcon && mappedImage != null) {
+                ImageView mappedIconView = new ImageView(mappedImage);
+                mappedIconView.setFitWidth(25);
+                mappedIconView.setFitHeight(25);
+                mappedIconView.setPreserveRatio(true);
+                headerRow.getChildren().add(mappedIconView);
+                
+                // Ajouter l'indicateur de statut
+                Label statusLabel = new Label();
+                if (isMapped) {
+                    statusLabel.setText("✓");
+                    statusLabel.setStyle("-fx-text-fill: #00FF00; -fx-font-size: 15px; -fx-font-weight: bold;");
+                } else {
+                    statusLabel.setText("✗");
+                    statusLabel.setStyle("-fx-text-fill: #FF0000; -fx-font-size: 15px; -fx-font-weight: bold;");
+                }
+                headerRow.getChildren().add(statusLabel);
+                
+                // Ajouter "FIRST" si firstMapped (wasMapped est false)
+                if (!planet.isWasMapped()) {
+                    Label firstMappedLabel = new Label("FIRST");
+                    firstMappedLabel.getStyleClass().add("exploration-body-first-discovery");
+                    headerRow.getChildren().add(firstMappedLabel);
+                }
+            }
+        }
+        
+        cardContent.getChildren().add(headerRow);
+        
+        // Informations exobio (X/Y) - seulement pour les planètes
+        if (body instanceof PlaneteDetail planet) {
+            // Calculer le nombre d'espèces collectées et détectées
+            int confirmedSpeciesCount = 0;
+            int numSpeciesDetected = 0;
+            
+            if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                confirmedSpeciesCount = (int) planet.getConfirmedSpecies().stream()
+                        .filter(species -> species.isCollected())
+                        .count();
+            }
+            if (planet.getNumSpeciesDetected() != null) {
+                numSpeciesDetected = planet.getNumSpeciesDetected();
+            }
+            
+            // Afficher l'info exobio si nécessaire
+            if (exobioImage != null && 
+                ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
+                 (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()))) {
+                
+                // Conteneur pour l'info exobio avec fond visible - remplir tout le panneau
+                HBox exobioContainer = new HBox(10);
+                exobioContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                exobioContainer.setPadding(new javafx.geometry.Insets(8, 12, 8, 12));
+                exobioContainer.getStyleClass().add("exploration-body-exobio-container");
+                exobioContainer.setMaxWidth(Double.MAX_VALUE);
+                HBox.setHgrow(exobioContainer, javafx.scene.layout.Priority.ALWAYS);
+                
+                ImageView exobioIconView = new ImageView(exobioImage);
+                exobioIconView.setFitWidth(25);
+                exobioIconView.setFitHeight(25);
+                exobioIconView.setPreserveRatio(true);
+                exobioContainer.getChildren().add(exobioIconView);
+                
+                // Déterminer la couleur selon le nombre d'espèces collectées
+                String color;
+                if (confirmedSpeciesCount == 0) {
+                    color = "#FF4444";
+                } else if (numSpeciesDetected > 0 && confirmedSpeciesCount == numSpeciesDetected) {
+                    color = "#00FF88";
+                } else {
+                    color = "#FF8800";
+                }
+                
+                Label speciesCountLabel = new Label(String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected));
+                speciesCountLabel.setStyle(String.format(
+                    "-fx-text-fill: %s; " +
+                    "-fx-font-size: 15px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-padding: 5px 10px;",
+                    color));
+                speciesCountLabel.getStyleClass().add("exploration-body-exobio-count");
+                exobioContainer.getChildren().add(speciesCountLabel);
+                
+                // Ajouter un label si wasFootfalled est false (première découverte)
+                if (!planet.isWasFootfalled()) {
+                    Label firstDiscoveryLabel = new Label("FIRST");
+                    firstDiscoveryLabel.getStyleClass().add("exploration-body-first-discovery");
+                    exobioContainer.getChildren().add(firstDiscoveryLabel);
+                }
+                
+                cardContent.getChildren().add(exobioContainer);
+            }
+            
+            // Liste des BioSpecies avec probabilités
+            if (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) {
+                VBox speciesList = new VBox(4);
+                speciesList.setPadding(new javafx.geometry.Insets(8, 8, 8, 8));
+                speciesList.getStyleClass().add("exploration-body-species-list");
+                
+                // Créer une map des confirmedSpecies par nom pour lookup rapide
+                Map<String, BioSpecies> confirmedSpeciesMap = new HashMap<>();
+                if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                    for (BioSpecies confirmed : planet.getConfirmedSpecies()) {
+                        if (confirmed.getName() != null) {
+                            confirmedSpeciesMap.put(confirmed.getName(), confirmed);
+                        }
+                    }
+                }
+                
+                // Prendre le scan le plus récent (niveau le plus élevé)
+                Scan latestScan = planet.getBioSpecies().stream()
+                        .max(Comparator.comparingInt(Scan::getScanNumber))
+                        .orElse(null);
+                
+                if (latestScan != null && latestScan.getSpeciesProbabilities() != null) {
+                    // Set pour tracker les noms déjà traités avec confirmedSpecies
+                    Set<String> processedConfirmedNames = new HashSet<>();
+                    
+                    for (SpeciesProbability sp : latestScan.getSpeciesProbabilities()) {
+                        BioSpecies bioSpecies = sp.getBioSpecies();
+                        BioSpecies confirmedSpecies = null;
+                        String bioSpeciesName = bioSpecies.getName();
+                        
+                        // Vérifier si une confirmedSpecies a le même nom
+                        if (bioSpeciesName != null && confirmedSpeciesMap.containsKey(bioSpeciesName)) {
+                            // Si on n'a pas encore traité ce nom avec une confirmedSpecies, on le remplace
+                            if (!processedConfirmedNames.contains(bioSpeciesName)) {
+                                confirmedSpecies = confirmedSpeciesMap.get(bioSpeciesName);
+                                processedConfirmedNames.add(bioSpeciesName);
+                            } else {
+                                // Sinon, on ignore ce bioSpecies (doublon)
+                                continue;
+                            }
+                        }
+                        
+                        HBox speciesRow = new HBox(8);
+                        speciesRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                        speciesRow.setPadding(new javafx.geometry.Insets(4, 6, 4, 6));
+                        speciesRow.getStyleClass().add("exploration-body-species-row");
+                        
+                        // Afficher le nom (confirmedSpecies si disponible, sinon bioSpecies)
+                        String speciesName;
+                        if (confirmedSpecies != null) {
+                            speciesName = confirmedSpecies.getFullName();
+                        } else {
+                            speciesName = bioSpecies.getFullName();
+                        }
+                        
+                        Label speciesNameLabel = new Label(speciesName);
+                        speciesNameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-text;");
+                        speciesNameLabel.setMaxWidth(Double.MAX_VALUE);
+                        speciesNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+                        HBox.setHgrow(speciesNameLabel, javafx.scene.layout.Priority.ALWAYS);
+                        
+                        // Afficher ✓ ou ✗ si confirmedSpecies, sinon le pourcentage
+                        Label statusLabel = new Label();
+                        if (confirmedSpecies != null) {
+                            if (confirmedSpecies.isCollected()) {
+                                statusLabel.setText("✓");
+                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
+                            } else {
+                                statusLabel.setText("✗");
+                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
+                            }
+                        } else {
+                            statusLabel.setText(String.format("%.1f%%", sp.getProbability()));
+                            statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF88; -fx-font-weight: bold;");
+                            statusLabel.getStyleClass().add("exploration-body-species-prob");
+                        }
+                        // S'assurer que le pourcentage ne soit jamais coupé - pas de contrainte de largeur
+                        statusLabel.setMinWidth(0);
+                        statusLabel.setPrefWidth(-1);
+                        statusLabel.setMaxWidth(Double.MAX_VALUE);
+                        
+                        // Calculer et afficher le prix
+                        // Utiliser confirmedSpecies si disponible, sinon bioSpecies
+                        BioSpecies speciesForPrice = (confirmedSpecies != null) ? confirmedSpecies : bioSpecies;
+                        long price;
+                        if (!planet.isWasFootfalled()) {
+                            // Si wasFootfalled est false, prendre bonusValue
+                            price = speciesForPrice.getBonusValue();
+                        } else {
+                            // Sinon, prendre baseValue
+                            price = speciesForPrice.getBaseValue();
+                        }
+                        
+                        Label priceLabel = new Label(String.format("%,d Cr", price));
+                        priceLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
+                        // S'assurer que le prix ne soit jamais coupé - pas de contrainte de largeur
+                        priceLabel.setMinWidth(0);
+                        priceLabel.setPrefWidth(-1);
+                        priceLabel.setMaxWidth(Double.MAX_VALUE);
+                        statusLabel.setMinWidth(Region.USE_PREF_SIZE);
+                        priceLabel.setMinWidth(Region.USE_PREF_SIZE);
+                        speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
+                        speciesList.getChildren().add(speciesRow);
+                    }
+                }
+                
+                if (!speciesList.getChildren().isEmpty()) {
+                    cardContent.getChildren().add(speciesList);
+                }
+            }
+        }
+        
+        // Assembler le tout
+        if (depth > 0) {
+            mainContainer.getChildren().add(hierarchyLines);
+        }
+        mainContainer.getChildren().add(cardContent);
+        card.getChildren().add(mainContainer);
+        
+        return card;
+    }
+    
+    /**
      * Classe pour stocker la position d'un corps
      */
     private static class BodyPosition {
@@ -1180,6 +1674,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private void clearDisplay() {
         Platform.runLater(() -> {
             bodiesPane.getChildren().clear();
+            if (bodiesListContainer != null) {
+                bodiesListContainer.getChildren().clear();
+            }
             currentSystem = null;
         });
     }
