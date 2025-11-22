@@ -665,8 +665,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         }
 
         // Vérifier quelles icônes afficher
-        boolean hasExobio = exobioImage != null && planet.getBioSpecies() != null &&
-            !planet.getBioSpecies().isEmpty();
+        boolean hasExobio = exobioImage != null && 
+            ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
+             (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()));
         boolean hasMapped = mappedImage != null && planet.isMapped();
         
         if (!hasExobio && !hasMapped) {
@@ -684,11 +685,35 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         
         // Ajouter les icônes
         if (hasExobio) {
+            // Créer un HBox pour l'icône exobio et le compteur
+            HBox exobioContainer = new HBox(3);
+            exobioContainer.setAlignment(javafx.geometry.Pos.CENTER);
+            
             ImageView exobioIcon = new ImageView(exobioImage);
             exobioIcon.setFitWidth(iconSize);
             exobioIcon.setFitHeight(iconSize);
             exobioIcon.setPreserveRatio(true);
-            iconsContainer.getChildren().add(exobioIcon);
+            exobioContainer.getChildren().add(exobioIcon);
+            
+            // Calculer le nombre d'espèces collectées et détectées
+            int confirmedSpeciesCount = 0;
+            int numSpeciesDetected = 0;
+            
+            if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                confirmedSpeciesCount = (int) planet.getConfirmedSpecies().stream()
+                        .filter(species -> species.isCollected())
+                        .count();
+            }
+            if (planet.getNumSpeciesDetected() != null) {
+                numSpeciesDetected = planet.getNumSpeciesDetected();
+            }
+            
+            // Ajouter le label avec le format X/Y
+            Label speciesCountLabel = new Label(String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected));
+            speciesCountLabel.setStyle("-fx-text-fill: #00FF88; -fx-font-size: 9px; -fx-font-weight: bold;");
+            exobioContainer.getChildren().add(speciesCountLabel);
+            
+            iconsContainer.getChildren().add(exobioContainer);
         }
         
         if (hasMapped) {
@@ -704,7 +729,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         badge.getChildren().add(iconsContainer);
         
         // Fond du badge avec coins arrondis
-        double badgeWidth = iconSize + (padding * 2);
+        // Si exobio est présent, le badge doit être plus large pour accommoder l'icône + le compteur
+        double badgeWidth = hasExobio ? 
+            (iconSize + 25 + (padding * 2)) : // icône + texte (~25px) + padding
+            (iconSize + (padding * 2));
         double badgeHeight = (hasExobio && hasMapped ? 
             (iconSize * 2) + iconSpacing : iconSize) + (padding * 2);
         

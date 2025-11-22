@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationData;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
+import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
@@ -249,9 +250,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         systemNameContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         Label systemNameLabel = new Label(system.getSystemName());
         systemNameLabel.getStyleClass().add("exploration-system-name-compact");
-        systemNameLabel.setPrefWidth(200);
-        systemNameLabel.setMinWidth(100);
-        systemNameLabel.setMaxWidth(200);
+        systemNameLabel.setPrefWidth(180);
+        systemNameLabel.setMinWidth(80);
+        systemNameLabel.setMaxWidth(180);
         systemNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
         systemNameLabel.setWrapText(false);
         systemNameContainer.getChildren().add(systemNameLabel);
@@ -267,6 +268,36 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             exobioIcon.setFitHeight(16);
             exobioIcon.setPreserveRatio(true);
             systemNameContainer.getChildren().add(exobioIcon);
+            
+            // Calculer le nombre d'espèces collectées et détectées
+            int confirmedSpeciesCount = 0;
+            int numSpeciesDetected = 0;
+            
+            for (ACelesteBody body : system.getCelesteBodies()) {
+                if (body instanceof PlaneteDetail planet) {
+                    // Compter les espèces confirmées collectées (avec ANALYSE)
+                    if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                        confirmedSpeciesCount += (int) planet.getConfirmedSpecies().stream()
+                                .filter(species -> species.isCollected())
+                                .count();
+                    }
+                    // Compter le nombre total d'espèces détectées
+                    if (planet.getNumSpeciesDetected() != null) {
+                        numSpeciesDetected += planet.getNumSpeciesDetected();
+                    }
+                }
+            }
+            
+            // Ajouter le label avec le format X/Y
+            Label speciesCountLabel = new Label(String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected));
+            speciesCountLabel.getStyleClass().add("exploration-species-count");
+            // S'assurer que le label est visible avec une couleur verte et une taille appropriée
+            speciesCountLabel.setStyle("-fx-text-fill: #00FF88; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 2px;");
+            // S'assurer que le label n'est pas masqué par des contraintes de largeur
+            speciesCountLabel.setMinWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            speciesCountLabel.setPrefWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            speciesCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            systemNameContainer.getChildren().add(speciesCountLabel);
         }
         
         if (hasMapped && mappedImage != null) {
