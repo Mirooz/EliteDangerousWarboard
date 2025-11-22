@@ -1456,8 +1456,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             
             if (shouldShowMappedIcon && mappedImage != null) {
                 ImageView mappedIconView = new ImageView(mappedImage);
-                mappedIconView.setFitWidth(25);
-                mappedIconView.setFitHeight(25);
+                mappedIconView.setFitWidth(20);
+                mappedIconView.setFitHeight(20);
                 mappedIconView.setPreserveRatio(true);
                 headerRow.getChildren().add(mappedIconView);
                 
@@ -1512,8 +1512,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                 HBox.setHgrow(exobioContainer, javafx.scene.layout.Priority.ALWAYS);
                 
                 ImageView exobioIconView = new ImageView(exobioImage);
-                exobioIconView.setFitWidth(25);
-                exobioIconView.setFitHeight(25);
+                exobioIconView.setFitWidth(20);
+                exobioIconView.setFitHeight(20);
                 exobioIconView.setPreserveRatio(true);
                 exobioContainer.getChildren().add(exobioIconView);
                 

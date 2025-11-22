@@ -4067,7 +4067,7 @@
 
 .exploration-body-first-discovery {
     -fx-text-fill: -fx-elite-cyan;
-    -fx-font-size: 13px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-background-color: rgba(0, 255, 255, 0.2);
     -fx-border-color: -fx-elite-cyan;

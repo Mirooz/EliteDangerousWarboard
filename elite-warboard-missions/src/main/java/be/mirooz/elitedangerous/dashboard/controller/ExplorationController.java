@@ -54,7 +54,7 @@ public class ExplorationController implements Initializable, IRefreshable {
             VBox systemInfoPanel = systemInfoLoader.load();
             currentSystemInfo = systemInfoLoader.getController();
             if (currentSystemInfoContainer != null) {
-                currentSystemInfoContainer.getChildren().add(systemInfoPanel);
+                //currentSystemInfoContainer.getChildren().add(systemInfoPanel);
             }
 
             // Charger le composant fusionné historique/détails d'exploration
