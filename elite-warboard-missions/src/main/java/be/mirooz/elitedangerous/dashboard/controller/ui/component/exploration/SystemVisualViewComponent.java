@@ -117,6 +117,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             // Gérer le zoom manuellement
             handleScroll(event);
         });
+        
+        // Cocher la checkbox par défaut
+        if (showOnlyHighValueBodiesCheckBox != null) {
+            showOnlyHighValueBodiesCheckBox.setSelected(true);
+        }
     }
     
     /**

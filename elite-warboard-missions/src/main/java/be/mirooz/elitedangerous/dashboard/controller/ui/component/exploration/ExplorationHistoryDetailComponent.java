@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationData;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
@@ -145,7 +146,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         currentLabel.setVisible(isCurrent);
         
         // Mettre à jour les informations financières et systèmes
-        totalEarningsLabel.setText(String.format("%,d Cr", selectedSale.getTotalEarnings()));
+        // Calculer le total avec les exobio collectés
+        long totalWithExobio = calculateTotalWithExobio(selectedSale);
+        totalEarningsLabel.setText(String.format("%,d Cr", totalWithExobio));
         systemsCountLabel.setText(String.format("%d systèmes", selectedSale.getSystemsVisited().size()));
         
         // Formater les timestamps
@@ -233,14 +236,15 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
 
     private VBox createSystemCardDirectly(SystemVisited system) {
         // Créer une carte similaire aux cartes de missions
-        VBox root = new VBox();
+        VBox root = new VBox(5);
         root.getStyleClass().add("exploration-system-card-compact");
         root.setStyle("-fx-cursor: hand");
-        root.setPrefHeight(50);
-        root.setMinHeight(50);
-        root.setMaxHeight(50);
-        root.setPadding(new javafx.geometry.Insets(3, 10, 3, 10));
+        root.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        root.setMinHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        root.setMaxHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        root.setPadding(new javafx.geometry.Insets(5, 10, 5, 10));
         
+        // Ligne principale : Nom du système, nombre de corps, Cr
         HBox mainRow = new HBox(15);
         mainRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         mainRow.setFillHeight(false);
@@ -401,33 +405,65 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             mappedCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
         }
         
-        // 6. Valeur en Cr
+        // 6. Valeur en Cr (corps célestes + exobio collectés)
         long totalValue = system.getCelesteBodies().stream()
                 .mapToLong(ACelesteBody::computeValue)
                 .sum();
-        Label valueLabel = new Label(String.format("%,d Cr", totalValue));
+        
+        // Calculer le prix total des exobio collectés
+        long exobioValue = 0;
+        for (ACelesteBody body : system.getCelesteBodies()) {
+            if (body instanceof PlaneteDetail planet) {
+                if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                    for (BioSpecies species : planet.getConfirmedSpecies()) {
+                        if (species.isCollected()) {
+                            // Utiliser bonusValue si wasFootfalled est false, sinon baseValue
+                            if (!planet.isWasFootfalled()) {
+                                exobioValue += species.getBonusValue();
+                            } else {
+                                exobioValue += species.getBaseValue();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Afficher le total (corps célestes + exobio)
+        long grandTotal = totalValue + exobioValue;
+        Label valueLabel = new Label(String.format("%,d Cr", grandTotal));
         valueLabel.getStyleClass().add("exploration-system-value");
         valueLabel.setPrefWidth(120);
         valueLabel.setMinWidth(80);
         valueLabel.setMaxWidth(120);
         
-        // Ajouter tous les éléments dans l'ordre
+        // Ligne principale : Nom du système, nombre de corps, Cr
         mainRow.getChildren().add(systemNameLabel);
         mainRow.getChildren().add(bodiesCountLabel);
-        if (exobioIcon != null) {
-            mainRow.getChildren().add(exobioIcon);
-        }
-        if (speciesCountLabel != null) {
-            mainRow.getChildren().add(speciesCountLabel);
-        }
-        if (mappedIcon != null) {
-            mainRow.getChildren().add(mappedIcon);
-        }
-        if (mappedCountLabel != null) {
-            mainRow.getChildren().add(mappedCountLabel);
-        }
         mainRow.getChildren().add(valueLabel);
         root.getChildren().add(mainRow);
+        
+        // Ligne secondaire : Icônes avec compteurs (si présentes)
+        if (exobioIcon != null || mappedIcon != null) {
+            HBox iconsRow = new HBox(10);
+            iconsRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            iconsRow.setPadding(new javafx.geometry.Insets(2, 0, 0, 0));
+            
+            if (exobioIcon != null) {
+                iconsRow.getChildren().add(exobioIcon);
+            }
+            if (speciesCountLabel != null) {
+                iconsRow.getChildren().add(speciesCountLabel);
+            }
+            if (mappedIcon != null) {
+                iconsRow.getChildren().add(mappedIcon);
+            }
+            if (mappedCountLabel != null) {
+                iconsRow.getChildren().add(mappedCountLabel);
+            }
+            
+            root.getChildren().add(iconsRow);
+        }
         
         // Gérer le clic sur la carte
         root.setOnMouseClicked(e -> {
@@ -440,6 +476,35 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         return root;
     }
 
+    /**
+     * Calcule le total des gains incluant les exobio collectés pour tous les systèmes
+     */
+    private long calculateTotalWithExobio(ExplorationData sale) {
+        long total = sale.getTotalEarnings();
+        
+        // Ajouter la valeur des exobio collectés pour tous les systèmes
+        for (SystemVisited system : sale.getSystemsVisited()) {
+            for (ACelesteBody body : system.getCelesteBodies()) {
+                if (body instanceof PlaneteDetail planet) {
+                    if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                        for (BioSpecies species : planet.getConfirmedSpecies()) {
+                            if (species.isCollected()) {
+                                // Utiliser bonusValue si wasFootfalled est false, sinon baseValue
+                                if (!planet.isWasFootfalled()) {
+                                    total += species.getBonusValue();
+                                } else {
+                                    total += species.getBaseValue();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return total;
+    }
+    
     public void setOnSystemSelected(Consumer<SystemVisited> callback) {
         this.onSystemSelected = callback;
     }
