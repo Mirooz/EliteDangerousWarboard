@@ -58,6 +58,7 @@ public class BiologicalSignalProcessor {
         System.out.printf("📋 Signal biologique (niveau %d) ajouté à la file d'attente: BodyID=%d, BodyName=%s%n", level, bodyID, bodyName);
         // Démarrer le scheduler si ce n'est pas déjà fait
         startProcessingIfNeeded();
+        checkIfPlanetInRegistry();
     }
 
     /**

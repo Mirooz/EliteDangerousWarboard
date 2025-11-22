@@ -46,6 +46,7 @@ public class PlaneteDetail extends ACelesteBody {
     // Liste des scans biologiques (FSS/SAASignals)
     @Builder.Default
     private List<Scan> bioSpecies = new ArrayList<>();
+    private Integer numSpeciesDetected;
 
     // Liste des espèces confirmées (ScanOrganic)
     @Builder.Default
@@ -66,6 +67,7 @@ public class PlaneteDetail extends ACelesteBody {
      * Calcul complet des espèces biologiques possibles pour cette planète.
      */
     public void calculBioScan(Integer count, int level, List<String> genuses) {
+        this.numSpeciesDetected = count;
         if (this.bioSpecies != null && !this.bioSpecies.isEmpty()){
             for (Scan scan : this.bioSpecies) {
                 //Scan level déja fait

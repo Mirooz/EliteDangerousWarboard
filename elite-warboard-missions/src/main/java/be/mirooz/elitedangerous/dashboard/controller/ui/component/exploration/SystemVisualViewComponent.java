@@ -665,8 +665,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         }
 
         // Vérifier quelles icônes afficher
-        boolean hasExobio = exobioImage != null && planet.getConfirmedSpecies() != null &&
-            !planet.getConfirmedSpecies().isEmpty();
+        boolean hasExobio = exobioImage != null && planet.getBioSpecies() != null &&
+            !planet.getBioSpecies().isEmpty();
         boolean hasMapped = mappedImage != null && planet.isMapped();
         
         if (!hasExobio && !hasMapped) {
