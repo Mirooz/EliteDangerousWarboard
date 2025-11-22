@@ -4024,6 +4024,33 @@
     -fx-font-weight: bold;
 }
 
+.exploration-filter-checkbox {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-padding: 5px 0;
+}
+
+.exploration-filter-checkbox .box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+}
+
+.exploration-filter-checkbox:selected .box {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.exploration-filter-checkbox .mark {
+    -fx-background-color: -fx-elite-dark;
+    -fx-shape: "M 0 4 L 3 7 L 8 0 Z";
+}
+
+.exploration-filter-checkbox:selected .mark {
+    -fx-background-color: -fx-elite-dark;
+}
+
 /* Conteneur exobio plus visible */
 .exploration-body-exobio-container {
     -fx-background-color: rgba(0, 255, 136, 0.15);

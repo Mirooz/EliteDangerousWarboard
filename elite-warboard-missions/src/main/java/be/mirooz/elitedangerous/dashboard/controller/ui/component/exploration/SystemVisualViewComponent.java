@@ -39,6 +39,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     @FXML
     private VBox bodiesListContainer;
     @FXML
+    private CheckBox showOnlyHighValueBodiesCheckBox;
+    @FXML
     private ScrollPane bodiesScrollPane;
     @FXML
     private Group bodiesGroup;
@@ -1248,9 +1250,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             }
         }
         
+        // Filtrer les corps si la checkbox est cochée
+        List<ACelesteBody> filteredBodies = sortedBodies;
+        if (showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected()) {
+            filteredBodies = sortedBodies.stream()
+                    .filter(this::isHighValueBody)
+                    .collect(Collectors.toList());
+        }
+        
         // Créer les cartes avec les lignes hiérarchiques
-        for (int i = 0; i < sortedBodies.size(); i++) {
-            ACelesteBody body = sortedBodies.get(i);
+        for (int i = 0; i < filteredBodies.size(); i++) {
+            ACelesteBody body = filteredBodies.get(i);
             int depth = calculateBodyDepth(body, bodiesMap);
             boolean hasNext = hasNextSibling.getOrDefault(body.getBodyID(), false);
             
@@ -1668,6 +1678,39 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         }
     }
 
+    /**
+     * Vérifie si un corps est "high value" (contient exobiologie ou est mappable)
+     */
+    private boolean isHighValueBody(ACelesteBody body) {
+        // Vérifier l'exobiologie
+        if (body instanceof PlaneteDetail planet) {
+            boolean hasExobio = (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
+                               (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty());
+            
+            if (hasExobio) {
+                return true;
+            }
+            
+            // Vérifier si mappable (terraformable ou baseK > 50000)
+            if (planet.getPlanetClass() != null) {
+                int baseK = planet.getPlanetClass().getBaseK();
+                return planet.isTerraformable() || baseK > 50000;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Gère le changement de la checkbox de filtre
+     */
+    @FXML
+    private void onFilterChanged() {
+        if (currentSystem != null) {
+            updateBodiesList(currentSystem);
+        }
+    }
+    
     /**
      * Efface l'affichage
      */
