@@ -89,7 +89,6 @@ public enum BodyType {
         if (ref.contains("icy")) return ICY;
         if (ref.contains("water world")) return WATER_WORLD;
         if (ref.contains("earthlike")) return EARTHLIKE;
-        if (ref.contains("ammonia")) return AMMONIA;
         if (ref.equals("gas giant")) return GAS_GIANT;
         if (ref.contains("class i gas")) return GAS_GIANT_I;
         if (ref.contains("class ii gas")) return GAS_GIANT_II;
@@ -100,6 +99,7 @@ public enum BodyType {
         if (ref.contains("helium gas")) return HELIUM_GG;
         if (ref.contains("ice giant")) return ICE_GIANT;
         if (ref.contains("gas giant")) return GAS_GIANT;
+        if (ref.contains("ammonia")) return AMMONIA;
         if (ref.contains("cluster")) return CLUSTER;
         return UNKNOWN;
     }

@@ -264,11 +264,14 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         // Vérifier et ajouter les icônes exobio/mapped
         boolean[] icons = LabelIconHelper.checkSystemIcons(system.getCelesteBodies());
         boolean hasExobio = icons[0];
-        boolean hasMapped = icons[1];
         
         // Calculer le nombre d'espèces collectées et détectées pour TOUTES les planètes du système
         int confirmedSpeciesCount = 0;
         int numSpeciesDetected = 0;
+        
+        // Calculer le nombre de planètes mapped et totales qui respectent les conditions
+        int mappedPlanetsCount = 0;
+        int totalMappablePlanetsCount = 0;
         
         for (ACelesteBody body : system.getCelesteBodies()) {
             if (body instanceof PlaneteDetail planet) {
@@ -282,8 +285,22 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                 if (planet.getNumSpeciesDetected() != null) {
                     numSpeciesDetected += planet.getNumSpeciesDetected();
                 }
+                
+                // Vérifier si la planète respecte les conditions pour mapped
+                if (planet.getPlanetClass() != null) {
+                    int baseK = planet.getPlanetClass().getBaseK();
+                    boolean isMappable = planet.isTerraformable() || baseK > 50000;
+                    if (isMappable) {
+                        totalMappablePlanetsCount++;
+                        if (planet.isMapped()) {
+                            mappedPlanetsCount++;
+                        }
+                    }
+                }
             }
         }
+        
+        boolean hasMappablePlanets = totalMappablePlanetsCount > 0;
         
         // 3. Icône exobio (si nécessaire)
         javafx.scene.image.ImageView exobioIcon = null;
@@ -336,13 +353,52 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             speciesCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
         }
         
-        // 5. Icône mapped (si nécessaire)
+        // 5. Icône mapped avec compteur X/Y (si nécessaire)
         javafx.scene.image.ImageView mappedIcon = null;
-        if (hasMapped && mappedImage != null) {
+        Label mappedCountLabel = null;
+        if (hasMappablePlanets && mappedImage != null) {
             mappedIcon = new javafx.scene.image.ImageView(mappedImage);
             mappedIcon.setFitWidth(16);
             mappedIcon.setFitHeight(16);
             mappedIcon.setPreserveRatio(true);
+            
+            // Déterminer la couleur selon le nombre de planètes mapped
+            String mappedColor;
+            if (mappedPlanetsCount == 0) {
+                // 0/Y → rouge
+                mappedColor = "#FF4444";
+            } else if (totalMappablePlanetsCount > 0 && mappedPlanetsCount == totalMappablePlanetsCount) {
+                // Y/Y → vert
+                mappedColor = "#00FF88";
+            } else {
+                // Entre 1 et Y-1 → orange
+                mappedColor = "#FF8800";
+            }
+            
+            // Créer le label avec le format X/Y
+            String mappedCountText = String.format("%d/%d", mappedPlanetsCount, totalMappablePlanetsCount);
+            mappedCountLabel = new Label(mappedCountText);
+            
+            // Appliquer la couleur conditionnelle avec un style très visible
+            mappedCountLabel.setStyle(String.format(
+                "-fx-text-fill: %s; " +
+                "-fx-font-size: 12px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-padding: 2px 4px; " +
+                "-fx-background-color: rgba(0, 0, 0, 0.6); " +
+                "-fx-background-radius: 3px; " +
+                "-fx-border-color: %s; " +
+                "-fx-border-width: 1px; " +
+                "-fx-border-radius: 3px;",
+                mappedColor, mappedColor));
+            
+            // Forcer la visibilité et la gestion
+            mappedCountLabel.setVisible(true);
+            mappedCountLabel.setManaged(true);
+            // S'assurer que le label a une taille minimale visible
+            mappedCountLabel.setMinWidth(35);
+            mappedCountLabel.setPrefWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            mappedCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
         }
         
         // 6. Valeur en Cr
@@ -366,6 +422,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         }
         if (mappedIcon != null) {
             mainRow.getChildren().add(mappedIcon);
+        }
+        if (mappedCountLabel != null) {
+            mainRow.getChildren().add(mappedCountLabel);
         }
         mainRow.getChildren().add(valueLabel);
         root.getChildren().add(mainRow);

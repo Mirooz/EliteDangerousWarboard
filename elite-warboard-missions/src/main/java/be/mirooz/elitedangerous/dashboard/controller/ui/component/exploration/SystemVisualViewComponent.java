@@ -668,9 +668,23 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         boolean hasExobio = exobioImage != null && 
             ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
              (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()));
-        boolean hasMapped = mappedImage != null && planet.isMapped();
         
-        if (!hasExobio && !hasMapped) {
+        // Vérifier si la planète respecte les conditions pour mapped
+        // Si la planète est déjà mapped, on affiche toujours l'icône + V vert
+        // Sinon, on affiche l'icône seulement si elle respecte les conditions (terraformable OU baseK > 50000)
+        boolean shouldShowMappedIcon = false;
+        boolean isMapped = planet.isMapped();
+        
+        if (isMapped) {
+            // Si la planète est déjà mapped, toujours afficher l'icône + V vert
+            shouldShowMappedIcon = true;
+        } else if (planet.getPlanetClass() != null) {
+            // Sinon, vérifier si elle respecte les conditions
+            int baseK = planet.getPlanetClass().getBaseK();
+            shouldShowMappedIcon = planet.isTerraformable() || baseK > 50000;
+        }
+        
+        if (!hasExobio && !shouldShowMappedIcon) {
             return; // Pas d'icônes à afficher
         }
 
@@ -729,12 +743,29 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             iconsContainer.getChildren().add(exobioContainer);
         }
         
-        if (hasMapped) {
+        if (shouldShowMappedIcon && mappedImage != null) {
+            // Créer un HBox pour l'icône mapped et l'indicateur de statut
+            HBox mappedContainer = new HBox(3);
+            mappedContainer.setAlignment(javafx.geometry.Pos.CENTER);
+            
             ImageView mappedIcon = new ImageView(mappedImage);
             mappedIcon.setFitWidth(iconSize);
             mappedIcon.setFitHeight(iconSize);
             mappedIcon.setPreserveRatio(true);
-            iconsContainer.getChildren().add(mappedIcon);
+            mappedContainer.getChildren().add(mappedIcon);
+            
+            // Ajouter l'indicateur de statut (V vert si mapped, croix rouge si non mapped)
+            Label statusLabel = new Label();
+            if (isMapped) {
+                statusLabel.setText("✓");
+                statusLabel.setStyle("-fx-text-fill: #00FF00; -fx-font-size: 10px; -fx-font-weight: bold;");
+            } else {
+                statusLabel.setText("✗");
+                statusLabel.setStyle("-fx-text-fill: #FF0000; -fx-font-size: 10px; -fx-font-weight: bold;");
+            }
+            mappedContainer.getChildren().add(statusLabel);
+            
+            iconsContainer.getChildren().add(mappedContainer);
         }
         
         // Créer un badge avec fond semi-transparent
@@ -743,10 +774,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         
         // Fond du badge avec coins arrondis
         // Si exobio est présent, le badge doit être plus large pour accommoder l'icône + le compteur
+        // Si mapped est présent, le badge doit être plus large pour accommoder l'icône + le statut
         double badgeWidth = hasExobio ? 
             (iconSize + 25 + (padding * 2)) : // icône + texte (~25px) + padding
-            (iconSize + (padding * 2));
-        double badgeHeight = (hasExobio && hasMapped ? 
+            (shouldShowMappedIcon ? (iconSize + 12 + (padding * 2)) : (iconSize + (padding * 2))); // icône + statut (~12px) + padding
+        double badgeHeight = ((hasExobio ? 1 : 0) + (shouldShowMappedIcon ? 1 : 0) > 1 ? 
             (iconSize * 2) + iconSpacing : iconSize) + (padding * 2);
         
         Rectangle background = new Rectangle(badgeWidth, badgeHeight);
