@@ -39,7 +39,6 @@ public class MultiSellExplorationDataHandler implements JournalEventHandler {
                     int numBodies = discoveredNode.path("NumBodies").asInt();
                     if (!SystemVisitedRegistry.getInstance().getSystems().containsKey(systemName)){
                         SystemVisited systemVisited = new SystemVisited();
-                        systemVisited.setNumBodies(numBodies);
                         systemVisited.setSold(true);
                         systemVisited.setFirstVisitedTime(timestamp);
                         systemVisited.setLastVisitedTime(timestamp);

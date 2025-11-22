@@ -34,7 +34,6 @@ public class ExplorationService {
 
         SystemVisited system = SystemVisited.builder()
                 .systemName(currentSystem)
-                .numBodies(planets.size())
                 .build();
 
         // Définition du premier body (utile pour timestamp & firstDiscover)
@@ -60,7 +59,7 @@ public class ExplorationService {
         }
 
         // Copie triée des planètes
-        system.setCelesteBodies(new ArrayList<>(planets));
+        system.setCelesteBodies(planets);
 
         // Stockage
         systemVisitedRegistry.getSystems().put(currentSystem, system);

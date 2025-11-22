@@ -38,16 +38,16 @@ public class FSDJumpHandler implements JournalEventHandler {
                     miningStatsService.endCurrentMiningSession(timestamp);
                     System.out.println("⛏️ Session de minage terminée (FSD Jump)");
                 }
-                //Ajoute l'ancien dans les visited
-                if (planeteRegistry.getCurrentStarSystem()!= null) {
-                    ExplorationService.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(), planeteRegistry.getAllPlanetes(), timestamp);
-                    ExplorationDataSaleRegistry.getInstance().addToOnHold(SystemVisitedRegistry.getInstance().getSystem(planeteRegistry.getCurrentStarSystem()));
 
-                }
                 planeteRegistry.clear();
                 planeteRegistry.setCurrentStarSystem(starSystem);
                 if (SystemVisitedRegistry.getInstance().getSystems().containsKey(starSystem)){
                     planeteRegistry.setAllPlanetes(SystemVisitedRegistry.getInstance().getSystems().get(starSystem).getCelesteBodies());
+                }
+                //Ajoute l'ancien dans les visited
+                if (planeteRegistry.getCurrentStarSystem()!= null) {
+                    ExplorationService.getInstance().addOrUpdateSystem(planeteRegistry.getCurrentStarSystem(), planeteRegistry.getAllPlanetes(), timestamp);
+                    ExplorationDataSaleRegistry.getInstance().addToOnHold(SystemVisitedRegistry.getInstance().getSystem(planeteRegistry.getCurrentStarSystem()));
                 }
                 directionReaderService.stopWatchingStatusFile();
             }

@@ -21,15 +21,11 @@ public class ExplorationDataOnHold implements ExplorationData {
     @Builder.Default
     private Map<String,SystemVisited> systemsVisitedMap = new HashMap<>();
     private long totalEarnings; // Somme de tous les BaseValue
-
+    private String startTimeStamp;
 
     @Override
     public List<SystemVisited> getSystemsVisited(){
         return systemsVisitedMap.values().stream().toList();
-    }
-    @Override
-    public String getStartTimeStamp() {
-        return "";
     }
 
     @Override

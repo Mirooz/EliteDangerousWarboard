@@ -24,7 +24,7 @@ public class PlaneteRegistry {
 
     private static final PlaneteRegistry INSTANCE = new PlaneteRegistry();
 
-    private final ObservableMap<Integer, ACelesteBody> planetesMap =
+    private ObservableMap<Integer, ACelesteBody> planetesMap =
             FXCollections.observableHashMap();
 
     private PlaneteRegistry() {
@@ -94,7 +94,9 @@ public class PlaneteRegistry {
      * Vide le registre.
      */
     public void clear() {
-        planetesMap.clear();
+        //planetesMap.clear();
+        planetesMap =
+                FXCollections.observableHashMap();
         BiologicalSignalProcessor.getInstance().clear();
         currentStarSystem = null;
     }

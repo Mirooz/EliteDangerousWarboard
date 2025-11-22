@@ -38,6 +38,7 @@ public class ExplorationDataSaleRegistry {
         if (explorationDataOnHold == null) {
             explorationDataOnHold = ExplorationDataOnHold.builder()
                     .totalEarnings(0)
+                    .startTimeStamp(systemVisited.getLastVisitedTime())
                     .build();
         }
         // Si déja ajouté : on enleve les anciennes valeur pour ajouter les nouvelles

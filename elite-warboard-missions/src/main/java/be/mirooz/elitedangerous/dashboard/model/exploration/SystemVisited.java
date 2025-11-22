@@ -17,7 +17,6 @@ import java.util.Collection;
 @AllArgsConstructor
 public class SystemVisited {
     private String systemName;
-    private int numBodies;
     private boolean firstDiscover;
     private String firstVisitedTime;
     private String lastVisitedTime;
@@ -26,5 +25,9 @@ public class SystemVisited {
     private boolean sold; // Indique si les données du système ont été vendues
     @Builder.Default
     private Collection<ACelesteBody> celesteBodies = new ArrayList<>();
+
+    public int getNumBodies(){
+        return celesteBodies.size();
+    }
 }
 

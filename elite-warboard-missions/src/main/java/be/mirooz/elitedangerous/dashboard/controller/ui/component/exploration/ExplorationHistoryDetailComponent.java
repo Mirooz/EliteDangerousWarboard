@@ -107,8 +107,6 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                     }).reversed())
                     .collect(Collectors.toList());
             allSales.addAll(sortedSales);
-
-            
             // S'assurer que l'index est valide
             if (currentIndex >= allSales.size()) {
                 currentIndex = allSales.size() - 1;
