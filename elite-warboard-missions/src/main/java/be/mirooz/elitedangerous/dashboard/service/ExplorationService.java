@@ -72,7 +72,7 @@ public class ExplorationService {
             }
             Position samplePosition = DirectionReaderService.getInstance().readCurrentPosition(planeteDetail.getRadius());
             DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().add(samplePosition);
-            DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius());
+            DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius(),species.getColonyRangeMeters());
 
         }
         this.currentAnalysisPlanet = planeteDetail;

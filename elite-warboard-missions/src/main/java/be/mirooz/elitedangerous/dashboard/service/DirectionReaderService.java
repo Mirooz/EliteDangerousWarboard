@@ -27,6 +27,7 @@ public class DirectionReaderService {
     private final ObjectProperty<Position> currentPosition = new SimpleObjectProperty<>();
 
     private volatile Position previousPosition = null;
+    private volatile Double colonyRangeMeter;
     private static final String STATUS_FILE = "Status.json";
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
@@ -101,7 +102,7 @@ public class DirectionReaderService {
 
     private volatile long lastModified = 0;
 
-    public void startWatchingStatusFile(double radius) {
+    public void startWatchingStatusFile(double radius,double colonyRangeMeter) {
         if (watching) {
             System.out.println("⚠️ La surveillance de Status.json est déjà active");
             return;
@@ -109,6 +110,7 @@ public class DirectionReaderService {
 
         watching = true;
 
+        this.colonyRangeMeter= colonyRangeMeter;
         // Lire la position initiale
         Position initialPosition = readCurrentPosition(radius);
         if (initialPosition != null) {
@@ -189,6 +191,7 @@ public class DirectionReaderService {
         }
         currentPosition.set(null);
         previousPosition = null;
+        colonyRangeMeter = null;
     }
 
     /**
