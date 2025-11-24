@@ -235,9 +235,18 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     }
 
     private VBox createSystemCardDirectly(SystemVisited system) {
+        // Vérifier si c'est le système actuel
+        String currentStarSystem = CommanderStatus.getInstance().getCurrentStarSystem();
+        boolean isCurrentSystem = currentStarSystem != null && 
+                                  !currentStarSystem.isEmpty() && 
+                                  currentStarSystem.equals(system.getSystemName());
+        
         // Créer une carte similaire aux cartes de missions
         VBox root = new VBox(5);
         root.getStyleClass().add("exploration-system-card-compact");
+        if (isCurrentSystem) {
+            root.getStyleClass().add("exploration-system-card-current");
+        }
         root.setStyle("-fx-cursor: hand");
         root.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
         root.setMinHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);

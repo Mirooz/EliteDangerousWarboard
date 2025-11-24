@@ -4334,6 +4334,15 @@
     -fx-background-color: rgba(255, 140, 0, 0.12);
 }
 
+.exploration-system-card-current {
+    -fx-background-color: rgba(0, 100, 200, 0.3);
+    -fx-border-color: #0066CC;
+}
+
+.exploration-system-card-current:hover {
+    -fx-background-color: rgba(0, 100, 200, 0.4);
+}
+
 .exploration-system-name-compact {
     -fx-font-size: 12px;
     -fx-font-weight: bold;

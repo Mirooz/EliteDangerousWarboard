@@ -1440,7 +1440,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                     headerRow.getChildren().add(firstMappedLabel);
                 }
                 //PRICE
-                Label price = new Label(Long.toString(planet.computeBodyValue()));
+                long bodyValue = planet.computeBodyValue();
+                Label price = new Label(String.format("%,d Cr", bodyValue));
+                price.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 14px; -fx-font-weight: bold;");
                 headerRow.getChildren().add(price);
             }
         }
