@@ -4,10 +4,11 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.Position;
 import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
@@ -20,8 +21,8 @@ import java.util.List;
  */
 public class RadarComponent {
     
-    private final StackPane radarContainer;
-    private final Pane radarPane;
+    private final Pane radarContainer;
+    private final Group radarGroup;
     private final Pane labelsPane;
     private final DirectionReaderService directionService;
     private AnimationTimer updateTimer;
@@ -29,22 +30,39 @@ public class RadarComponent {
     public RadarComponent() {
         directionService = DirectionReaderService.getInstance();
         
-        // Créer un conteneur StackPane pour superposer le radar clippé et les labels non clippés
-        radarContainer = new StackPane();
+        // Créer un conteneur Pane pour superposer le radar clippé et les labels non clippés
+        // Utiliser un Pane au lieu d'un StackPane pour éviter le centrage automatique
+        radarContainer = new Pane();
         radarContainer.setPrefHeight(200);
         radarContainer.setMinHeight(200);
         radarContainer.setMaxHeight(200);
         radarContainer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: -fx-elite-orange; -fx-border-width: 1px;");
         
-        // Créer le pane pour le radar (sera clippé)
-        radarPane = new Pane();
+        // Créer un Group pour le radar (sera clippé)
+        // Un Group ne calcule pas sa taille basée sur ses enfants, donc il ne s'agrandira pas
+        radarGroup = new Group();
+        // Positionner le Group à (0, 0) pour qu'il ne bouge pas
+        radarGroup.setLayoutX(0);
+        radarGroup.setLayoutY(0);
+        // Empêcher le Group d'influencer la taille du parent
+        radarGroup.setManaged(false);
+        radarGroup.setPickOnBounds(false); // Ne pas prendre en compte les éléments hors bounds
         
         // Créer le pane pour les labels (ne sera pas clippé)
         labelsPane = new Pane();
         labelsPane.setMouseTransparent(true); // Ne pas intercepter les événements de souris
+        labelsPane.setLayoutX(0);
+        labelsPane.setLayoutY(0);
+        // Le labelsPane doit être géré pour avoir la bonne taille
+        labelsPane.setManaged(true);
+        labelsPane.setPickOnBounds(false); // Ne pas prendre en compte les éléments hors bounds
         
-        // Ajouter les deux panes au conteneur
-        radarContainer.getChildren().addAll(radarPane, labelsPane);
+        // Ajouter les deux au conteneur
+        radarContainer.getChildren().addAll(radarGroup, labelsPane);
+        
+        // Appliquer un clip rectangulaire au conteneur pour empêcher l'expansion
+        // Ce clip sera mis à jour dans updateClipping()
+        radarContainer.setClip(new Rectangle());
         
         // Redessiner le radar quand la taille change
         radarContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
@@ -82,9 +100,9 @@ public class RadarComponent {
     }
     
     /**
-     * Retourne le conteneur du radar (StackPane avec radar clippé et labels non clippés)
+     * Retourne le conteneur du radar (Pane avec radar clippé et labels non clippés)
      */
-    public StackPane getRadarPane() {
+    public Pane getRadarPane() {
         return radarContainer;
     }
     
@@ -92,7 +110,7 @@ public class RadarComponent {
      * Met à jour le clipping du radar pour que les éléments ne dépassent pas les bords du cercle
      */
     private void updateClipping() {
-        if (radarPane == null || radarContainer == null) {
+        if (radarGroup == null || radarContainer == null) {
             return;
         }
         
@@ -113,10 +131,26 @@ public class RadarComponent {
             // Utiliser exactement le même calcul de rayon que dans drawRadar()
             double radius = Math.min(centerX, centerY) - 20;
             
-            // Utiliser un cercle pour le clipping au lieu d'un rectangle
-            // Le clipping s'applique seulement au radarPane, pas au labelsPane
+            // Clipper le conteneur principal avec un rectangle pour empêcher l'expansion
+            Rectangle containerClip = new Rectangle(0, 0, width, height);
+            radarContainer.setClip(containerClip);
+            
+            // Utiliser un cercle pour le clipping du radarGroup
+            // Le clipping s'applique seulement au radarGroup, pas au labelsPane
             Circle clip = new Circle(centerX, centerY, radius);
-            radarPane.setClip(clip);
+            radarGroup.setClip(clip);
+            
+            // S'assurer que le Group et le labelsPane ne bougent pas et ont la bonne taille
+            radarGroup.setLayoutX(0);
+            radarGroup.setLayoutY(0);
+            labelsPane.setLayoutX(0);
+            labelsPane.setLayoutY(0);
+            
+            // Forcer la taille du labelsPane pour qu'il ne s'agrandisse pas
+            labelsPane.setPrefWidth(width);
+            labelsPane.setPrefHeight(height);
+            labelsPane.setMaxWidth(width);
+            labelsPane.setMaxHeight(height);
         }
     }
     
@@ -124,11 +158,11 @@ public class RadarComponent {
      * Met à jour l'affichage du radar
      */
     private void updateRadar() {
-        if (radarPane == null) {
+        if (radarGroup == null) {
             return;
         }
         
-        radarPane.getChildren().clear();
+        radarGroup.getChildren().clear();
         drawRadar();
         // Mettre à jour le clipping après le dessin pour s'assurer qu'il correspond au cercle
         updateClipping();
@@ -138,7 +172,7 @@ public class RadarComponent {
      * Dessine le radar (boussole) avec la position actuelle et les échantillons biologiques
      */
     private void drawRadar() {
-        if (radarPane == null) {
+        if (radarGroup == null) {
             return;
         }
         
@@ -163,7 +197,7 @@ public class RadarComponent {
         compassCircle.setFill(Color.TRANSPARENT);
         compassCircle.setStroke(Color.rgb(255, 140, 0, 0.5));
         compassCircle.setStrokeWidth(2);
-        radarPane.getChildren().add(compassCircle);
+        radarGroup.getChildren().add(compassCircle);
         
         // Dessiner les lignes cardinales (N, S, E, W)
         double lineLength = radius * 0.9;
@@ -171,25 +205,25 @@ public class RadarComponent {
         Line northLine = new Line(centerX, centerY - radius, centerX, centerY - lineLength);
         northLine.setStroke(Color.rgb(255, 140, 0, 0.7));
         northLine.setStrokeWidth(1);
-        radarPane.getChildren().add(northLine);
+        radarGroup.getChildren().add(northLine);
         
         // Sud
         Line southLine = new Line(centerX, centerY + radius, centerX, centerY + lineLength);
         southLine.setStroke(Color.rgb(255, 140, 0, 0.7));
         southLine.setStrokeWidth(1);
-        radarPane.getChildren().add(southLine);
+        radarGroup.getChildren().add(southLine);
         
         // Est
         Line eastLine = new Line(centerX + radius, centerY, centerX + lineLength, centerY);
         eastLine.setStroke(Color.rgb(255, 140, 0, 0.7));
         eastLine.setStrokeWidth(1);
-        radarPane.getChildren().add(eastLine);
+        radarGroup.getChildren().add(eastLine);
         
         // Ouest
         Line westLine = new Line(centerX - radius, centerY, centerX - lineLength, centerY);
         westLine.setStroke(Color.rgb(255, 140, 0, 0.7));
         westLine.setStrokeWidth(1);
-        radarPane.getChildren().add(westLine);
+        radarGroup.getChildren().add(westLine);
         
         // Labels des points cardinaux (dans le labelsPane non clippé)
         labelsPane.getChildren().clear();
@@ -227,7 +261,7 @@ public class RadarComponent {
             centerPoint.setFill(Color.rgb(0, 255, 0)); // Vert pour la position actuelle
             centerPoint.setStroke(Color.WHITE);
             centerPoint.setStrokeWidth(1);
-            radarPane.getChildren().add(centerPoint);
+            radarGroup.getChildren().add(centerPoint);
             
             // Dessiner la flèche indiquant le heading
             Integer heading = currentPos.getHeading();
@@ -244,7 +278,7 @@ public class RadarComponent {
                 Line headingLine = new Line(centerX, centerY, arrowX, arrowY);
                 headingLine.setStroke(Color.rgb(0, 255, 0));
                 headingLine.setStrokeWidth(2);
-                radarPane.getChildren().add(headingLine);
+                radarGroup.getChildren().add(headingLine);
                 
                 // Dessiner la pointe de la flèche
                 double arrowSize = 8;
@@ -262,7 +296,7 @@ public class RadarComponent {
                     x2, y2
                 );
                 arrowHead.setFill(Color.rgb(0, 255, 0));
-                radarPane.getChildren().add(arrowHead);
+                radarGroup.getChildren().add(arrowHead);
             }
             
             // Dessiner les points d'échantillons biologiques
@@ -339,7 +373,7 @@ public class RadarComponent {
                             exclusionCircle.setStroke(Color.rgb(255, 0, 255, 0.6)); // Magenta semi-transparent
                             exclusionCircle.setStrokeWidth(1.5);
                             exclusionCircle.getStrokeDashArray().addAll(5.0, 5.0); // Ligne pointillée
-                            radarPane.getChildren().add(0, exclusionCircle); // Ajouter en arrière-plan
+                            radarGroup.getChildren().add(0, exclusionCircle); // Ajouter en arrière-plan
                         }
                         
                         // Dessiner une ligne depuis le centre vers l'échantillon
@@ -359,7 +393,7 @@ public class RadarComponent {
                         Line sampleLine = new Line(centerX, centerY, lineEndX, lineEndY);
                         sampleLine.setStroke(Color.rgb(255, 0, 255, 0.3));
                         sampleLine.setStrokeWidth(1);
-                        radarPane.getChildren().add(0, sampleLine); // Ajouter en arrière-plan
+                        radarGroup.getChildren().add(0, sampleLine); // Ajouter en arrière-plan
                         
                         // Dessiner le point d'échantillon seulement s'il est dans le radar
                         // (mais il peut être en dehors, donc on le dessine toujours)
@@ -367,7 +401,7 @@ public class RadarComponent {
                         samplePoint.setFill(Color.rgb(255, 0, 255)); // Magenta pour les échantillons
                         samplePoint.setStroke(Color.WHITE);
                         samplePoint.setStrokeWidth(1);
-                        radarPane.getChildren().add(samplePoint);
+                        radarGroup.getChildren().add(samplePoint);
                     }
                 }
             }
