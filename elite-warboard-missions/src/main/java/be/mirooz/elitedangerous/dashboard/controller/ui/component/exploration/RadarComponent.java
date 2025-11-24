@@ -350,6 +350,10 @@ public class RadarComponent {
                         distance = directionService.getDistanceTo(currentPos, sample);
                     }
                     
+                    // Calculer la position sur le radar
+                    double sampleX;
+                    double sampleY;
+                    
                     if (distance > 0) {
                         // Calculer la direction depuis la position actuelle vers l'échantillon
                         double direction = currentPos.calculateDirectionTo(sample);
@@ -358,25 +362,31 @@ public class RadarComponent {
                         // Calculer la position sur le radar (normalisée par rapport à scaleDistance)
                         // Ne PAS limiter à 1.0 - permettre aux points de sortir du radar
                         double normalizedDistance = distance / scaleDistance;
-                        double sampleX = centerX + Math.cos(directionRad) * normalizedDistance * radius * scaleFactor;
-                        double sampleY = centerY - Math.sin(directionRad) * normalizedDistance * radius * scaleFactor;
+                        sampleX = centerX + Math.cos(directionRad) * normalizedDistance * radius * scaleFactor;
+                        sampleY = centerY - Math.sin(directionRad) * normalizedDistance * radius * scaleFactor;
+                    } else {
+                        // Si le sample est à la même position que la currentPosition, le placer au centre
+                        sampleX = centerX;
+                        sampleY = centerY;
+                    }
+                    
+                    // Dessiner le cercle d'exclusion (zone où on ne peut pas prendre un nouvel échantillon)
+                    if (colonyRangeMeter != null && colonyRangeMeter > 0) {
+                        // Le cercle d'exclusion prend toujours 3/4 du rayon du radar
+                        // Peu importe la distance réelle, visuellement il occupe 3/4
+                        double exclusionRadius = exclusionRadiusOnRadar;
                         
-                        // Dessiner le cercle d'exclusion (zone où on ne peut pas prendre un nouvel échantillon)
-                        if (colonyRangeMeter != null && colonyRangeMeter > 0) {
-                            // Le cercle d'exclusion prend toujours 3/4 du rayon du radar
-                            // Peu importe la distance réelle, visuellement il occupe 3/4
-                            double exclusionRadius = exclusionRadiusOnRadar;
-                            
-                            // Dessiner le cercle d'exclusion (sera clippé par le radarPane)
-                            Circle exclusionCircle = new Circle(sampleX, sampleY, exclusionRadius);
-                            exclusionCircle.setFill(Color.TRANSPARENT);
-                            exclusionCircle.setStroke(Color.rgb(255, 0, 255, 0.6)); // Magenta semi-transparent
-                            exclusionCircle.setStrokeWidth(1.5);
-                            exclusionCircle.getStrokeDashArray().addAll(5.0, 5.0); // Ligne pointillée
-                            radarGroup.getChildren().add(0, exclusionCircle); // Ajouter en arrière-plan
-                        }
-                        
-                        // Dessiner une ligne depuis le centre vers l'échantillon
+                        // Dessiner le cercle d'exclusion (sera clippé par le radarPane)
+                        Circle exclusionCircle = new Circle(sampleX, sampleY, exclusionRadius);
+                        exclusionCircle.setFill(Color.TRANSPARENT);
+                        exclusionCircle.setStroke(Color.rgb(255, 0, 255, 0.6)); // Magenta semi-transparent
+                        exclusionCircle.setStrokeWidth(1.5);
+                        exclusionCircle.getStrokeDashArray().addAll(5.0, 5.0); // Ligne pointillée
+                        radarGroup.getChildren().add(0, exclusionCircle); // Ajouter en arrière-plan
+                    }
+                    
+                    // Dessiner une ligne depuis le centre vers l'échantillon seulement si distance > 0
+                    if (distance > 0) {
                         // Clipper la ligne au bord du radar si le point est en dehors
                         double lineEndX = sampleX;
                         double lineEndY = sampleY;
@@ -394,15 +404,14 @@ public class RadarComponent {
                         sampleLine.setStroke(Color.rgb(255, 0, 255, 0.3));
                         sampleLine.setStrokeWidth(1);
                         radarGroup.getChildren().add(0, sampleLine); // Ajouter en arrière-plan
-                        
-                        // Dessiner le point d'échantillon seulement s'il est dans le radar
-                        // (mais il peut être en dehors, donc on le dessine toujours)
-                        Circle samplePoint = new Circle(sampleX, sampleY, 4);
-                        samplePoint.setFill(Color.rgb(255, 0, 255)); // Magenta pour les échantillons
-                        samplePoint.setStroke(Color.WHITE);
-                        samplePoint.setStrokeWidth(1);
-                        radarGroup.getChildren().add(samplePoint);
                     }
+                    
+                    // Dessiner le point d'échantillon (toujours, même si distance == 0)
+                    Circle samplePoint = new Circle(sampleX, sampleY, 4);
+                    samplePoint.setFill(Color.rgb(255, 0, 255)); // Magenta pour les échantillons
+                    samplePoint.setStroke(Color.WHITE);
+                    samplePoint.setStrokeWidth(1);
+                    radarGroup.getChildren().add(samplePoint);
                 }
             }
         }

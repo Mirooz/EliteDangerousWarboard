@@ -15,7 +15,7 @@
     <HBox spacing="10" VBox.vgrow="ALWAYS">
         <!-- Panneau gauche : Liste des corps du système -->
         <VBox fx:id="bodiesListPanel" styleClass="exploration-bodies-list-panel" 
-              minWidth="450" maxWidth="550" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
+              minWidth="450" maxWidth="450" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
             <Label text="CORPS DU SYSTÈME" styleClass="exploration-section-title"/>
             <CheckBox fx:id="showOnlyHighValueBodiesCheckBox" text="Show only high value bodies" 
                       styleClass="exploration-filter-checkbox" 
