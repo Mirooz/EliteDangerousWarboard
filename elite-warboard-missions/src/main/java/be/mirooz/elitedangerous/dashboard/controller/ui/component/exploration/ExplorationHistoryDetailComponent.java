@@ -142,7 +142,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         // Mettre à jour le numéro du groupe
         boolean isCurrent = selectedSale == registry.getCurrentSale();
-        groupNumberLabel.setText(String.format("#%d / %d", currentIndex + 1, allSales.size()));
+        groupNumberLabel.setText(String.format("%d / %d", currentIndex + 1, allSales.size()));
         currentLabel.setVisible(isCurrent);
         
         // Mettre à jour les informations financières et systèmes
