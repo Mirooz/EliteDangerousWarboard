@@ -48,7 +48,6 @@ public class PlaneteRegistry {
             oldP.updateFrom(newP);
             return;
         }
-
         planetesMap.put(body.getBodyID(), body);
         getSortedBodiesForOrrery();
     }

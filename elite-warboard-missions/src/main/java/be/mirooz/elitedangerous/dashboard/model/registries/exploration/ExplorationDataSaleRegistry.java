@@ -45,14 +45,14 @@ public class ExplorationDataSaleRegistry {
         if (explorationDataOnHold.getSystemsVisitedMap().containsKey(systemVisited.getSystemName())){
             long value = 0;
             for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
-                value+= celesteBody.computeValue();
+                value+= celesteBody.computeBodyValue();
             }
             explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings()-value);
         }
         explorationDataOnHold.getSystemsVisitedMap().put(systemVisited.getSystemName(),systemVisited);
         long value = 0;
         for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
-            value+= celesteBody.computeValue();
+            value+= celesteBody.computeBodyValue();
         }
         explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings()+value);
     }

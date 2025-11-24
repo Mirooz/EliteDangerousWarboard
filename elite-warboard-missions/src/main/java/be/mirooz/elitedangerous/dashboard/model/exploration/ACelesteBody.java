@@ -24,10 +24,10 @@ public abstract class ACelesteBody {
     protected String bodyName;
     protected String starSystem;
     protected boolean mapped;
-    protected boolean efficiencyTargetMap;
+    @Builder.Default
+    protected boolean efficiencyTargetMap =true;
     protected long systemAddress;
     protected int bodyID;
-
     // Parents (hiérarchie orbitale)
     @Builder.Default
     protected List<ParentBody> parents = new ArrayList<>();
@@ -37,5 +37,5 @@ public abstract class ACelesteBody {
     protected boolean wasFootfalled;
     protected boolean wasDiscovered;
 
-    public abstract int computeValue();
+    public abstract long computeBodyValue();
 }

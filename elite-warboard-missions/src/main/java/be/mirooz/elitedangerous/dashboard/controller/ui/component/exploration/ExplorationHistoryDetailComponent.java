@@ -407,7 +407,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         // 6. Valeur en Cr (corps célestes + exobio collectés)
         long totalValue = system.getCelesteBodies().stream()
-                .mapToLong(ACelesteBody::computeValue)
+                .mapToLong(ACelesteBody::computeBodyValue)
                 .sum();
         
         // Calculer le prix total des exobio collectés

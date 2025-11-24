@@ -18,7 +18,7 @@ public class StarDetail extends ACelesteBody {
     private StarType starType;
     private double stellarMass;
     @Override
-    public int computeValue() {
+    public long computeBodyValue() {
 
         boolean firstDiscover = !wasDiscovered;
         boolean isFleetCarrierSale = false;

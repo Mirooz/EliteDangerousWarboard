@@ -24,7 +24,6 @@ public class ExplorationController implements Initializable, IRefreshable {
 
     // Composants
     private SystemVisualViewComponent systemVisualView;
-    private CurrentSystemInfoComponent currentSystemInfo;
     private ExplorationHistoryDetailComponent explorationHistoryDetail;
 
     @Override
@@ -77,9 +76,6 @@ public class ExplorationController implements Initializable, IRefreshable {
         Platform.runLater(() -> {
             if (systemVisualView != null) {
                 systemVisualView.refresh();
-            }
-            if (currentSystemInfo != null) {
-                currentSystemInfo.refresh();
             }
             if (explorationHistoryDetail != null) {
                 explorationHistoryDetail.refresh();

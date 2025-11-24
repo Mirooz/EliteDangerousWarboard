@@ -1379,53 +1379,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         // Créer un conteneur pour les lignes hiérarchiques et le contenu
         HBox mainContainer = new HBox(0);
         mainContainer.setAlignment(javafx.geometry.Pos.TOP_LEFT);
-        
+
         // Créer les lignes verticales pour la hiérarchie
         VBox hierarchyLines = new VBox(0);
         hierarchyLines.setAlignment(javafx.geometry.Pos.TOP_LEFT);
         hierarchyLines.setMinWidth(20 * depth);
         hierarchyLines.setPrefWidth(20 * depth);
         hierarchyLines.setMaxWidth(20 * depth);
-        
-        // Ajouter les lignes pour chaque niveau de profondeur
-        for (int i = 0; i < depth; i++) {
-            HBox lineContainer = new HBox(0);
-            lineContainer.setMinHeight(20);
-            lineContainer.setPrefHeight(20);
-            lineContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-            
-            // Vérifier si on doit continuer la ligne verticale
-            // On continue si ce niveau a un frère suivant
-            boolean continueLine = levelHasNext.getOrDefault(i, false);
-            
-            // Ligne verticale
-            javafx.scene.shape.Line verticalLine = new javafx.scene.shape.Line();
-            verticalLine.setStartX(10);
-            verticalLine.setStartY(0);
-            verticalLine.setEndX(10);
-            verticalLine.setEndY(continueLine ? 20 : 10);
-            verticalLine.setStroke(javafx.scene.paint.Color.rgb(255, 140, 0, 0.5));
-            verticalLine.setStrokeWidth(1);
-            
-            // Ligne horizontale (sauf pour le dernier niveau)
-            if (i == depth - 1) {
-                javafx.scene.shape.Line horizontalLine = new javafx.scene.shape.Line();
-                horizontalLine.setStartX(10);
-                horizontalLine.setStartY(10);
-                horizontalLine.setEndX(20);
-                horizontalLine.setEndY(10);
-                horizontalLine.setStroke(javafx.scene.paint.Color.rgb(255, 140, 0, 0.5));
-                horizontalLine.setStrokeWidth(1);
-                
-                StackPane linePane = new StackPane();
-                linePane.getChildren().addAll(verticalLine, horizontalLine);
-                lineContainer.getChildren().add(linePane);
-            } else {
-                lineContainer.getChildren().add(verticalLine);
-            }
-            
-            hierarchyLines.getChildren().add(lineContainer);
-        }
+
         
         // Contenu de la carte
         VBox cardContent = new VBox(5);
@@ -1478,6 +1439,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                     firstMappedLabel.getStyleClass().add("exploration-body-first-discovery");
                     headerRow.getChildren().add(firstMappedLabel);
                 }
+                //PRICE
+                Label price = new Label(Long.toString(planet.computeBodyValue()));
+                headerRow.getChildren().add(price);
             }
         }
         

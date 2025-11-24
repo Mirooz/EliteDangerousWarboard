@@ -39,7 +39,6 @@ public class PlaneteDetail extends ACelesteBody {
     // Atmosphère & volcanisme
     private AtmosphereType atmosphere;
     private VolcanismType volcanism;
-
     // Matériaux de surface
     private Map<String, Double> materials;
 
@@ -311,7 +310,7 @@ public class PlaneteDetail extends ACelesteBody {
     }
 
     @Override
-    public int computeValue() {
+    public long computeBodyValue() {
         boolean firstDiscover = !wasDiscovered;
         boolean firstMapped = !wasMapped;
         boolean isFleetCarrierSale = false;
@@ -355,6 +354,6 @@ public class PlaneteDetail extends ACelesteBody {
             value *= 0.75;
         }
 
-        return (int) Math.round(value);
+        return (long) Math.round(value);
     }
 }
