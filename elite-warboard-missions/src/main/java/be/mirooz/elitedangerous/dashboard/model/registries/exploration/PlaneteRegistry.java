@@ -123,7 +123,6 @@ public class PlaneteRegistry {
     }
 
     public void setAllPlanetes(Collection<ACelesteBody> planetes) {
-        clear();
         planetes.forEach( planete ->
                 planetesMap.put(planete.getBodyID(), planete)
         );

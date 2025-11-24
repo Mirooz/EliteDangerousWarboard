@@ -38,6 +38,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private VBox bodiesListPanel;
     @FXML
     private VBox bodiesListContainer;
+    
+    private RadarComponent radarComponent;
     @FXML
     private CheckBox showOnlyHighValueBodiesCheckBox;
     @FXML
@@ -121,6 +123,29 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         // Cocher la checkbox par défaut
         if (showOnlyHighValueBodiesCheckBox != null) {
             showOnlyHighValueBodiesCheckBox.setSelected(true);
+        }
+        
+        // Initialiser le radar
+        initializeRadar();
+    }
+    
+    /**
+     * Initialise le composant radar
+     */
+    private void initializeRadar() {
+        // Créer le composant radar
+        radarComponent = new RadarComponent();
+        
+        // Ajouter le radar au-dessus de la liste des corps
+        if (bodiesListPanel != null) {
+            // Insérer le radar après le titre et la checkbox, avant le ScrollPane
+            // Le titre est à l'index 0, la checkbox à l'index 1, le ScrollPane à l'index 2
+            // On insère le radar à l'index 2, ce qui déplace le ScrollPane à l'index 3
+            if (bodiesListPanel.getChildren().size() >= 2) {
+                bodiesListPanel.getChildren().add(2, radarComponent.getRadarPane());
+            } else {
+                bodiesListPanel.getChildren().add(radarComponent.getRadarPane());
+            }
         }
     }
     

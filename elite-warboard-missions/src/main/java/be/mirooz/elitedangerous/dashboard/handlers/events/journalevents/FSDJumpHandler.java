@@ -1,12 +1,14 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.biologic.BioSpecies;
+import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;

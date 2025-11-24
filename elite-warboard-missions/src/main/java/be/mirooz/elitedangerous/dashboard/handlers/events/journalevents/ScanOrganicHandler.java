@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.biologic.ScanTypeBio;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ScanOrganicData;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -68,6 +69,7 @@ public class ScanOrganicHandler implements JournalEventHandler {
                 System.out.printf("🔬 Scan organique traité: %s (BodyID: %d, ScanType: %s, Species: %s)%n",
                         planete.getBodyName(), scanOrganicData.getBody(), scanOrganicData.getScanType(),
                         scanOrganicData.getVariantLocalised());
+
             } else {
                 System.out.printf("⚠️ Planète non trouvée dans le registry pour BodyID: %d (ScanOrganic)%n",
                         scanOrganicData.getBody());

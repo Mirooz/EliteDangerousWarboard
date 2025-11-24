@@ -157,12 +157,12 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         // Mettre à jour la liste des systèmes visités
         systemsList.getChildren().clear();
-        for (SystemVisited system : selectedSale.getSystemsVisited()) {
-            VBox card = createSystemCardDirectly(system);
-            if (card != null) {
-                systemsList.getChildren().add(card);
-            }
-        }
+
+        selectedSale.getSystemsVisited().stream()
+                .sorted(Comparator.comparing(SystemVisited::getLastVisitedTime).reversed())
+                .map(this::createSystemCardDirectly)
+                .filter(Objects::nonNull)
+                .forEach(card -> systemsList.getChildren().add(card));
     }
     
     private String formatTimeRange(String startTime, String endTime) {
