@@ -33,9 +33,9 @@ public class ApproachBodyHandler implements JournalEventHandler {
 
             System.out.printf("[%s] Approaching body %s, %d \n",
                     timestamp,body,bodyID);
-            if (explorationService.isBiologicalAnalysisInProgress() && explorationService.isCurrentBiologicalAnalysisOnCurrentPlanet(body)) {
+           /* if (explorationService.isBiologicalAnalysisInProgress() && explorationService.isCurrentBiologicalAnalysisOnCurrentPlanet(body)) {
                 directionReaderService.startWatchingStatusFile(explorationService.getCurrentAnalysisPlanet().getRadius());
-            }
+            }*/
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement ApproachBody: " + e.getMessage());
             e.printStackTrace();

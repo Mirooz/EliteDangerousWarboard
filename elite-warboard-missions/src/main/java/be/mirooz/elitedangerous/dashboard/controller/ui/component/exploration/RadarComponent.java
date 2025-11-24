@@ -6,11 +6,13 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,48 +20,104 @@ import java.util.List;
  */
 public class RadarComponent {
     
+    private final StackPane radarContainer;
     private final Pane radarPane;
+    private final Pane labelsPane;
     private final DirectionReaderService directionService;
     private AnimationTimer updateTimer;
     
     public RadarComponent() {
         directionService = DirectionReaderService.getInstance();
         
-        // Créer le pane pour le radar
+        // Créer un conteneur StackPane pour superposer le radar clippé et les labels non clippés
+        radarContainer = new StackPane();
+        radarContainer.setPrefHeight(200);
+        radarContainer.setMinHeight(200);
+        radarContainer.setMaxHeight(200);
+        radarContainer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: -fx-elite-orange; -fx-border-width: 1px;");
+        
+        // Créer le pane pour le radar (sera clippé)
         radarPane = new Pane();
-        radarPane.setPrefHeight(200);
-        radarPane.setMinHeight(200);
-        radarPane.setMaxHeight(200);
-        radarPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: -fx-elite-orange; -fx-border-width: 1px;");
+        
+        // Créer le pane pour les labels (ne sera pas clippé)
+        labelsPane = new Pane();
+        labelsPane.setMouseTransparent(true); // Ne pas intercepter les événements de souris
+        
+        // Ajouter les deux panes au conteneur
+        radarContainer.getChildren().addAll(radarPane, labelsPane);
         
         // Redessiner le radar quand la taille change
-        radarPane.widthProperty().addListener((obs, oldVal, newVal) -> updateRadar());
-        radarPane.heightProperty().addListener((obs, oldVal, newVal) -> updateRadar());
+        radarContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
+            updateRadar();
+            updateClipping();
+        });
+        radarContainer.heightProperty().addListener((obs, oldVal, newVal) -> {
+            updateRadar();
+            updateClipping();
+        });
         
         // Utiliser un timer pour mettre à jour périodiquement (toutes les 500ms)
         updateTimer = new AnimationTimer() {
             private long lastUpdate = 0;
-            private static final long UPDATE_INTERVAL = 500_000_000L; // 500ms en nanosecondes
+            private static final long UPDATE_INTERVAL = 100_000_000L; // 500ms en nanosecondes
             
             @Override
             public void handle(long now) {
                 if (now - lastUpdate >= UPDATE_INTERVAL) {
                     lastUpdate = now;
-                    Platform.runLater(() -> updateRadar());
+                    Platform.runLater(() -> {
+                        updateRadar();
+                        updateClipping();
+                    });
                 }
             }
         };
         updateTimer.start();
         
-        // Dessiner le radar initial
-        Platform.runLater(() -> updateRadar());
+        // Dessiner le radar initial et appliquer le clipping
+        Platform.runLater(() -> {
+            updateRadar();
+            updateClipping();
+        });
     }
     
     /**
-     * Retourne le pane du radar
+     * Retourne le conteneur du radar (StackPane avec radar clippé et labels non clippés)
      */
-    public Pane getRadarPane() {
-        return radarPane;
+    public StackPane getRadarPane() {
+        return radarContainer;
+    }
+    
+    /**
+     * Met à jour le clipping du radar pour que les éléments ne dépassent pas les bords du cercle
+     */
+    private void updateClipping() {
+        if (radarPane == null || radarContainer == null) {
+            return;
+        }
+        
+        double width = radarContainer.getWidth();
+        double height = radarContainer.getHeight();
+        
+        // Si le conteneur n'a pas encore de taille, utiliser les valeurs préférées
+        if (width == 0) {
+            width = radarContainer.getPrefWidth() > 0 ? radarContainer.getPrefWidth() : 200;
+        }
+        if (height == 0) {
+            height = radarContainer.getPrefHeight() > 0 ? radarContainer.getPrefHeight() : 200;
+        }
+        
+        if (width > 0 && height > 0) {
+            double centerX = width / 2;
+            double centerY = height / 2;
+            // Utiliser exactement le même calcul de rayon que dans drawRadar()
+            double radius = Math.min(centerX, centerY) - 20;
+            
+            // Utiliser un cercle pour le clipping au lieu d'un rectangle
+            // Le clipping s'applique seulement au radarPane, pas au labelsPane
+            Circle clip = new Circle(centerX, centerY, radius);
+            radarPane.setClip(clip);
+        }
     }
     
     /**
@@ -72,6 +130,8 @@ public class RadarComponent {
         
         radarPane.getChildren().clear();
         drawRadar();
+        // Mettre à jour le clipping après le dessin pour s'assurer qu'il correspond au cercle
+        updateClipping();
     }
     
     /**
@@ -82,16 +142,16 @@ public class RadarComponent {
             return;
         }
         
-        // Attendre que le pane ait une taille
-        double width = radarPane.getWidth();
-        double height = radarPane.getHeight();
+        // Attendre que le conteneur ait une taille
+        double width = radarContainer.getWidth();
+        double height = radarContainer.getHeight();
         
-        // Si le pane n'a pas encore de taille, utiliser les valeurs préférées
+        // Si le conteneur n'a pas encore de taille, utiliser les valeurs préférées
         if (width == 0) {
-            width = radarPane.getPrefWidth() > 0 ? radarPane.getPrefWidth() : 200;
+            width = radarContainer.getPrefWidth() > 0 ? radarContainer.getPrefWidth() : 200;
         }
         if (height == 0) {
-            height = radarPane.getPrefHeight() > 0 ? radarPane.getPrefHeight() : 200;
+            height = radarContainer.getPrefHeight() > 0 ? radarContainer.getPrefHeight() : 200;
         }
         
         double centerX = width / 2;
@@ -131,30 +191,32 @@ public class RadarComponent {
         westLine.setStrokeWidth(1);
         radarPane.getChildren().add(westLine);
         
-        // Labels des points cardinaux
+        // Labels des points cardinaux (dans le labelsPane non clippé)
+        labelsPane.getChildren().clear();
+        
         Label northLabel = new Label("N");
         northLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 12px; -fx-font-weight: bold;");
         northLabel.setLayoutX(centerX - 6);
         northLabel.setLayoutY(centerY - radius - 18);
-        radarPane.getChildren().add(northLabel);
+        labelsPane.getChildren().add(northLabel);
         
         Label southLabel = new Label("S");
         southLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 12px; -fx-font-weight: bold;");
         southLabel.setLayoutX(centerX - 6);
         southLabel.setLayoutY(centerY + radius + 5);
-        radarPane.getChildren().add(southLabel);
+        labelsPane.getChildren().add(southLabel);
         
         Label eastLabel = new Label("E");
         eastLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 12px; -fx-font-weight: bold;");
         eastLabel.setLayoutX(centerX + radius + 5);
         eastLabel.setLayoutY(centerY - 8);
-        radarPane.getChildren().add(eastLabel);
+        labelsPane.getChildren().add(eastLabel);
         
         Label westLabel = new Label("W");
         westLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 12px; -fx-font-weight: bold;");
         westLabel.setLayoutX(centerX - radius - 18);
         westLabel.setLayoutY(centerY - 8);
-        radarPane.getChildren().add(westLabel);
+        labelsPane.getChildren().add(westLabel);
         
         // Obtenir la position actuelle
         Position currentPos = directionService.getCurrentPosition();
@@ -205,28 +267,47 @@ public class RadarComponent {
             
             // Dessiner les points d'échantillons biologiques
             List<Position> samplePositions = directionService.getCurrentBiologicalSamplePositions();
+            Double colonyRangeMeter = directionService.getColonyRangeMeter();
+            
             if (samplePositions != null && !samplePositions.isEmpty()) {
-                // Trouver la distance maximale pour l'échelle
-                double maxDistance = 0;
+                // Facteur d'échelle pour utiliser 85% du rayon du radar
+                double scaleFactor = 0.85;
+                
+                // Le cercle d'exclusion doit prendre 3/4 du rayon du radar visuellement
+                double exclusionRadiusOnRadar = radius * scaleFactor * 0.75;
+                
+                // Calculer les distances réelles de tous les échantillons
+                List<Double> distances = new ArrayList<>();
                 for (Position sample : samplePositions) {
-                    if (sample.getDistanceFromCurrent() > 0) {
-                        maxDistance = Math.max(maxDistance, sample.getDistanceFromCurrent());
+                    double distance = sample.getDistanceFromCurrent();
+                    if (distance <= 0) {
+                        distance = directionService.getDistanceTo(currentPos, sample);
+                    }
+                    if (distance > 0) {
+                        distances.add(distance);
                     }
                 }
                 
-                // Si pas de distance calculée, utiliser une distance par défaut basée sur les coordonnées
-                if (maxDistance == 0) {
-                    for (Position sample : samplePositions) {
-                        double distance = directionService.getDistanceTo(currentPos, sample);
-                        if (distance > 0) {
-                            maxDistance = Math.max(maxDistance, distance);
-                        }
-                    }
-                }
+                // Trouver la distance maximale des échantillons
+                double maxSampleDistance = distances.stream()
+                    .mapToDouble(Double::doubleValue)
+                    .max()
+                    .orElse(0);
                 
-                // Si toujours pas de distance, utiliser une valeur par défaut
-                if (maxDistance == 0) {
-                    maxDistance = 1000; // 1km par défaut
+                // Si on a colonyRangeMeter, utiliser cette distance comme référence pour l'échelle du cercle
+                // Le cercle d'exclusion représente colonyRangeMeter et doit prendre 3/4 du radar
+                // Mais les points peuvent sortir du radar (comme un vrai radar)
+                double scaleDistance; // Distance utilisée pour l'échelle (colonyRangeMeter = 3/4 du radar)
+                if (colonyRangeMeter != null && colonyRangeMeter > 0) {
+                    // Utiliser colonyRangeMeter comme référence pour l'échelle
+                    // Le cercle d'exclusion prend 3/4 du radar, donc colonyRangeMeter = 3/4 du rayon
+                    scaleDistance = colonyRangeMeter;
+                } else {
+                    // Si pas de colonyRangeMeter, utiliser la distance maximale des échantillons
+                    scaleDistance = maxSampleDistance;
+                    if (scaleDistance == 0) {
+                        scaleDistance = 1000; // 1km par défaut
+                    }
                 }
                 
                 for (Position sample : samplePositions) {
@@ -240,23 +321,53 @@ public class RadarComponent {
                         double direction = currentPos.calculateDirectionTo(sample);
                         double directionRad = Math.toRadians(90 - direction); // Même ajustement que pour le heading
                         
-                        // Calculer la position sur le radar (normalisée par rapport au rayon)
-                        double normalizedDistance = Math.min(distance / maxDistance, 1.0); // Limiter à 1.0
-                        double sampleX = centerX + Math.cos(directionRad) * normalizedDistance * radius * 0.9;
-                        double sampleY = centerY - Math.sin(directionRad) * normalizedDistance * radius * 0.9;
+                        // Calculer la position sur le radar (normalisée par rapport à scaleDistance)
+                        // Ne PAS limiter à 1.0 - permettre aux points de sortir du radar
+                        double normalizedDistance = distance / scaleDistance;
+                        double sampleX = centerX + Math.cos(directionRad) * normalizedDistance * radius * scaleFactor;
+                        double sampleY = centerY - Math.sin(directionRad) * normalizedDistance * radius * scaleFactor;
                         
-                        // Dessiner le point d'échantillon
+                        // Dessiner le cercle d'exclusion (zone où on ne peut pas prendre un nouvel échantillon)
+                        if (colonyRangeMeter != null && colonyRangeMeter > 0) {
+                            // Le cercle d'exclusion prend toujours 3/4 du rayon du radar
+                            // Peu importe la distance réelle, visuellement il occupe 3/4
+                            double exclusionRadius = exclusionRadiusOnRadar;
+                            
+                            // Dessiner le cercle d'exclusion (sera clippé par le radarPane)
+                            Circle exclusionCircle = new Circle(sampleX, sampleY, exclusionRadius);
+                            exclusionCircle.setFill(Color.TRANSPARENT);
+                            exclusionCircle.setStroke(Color.rgb(255, 0, 255, 0.6)); // Magenta semi-transparent
+                            exclusionCircle.setStrokeWidth(1.5);
+                            exclusionCircle.getStrokeDashArray().addAll(5.0, 5.0); // Ligne pointillée
+                            radarPane.getChildren().add(0, exclusionCircle); // Ajouter en arrière-plan
+                        }
+                        
+                        // Dessiner une ligne depuis le centre vers l'échantillon
+                        // Clipper la ligne au bord du radar si le point est en dehors
+                        double lineEndX = sampleX;
+                        double lineEndY = sampleY;
+                        
+                        // Si le point est en dehors du radar, clipper la ligne au bord
+                        double distanceFromCenter = Math.sqrt(Math.pow(sampleX - centerX, 2) + Math.pow(sampleY - centerY, 2));
+                        if (distanceFromCenter > radius * scaleFactor) {
+                            // Le point est en dehors, clipper la ligne au bord du radar
+                            double angle = Math.atan2(sampleY - centerY, sampleX - centerX);
+                            lineEndX = centerX + Math.cos(angle) * radius * scaleFactor;
+                            lineEndY = centerY + Math.sin(angle) * radius * scaleFactor;
+                        }
+                        
+                        Line sampleLine = new Line(centerX, centerY, lineEndX, lineEndY);
+                        sampleLine.setStroke(Color.rgb(255, 0, 255, 0.3));
+                        sampleLine.setStrokeWidth(1);
+                        radarPane.getChildren().add(0, sampleLine); // Ajouter en arrière-plan
+                        
+                        // Dessiner le point d'échantillon seulement s'il est dans le radar
+                        // (mais il peut être en dehors, donc on le dessine toujours)
                         Circle samplePoint = new Circle(sampleX, sampleY, 4);
                         samplePoint.setFill(Color.rgb(255, 0, 255)); // Magenta pour les échantillons
                         samplePoint.setStroke(Color.WHITE);
                         samplePoint.setStrokeWidth(1);
                         radarPane.getChildren().add(samplePoint);
-                        
-                        // Optionnel : dessiner une ligne depuis le centre vers l'échantillon
-                        Line sampleLine = new Line(centerX, centerY, sampleX, sampleY);
-                        sampleLine.setStroke(Color.rgb(255, 0, 255, 0.3));
-                        sampleLine.setStrokeWidth(1);
-                        radarPane.getChildren().add(0, sampleLine); // Ajouter en arrière-plan
                     }
                 }
             }

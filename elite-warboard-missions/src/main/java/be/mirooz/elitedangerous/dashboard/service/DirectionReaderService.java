@@ -3,11 +3,9 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Position;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -206,6 +204,13 @@ public class DirectionReaderService {
      */
     public Position getPreviousPosition() {
         return previousPosition;
+    }
+    
+    /**
+     * Retourne la distance minimale requise pour prendre un nouvel échantillon (colonyRangeMeter)
+     */
+    public Double getColonyRangeMeter() {
+        return colonyRangeMeter;
     }
 
     /**

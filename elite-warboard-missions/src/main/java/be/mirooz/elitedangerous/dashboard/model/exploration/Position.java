@@ -71,6 +71,8 @@ public class Position {
     public boolean isDifferentFrom(Position other, double tolerance) {
         if (other == null) return true;
         return Math.abs(this.latitude - other.latitude) > tolerance ||
-                Math.abs(this.longitude - other.longitude) > tolerance;
+                Math.abs(this.longitude - other.longitude) > tolerance ||
+                Math.abs(this.heading - other.heading) > tolerance;
     }
+
 }
