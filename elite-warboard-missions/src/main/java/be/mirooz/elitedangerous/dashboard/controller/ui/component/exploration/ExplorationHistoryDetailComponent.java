@@ -91,10 +91,18 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     }
     @Override
     public void onBatchEnd() {
-        refresh();
+        refresh(() -> {
+            // Sélectionner automatiquement le système actuel dans la vue exploration après le refresh
+            // Utiliser un Platform.runLater supplémentaire pour s'assurer que l'UI est complètement mise à jour
+            Platform.runLater(this::seeCurrentSystem);
+        });
     }
 
     public void refresh() {
+        refresh(null);
+    }
+
+    private void refresh(Runnable afterUpdate) {
         Platform.runLater(() -> {
             // Obtenir toutes les ventes triées
             allSales.clear();
@@ -118,6 +126,11 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             }
             
             updateUI();
+            
+            // Exécuter le callback après la mise à jour de l'UI
+            if (afterUpdate != null) {
+                afterUpdate.run();
+            }
         });
     }
 
@@ -214,23 +227,47 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             return;
         }
         
-        // Placer l'historique sur l'élément 0 (exploration en cours)
-        currentIndex = 0;
-        updateUI();
-        
-        // Trouver le système courant dans la liste
+        // Trouver le système courant
         String currentStarSystem = CommanderStatus.getInstance().getCurrentStarSystem();
-        if (currentStarSystem != null && !currentStarSystem.isEmpty() && selectedSale != null) {
-            // Chercher le système correspondant dans la liste des systèmes visités
-            SystemVisited currentSystem = selectedSale.getSystemsVisited().stream()
-                    .filter(system -> currentStarSystem.equals(system.getSystemName()))
-                    .findFirst()
-                    .orElse(null);
+        if (currentStarSystem == null || currentStarSystem.isEmpty()) {
+            // Si pas de système actuel, afficher juste l'exploration en cours
+            currentIndex = 0;
+            updateUI();
+            return;
+        }
+        
+        // Chercher le système dans tous les groupes d'exploration
+        SystemVisited currentSystem = null;
+        int foundIndex = -1;
+        
+        for (int i = 0; i < allSales.size(); i++) {
+            ExplorationData sale = allSales.get(i);
+            if (sale != null && sale.getSystemsVisited() != null) {
+                currentSystem = sale.getSystemsVisited().stream()
+                        .filter(system -> currentStarSystem.equals(system.getSystemName()))
+                        .findFirst()
+                        .orElse(null);
+                
+                if (currentSystem != null) {
+                    foundIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        // Si le système est trouvé, naviguer vers le groupe correspondant et le sélectionner
+        if (foundIndex >= 0) {
+            currentIndex = foundIndex;
+            updateUI();
             
-            // Si le système est trouvé, le sélectionner
+            // Sélectionner le système dans la vue visuelle
             if (currentSystem != null && onSystemSelected != null) {
                 onSystemSelected.accept(currentSystem);
             }
+        } else {
+            // Si le système n'est pas trouvé, afficher au moins l'exploration en cours
+            currentIndex = 0;
+            updateUI();
         }
     }
 
