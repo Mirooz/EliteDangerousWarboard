@@ -36,6 +36,9 @@ public class RadarComponent {
         radarContainer.setPrefHeight(200);
         radarContainer.setMinHeight(200);
         radarContainer.setMaxHeight(200);
+        // Permettre l'expansion en largeur pour afficher les labels à droite dans le panel
+        radarContainer.setPrefWidth(350); // 200 (radar) + 150 (labels)
+        radarContainer.setMinWidth(200);
         radarContainer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: -fx-elite-orange; -fx-border-width: 1px;");
         
         // Créer un Group pour le radar (sera clippé)
@@ -131,8 +134,10 @@ public class RadarComponent {
             // Utiliser exactement le même calcul de rayon que dans drawRadar()
             double radius = Math.min(centerX, centerY) - 20;
             
-            // Clipper le conteneur principal avec un rectangle pour empêcher l'expansion
-            Rectangle containerClip = new Rectangle(0, 0, width, height);
+            // Clipper le conteneur principal avec un rectangle qui permet l'affichage des labels à droite
+            // La largeur du clip est augmentée pour permettre l'affichage des distances
+            double clipWidth = width + 150; // Espace pour les labels à droite
+            Rectangle containerClip = new Rectangle(0, 0, clipWidth, height);
             radarContainer.setClip(containerClip);
             
             // Utiliser un cercle pour le clipping du radarGroup
@@ -146,10 +151,10 @@ public class RadarComponent {
             labelsPane.setLayoutX(0);
             labelsPane.setLayoutY(0);
             
-            // Forcer la taille du labelsPane pour qu'il ne s'agrandisse pas
-            labelsPane.setPrefWidth(width);
+            // Permettre au labelsPane de s'étendre à droite pour afficher les distances
+            labelsPane.setPrefWidth(width + 150); // Espace pour les labels à droite
             labelsPane.setPrefHeight(height);
-            labelsPane.setMaxWidth(width);
+            labelsPane.setMaxWidth(Double.MAX_VALUE); // Pas de limite de largeur
             labelsPane.setMaxHeight(height);
         }
     }
@@ -307,9 +312,6 @@ public class RadarComponent {
                 // Facteur d'échelle pour utiliser 85% du rayon du radar
                 double scaleFactor = 0.85;
                 
-                // Le cercle d'exclusion doit prendre 3/4 du rayon du radar visuellement
-                double exclusionRadiusOnRadar = radius * scaleFactor * 0.75;
-                
                 // Calculer les distances réelles de tous les échantillons
                 List<Double> distances = new ArrayList<>();
                 for (Position sample : samplePositions) {
@@ -329,13 +331,14 @@ public class RadarComponent {
                     .orElse(0);
                 
                 // Si on a colonyRangeMeter, utiliser cette distance comme référence pour l'échelle du cercle
-                // Le cercle d'exclusion représente colonyRangeMeter et doit prendre 3/4 du radar
+                // Le cercle d'exclusion représente colonyRangeMeter et doit visuellement prendre 3/4 du radar
                 // Mais les points peuvent sortir du radar (comme un vrai radar)
-                double scaleDistance; // Distance utilisée pour l'échelle (colonyRangeMeter = 3/4 du radar)
+                double scaleDistance; // Distance utilisée pour l'échelle
                 if (colonyRangeMeter != null && colonyRangeMeter > 0) {
-                    // Utiliser colonyRangeMeter comme référence pour l'échelle
-                    // Le cercle d'exclusion prend 3/4 du radar, donc colonyRangeMeter = 3/4 du rayon
-                    scaleDistance = colonyRangeMeter;
+                    // Ajuster scaleDistance pour que le cercle d'exclusion soit à 3/4 du radar
+                    // Si le cercle doit être à 3/4, alors quand distance = colonyRangeMeter, 
+                    // normalizedDistance doit être 0.75, donc scaleDistance = colonyRangeMeter / 0.75
+                    scaleDistance = colonyRangeMeter / 0.75; // = colonyRangeMeter * 4/3
                 } else {
                     // Si pas de colonyRangeMeter, utiliser la distance maximale des échantillons
                     scaleDistance = maxSampleDistance;
@@ -344,6 +347,20 @@ public class RadarComponent {
                     }
                 }
                 
+                // Calculer le rayon du cercle d'exclusion pour qu'il soit à 3/4 du radar
+                // Le cercle doit toujours visuellement prendre 3/4 du rayon du radar
+                double exclusionRadiusOnRadar = radius * scaleFactor * 0.75;
+                
+                // Afficher colonyRangeMeter comme "Min" à droite du cercle du radar (dans le panel)
+                if (colonyRangeMeter != null && colonyRangeMeter > 0) {
+                    Label minDistanceLabel = new Label(String.format("Min: %.0f m", colonyRangeMeter));
+                    minDistanceLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 18px; -fx-font-weight: bold;");
+                    minDistanceLabel.setLayoutX(centerX + radius + 10);
+                    minDistanceLabel.setLayoutY(centerY - radius);
+                    labelsPane.getChildren().add(minDistanceLabel);
+                }
+                
+                int sampleIndex = 0;
                 for (Position sample : samplePositions) {
                     double distance = sample.getDistanceFromCurrent();
                     if (distance <= 0) {
@@ -370,6 +387,19 @@ public class RadarComponent {
                         sampleY = centerY;
                     }
                     
+                    // Déterminer la couleur selon l'index du sample
+                    Color sampleColor;
+                    String colorHex;
+                    if (sampleIndex == 0) {
+                        // Premier sample : magenta/rose
+                        sampleColor = Color.rgb(255, 0, 255);
+                        colorHex = "#FF00FF";
+                    } else {
+                        // Second sample et suivants : cyan
+                        sampleColor = Color.rgb(0, 255, 255);
+                        colorHex = "#00FFFF";
+                    }
+                    
                     // Dessiner le cercle d'exclusion (zone où on ne peut pas prendre un nouvel échantillon)
                     if (colonyRangeMeter != null && colonyRangeMeter > 0) {
                         // Le cercle d'exclusion prend toujours 3/4 du rayon du radar
@@ -379,39 +409,35 @@ public class RadarComponent {
                         // Dessiner le cercle d'exclusion (sera clippé par le radarPane)
                         Circle exclusionCircle = new Circle(sampleX, sampleY, exclusionRadius);
                         exclusionCircle.setFill(Color.TRANSPARENT);
-                        exclusionCircle.setStroke(Color.rgb(255, 0, 255, 0.6)); // Magenta semi-transparent
+                        exclusionCircle.setStroke(Color.color(sampleColor.getRed(), sampleColor.getGreen(), sampleColor.getBlue(), 0.6));
                         exclusionCircle.setStrokeWidth(1.5);
                         exclusionCircle.getStrokeDashArray().addAll(5.0, 5.0); // Ligne pointillée
                         radarGroup.getChildren().add(0, exclusionCircle); // Ajouter en arrière-plan
                     }
                     
-                    // Dessiner une ligne depuis le centre vers l'échantillon seulement si distance > 0
-                    if (distance > 0) {
-                        // Clipper la ligne au bord du radar si le point est en dehors
-                        double lineEndX = sampleX;
-                        double lineEndY = sampleY;
-                        
-                        // Si le point est en dehors du radar, clipper la ligne au bord
-                        double distanceFromCenter = Math.sqrt(Math.pow(sampleX - centerX, 2) + Math.pow(sampleY - centerY, 2));
-                        if (distanceFromCenter > radius * scaleFactor) {
-                            // Le point est en dehors, clipper la ligne au bord du radar
-                            double angle = Math.atan2(sampleY - centerY, sampleX - centerX);
-                            lineEndX = centerX + Math.cos(angle) * radius * scaleFactor;
-                            lineEndY = centerY + Math.sin(angle) * radius * scaleFactor;
-                        }
-                        
-                        Line sampleLine = new Line(centerX, centerY, lineEndX, lineEndY);
-                        sampleLine.setStroke(Color.rgb(255, 0, 255, 0.3));
-                        sampleLine.setStrokeWidth(1);
-                        radarGroup.getChildren().add(0, sampleLine); // Ajouter en arrière-plan
-                    }
-                    
                     // Dessiner le point d'échantillon (toujours, même si distance == 0)
                     Circle samplePoint = new Circle(sampleX, sampleY, 4);
-                    samplePoint.setFill(Color.rgb(255, 0, 255)); // Magenta pour les échantillons
+                    samplePoint.setFill(sampleColor);
                     samplePoint.setStroke(Color.WHITE);
                     samplePoint.setStrokeWidth(1);
                     radarGroup.getChildren().add(samplePoint);
+                    
+                    // Afficher la distance du sample à droite du cercle du radar (dans le panel)
+                    if (distance > 0) {
+                        Label distanceLabel = new Label(String.format("%.0f m", distance));
+                        distanceLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-size: 18px;", colorHex));
+                        distanceLabel.setLayoutX(centerX + radius + 10);
+                        distanceLabel.setLayoutY(centerY - radius + 20 + (sampleIndex * 25));
+                        labelsPane.getChildren().add(distanceLabel);
+                    } else {
+                        Label distanceLabel = new Label("0 m");
+                        distanceLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-size: 18px;", colorHex));
+                        distanceLabel.setLayoutX(centerX + radius + 10);
+                        distanceLabel.setLayoutY(centerY - radius + 20 + (sampleIndex * 25));
+                        labelsPane.getChildren().add(distanceLabel);
+                    }
+                    
+                    sampleIndex++;
                 }
             }
         }
