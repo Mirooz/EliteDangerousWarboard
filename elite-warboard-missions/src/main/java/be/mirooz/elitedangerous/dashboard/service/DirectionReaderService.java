@@ -190,6 +190,7 @@ public class DirectionReaderService {
         currentPosition.set(null);
         previousPosition = null;
         colonyRangeMeter = null;
+        currentBiologicalSamplePositions.clear();
     }
 
     /**
