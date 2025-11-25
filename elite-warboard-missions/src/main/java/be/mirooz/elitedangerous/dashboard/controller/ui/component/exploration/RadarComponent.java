@@ -26,9 +26,11 @@ public class RadarComponent {
     private final Pane labelsPane;
     private final DirectionReaderService directionService;
     private AnimationTimer updateTimer;
+    private static RadarComponent instance;
     
     public RadarComponent() {
         directionService = DirectionReaderService.getInstance();
+        instance = this;
         
         // Créer un conteneur Pane pour superposer le radar clippé et les labels non clippés
         // Utiliser un Pane au lieu d'un StackPane pour éviter le centrage automatique
@@ -94,6 +96,10 @@ public class RadarComponent {
             }
         };
         updateTimer.start();
+        
+        // Cacher le radar par défaut
+        radarContainer.setVisible(false);
+        radarContainer.setManaged(false);
         
         // Dessiner le radar initial et appliquer le clipping
         Platform.runLater(() -> {
@@ -451,6 +457,33 @@ public class RadarComponent {
             updateTimer.stop();
             updateTimer = null;
         }
+    }
+    
+    /**
+     * Affiche le panel du radar
+     */
+    public void showRadar() {
+        if (radarContainer != null) {
+            radarContainer.setVisible(true);
+            radarContainer.setManaged(true);
+        }
+    }
+    
+    /**
+     * Cache le panel du radar
+     */
+    public void hideRadar() {
+        if (radarContainer != null) {
+            radarContainer.setVisible(false);
+            radarContainer.setManaged(false);
+        }
+    }
+    
+    /**
+     * Retourne l'instance actuelle du RadarComponent (peut être null)
+     */
+    public static RadarComponent getInstance() {
+        return instance;
     }
 }
 

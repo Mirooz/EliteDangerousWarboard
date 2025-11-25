@@ -118,6 +118,13 @@ public class DirectionReaderService {
         }
 
         System.out.println("[StatusWatcher] Démarrage de la surveillance de Status.json");
+        
+        // Afficher le panel du radar
+        be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent radarComponent = 
+            be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent.getInstance();
+        if (radarComponent != null) {
+            javafx.application.Platform.runLater(() -> radarComponent.showRadar());
+        }
 
         statusWatcherTask = scheduler.scheduleAtFixedRate(() -> {
 
@@ -191,6 +198,13 @@ public class DirectionReaderService {
         previousPosition = null;
         colonyRangeMeter = null;
         currentBiologicalSamplePositions.clear();
+        
+        // Cacher le panel du radar
+        be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent radarComponent = 
+            be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent.getInstance();
+        if (radarComponent != null) {
+            javafx.application.Platform.runLater(() -> radarComponent.hideRadar());
+        }
     }
 
     /**
