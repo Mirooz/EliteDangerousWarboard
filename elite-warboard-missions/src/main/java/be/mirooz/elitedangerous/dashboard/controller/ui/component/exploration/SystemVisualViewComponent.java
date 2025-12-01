@@ -1519,7 +1519,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                     headerRow.getChildren().add(firstMappedLabel);
                 }
                 //PRICE
+                //Simule la planete mappé
+                boolean mappedTemp =planet.isMapped();
+                planet.setMapped(true);
                 long bodyValue = planet.computeBodyValue();
+                planet.setMapped(mappedTemp);
                 Label price = new Label(String.format("%,d Cr", bodyValue));
                 price.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 14px; -fx-font-weight: bold;");
                 headerRow.getChildren().add(price);
