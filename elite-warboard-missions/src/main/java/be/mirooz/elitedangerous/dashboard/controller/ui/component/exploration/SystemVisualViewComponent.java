@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
 import be.mirooz.elitedangerous.biologic.BioSpecies;
+import be.mirooz.elitedangerous.biologic.StarType;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
@@ -58,9 +59,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private TreeView<JsonTreeItem> jsonTreeView;
 
     private Image gasImage;
-    private Image starImage;
+    private Image starImage; // Image par défaut pour les étoiles (fallback)
     // Images par type de planète
     private final Map<be.mirooz.elitedangerous.biologic.BodyType, Image> planetImages = new HashMap<>();
+    // Images par type d'étoile
+    private final Map<StarType, Image> starImages = new HashMap<>();
     private Image exobioImage;
     private Image mappedImage;
     private SystemVisited currentSystem;
@@ -98,6 +101,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         
         // Charger les images par type de planète
         loadPlanetImages();
+        
+        // Charger les images par type d'étoile
+        loadStarImages();
         
         // Initialiser la transformation de zoom
         zoomTransform = new Scale(1.0, 1.0);
@@ -643,10 +649,32 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     }
     
     /**
+     * Charge les images pour chaque type d'étoile
+     */
+    private void loadStarImages() {
+        StarType[] types = StarType.values();
+        for (StarType type : types) {
+            String imageName = type.getImageName();
+            try {
+                Image image = new Image(getClass().getResourceAsStream("/images/exploration/" + imageName));
+                starImages.put(type, image);
+            } catch (Exception e) {
+                // Si l'image n'existe pas, utiliser l'image par défaut (star.png)
+                System.err.println("Image non trouvée pour " + type + " (" + imageName + "), utilisation de star.png par défaut");
+            }
+        }
+    }
+    
+    /**
      * Obtient l'image appropriée pour un corps céleste
      */
     private Image getImageForBody(ACelesteBody body) {
-        if (body instanceof StarDetail) {
+        if (body instanceof StarDetail star) {
+            StarType starType = star.getStarType();
+            if (starType != null && starImages.containsKey(starType)) {
+                return starImages.get(starType);
+            }
+            // Fallback sur starImage si l'image n'est pas trouvée
             return starImage;
         } else if (body instanceof PlaneteDetail planet) {
             be.mirooz.elitedangerous.biologic.BodyType planetClass = planet.getPlanetClass();

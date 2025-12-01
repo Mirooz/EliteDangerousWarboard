@@ -2,9 +2,6 @@ package be.mirooz.elitedangerous.biologic;
 
 import lombok.Getter;
 
-import java.util.EnumSet;
-import java.util.List;
-
 @Getter
 public enum StarType {
 
@@ -56,5 +53,21 @@ public enum StarType {
         return STAR;
     }
 
+    /**
+     * Retourne le nom du fichier image correspondant au type d'étoile
+     * Les images sont basées sur celles disponibles sur EDSM
+     * @return le nom du fichier image (ex: "Star_G.png")
+     */
+    public String getImageName() {
+        return switch (this) {
+            case BLACK_HOLE -> "Star_Black_Hole.png";
+            case NEUTRON_STAR -> "Star_Neutron.png";
+            case WHITE_DWARF -> "Star_D.png";
+            case HERBIG -> "Star_Herbig_Ae_Be.png";
+            case BROWN_DWARF -> "Star_L.png"; // Utilise L comme image par défaut pour les naines brunes
+            case WOLF_RAYET -> "Star_Wolf_Rayet.png";
+            case STAR -> "Star_G.png"; // Étoile normale (type G comme le soleil)
+        };
+    }
 
 }
