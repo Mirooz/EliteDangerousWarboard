@@ -209,12 +209,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         boolean hasBodies = false;
         for (BodyPosition pos : bodyPositions.values()) {
             hasBodies = true;
-            // Prendre en compte la taille de l'image (60x60, centrée)
-            double bodyRadius = 30;
+            // Prendre en compte la taille réelle du corps (centrée)
+            double bodyRadius = pos.size / 2;
             minX = Math.min(minX, pos.x - bodyRadius);
             maxX = Math.max(maxX, pos.x + bodyRadius);
             minY = Math.min(minY, pos.y - bodyRadius);
-            maxY = Math.max(maxY, pos.y);
+            maxY = Math.max(maxY, pos.y + bodyRadius);
         }
         
         // Si aucun corps n'a été trouvé, utiliser les dimensions du pane
@@ -427,8 +427,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             
             for (ACelesteBody star : stars) {
                 // Positionner l'étoile verticalement à gauche
-                bodyPositions.put(star.getBodyID(), new BodyPosition(startX, currentStarY, star));
-                ImageView starView = createBodyImageView(star, startX, currentStarY);
+                double starSize = getBodySize(BodyHierarchyType.STAR);
+                bodyPositions.put(star.getBodyID(), new BodyPosition(startX, currentStarY, star, starSize));
+                ImageView starView = createBodyImageView(star, startX, currentStarY, BodyHierarchyType.STAR);
                 bodiesPane.getChildren().add(starView);
 
                 // Positionner les planètes directes de cette étoile en chaîne horizontale à droite
@@ -442,8 +443,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                         ACelesteBody planet = directPlanets.get(i);
                         
                         // Positionner la planète
-                        bodyPositions.put(planet.getBodyID(), new BodyPosition(planetX, planetY, planet));
-                        ImageView planetView = createBodyImageView(planet, planetX, planetY);
+                        double planetSize = getBodySize(BodyHierarchyType.PLANET);
+                        bodyPositions.put(planet.getBodyID(), new BodyPosition(planetX, planetY, planet, planetSize));
+                        ImageView planetView = createBodyImageView(planet, planetX, planetY, BodyHierarchyType.PLANET);
                         bodiesPane.getChildren().add(planetView);
                         
                         // Ajouter les icônes sous la planète (exobio et mapped)
@@ -457,8 +459,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                             int moonY = planetY + moonVerticalSpacing;
                             for (ACelesteBody moon : moons) {
                                 // Positionner la lune
-                                bodyPositions.put(moon.getBodyID(), new BodyPosition(planetX, moonY, moon));
-                                ImageView moonView = createBodyImageView(moon, planetX, moonY);
+                                double moonSize = getBodySize(BodyHierarchyType.MOON);
+                                bodyPositions.put(moon.getBodyID(), new BodyPosition(planetX, moonY, moon, moonSize));
+                                ImageView moonView = createBodyImageView(moon, planetX, moonY, BodyHierarchyType.MOON);
                                 bodiesPane.getChildren().add(moonView);
                                 
                                 // Ajouter les icônes sous la lune (exobio et mapped)
@@ -469,8 +472,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                 if (subMoons != null && !subMoons.isEmpty()) {
                                     int subMoonX = planetX + horizontalSpacing;
                                     for (ACelesteBody subMoon : subMoons) {
-                                        bodyPositions.put(subMoon.getBodyID(), new BodyPosition(subMoonX, moonY, subMoon));
-                                        ImageView subMoonView = createBodyImageView(subMoon, subMoonX, moonY);
+                                        double subMoonSize = getBodySize(BodyHierarchyType.SUB_MOON);
+                                        bodyPositions.put(subMoon.getBodyID(), new BodyPosition(subMoonX, moonY, subMoon, subMoonSize));
+                                        ImageView subMoonView = createBodyImageView(subMoon, subMoonX, moonY, BodyHierarchyType.SUB_MOON);
                                         bodiesPane.getChildren().add(subMoonView);
                                         
                                         // Ajouter les icônes sous la lune de lune (exobio et mapped)
@@ -548,8 +552,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                         if (parentPos != null) {
                                             int subMoonX = (int)parentPos.x + horizontalSpacing;
                                             int subMoonY = (int)parentPos.y;
-                                            bodyPositions.put(body.getBodyID(), new BodyPosition(subMoonX, subMoonY, body));
-                                            ImageView subMoonView = createBodyImageView(body, subMoonX, subMoonY);
+                                            double subMoonSize = getBodySize(BodyHierarchyType.SUB_MOON);
+                                            bodyPositions.put(body.getBodyID(), new BodyPosition(subMoonX, subMoonY, body, subMoonSize));
+                                            ImageView subMoonView = createBodyImageView(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
                                             bodiesPane.getChildren().add(subMoonView);
                                             
                                             // Ajouter les icônes sous la lune de lune (exobio et mapped)
@@ -688,16 +693,39 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     }
     
     /**
+     * Enum pour le type de corps dans la hiérarchie
+     */
+    private enum BodyHierarchyType {
+        STAR,      // Étoile
+        PLANET,    // Planète directe d'une étoile
+        MOON,      // Lune d'une planète
+        SUB_MOON   // Lune de lune
+    }
+    
+    /**
+     * Calcule la taille d'un corps céleste selon sa position dans la hiérarchie
+     */
+    private double getBodySize(BodyHierarchyType hierarchyType) {
+        return switch (hierarchyType) {
+            case STAR -> 60.0;        // Étoiles : 60px
+            case PLANET -> 50.0;      // Planètes : 50px (un peu plus petites)
+            case MOON -> 40.0;        // Lunes : 40px (encore plus petites)
+            case SUB_MOON -> 30.0;    // Lunes de lune : 30px (encore plus petites)
+        };
+    }
+    
+    /**
      * Crée une ImageView pour un corps céleste
      */
-    private ImageView createBodyImageView(ACelesteBody body, double x, double y) {
+    private ImageView createBodyImageView(ACelesteBody body, double x, double y, BodyHierarchyType hierarchyType) {
         Image image = getImageForBody(body);
         ImageView imageView = new ImageView(image);
-        imageView.setFitWidth(60);
-        imageView.setFitHeight(60);
+        double size = getBodySize(hierarchyType);
+        imageView.setFitWidth(size);
+        imageView.setFitHeight(size);
         imageView.setPreserveRatio(true);
-        imageView.setX(x - 30); // Centrer l'image
-        imageView.setY(y - 30);
+        imageView.setX(x - size / 2); // Centrer l'image
+        imageView.setY(y - size / 2);
 
         // Tooltip
         String bodyName = getBodyNameWithoutSystem(body);
@@ -857,11 +885,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         badge.getChildren().add(0, background); // Ajouter le fond en premier
         
         // Position du badge : coin supérieur droit de la planète
-        // La planète fait 60x60 et est centrée sur (planetX, planetY)
+        // Récupérer la taille réelle du corps depuis bodyPositions
+        BodyPosition bodyPos = bodyPositions.get(body.getBodyID());
+        double bodySize = bodyPos != null ? bodyPos.size : 60.0; // Fallback à 60px si non trouvé
+        double bodyRadius = bodySize / 2;
         double offsetX = 4; // Décalage depuis le bord droit
         double offsetY = 4; // Décalage depuis le bord supérieur
-        double badgeX = planetX + 30 - badgeWidth + offsetX; // 30px = demi-largeur de la planète
-        double badgeY = planetY - 30 - offsetY; // -30px = demi-hauteur de la planète
+        double badgeX = planetX + bodyRadius - badgeWidth + offsetX; // Utiliser le rayon réel du corps
+        double badgeY = planetY - bodyRadius - offsetY; // Utiliser le rayon réel du corps
         
         badge.setLayoutX(badgeX);
         badge.setLayoutY(badgeY);
@@ -1693,11 +1724,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
      */
     private static class BodyPosition {
         double x, y;
+        double size; // Taille du corps céleste
         ACelesteBody body;
 
-        BodyPosition(double x, double y, ACelesteBody body) {
+        BodyPosition(double x, double y, ACelesteBody body, double size) {
             this.x = x;
             this.y = y;
+            this.size = size;
             this.body = body;
         }
     }
