@@ -4340,7 +4340,42 @@
 }
 
 .exploration-system-card-current:hover {
-    -fx-background-color: rgba(0, 100, 200, 0.4);
+    -fx-background-color: rgba(0, 150, 255, 0.5);
+    -fx-border-color: #00AAFF;
+    -fx-border-width: 2;
+}
+
+/* Hover spécifique pour les cartes compactes qui sont aussi le système courant */
+.exploration-system-card-compact.exploration-system-card-current:hover {
+    -fx-background-color: rgba(0, 150, 255, 0.5);
+    -fx-border-color: #00AAFF;
+    -fx-border-width: 2;
+}
+
+/* Style pour le système sélectionné (affiché dans la vue centrale) */
+.exploration-system-card-selected {
+    -fx-background-color: rgba(255, 107, 0, 0.25);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+}
+
+.exploration-system-card-selected:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.35);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+}
+
+/* Combinaison système courant + sélectionné */
+.exploration-system-card-current.exploration-system-card-selected {
+    -fx-background-color: rgba(255, 140, 0, 0.3);
+    -fx-border-color: #FF8C00;
+    -fx-border-width: 2;
+}
+
+.exploration-system-card-current.exploration-system-card-selected:hover {
+    -fx-background-color: rgba(255, 140, 0, 0.4);
+    -fx-border-color: #FFAA00;
+    -fx-border-width: 2;
 }
 
 .exploration-system-name-compact {

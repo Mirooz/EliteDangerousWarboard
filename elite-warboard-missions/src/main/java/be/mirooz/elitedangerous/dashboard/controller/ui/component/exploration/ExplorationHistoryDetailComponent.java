@@ -64,6 +64,8 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     private Consumer<SystemVisited> onSystemSelected;
     private Image exobioImage;
     private Image mappedImage;
+    private SystemVisited selectedSystem; // Système actuellement sélectionné et affiché dans la vue centrale
+    private Map<VBox, SystemVisited> systemCardMap = new HashMap<>(); // Map pour associer les cartes aux systèmes
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -170,12 +172,24 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         // Mettre à jour la liste des systèmes visités
         systemsList.getChildren().clear();
+        systemCardMap.clear(); // Réinitialiser la map
+        // Réinitialiser la sélection si le système sélectionné n'est plus dans la nouvelle liste
+        if (selectedSystem != null && selectedSale.getSystemsVisited() != null) {
+            boolean systemStillExists = selectedSale.getSystemsVisited().stream()
+                    .anyMatch(s -> s.equals(selectedSystem));
+            if (!systemStillExists) {
+                selectedSystem = null;
+            }
+        }
 
         selectedSale.getSystemsVisited().stream()
                 .sorted(Comparator.comparing(SystemVisited::getLastVisitedTime).reversed())
                 .map(this::createSystemCardDirectly)
                 .filter(Objects::nonNull)
                 .forEach(card -> systemsList.getChildren().add(card));
+        
+        // Mettre à jour l'affichage de la sélection après avoir créé toutes les cartes
+        refreshSystemCardsSelection();
     }
     
     private String formatTimeRange(String startTime, String endTime) {
@@ -260,6 +274,10 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             currentIndex = foundIndex;
             updateUI();
             
+            // Mettre à jour le système sélectionné
+            selectedSystem = currentSystem;
+            refreshSystemCardsSelection();
+            
             // Sélectionner le système dans la vue visuelle
             if (currentSystem != null && onSystemSelected != null) {
                 onSystemSelected.accept(currentSystem);
@@ -278,11 +296,18 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                                   !currentStarSystem.isEmpty() && 
                                   currentStarSystem.equals(system.getSystemName());
         
+        // Vérifier si c'est le système sélectionné (affiché dans la vue centrale)
+        boolean isSelectedSystem = selectedSystem != null && 
+                                   selectedSystem.equals(system);
+        
         // Créer une carte similaire aux cartes de missions
         VBox root = new VBox(5);
         root.getStyleClass().add("exploration-system-card-compact");
         if (isCurrentSystem) {
             root.getStyleClass().add("exploration-system-card-current");
+        }
+        if (isSelectedSystem) {
+            root.getStyleClass().add("exploration-system-card-selected");
         }
         root.setStyle("-fx-cursor: hand");
         root.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
@@ -511,8 +536,15 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             root.getChildren().add(iconsRow);
         }
         
+        // Associer la carte au système dans la map
+        systemCardMap.put(root, system);
+        
         // Gérer le clic sur la carte
         root.setOnMouseClicked(e -> {
+            // Mettre à jour le système sélectionné
+            selectedSystem = system;
+            // Mettre à jour toutes les cartes pour refléter la nouvelle sélection
+            refreshSystemCardsSelection();
             // Notifier le clic sur le système
             if (onSystemSelected != null) {
                 onSystemSelected.accept(system);
@@ -549,6 +581,24 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         }
         
         return total;
+    }
+    
+    /**
+     * Met à jour l'état de sélection de toutes les cartes système
+     */
+    private void refreshSystemCardsSelection() {
+        for (Map.Entry<VBox, SystemVisited> entry : systemCardMap.entrySet()) {
+            VBox card = entry.getKey();
+            SystemVisited system = entry.getValue();
+            
+            // Retirer la classe selected de toutes les cartes
+            card.getStyleClass().remove("exploration-system-card-selected");
+            
+            // Si c'est le système sélectionné, ajouter la classe
+            if (system != null && system.equals(selectedSystem)) {
+                card.getStyleClass().add("exploration-system-card-selected");
+            }
+        }
     }
     
     public void setOnSystemSelected(Consumer<SystemVisited> callback) {
