@@ -12,15 +12,12 @@
     <HBox spacing="20" styleClass="exploration-content" VBox.vgrow="ALWAYS">
         
         <!-- Colonne gauche : Panel haut (Info système avec Stats intégrées) + Vue visuelle -->
-        <VBox spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
             <!-- Panneau de gauche : Vue visuelle du système -->
-            <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" minWidth="400"/>
-        </VBox>
+            <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" minWidth="400"/>
         
         <!-- Panneau de droite : Historique avec navigation + Liste des systèmes visités -->
-        <VBox spacing="10" styleClass="exploration-right-panel" minWidth="450" maxWidth="500" VBox.vgrow="ALWAYS">
             <VBox fx:id="explorationHistoryDetailContainer" spacing="10" VBox.vgrow="ALWAYS"/>
-        </VBox>
+
     </HBox>
 </VBox>
 

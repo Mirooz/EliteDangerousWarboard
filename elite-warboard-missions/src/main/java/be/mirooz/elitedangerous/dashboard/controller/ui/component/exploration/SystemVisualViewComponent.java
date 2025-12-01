@@ -54,8 +54,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     @FXML
     private Label jsonBodyNameLabel;
     @FXML
-    private Button closeJsonPanelButton;
-    @FXML
     private TreeView<JsonTreeItem> jsonTreeView;
 
     private Image gasImage;
