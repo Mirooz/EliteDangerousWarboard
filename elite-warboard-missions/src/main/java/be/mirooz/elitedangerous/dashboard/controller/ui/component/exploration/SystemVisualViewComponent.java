@@ -929,23 +929,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         // Mémoriser le corps actuellement affiché
         currentJsonBody = body;
 
-        // Définir le nom du corps avec les icônes si c'est une planète
+        // Définir le nom du corps (sans icônes)
         String bodyName = body.getBodyName() != null ? body.getBodyName() : "Corps céleste";
-        
-        // Vérifier si c'est une planète avec exobio ou mapped
-        boolean[] icons = LabelIconHelper.checkPlanetIcons(body);
-        boolean hasExobio = icons[0];
-        boolean hasMapped = icons[1];
-        
-        // Mettre à jour le label avec les icônes
-        LabelIconHelper.updateLabelWithIcons(
-            jsonBodyNameLabel, 
-            bodyName, 
-            hasExobio, 
-            hasMapped, 
-            exobioImage, 
-            mappedImage
-        );
+        jsonBodyNameLabel.setText(bodyName);
 
         // Configurer la cellule personnalisée pour le TreeView
         jsonTreeView.setCellFactory(treeView -> new JsonTreeCell());
