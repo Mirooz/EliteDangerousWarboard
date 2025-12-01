@@ -884,15 +884,26 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         
         badge.getChildren().add(0, background); // Ajouter le fond en premier
         
-        // Position du badge : coin supérieur droit de la planète
+        // Position du badge : en haut à droite de la planète
+        // Les planètes sont rondes, donc on positionne le badge de manière à suivre la courbe
         // Récupérer la taille réelle du corps depuis bodyPositions
         BodyPosition bodyPos = bodyPositions.get(body.getBodyID());
         double bodySize = bodyPos != null ? bodyPos.size : 60.0; // Fallback à 60px si non trouvé
         double bodyRadius = bodySize / 2;
-        double offsetX = 4; // Décalage depuis le bord droit
-        double offsetY = 4; // Décalage depuis le bord supérieur
-        double badgeX = planetX + bodyRadius - badgeWidth + offsetX; // Utiliser le rayon réel du corps
-        double badgeY = planetY - bodyRadius - offsetY; // Utiliser le rayon réel du corps
+        double offsetX = 6; // Décalage horizontal depuis le bord de la planète
+        double offsetY = 6; // Décalage vertical depuis le bord de la planète
+        
+        // Pour une forme ronde, utiliser un point légèrement en dessous de 45° pour un meilleur alignement visuel
+        // Un angle d'environ 30-35° donne un meilleur positionnement pour le badge
+        double angle = Math.PI / 3.5; // Environ 51° pour un positionnement plus naturel
+        double tangentX = bodyRadius * Math.cos(angle);
+        double tangentY = bodyRadius * Math.sin(angle);
+        
+        // Positionner le badge de manière à ce que son coin bas gauche soit tangent au cercle
+        // Le point de référence sur la planète est à : (planetX + tangentX, planetY - tangentY)
+        // Le coin bas gauche du badge doit être légèrement décalé de ce point
+        double badgeX = planetX + tangentX + offsetX; // Le badge commence à droite du point tangent
+        double badgeY = planetY - tangentY - badgeHeight - offsetY; // Le badge est au-dessus du point tangent
         
         badge.setLayoutX(badgeX);
         badge.setLayoutY(badgeY);
