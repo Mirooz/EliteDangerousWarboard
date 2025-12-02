@@ -4013,6 +4013,18 @@
     -fx-padding: 8px;
 }
 
+/* Dans l'overlay, pas de fond noir */
+.mirror-overlay.exploration-body-card {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0px;
+}
+
+.mirror-overlay.exploration-body-card:hover {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
 .exploration-body-card:hover {
     -fx-background-color: rgba(255, 140, 0, 0.1);
     -fx-border-color: -fx-elite-orange;

@@ -51,7 +51,7 @@ public class ExplorationBodiesOverlayComponent {
     private Slider textScaleSlider;
     private double textScale = 1.0;
     private StackPane stackPane;
-    private VBox contentContainer;
+    private VBox contentCard;
     private Function<SystemVisited, VBox> bodyCardFactory;
     @SuppressWarnings("unused")
     private SystemVisited currentSystem;
@@ -109,24 +109,14 @@ public class ExplorationBodiesOverlayComponent {
     public void updateContent(SystemVisited system, boolean showOnlyHighValue) {
         this.currentSystem = system;
         this.showOnlyHighValue = showOnlyHighValue;
-        if (overlayStage != null && overlayStage.isShowing() && contentContainer != null && bodyCardFactory != null) {
+        if (overlayStage != null && overlayStage.isShowing() && stackPane != null && bodyCardFactory != null) {
             Platform.runLater(() -> {
-                // Le contentContainer contient un ScrollPane, on doit accéder à son contenu
-                if (contentContainer.getChildren().size() > 0 && 
-                    contentContainer.getChildren().get(0) instanceof javafx.scene.control.ScrollPane) {
-                    javafx.scene.control.ScrollPane scrollPane = 
-                        (javafx.scene.control.ScrollPane) contentContainer.getChildren().get(0);
-                    if (scrollPane.getContent() instanceof VBox) {
-                        VBox bodiesList = (VBox) scrollPane.getContent();
-                        bodiesList.getChildren().clear();
-                        
-                        VBox bodiesContent = bodyCardFactory.apply(system);
-                        if (bodiesContent != null) {
-                            bodiesList.getChildren().add(bodiesContent);
-                            applyTextScaleToNode(bodiesContent, textScale);
-                        }
-                    }
-                }
+                VBox newCard = createOverlayCard(system);
+                // contentCard est à l'index 0
+                stackPane.getChildren().set(0, newCard);
+                contentCard = newCard;
+                // Appliquer le scaling actuel à la nouvelle carte
+                applyTextScaleToNode(newCard, textScale);
             });
         }
     }
@@ -165,14 +155,14 @@ public class ExplorationBodiesOverlayComponent {
 
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-
+        
         // Enregistrer le container pour les popups
         popupManager.registerContainer(overlayStage, stackPane);
+        // Style racine pour cibler les scrollbars overlay
         stackPane.getStyleClass().addAll("overlay-root", "overlay-root-bordered");
         stackPane.setOnMouseExited(event -> {
             stackPane.getStyleClass().remove("overlay-root-bordered");
         });
-
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
 
@@ -189,54 +179,29 @@ public class ExplorationBodiesOverlayComponent {
      * Crée le contenu de l'overlay
      */
     private void createOverlayContent(SystemVisited system, boolean showOnlyHighValue) {
-        // Créer le conteneur principal pour la liste des corps avec ScrollPane
-        VBox bodiesList = new VBox(5);
-        bodiesList.setSpacing(5);
-        bodiesList.setPadding(new Insets(5));
-
-        // Créer la liste des corps si le factory est disponible
-        if (bodyCardFactory != null && system != null) {
-            VBox bodiesContent = bodyCardFactory.apply(system);
-            if (bodiesContent != null) {
-                bodiesList.getChildren().add(bodiesContent);
-            }
-        } else {
-            Label emptyLabel = new Label("Aucun système sélectionné");
-            emptyLabel.getStyleClass().add("exploration-overlay-title");
-            bodiesList.getChildren().add(emptyLabel);
-        }
-        
-        // Créer un ScrollPane pour permettre le défilement
-        javafx.scene.control.ScrollPane scrollPane = new javafx.scene.control.ScrollPane();
-        scrollPane.setContent(bodiesList);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-        scrollPane.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-        
-        contentContainer = new VBox();
-        contentContainer.getChildren().add(scrollPane);
-        VBox.setVgrow(scrollPane, javafx.scene.layout.Priority.ALWAYS);
+        // Créer la carte du contenu
+        contentCard = createOverlayCard(system);
 
         // Créer l'icône de redimensionnement
         resizeHandle = createResizeHandle();
 
         // Créer le curseur de transparence
         opacitySlider = createOpacitySlider();
-
+        
         // Créer le curseur de scaling du texte
         textScaleSlider = createTextScaleSlider();
-
+        
         stackPane = new StackPane();
-        stackPane.getChildren().addAll(contentContainer, resizeHandle, opacitySlider, textScaleSlider);
+        // Ordre important: contentCard en premier
+        stackPane.getChildren().addAll(contentCard, resizeHandle, opacitySlider, textScaleSlider);
         StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(textScaleSlider, Pos.BOTTOM_RIGHT);
 
         StackPane.setMargin(opacitySlider, new Insets(0, 30, 0, 0));
         StackPane.setMargin(textScaleSlider, new Insets(0, 60, 20, 0));
-
+        stackPane.setPickOnBounds(true);
+        
         // S'assurer que les sliders sont cliquables même avec opacity 0
         opacitySlider.setMouseTransparent(false);
         textScaleSlider.setMouseTransparent(false);
@@ -244,15 +209,56 @@ public class ExplorationBodiesOverlayComponent {
 
         // Appliquer le style initial
         updatePaneStyle(overlayOpacity, stackPane);
-
+        
         // Appliquer le scaling initial du texte
-        if (contentContainer.getChildren().size() > 0) {
-            applyTextScaleToNode(contentContainer, textScale);
-        }
+        applyTextScaleToNode(contentCard, textScale);
 
         // Configurer les listeners
         setupOpacitySliderListener();
         setupTextScaleSliderListener();
+    }
+
+    /**
+     * Crée une carte d'overlay avec le contenu des corps
+     */
+    private VBox createOverlayCard(SystemVisited system) {
+        VBox card;
+        if (bodyCardFactory != null && system != null) {
+            VBox bodiesContent = bodyCardFactory.apply(system);
+            if (bodiesContent != null) {
+                // Créer un ScrollPane pour le contenu
+                javafx.scene.control.ScrollPane scrollPane = new javafx.scene.control.ScrollPane();
+                scrollPane.setContent(bodiesContent);
+                scrollPane.setFitToWidth(true);
+                scrollPane.setFitToHeight(true);
+                scrollPane.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+                scrollPane.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+                scrollPane.setPannable(false);
+                
+                card = new VBox();
+                card.getChildren().add(scrollPane);
+                VBox.setVgrow(scrollPane, Priority.ALWAYS);
+            } else {
+                card = createEmptyCard();
+            }
+        } else {
+            card = createEmptyCard();
+        }
+        card.getStyleClass().add("mirror-overlay");
+        return card;
+    }
+
+    /**
+     * Crée une carte vide pour l'overlay
+     */
+    private VBox createEmptyCard() {
+        VBox card = new VBox();
+        Label emptyLabel = new Label("Aucun système sélectionné");
+        emptyLabel.getStyleClass().add("exploration-overlay-title");
+        card.getChildren().add(emptyLabel);
+        card.getStyleClass().add("mirror-overlay");
+        return card;
     }
 
     /**
@@ -262,7 +268,7 @@ public class ExplorationBodiesOverlayComponent {
         Label resizeHandle = new Label("⤡");
         resizeHandle.getStyleClass().add("resize-handle");
         resizeHandle.setStyle("-fx-text-fill: gold;-fx-font-size: 36px; -fx-font-weight: bold; -fx-alignment: center;");
-        resizeHandle.setOpacity(0.0);
+        resizeHandle.setOpacity(0.0); // Masquer par défaut
         return resizeHandle;
     }
 
@@ -273,30 +279,39 @@ public class ExplorationBodiesOverlayComponent {
         Slider slider = new Slider(MIN_OPPACITY, 1.0, overlayOpacity);
         slider.setOrientation(javafx.geometry.Orientation.VERTICAL);
         slider.setPrefWidth(20);
-        slider.setPrefHeight(100);
-        slider.setOpacity(0.0);
-        slider.setMajorTickUnit(0.5);
+        slider.setPrefHeight(120);
+        slider.setPrefWidth(12);
+        slider.setOpacity(0.0); // Masquer par défaut
+        // Style dédié vertical (étroit) en plus de la classe par défaut "slider"
+        slider.getStyleClass().add("opacity-slider");
+
+        // Configuration pour des valeurs plus précises
+        slider.setMajorTickUnit(0.2);
         slider.setMinorTickCount(1);
         slider.setShowTickLabels(false);
         slider.setShowTickMarks(false);
         slider.setSnapToTicks(false);
+
         return slider;
     }
-
+    
     /**
      * Crée le curseur de scaling du texte
      */
     private Slider createTextScaleSlider() {
-        Slider slider = new Slider(0.5, 2.0, textScale);
-        slider.setOrientation(javafx.geometry.Orientation.VERTICAL);
-        slider.setPrefWidth(20);
-        slider.setPrefHeight(100);
-        slider.setOpacity(0.0);
+        Slider slider = new Slider(0.5, 3.0, textScale);
+        slider.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+        slider.setPrefWidth(140);
+        slider.setOpacity(0.0); // Masquer par défaut
+        slider.getStyleClass().add("text-scale-slider");
+        
+        // Configuration pour des valeurs précises
         slider.setMajorTickUnit(0.5);
         slider.setMinorTickCount(1);
         slider.setShowTickLabels(false);
         slider.setShowTickMarks(false);
         slider.setSnapToTicks(false);
+        
         return slider;
     }
 
@@ -310,7 +325,7 @@ public class ExplorationBodiesOverlayComponent {
             overlayOpacity = opacity;
         });
     }
-
+    
     /**
      * Configure le listener du curseur de scaling du texte
      */
@@ -334,27 +349,28 @@ public class ExplorationBodiesOverlayComponent {
         );
         stackPane.setStyle(style);
     }
-
+    
     /**
-     * Met à jour le scaling du texte dans le contenu
+     * Met à jour le scaling du texte dans la carte
      */
     private void updateTextScale(double scale) {
-        if (contentContainer != null) {
-            applyTextScaleToNode(contentContainer, scale);
+        if (stackPane != null && stackPane.getChildren().size() > 0) {
+            VBox card = (VBox) stackPane.getChildren().get(0); // contentCard est à l'index 0
+            applyTextScaleToNode(card, scale);
         }
     }
-
+    
     /**
      * Applique le scaling du texte récursivement à tous les nœuds de texte
      */
     private void applyTextScaleToNode(javafx.scene.Node node, double scale) {
         if (node instanceof Label) {
             Label label = (Label) node;
-            String currentStyle = label.getStyle();
-            String scaleStyle = String.format(Locale.ENGLISH, "-fx-font-size: %.1fem;", scale);
-            label.setStyle(scaleStyle + (currentStyle != null ? " " + currentStyle : ""));
-        } else if (node instanceof Pane) {
-            Pane pane = (Pane) node;
+            String scaleStyle = String.format(Locale.ENGLISH, 
+                "-fx-font-size: %.1fem;", scale);
+            label.setStyle(scaleStyle);
+        } else if (node instanceof javafx.scene.layout.Pane) {
+            javafx.scene.layout.Pane pane = (javafx.scene.layout.Pane) node;
             for (javafx.scene.Node child : pane.getChildren()) {
                 applyTextScaleToNode(child, scale);
             }
@@ -371,11 +387,13 @@ public class ExplorationBodiesOverlayComponent {
 
         Scene scene = overlayStage.getScene();
 
+        // Gestion du clic et du glisser
         scene.setOnMousePressed(e -> {
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 offset[0] = e.getScreenX() - overlayStage.getX();
                 offset[1] = e.getScreenY() - overlayStage.getY();
 
+                // Vérifier si on est dans la zone de redimensionnement
                 double sceneWidth = scene.getWidth();
                 double sceneHeight = scene.getHeight();
                 double mouseX = e.getSceneX();
@@ -392,6 +410,7 @@ public class ExplorationBodiesOverlayComponent {
         scene.setOnMouseDragged(e -> {
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 if (isResizing[0]) {
+                    // Redimensionnement
                     double deltaX = e.getScreenX() - resizeOffset[0];
                     double deltaY = e.getScreenY() - resizeOffset[1];
 
@@ -408,6 +427,7 @@ public class ExplorationBodiesOverlayComponent {
                     resizeOffset[0] = e.getScreenX();
                     resizeOffset[1] = e.getScreenY();
                 } else {
+                    // Déplacement
                     overlayStage.setX(e.getScreenX() - offset[0]);
                     overlayStage.setY(e.getScreenY() - offset[1]);
                 }
@@ -418,12 +438,14 @@ public class ExplorationBodiesOverlayComponent {
             isResizing[0] = false;
         });
 
+        // Gestion du curseur et de la visibilité des contrôles
         scene.setOnMouseMoved(e -> {
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
             double mouseY = e.getSceneY();
 
+            // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
                 if (resizeHandle != null) resizeHandle.setOpacity(1.0);
@@ -437,12 +459,14 @@ public class ExplorationBodiesOverlayComponent {
             }
         });
 
+        // Masquer les contrôles quand la souris quitte la scène
         scene.setOnMouseExited(e -> {
             if (resizeHandle != null) resizeHandle.setOpacity(0.0);
             if (opacitySlider != null) opacitySlider.setOpacity(0.0);
             if (textScaleSlider != null) textScaleSlider.setOpacity(0.0);
         });
 
+        // Afficher les contrôles quand la souris entre dans la scène
         scene.setOnMouseEntered(e -> {
             if (resizeHandle != null) resizeHandle.setOpacity(0.8);
             if (opacitySlider != null) opacitySlider.setOpacity(0.8);
@@ -480,7 +504,8 @@ public class ExplorationBodiesOverlayComponent {
 
         overlayStage.setX(finalX);
         overlayStage.setY(finalY);
-
+        
+        // Appliquer le scaling du texte
         if (textScaleSlider != null) {
             textScaleSlider.setValue(textScale);
         }
@@ -500,4 +525,3 @@ public class ExplorationBodiesOverlayComponent {
         }
     }
 }
-
