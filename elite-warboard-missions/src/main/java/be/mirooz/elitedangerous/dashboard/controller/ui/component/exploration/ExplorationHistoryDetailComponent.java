@@ -344,11 +344,36 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         // 1. Nom du système
         Label systemNameLabel = new Label(system.getSystemName());
         systemNameLabel.getStyleClass().add("exploration-system-name-compact");
-        systemNameLabel.setPrefWidth(180);
-        systemNameLabel.setMinWidth(80);
-        systemNameLabel.setMaxWidth(180);
+        // Réduire la largeur du nom si on a un badge CURRENT pour faire de la place
+        if (isCurrentSystem) {
+            systemNameLabel.setPrefWidth(150);
+            systemNameLabel.setMinWidth(80);
+            systemNameLabel.setMaxWidth(150);
+        } else {
+            systemNameLabel.setPrefWidth(180);
+            systemNameLabel.setMinWidth(80);
+            systemNameLabel.setMaxWidth(180);
+        }
         systemNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
         systemNameLabel.setWrapText(false);
+        
+        // Badge CURRENT si c'est le système actuel
+        if (isCurrentSystem) {
+            Label currentBadge = new Label("CURRENT");
+            currentBadge.getStyleClass().add("exploration-system-current-badge");
+            // S'assurer que le texte n'est jamais coupé
+            currentBadge.setMinWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            currentBadge.setPrefWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            currentBadge.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            currentBadge.setTextOverrun(javafx.scene.control.OverrunStyle.CLIP);
+            currentBadge.setWrapText(false);
+            // Empêcher le HBox de réduire la taille du badge
+            HBox.setHgrow(currentBadge, javafx.scene.layout.Priority.NEVER);
+            mainRow.getChildren().add(systemNameLabel);
+            mainRow.getChildren().add(currentBadge);
+        } else {
+            mainRow.getChildren().add(systemNameLabel);
+        }
         
         // 2. Nombre de corps
         Label bodiesCountLabel = new Label(system.getNumBodies() + " corps");
@@ -529,8 +554,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         valueLabel.setMinWidth(80);
         valueLabel.setMaxWidth(120);
         
-        // Ligne principale : Nom du système, nombre de corps, Cr
-        mainRow.getChildren().add(systemNameLabel);
+        // Ligne principale : Nombre de corps, Cr (le nom du système est déjà ajouté avec le badge si nécessaire)
         mainRow.getChildren().add(bodiesCountLabel);
         mainRow.getChildren().add(valueLabel);
         root.getChildren().add(mainRow);

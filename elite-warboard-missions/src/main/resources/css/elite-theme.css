@@ -4089,6 +4089,20 @@
     -fx-padding: 4px 10px;
 }
 
+.exploration-system-current-badge {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 140, 0, 0.2);
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 4px 10px;
+    -fx-min-width: 80px;
+    -fx-pref-width: 80px;
+}
+
 /* Liste des espèces biologiques */
 .exploration-body-species-list {
     -fx-background-color: rgba(0, 0, 0, 0.2);
