@@ -93,21 +93,69 @@ public class ExplorationBodiesOverlayComponent {
     }
     private void makeNodeDraggable(Node node, Stage stage) {
         final double[] offset = new double[2];
+        final double[] resizeOffset = new double[2];
+        final boolean[] isResizing = {false};
 
         node.setOnMousePressed(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                offset[0] = e.getSceneX();
-                offset[1] = e.getSceneY();
+            if (e.getButton() != javafx.scene.input.MouseButton.PRIMARY) {
+                return;
             }
+
+            Scene scene = stage.getScene();
+            double mouseX = e.getSceneX();
+            double mouseY = e.getSceneY();
+            double sceneWidth = scene.getWidth();
+            double sceneHeight = scene.getHeight();
+
+            // 🔧 Détecter la zone de resize (25x25)
+            if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
+                isResizing[0] = true;
+                resizeOffset[0] = e.getScreenX();
+                resizeOffset[1] = e.getScreenY();
+                return;
+            }
+
+            // 🧲 Sinon → déplacement
+            isResizing[0] = false;
+            offset[0] = e.getScreenX() - stage.getX();
+            offset[1] = e.getScreenY() - stage.getY();
         });
 
         node.setOnMouseDragged(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                stage.setX(e.getScreenX() - offset[0]);
-                stage.setY(e.getScreenY() - offset[1]);
+            if (e.getButton() != javafx.scene.input.MouseButton.PRIMARY) {
+                return;
             }
+
+            Scene scene = stage.getScene();
+            double mouseX = e.getSceneX();
+            double mouseY = e.getSceneY();
+            double sceneWidth = scene.getWidth();
+            double sceneHeight = scene.getHeight();
+
+            if (isResizing[0]) {
+                // 🔧 Resize, exactement comme dans setupInteractions()
+                double deltaX = e.getScreenX() - resizeOffset[0];
+                double deltaY = e.getScreenY() - resizeOffset[1];
+
+                double newWidth = stage.getWidth() + deltaX;
+                double newHeight = stage.getHeight() + deltaY;
+
+                if (newWidth >= stage.getMinWidth()) stage.setWidth(newWidth);
+                if (newHeight >= stage.getMinHeight()) stage.setHeight(newHeight);
+
+                resizeOffset[0] = e.getScreenX();
+                resizeOffset[1] = e.getScreenY();
+                return;
+            }
+
+            // 🧲 Déplacement normal
+            stage.setX(e.getScreenX() - offset[0]);
+            stage.setY(e.getScreenY() - offset[1]);
         });
+
+        node.setOnMouseReleased(e -> isResizing[0] = false);
     }
+
 
     /**
      * Ferme l'overlay s'il est ouvert
@@ -211,6 +259,7 @@ public class ExplorationBodiesOverlayComponent {
         
         stackPane = new StackPane();
         makeNodeDraggable(stackPane, overlayStage);
+
         // Ordre important: contentCard en premier
         stackPane.getChildren().addAll(contentCard, resizeHandle, opacitySlider, textScaleSlider);
         StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
@@ -412,52 +461,6 @@ public class ExplorationBodiesOverlayComponent {
 
         Scene scene = overlayStage.getScene();
 
-        // Gestion du clic et du glisser
-        scene.setOnMousePressed(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                offset[0] = e.getScreenX() - overlayStage.getX();
-                offset[1] = e.getScreenY() - overlayStage.getY();
-
-                // Vérifier si on est dans la zone de redimensionnement
-                double sceneWidth = scene.getWidth();
-                double sceneHeight = scene.getHeight();
-                double mouseX = e.getSceneX();
-                double mouseY = e.getSceneY();
-
-                if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
-                    isResizing[0] = true;
-                    resizeOffset[0] = e.getScreenX();
-                    resizeOffset[1] = e.getScreenY();
-                }
-            }
-        });
-
-        scene.setOnMouseDragged(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                if (isResizing[0]) {
-                    // Redimensionnement
-                    double deltaX = e.getScreenX() - resizeOffset[0];
-                    double deltaY = e.getScreenY() - resizeOffset[1];
-
-                    double newWidth = overlayStage.getWidth() + deltaX;
-                    double newHeight = overlayStage.getHeight() + deltaY;
-
-                    if (newWidth >= overlayStage.getMinWidth()) {
-                        overlayStage.setWidth(newWidth);
-                    }
-                    if (newHeight >= overlayStage.getMinHeight()) {
-                        overlayStage.setHeight(newHeight);
-                    }
-
-                    resizeOffset[0] = e.getScreenX();
-                    resizeOffset[1] = e.getScreenY();
-                } else {
-                    // Déplacement
-                    overlayStage.setX(e.getScreenX() - offset[0]);
-                    overlayStage.setY(e.getScreenY() - offset[1]);
-                }
-            }
-        });
 
         scene.setOnMouseReleased(e -> {
             isResizing[0] = false;
