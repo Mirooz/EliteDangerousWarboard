@@ -712,32 +712,58 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private Node createBodyImageView(ACelesteBody body, double x, double y, BodyHierarchyType hierarchyType) {
         double size = getBodySize(hierarchyType);
 
-        // image de base (sans anneaux)
+        // image de base (planète seule)
         Image planetBase = getImageForBaseBody(body);
 
-        // planète + anneaux
-        StackPane planetNode = (StackPane) createPlanetWithRings(planetBase, ringImageBack, ringImageTop, size);
+        Node planetNode;
 
-        // IMPORTANT : attendre que JavaFX calcule les dimensions réelles du StackPane
-        Platform.runLater(() -> {
-            double w = planetNode.getWidth();
-            double h = planetNode.getHeight();
+        // -----------------------------------------
+        // 🔥 Ajouter les anneaux uniquement si body.isRings()
+        // -----------------------------------------
+        if (body instanceof PlaneteDetail planet && planet.isRings()) {
+            // planète + anneaux
+            planetNode = createPlanetWithRings(planetBase, ringImageBack, ringImageTop, size);
 
-            // On centre la planète (pas l'anneau)
-            planetNode.setLayoutX(x - size / 2 - (w - size) / 2);
-            planetNode.setLayoutY(y - size / 2 - (h - size) / 2);
-        });
+            // Correction de position pour centrer la planète (pas l’anneau)
+            Platform.runLater(() -> {
+                double w = ((StackPane) planetNode).getWidth();
+                double h = ((StackPane) planetNode).getHeight();
 
-        // Tooltip etc.
+                planetNode.setLayoutX(x - size / 2 - (w - size) / 2);
+                planetNode.setLayoutY(y - size / 2 - (h - size) / 2);
+            });
+
+        } else {
+            // 🌑 Pas d’anneaux → juste l’ImageView normal
+            ImageView iv = new ImageView(planetBase);
+            iv.setPreserveRatio(true);
+            iv.setFitWidth(size);
+            iv.setFitHeight(size);
+
+            iv.setLayoutX(x - size / 2);
+            iv.setLayoutY(y - size / 2);
+
+            planetNode = iv;
+        }
+
+        // Tooltip
         String bodyName = getBodyNameWithoutSystem(body);
         Tooltip tooltip = new TooltipComponent(bodyName);
         Tooltip.install(planetNode, tooltip);
 
+        // Classes CSS
         planetNode.getStyleClass().add("exploration-visual-body");
+        if (body instanceof StarDetail)
+            planetNode.getStyleClass().add("exploration-visual-star");
+        else if (body instanceof PlaneteDetail)
+            planetNode.getStyleClass().add("exploration-visual-planet");
+
+        // Clic → JSON
         planetNode.setOnMouseClicked(event -> showJsonDialog(body, event));
 
         return planetNode;
     }
+
 
     private Image getImageForBaseBody(ACelesteBody body) {
 

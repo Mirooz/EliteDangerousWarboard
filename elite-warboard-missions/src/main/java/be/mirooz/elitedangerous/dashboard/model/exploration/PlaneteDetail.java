@@ -302,6 +302,8 @@ public class PlaneteDetail extends ACelesteBody {
         this.atmosphere = src.atmosphere;
         this.volcanism = src.volcanism;
         this.materials = src.materials;
+        this.rings=src.rings;
+        this.jsonNode = src.jsonNode;
 
         // flags comme avant :
         this.wasMapped |= src.wasMapped;

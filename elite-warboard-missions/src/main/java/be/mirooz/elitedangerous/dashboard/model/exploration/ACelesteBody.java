@@ -28,6 +28,7 @@ public abstract class ACelesteBody {
     protected boolean efficiencyTargetMap =true;
     protected long systemAddress;
     protected int bodyID;
+    protected boolean rings;
     // Parents (hiérarchie orbitale)
     @Builder.Default
     protected List<ParentBody> parents = new ArrayList<>();

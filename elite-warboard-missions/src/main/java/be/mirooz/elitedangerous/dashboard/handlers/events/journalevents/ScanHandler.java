@@ -50,7 +50,7 @@ public class ScanHandler implements JournalEventHandler {
             double surfaceTemperature = jsonNode.path("SurfaceTemperature").asDouble(0.0);
             double surfacePressure = jsonNode.path("SurfacePressure").asDouble(0.0);
             boolean landable = jsonNode.path("Landable").asBoolean(false);
-
+            
             // Distance depuis l'arrivée
             double distanceFromArrivalLS = jsonNode.path("DistanceFromArrivalLS").asDouble(0.0);
 
@@ -65,7 +65,7 @@ public class ScanHandler implements JournalEventHandler {
                     // Traiter la composition de l'atmosphère si nécessaire
                 });
             }
-
+            boolean hasRing = jsonNode.has("Rings");
             // Composition (Ice, Rock, Metal)
             if (jsonNode.has("Composition")) {
                 JsonNode composition = jsonNode.get("Composition");
@@ -126,6 +126,7 @@ public class ScanHandler implements JournalEventHandler {
                         .timestamp(timestamp)
                         .starSystem(starSystem)
                         .systemAddress(systemAddress)
+                        .rings(hasRing)
                         .starTypeString(starTypeValue)
                         .starType(starType)
                         .stellarMass(stellarMass)
@@ -158,6 +159,7 @@ public class ScanHandler implements JournalEventHandler {
                         .parents(parents)
                         .planetClass(bodyType)
                         .radius(radius)
+                        .rings(hasRing)
                         .temperature(surfaceTemperature >= 0 ? surfaceTemperature : null)
                         .pressureAtm(pressureAtm >= 0 ? pressureAtm : null)
                         .gravityG(gravityG >= 0 ? gravityG : null)
