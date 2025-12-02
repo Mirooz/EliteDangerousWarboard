@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -89,6 +90,23 @@ public class ExplorationBodiesOverlayComponent {
         }
 
         createOverlayStage(system, showOnlyHighValue);
+    }
+    private void makeNodeDraggable(Node node, Stage stage) {
+        final double[] offset = new double[2];
+
+        node.setOnMousePressed(e -> {
+            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                offset[0] = e.getSceneX();
+                offset[1] = e.getSceneY();
+            }
+        });
+
+        node.setOnMouseDragged(e -> {
+            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                stage.setX(e.getScreenX() - offset[0]);
+                stage.setY(e.getScreenY() - offset[1]);
+            }
+        });
     }
 
     /**
@@ -192,6 +210,7 @@ public class ExplorationBodiesOverlayComponent {
         textScaleSlider = createTextScaleSlider();
         
         stackPane = new StackPane();
+        makeNodeDraggable(stackPane, overlayStage);
         // Ordre important: contentCard en premier
         stackPane.getChildren().addAll(contentCard, resizeHandle, opacitySlider, textScaleSlider);
         StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
@@ -226,8 +245,12 @@ public class ExplorationBodiesOverlayComponent {
         if (bodyCardFactory != null && system != null) {
             VBox bodiesContent = bodyCardFactory.apply(system);
             if (bodiesContent != null) {
-                // Créer un ScrollPane pour le contenu
                 javafx.scene.control.ScrollPane scrollPane = new javafx.scene.control.ScrollPane();
+                // Rendre le VBox transparent aux événements de souris pour permettre le déplacement
+                bodiesContent.setMouseTransparent(true);  // OK
+                scrollPane.setMouseTransparent(true);
+
+                // Créer un ScrollPane pour le contenu
                 scrollPane.setContent(bodiesContent);
                 scrollPane.setFitToWidth(true);
                 scrollPane.setFitToHeight(true);
@@ -235,6 +258,8 @@ public class ExplorationBodiesOverlayComponent {
                 scrollPane.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
                 scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
                 scrollPane.setPannable(false);
+                // Rendre le ScrollPane transparent aux événements sauf pour la scrollbar
+                scrollPane.setPickOnBounds(false);
                 
                 card = new VBox();
                 card.getChildren().add(scrollPane);
