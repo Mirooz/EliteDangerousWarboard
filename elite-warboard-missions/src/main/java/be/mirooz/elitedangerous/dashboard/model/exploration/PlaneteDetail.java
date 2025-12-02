@@ -281,7 +281,7 @@ public class PlaneteDetail extends ACelesteBody {
                         .addAnalyzedOrganicData(specie, this.isWasFootfalled());
             }
 
-            case SAMPLE -> {
+            case SAMPLE,LOG -> {
                 explorationService.setCurrentBiologicalAnalysis(this, matchingSpecies);
             }
 
