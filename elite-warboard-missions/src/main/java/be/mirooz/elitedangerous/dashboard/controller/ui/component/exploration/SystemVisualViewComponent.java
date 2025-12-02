@@ -1911,6 +1911,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         container.setSpacing(5);
         container.setPadding(new javafx.geometry.Insets(5));
         
+        // Ajouter le radar s'il est visible dans le panel de gauche
+        if (radarComponent != null && radarComponent.getRadarPane() != null) {
+            Pane radarPane = radarComponent.getRadarPane();
+            if (radarPane.isVisible()) {
+                // Créer un nouveau RadarComponent pour l'overlay
+                // (un Node JavaFX ne peut avoir qu'un seul parent, donc on ne peut pas réutiliser le même)
+                RadarComponent overlayRadar = new RadarComponent();
+                overlayRadar.showRadar();
+                container.getChildren().add(overlayRadar.getRadarPane());
+            }
+        }
+        
         if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
             return container;
         }
