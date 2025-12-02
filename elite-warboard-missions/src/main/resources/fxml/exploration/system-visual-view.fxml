@@ -9,7 +9,7 @@
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.SystemVisualViewComponent"
       spacing="0" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS">
 
-    <Label text="VUE VISUELLE DU SYSTÈME" styleClass="exploration-section-title" />
+    <Label fx:id="systemTitleLabel" text="VUE VISUELLE DU SYSTÈME" styleClass="exploration-section-title" />
     
     <!-- Conteneur principal : Panneau gauche + Vue visuelle + Panneau JSON latéral -->
     <HBox spacing="10" VBox.vgrow="ALWAYS">

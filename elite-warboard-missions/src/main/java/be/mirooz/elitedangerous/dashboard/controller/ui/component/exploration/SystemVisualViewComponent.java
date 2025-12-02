@@ -44,6 +44,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private VBox bodiesListPanel;
     @FXML
     private VBox bodiesListContainer;
+    @FXML
+    private Label systemTitleLabel;
     
     private RadarComponent radarComponent;
     @FXML
@@ -333,6 +335,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             }
             
             this.currentSystem = system;
+            
+            // Mettre à jour le titre avec le nom du système
+            if (systemTitleLabel != null) {
+                if (system != null && system.getSystemName() != null) {
+                    systemTitleLabel.setText(system.getSystemName());
+                } else {
+                    systemTitleLabel.setText("VUE VISUELLE DU SYSTÈME");
+                }
+            }
+            
             bodiesPane.getChildren().clear();
             bodyPositions.clear();
             
