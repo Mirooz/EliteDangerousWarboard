@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
 import be.mirooz.elitedangerous.biologic.BioSpecies;
+import be.mirooz.elitedangerous.biologic.BodyType;
 import be.mirooz.elitedangerous.biologic.StarType;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
@@ -14,10 +15,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
@@ -60,6 +65,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private Image starImage; // Image par défaut pour les étoiles (fallback)
     // Images par type de planète
     private final Map<be.mirooz.elitedangerous.biologic.BodyType, Image> planetImages = new HashMap<>();
+    private Image ringImageTop;
+    private Image ringImageBack;
     // Images par type d'étoile
     private final Map<StarType, Image> starImages = new HashMap<>();
     private Image exobioImage;
@@ -99,7 +106,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
         
         // Charger les images par type de planète
         loadPlanetImages();
-        
+
+        loadRingImage();
         // Charger les images par type d'étoile
         loadStarImages();
         
@@ -427,7 +435,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                 // Positionner l'étoile verticalement à gauche
                 double starSize = getBodySize(BodyHierarchyType.STAR);
                 bodyPositions.put(star.getBodyID(), new BodyPosition(startX, currentStarY, star, starSize));
-                ImageView starView = createBodyImageView(star, startX, currentStarY, BodyHierarchyType.STAR);
+                Node starView = createBodyImageView(star, startX, currentStarY, BodyHierarchyType.STAR);
                 bodiesPane.getChildren().add(starView);
 
                 // Positionner les planètes directes de cette étoile en chaîne horizontale à droite
@@ -443,7 +451,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                         // Positionner la planète
                         double planetSize = getBodySize(BodyHierarchyType.PLANET);
                         bodyPositions.put(planet.getBodyID(), new BodyPosition(planetX, planetY, planet, planetSize));
-                        ImageView planetView = createBodyImageView(planet, planetX, planetY, BodyHierarchyType.PLANET);
+                        Node planetView = createBodyImageView(planet, planetX, planetY, BodyHierarchyType.PLANET);
                         bodiesPane.getChildren().add(planetView);
                         
                         // Ajouter les icônes sous la planète (exobio et mapped)
@@ -459,7 +467,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                 // Positionner la lune
                                 double moonSize = getBodySize(BodyHierarchyType.MOON);
                                 bodyPositions.put(moon.getBodyID(), new BodyPosition(planetX, moonY, moon, moonSize));
-                                ImageView moonView = createBodyImageView(moon, planetX, moonY, BodyHierarchyType.MOON);
+                                Node moonView = createBodyImageView(moon, planetX, moonY, BodyHierarchyType.MOON);
                                 bodiesPane.getChildren().add(moonView);
                                 
                                 // Ajouter les icônes sous la lune (exobio et mapped)
@@ -472,7 +480,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                     for (ACelesteBody subMoon : subMoons) {
                                         double subMoonSize = getBodySize(BodyHierarchyType.SUB_MOON);
                                         bodyPositions.put(subMoon.getBodyID(), new BodyPosition(subMoonX, moonY, subMoon, subMoonSize));
-                                        ImageView subMoonView = createBodyImageView(subMoon, subMoonX, moonY, BodyHierarchyType.SUB_MOON);
+                                        Node subMoonView = createBodyImageView(subMoon, subMoonX, moonY, BodyHierarchyType.SUB_MOON);
                                         bodiesPane.getChildren().add(subMoonView);
                                         
                                         // Ajouter les icônes sous la lune de lune (exobio et mapped)
@@ -552,7 +560,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                                             int subMoonY = (int)parentPos.y;
                                             double subMoonSize = getBodySize(BodyHierarchyType.SUB_MOON);
                                             bodyPositions.put(body.getBodyID(), new BodyPosition(subMoonX, subMoonY, body, subMoonSize));
-                                            ImageView subMoonView = createBodyImageView(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
+                                            Node subMoonView = createBodyImageView(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
                                             bodiesPane.getChildren().add(subMoonView);
                                             
                                             // Ajouter les icônes sous la lune de lune (exobio et mapped)
@@ -629,7 +637,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             }
         }
     }
-    
+    private void loadRingImage() {
+        try {
+            ringImageBack = new Image(getClass().getResourceAsStream("/images/exploration/ringback2.png"));
+            ringImageTop = new Image(getClass().getResourceAsStream("/images/exploration/ringtop2.png"));
+        } catch (Exception e) {
+            System.err.println("Ring.png introuvable !");
+        }
+    }
     /**
      * Retourne le nom de l'image correspondant au type de planète
      */
@@ -667,29 +682,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             }
         }
     }
-    
-    /**
-     * Obtient l'image appropriée pour un corps céleste
-     */
-    private Image getImageForBody(ACelesteBody body) {
-        if (body instanceof StarDetail star) {
-            StarType starType = star.getStarType();
-            if (starType != null && starImages.containsKey(starType)) {
-                return starImages.get(starType);
-            }
-            // Fallback sur starImage si l'image n'est pas trouvée
-            return starImage;
-        } else if (body instanceof PlaneteDetail planet) {
-            be.mirooz.elitedangerous.biologic.BodyType planetClass = planet.getPlanetClass();
-            if (planetClass != null && planetImages.containsKey(planetClass)) {
-                return planetImages.get(planetClass);
-            }
-            // Fallback sur gas.png si l'image n'est pas trouvée
-            return gasImage;
-        }
-        return gasImage;
-    }
-    
+
+
     /**
      * Enum pour le type de corps dans la hiérarchie
      */
@@ -715,38 +709,82 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     /**
      * Crée une ImageView pour un corps céleste
      */
-    private ImageView createBodyImageView(ACelesteBody body, double x, double y, BodyHierarchyType hierarchyType) {
-        Image image = getImageForBody(body);
-        ImageView imageView = new ImageView(image);
+    private Node createBodyImageView(ACelesteBody body, double x, double y, BodyHierarchyType hierarchyType) {
         double size = getBodySize(hierarchyType);
-        imageView.setFitWidth(size);
-        imageView.setFitHeight(size);
-        imageView.setPreserveRatio(true);
-        imageView.setX(x - size / 2); // Centrer l'image
-        imageView.setY(y - size / 2);
 
-        // Tooltip
+        // image de base (sans anneaux)
+        Image planetBase = getImageForBaseBody(body);
+
+        // planète + anneaux
+        StackPane planetNode = (StackPane) createPlanetWithRings(planetBase, ringImageBack, ringImageTop, size);
+
+        // IMPORTANT : attendre que JavaFX calcule les dimensions réelles du StackPane
+        Platform.runLater(() -> {
+            double w = planetNode.getWidth();
+            double h = planetNode.getHeight();
+
+            // On centre la planète (pas l'anneau)
+            planetNode.setLayoutX(x - size / 2 - (w - size) / 2);
+            planetNode.setLayoutY(y - size / 2 - (h - size) / 2);
+        });
+
+        // Tooltip etc.
         String bodyName = getBodyNameWithoutSystem(body);
-        if (body instanceof StarDetail) {
-            bodyName = "★ " + bodyName;
-        } else if (body instanceof PlaneteDetail) {
-            bodyName = "● " + bodyName;
-        }
         Tooltip tooltip = new TooltipComponent(bodyName);
-        Tooltip.install(imageView, tooltip);
+        Tooltip.install(planetNode, tooltip);
 
-        imageView.getStyleClass().add("exploration-visual-body");
-        if (body instanceof StarDetail) {
-            imageView.getStyleClass().add("exploration-visual-star");
-        } else if (body instanceof PlaneteDetail) {
-            imageView.getStyleClass().add("exploration-visual-planet");
+        planetNode.getStyleClass().add("exploration-visual-body");
+        planetNode.setOnMouseClicked(event -> showJsonDialog(body, event));
+
+        return planetNode;
+    }
+
+    private Image getImageForBaseBody(ACelesteBody body) {
+
+        if (body instanceof StarDetail star) {
+            StarType starType = star.getStarType();
+            return (starType != null && starImages.containsKey(starType))
+                    ? starImages.get(starType)
+                    : starImage;
         }
 
-        // Gestionnaire de clic pour afficher le JSON
-        imageView.setOnMouseClicked(event -> showJsonDialog(body, event));
+        if (body instanceof PlaneteDetail planet) {
+            BodyType planetClass = planet.getPlanetClass();
+            return (planetClass != null && planetImages.containsKey(planetClass))
+                    ? planetImages.get(planetClass)
+                    : gasImage;
+        }
 
-        return imageView;
+        return gasImage;
     }
+
+    private Node createPlanetWithRings(Image planet, Image ringBack, Image ringFront, double size) {
+
+        // Conteneur principal (centrage automatique)
+        StackPane root = new StackPane();
+        root.setPickOnBounds(false); // Ne bloque pas les clics
+
+        // --- Planète ---
+        ImageView body = new ImageView(planet);
+        body.setPreserveRatio(true);
+        body.setFitWidth(size);
+
+        // --- Anneau arrière ---
+        ImageView back = new ImageView(ringBack);
+        back.setPreserveRatio(true);
+        back.setFitWidth(size * 2.2);
+
+        // --- Anneau avant ---
+        ImageView front = new ImageView(ringFront);
+        front.setPreserveRatio(true);
+        front.setFitWidth(size * 2.2);
+
+        // Ordre des layers
+        root.getChildren().addAll(back, body, front);
+
+        return root;
+    }
+
 
     /**
      * Ajoute les icônes exobio et mapped en haut à droite d'une planète dans un badge
