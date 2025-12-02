@@ -10,6 +10,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import javafx.application.Platform;
@@ -56,8 +57,19 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     private ScrollPane systemsScrollPane;
     @FXML
     private VBox systemsList;
+    @FXML
+    private HBox onHoldInfoContainer;
+    @FXML
+    private HBox explorationOnHoldContainer;
+    @FXML
+    private Label explorationOnHoldLabel;
+    @FXML
+    private HBox organicOnHoldContainer;
+    @FXML
+    private Label organicOnHoldLabel;
 
     private final ExplorationDataSaleRegistry registry = ExplorationDataSaleRegistry.getInstance();
+    private final OrganicDataSaleRegistry organicRegistry = OrganicDataSaleRegistry.getInstance();
     private List<ExplorationData> allSales = new ArrayList<>();
     private int currentIndex = -1;
     private ExplorationData selectedSale;
@@ -131,6 +143,8 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                 currentIndex = 0;
             }
             
+            // Mettre à jour les informations "on hold" avant updateUI
+            updateOnHoldInfo();
             updateUI();
             
             // Exécuter le callback après la mise à jour de l'UI
@@ -173,6 +187,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         // Formater les timestamps
         String timeRange = formatTimeRange(selectedSale.getStartTimeStamp(), selectedSale.getEndTimeStamp());
         timeRangeLabel.setText(timeRange);
+        
+        // Mettre à jour les informations "on hold"
+        updateOnHoldInfo();
         
         // Mettre à jour la liste des systèmes visités
         systemsList.getChildren().clear();
@@ -607,6 +624,51 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     
     public void setOnSystemSelected(Consumer<SystemVisited> callback) {
         this.onSystemSelected = callback;
+    }
+    
+    /**
+     * Met à jour l'affichage des données "on hold" (exploration et organiques)
+     */
+    private void updateOnHoldInfo() {
+        // Vérifier les données d'exploration on hold
+        var explorationOnHold = registry.getExplorationDataOnHold();
+        boolean hasExplorationOnHold = explorationOnHold != null && 
+                                      explorationOnHold.getTotalEarnings() > 0;
+        
+        if (hasExplorationOnHold && explorationOnHold != null) {
+            long totalEarnings = explorationOnHold.getTotalEarnings();
+            int systemsCount = explorationOnHold.getSystemsVisitedMap() != null ? 
+                              explorationOnHold.getSystemsVisitedMap().size() : 0;
+            explorationOnHoldLabel.setText(String.format("%,d Cr (%d systèmes)", totalEarnings, systemsCount));
+            explorationOnHoldContainer.setVisible(true);
+            explorationOnHoldContainer.setManaged(true);
+        } else {
+            explorationOnHoldContainer.setVisible(false);
+            explorationOnHoldContainer.setManaged(false);
+        }
+        
+        // Vérifier les données organiques on hold
+        var organicOnHold = organicRegistry.getCurrentOrganicDataOnHold();
+        boolean hasOrganicOnHold = organicOnHold != null && 
+                                   (organicOnHold.getTotalValue() > 0 || organicOnHold.getTotalBonus() > 0);
+        
+        if (hasOrganicOnHold && organicOnHold != null) {
+            long totalValue = organicOnHold.getTotalValue();
+            long totalBonus = organicOnHold.getTotalBonus();
+            int bioCount = organicOnHold.getBioData() != null ? organicOnHold.getBioData().size() : 0;
+            long total = totalValue + totalBonus;
+            organicOnHoldLabel.setText(String.format("%,d Cr (%d espèces)", total, bioCount));
+            organicOnHoldContainer.setVisible(true);
+            organicOnHoldContainer.setManaged(true);
+        } else {
+            organicOnHoldContainer.setVisible(false);
+            organicOnHoldContainer.setManaged(false);
+        }
+        
+        // Afficher le conteneur principal seulement si au moins une info est visible
+        boolean hasAnyOnHold = hasExplorationOnHold || hasOrganicOnHold;
+        onHoldInfoContainer.setVisible(hasAnyOnHold);
+        onHoldInfoContainer.setManaged(hasAnyOnHold);
     }
 }
 

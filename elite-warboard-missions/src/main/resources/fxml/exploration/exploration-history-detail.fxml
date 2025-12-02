@@ -10,7 +10,19 @@
 
     <Label text="HISTORIQUE DES GROUPES D'EXPLORATION" styleClass="exploration-section-title"/>
 
-    <Button fx:id="seeCurrentSystemButton" text="See current system" styleClass="exploration-nav-button" onAction="#seeCurrentSystem"/>
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button fx:id="seeCurrentSystemButton" text="See current system" styleClass="exploration-nav-button" onAction="#seeCurrentSystem"/>
+        <HBox fx:id="onHoldInfoContainer" spacing="10" alignment="CENTER_LEFT">
+            <HBox fx:id="explorationOnHoldContainer" spacing="8" alignment="CENTER_LEFT" visible="false" managed="false">
+                <Label text="💰" styleClass="exploration-info-icon"/>
+                <Label fx:id="explorationOnHoldLabel" styleClass="exploration-info-value"/>
+            </HBox>
+            <HBox fx:id="organicOnHoldContainer" spacing="8" alignment="CENTER_LEFT" visible="false" managed="false">
+                <Label text="🧬" styleClass="exploration-info-icon"/>
+                <Label fx:id="organicOnHoldLabel" styleClass="exploration-info-value"/>
+            </HBox>
+        </HBox>
+    </HBox>
     <!-- Zone de navigation avec flèches -->
     <HBox spacing="10" alignment="CENTER" styleClass="exploration-history-navigation">
         <Button fx:id="previousButton" text="◀" styleClass="exploration-nav-button" onAction="#navigatePrevious"/>
