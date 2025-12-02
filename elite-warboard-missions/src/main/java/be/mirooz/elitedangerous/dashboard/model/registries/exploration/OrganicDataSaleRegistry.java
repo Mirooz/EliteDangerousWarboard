@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataSale;
+import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -50,6 +51,8 @@ public class OrganicDataSaleRegistry {
         if (!wasFootfalled) {
             currentOrganicDataOnHold.setTotalBonus(currentOrganicDataOnHold.getTotalBonus() + bioSpecies.getBonusValue());
         }
+
+        DirectionReaderService.getInstance().stopWatchingStatusFile();
     }
 
     /**
