@@ -16,7 +16,10 @@
         <!-- Panneau gauche : Liste des corps du système -->
         <VBox fx:id="bodiesListPanel" styleClass="exploration-bodies-list-panel" 
               minWidth="450" maxWidth="450" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
-            <Label text="CORPS DU SYSTÈME" styleClass="exploration-section-title"/>
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="CORPS DU SYSTÈME" styleClass="exploration-section-title" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="bodiesOverlayButton" styleClass="elite-nav-button" onAction="#showBodiesOverlay"/>
+            </HBox>
             <CheckBox fx:id="showOnlyHighValueBodiesCheckBox" text="Show only high value bodies" 
                       styleClass="exploration-filter-checkbox" 
                       onAction="#onFilterChanged"/>

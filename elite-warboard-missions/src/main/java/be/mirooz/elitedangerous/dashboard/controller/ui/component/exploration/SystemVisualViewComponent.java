@@ -60,7 +60,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private Label jsonBodyNameLabel;
     @FXML
     private TreeView<JsonTreeItem> jsonTreeView;
+    @FXML
+    private Button bodiesOverlayButton;
 
+    private ExplorationBodiesOverlayComponent bodiesOverlayComponent;
     private Image gasImage;
     private Image starImage; // Image par défaut pour les étoiles (fallback)
     // Images par type de planète
@@ -82,6 +85,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Initialiser le composant overlay
+        bodiesOverlayComponent = new ExplorationBodiesOverlayComponent();
+        bodiesOverlayComponent.setBodyCardFactory(this::createBodiesListForOverlay);
+        
+        // Mettre à jour le texte du bouton overlay
+        Platform.runLater(() -> {
+            updateBodiesOverlayButtonText();
+        });
+        
         // Charger les images
         try {
             gasImage = new Image(getClass().getResourceAsStream("/images/exploration/gas.png"));
@@ -323,6 +335,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
             this.currentSystem = system;
             bodiesPane.getChildren().clear();
             bodyPositions.clear();
+            
+            // Mettre à jour l'overlay si il est ouvert
+            if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing()) {
+                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
+                                           showOnlyHighValueBodiesCheckBox.isSelected();
+                bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
+            }
             
             // Mettre à jour la liste des corps à gauche
             updateBodiesList(system);
@@ -1828,7 +1847,95 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private void onFilterChanged() {
         if (currentSystem != null) {
             updateBodiesList(currentSystem);
+            
+            // Mettre à jour l'overlay si il est ouvert
+            if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing()) {
+                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
+                                           showOnlyHighValueBodiesCheckBox.isSelected();
+                bodiesOverlayComponent.updateContent(currentSystem, showOnlyHighValue);
+            }
         }
+    }
+    
+    /**
+     * Affiche ou ferme l'overlay des corps d'exploration
+     */
+    @FXML
+    private void showBodiesOverlay() {
+        if (bodiesOverlayComponent != null) {
+            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
+                                       showOnlyHighValueBodiesCheckBox.isSelected();
+            bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
+            updateBodiesOverlayButtonText();
+        }
+    }
+    
+    /**
+     * Met à jour le texte du bouton overlay selon l'état de la fenêtre
+     */
+    private void updateBodiesOverlayButtonText() {
+        if (bodiesOverlayButton != null && bodiesOverlayComponent != null) {
+            String text;
+            String icon;
+
+            if (bodiesOverlayComponent.isShowing()) {
+                text = "Fermer";
+                icon = "✖"; // Croix pour fermer
+            } else {
+                text = "Overlay";
+                icon = "🗔"; // Icône de fenêtre pour ouvrir
+            }
+
+            // Combiner l'icône et le texte
+            bodiesOverlayButton.setText(icon + " " + text);
+        }
+    }
+    
+    /**
+     * Crée la liste des corps pour l'overlay (similaire à updateBodiesList mais retourne un VBox)
+     */
+    private VBox createBodiesListForOverlay(SystemVisited system) {
+        VBox container = new VBox(5);
+        container.setSpacing(5);
+        container.setPadding(new javafx.geometry.Insets(5));
+        
+        if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
+            return container;
+        }
+        
+        // Créer une map pour lookup rapide
+        Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
+                .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
+        
+        // Trier les corps hiérarchiquement
+        List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
+        
+        // Filtrer les corps si nécessaire (seulement les high value)
+        List<ACelesteBody> filteredBodies = sortedBodies;
+        if (showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected()) {
+            filteredBodies = sortedBodies.stream()
+                    .filter(this::isHighValueBody)
+                    .collect(Collectors.toList());
+        }
+        
+        // Créer les cartes pour chaque corps
+        for (ACelesteBody body : filteredBodies) {
+            int depth = calculateBodyDepth(body, bodiesMap);
+            Map<Integer, Boolean> levelHasNext = new HashMap<>();
+            // Pour simplifier, on ne calcule pas les lignes hiérarchiques dans l'overlay
+            for (int d = 0; d <= depth; d++) {
+                levelHasNext.put(d, false);
+            }
+            
+            VBox card = createBodyCard(body, depth, levelHasNext, bodiesMap);
+            if (card != null) {
+                // Ajouter le style overlay
+                card.getStyleClass().add("mirror-overlay");
+                container.getChildren().add(card);
+            }
+        }
+        
+        return container;
     }
     
     /**
