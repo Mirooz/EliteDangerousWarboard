@@ -117,7 +117,11 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     }
 
     public void refresh() {
-        refresh(null);
+        refresh(() -> {
+            // Sélectionner automatiquement le système actuel dans la vue exploration après le refresh
+            // Utiliser un Platform.runLater supplémentaire pour s'assurer que l'UI est complètement mise à jour
+            Platform.runLater(this::seeCurrentSystem);
+        });
     }
 
     private void refresh(Runnable afterUpdate) {

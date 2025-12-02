@@ -54,7 +54,9 @@ public class ExplorationDataSaleRegistry {
         for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
             value+= celesteBody.computeBodyValue();
         }
-        explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings()+value);
+        if (!systemVisited.isSold()) {
+            explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings() + value);
+        }
     }
     /**
      * Ajoute ou met à jour la vente en cours avec de nouvelles données.
@@ -99,7 +101,7 @@ public class ExplorationDataSaleRegistry {
         if (currentSale != null) {
             currentSale.setEndTimeStamp(timestamp);
             currentSale = null;
-            addToOnHold(SystemVisitedRegistry.getInstance().getSystem(CommanderStatus.getInstance().getCurrentStarSystem()));
+            //addToOnHold(SystemVisitedRegistry.getInstance().getSystem(CommanderStatus.getInstance().getCurrentStarSystem()));
 
         }
           }

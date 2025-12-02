@@ -48,6 +48,7 @@ public class ExplorationRefreshNotificationService {
      * Notifie tous les listeners qu'un refresh complet est nécessaire
      */
     public void notifyRefreshRequired() {
+        System.out.println("Notify refresh Explo");
         for (ExplorationRefreshListener listener : listeners) {
             try {
                 listener.onRefreshRequired();

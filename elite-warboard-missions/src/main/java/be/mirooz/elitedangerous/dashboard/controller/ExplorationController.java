@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.*;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -31,6 +32,7 @@ public class ExplorationController implements Initializable,IBatchListener {
     public void initialize(URL location, ResourceBundle resources) {
         initializeComponents();
         setupComponentCallbacks();
+        DashboardService.getInstance().addBatchListener(this);
     }
 
     @Override
