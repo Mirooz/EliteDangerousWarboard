@@ -1758,6 +1758,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                             if (confirmedSpecies.isCollected()) {
                                 statusLabel.setText("✓");
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
+                            }
+                            else if (confirmedSpecies.getSampleNumber() !=0){
+                                statusLabel.setText(confirmedSpecies.getSampleNumber() + "/3");
+                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-orange; -fx-font-weight: bold;");
                             } else {
                                 statusLabel.setText("✗");
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
