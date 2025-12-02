@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -48,6 +49,8 @@ public class FSSBodySignalsHandler implements JournalEventHandler {
                         signalProcessor.addPendingBiologicalSignal(bodyID, systemAddress, bodyName, count,1);
                         System.out.printf("🌱 Signal biologique détecté: %s (BodyID: %d, Count: %d)%n", 
                                 bodyName, bodyID, count);
+                        // Notifier le refresh du panneau d'exploration
+                        ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
                     }
                 });
             }

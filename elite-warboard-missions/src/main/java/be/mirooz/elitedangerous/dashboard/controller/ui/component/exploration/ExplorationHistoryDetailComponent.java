@@ -92,6 +92,10 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         //refresh();
     }
     @Override
+    public void onBatchStart() {
+        //allSales.clear();
+    }
+    @Override
     public void onBatchEnd() {
         refresh(() -> {
             // Sélectionner automatiquement le système actuel dans la vue exploration après le refresh

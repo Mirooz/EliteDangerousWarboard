@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.ParentBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -177,6 +178,8 @@ public class ScanHandler implements JournalEventHandler {
                 // Enregistrement de la planète dans le registre
                 PlaneteRegistry.getInstance().addOrUpdateBody(planeteDetail);
             }
+            // Notifier le refresh du panneau d'exploration
+            ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement Scan: " + e.getMessage());
             e.printStackTrace();

@@ -12,6 +12,7 @@ import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class FSDJumpHandler implements JournalEventHandler {
@@ -52,6 +53,8 @@ public class FSDJumpHandler implements JournalEventHandler {
                     ExplorationDataSaleRegistry.getInstance().addToOnHold(SystemVisitedRegistry.getInstance().getSystem(planeteRegistry.getCurrentStarSystem()));
                 }
                 directionReaderService.stopWatchingStatusFile();
+                // Notifier le refresh du panneau d'exploration
+                ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());

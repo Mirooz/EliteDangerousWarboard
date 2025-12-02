@@ -10,6 +10,8 @@ import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShips
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.ShipTargetRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.MiningStatRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
@@ -61,6 +63,11 @@ public class DashboardService {
                 ProspectedAsteroidRegistry.getInstance().clear();
                 MiningStatRegistry.getInstance().clearAllStats();
                 CombatMissionHistoryService.getInstance().clear();
+                //EXPLo
+                OrganicDataSaleRegistry.getInstance().clear();
+                PlaneteRegistry.getInstance().clear();
+                SystemVisitedRegistry.getInstance().clear();
+                ExplorationDataSaleRegistry.getInstance().clearAll();
                 JournalWatcherService.getInstance().stop();
                 journalService.getMissionsFromLastWeek();
             } catch (Exception ex) {

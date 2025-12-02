@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller;
 
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.*;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,7 +15,7 @@ import java.util.ResourceBundle;
 /**
  * Contrôleur pour le panneau d'exploration
  */
-public class ExplorationController implements Initializable, IRefreshable {
+public class ExplorationController implements Initializable,IBatchListener {
 
     // Conteneurs pour les composants
     @FXML
@@ -30,9 +31,18 @@ public class ExplorationController implements Initializable, IRefreshable {
     public void initialize(URL location, ResourceBundle resources) {
         initializeComponents();
         setupComponentCallbacks();
-        UIManager.getInstance().register(this);
     }
 
+    @Override
+    public void onBatchEnd(){
+        // S'abonner au service de notification pour le refresh
+        ExplorationRefreshNotificationService.getInstance().addListener(this::refresh);
+    }
+    @Override
+    public void onBatchStart(){
+        // S'abonner au service de notification pour le refresh
+        ExplorationRefreshNotificationService.getInstance().clearListeners();
+    }
     /**
      * Initialise les composants en les chargeant depuis leurs fichiers FXML
      */
@@ -71,8 +81,7 @@ public class ExplorationController implements Initializable, IRefreshable {
         }
     }
 
-    @Override
-    public void refreshUI() {
+    public void refresh() {
         Platform.runLater(() -> {
             if (systemVisualView != null) {
                 systemVisualView.refresh();

@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -56,6 +57,8 @@ public class MultiSellExplorationDataHandler implements JournalEventHandler {
             ExplorationDataSaleRegistry.getInstance().clearOnHold();
             System.out.printf("📊 Données d'exploration ajoutées: %d systèmes, BaseValue: %d, Bonus: %d, Total: %d%n",
                     discoveredSystems.size(), baseValue, bonus, totalEarnings);
+            // Notifier le refresh du panneau d'exploration
+            ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement MultiSellExplorationData: " + e.getMessage());
             e.printStackTrace();

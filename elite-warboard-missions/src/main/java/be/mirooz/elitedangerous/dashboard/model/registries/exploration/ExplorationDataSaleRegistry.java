@@ -116,6 +116,10 @@ public class ExplorationDataSaleRegistry {
         explorationDataOnHold = null;
     }
 
+    public void clearAll(){
+        clearOnHold();
+        getAllSales().clear();
+    }
     /**
      * Retourne le nombre de ventes dans le registry.
      */

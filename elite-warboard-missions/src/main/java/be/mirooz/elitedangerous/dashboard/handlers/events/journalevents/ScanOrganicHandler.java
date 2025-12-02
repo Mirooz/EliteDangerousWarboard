@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.ScanOrganicData;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Optional;
@@ -70,6 +71,8 @@ public class ScanOrganicHandler implements JournalEventHandler {
                         planete.getBodyName(), scanOrganicData.getBody(), scanOrganicData.getScanType(),
                         scanOrganicData.getVariantLocalised());
 
+                // Notifier le refresh du panneau d'exploration
+                ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
             } else {
                 System.out.printf("⚠️ Planète non trouvée dans le registry pour BodyID: %d (ScanOrganic)%n",
                         scanOrganicData.getBody());
