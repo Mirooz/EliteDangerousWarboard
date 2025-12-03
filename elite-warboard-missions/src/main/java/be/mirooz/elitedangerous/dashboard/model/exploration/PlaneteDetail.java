@@ -226,11 +226,11 @@ public class PlaneteDetail extends ACelesteBody {
                     .findFirst()
                     .orElseGet(() -> createNewSpecies(matchingSpecies, scanOrganicData));
 
-            // Ajoute le scan type
-            specie.addScanType(scanTypeBio);
 
             // Actions selon le type
             handleScanTypeActions(scanTypeBio, specie, matchingSpecies);
+            // Ajoute le scan type
+            specie.addScanType(scanTypeBio);
 
         } catch (Exception e) {
             System.err.println("❌ Erreur addConfirmedSpecies: " + e.getMessage());

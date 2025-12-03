@@ -42,10 +42,12 @@ public class BioSpecies {
 
     public void addScanType(ScanTypeBio scanTypeBio) {
         this.scanType.add(scanTypeBio);
-        if (scanTypeBio.equals(ScanTypeBio.SAMPLE) || scanTypeBio.equals(ScanTypeBio.LOG))
+        if (scanTypeBio.equals(ScanTypeBio.SAMPLE) || scanTypeBio.equals(ScanTypeBio.LOG)) {
             sampleNumber++;
-        if (scanTypeBio.equals(ScanTypeBio.ANALYSE))
+        }
+        if (scanTypeBio.equals(ScanTypeBio.ANALYSE)) {
             collected = true;
+        }
     }
 
     public void removeAllSamples() {
