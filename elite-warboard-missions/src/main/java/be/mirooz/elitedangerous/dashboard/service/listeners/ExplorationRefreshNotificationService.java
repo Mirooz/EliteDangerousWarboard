@@ -68,5 +68,49 @@ public class ExplorationRefreshNotificationService {
          */
         void onRefreshRequired();
     }
+    
+    /**
+     * Interface pour écouter les événements de filtrage par bodyID
+     */
+    public interface BodyFilterListener {
+        /**
+         * Appelé quand il faut filtrer la liste pour n'afficher qu'un seul bodyID
+         * @param bodyID le bodyID à afficher (null pour désactiver le filtre)
+         */
+        void onBodyFilter(Integer bodyID);
+    }
+    
+    private final List<BodyFilterListener> bodyFilterListeners = new CopyOnWriteArrayList<>();
+    
+    /**
+     * Ajoute un listener pour les événements de filtrage par bodyID
+     */
+    public void addBodyFilterListener(BodyFilterListener listener) {
+        if (listener != null && !bodyFilterListeners.contains(listener)) {
+            bodyFilterListeners.add(listener);
+        }
+    }
+    
+    /**
+     * Retire un listener de filtrage
+     */
+    public void removeBodyFilterListener(BodyFilterListener listener) {
+        bodyFilterListeners.remove(listener);
+    }
+    
+    /**
+     * Notifie tous les listeners qu'il faut filtrer par bodyID
+     */
+    public void notifyBodyFilter(Integer bodyID) {
+        System.out.println("Notify body filter Explo for bodyID:" + bodyID);
+        for (BodyFilterListener listener : bodyFilterListeners) {
+            try {
+                listener.onBodyFilter(bodyID);
+            } catch (Exception e) {
+                System.err.println("❌ Erreur lors de la notification de filtrage par bodyID: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 }
 

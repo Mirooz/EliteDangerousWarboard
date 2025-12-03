@@ -5,6 +5,8 @@ import be.mirooz.elitedangerous.biologic.BodyType;
 import be.mirooz.elitedangerous.biologic.StarType;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipComponent;
+import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Scan;
@@ -38,7 +40,8 @@ import java.util.stream.Collectors;
 /**
  * Composant pour la vue visuelle du système (orrery)
  */
-public class SystemVisualViewComponent implements Initializable, IRefreshable {
+public class SystemVisualViewComponent implements Initializable, IRefreshable,
+        ExplorationRefreshNotificationService.BodyFilterListener {
 
     @FXML
     private VBox bodiesListPanel;
@@ -84,9 +87,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
     private static final double MAX_ZOOM = 5.0;
     private static final double ZOOM_FACTOR = 0.1;
     private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
+    private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // S'abonner au service de notification
+        ExplorationRefreshNotificationService.getInstance().addBodyFilterListener(this);
         // Initialiser le composant overlay
         bodiesOverlayComponent = new ExplorationBodiesOverlayComponent();
         bodiesOverlayComponent.setBodyCardFactory(this::createBodiesListForOverlay);
@@ -1436,6 +1442,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                     .filter(this::isHighValueBody)
                     .collect(Collectors.toList());
         }
+
+        // Appliquer le filtre de bodyID si actif (pour n'afficher que le corps approché avec exobio non collecté)
+        if (filteredBodyID != null && CommanderStatus.getInstance().getCurrentStarSystem().equals(system.getSystemName())) {
+            filteredBodies = filteredBodies.stream()
+                    .filter(body -> body.getBodyID() == filteredBodyID)
+                    .collect(Collectors.toList());
+        }
         
         // Créer les cartes avec les lignes hiérarchiques
         for (int i = 0; i < filteredBodies.size(); i++) {
@@ -1946,6 +1959,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                     .collect(Collectors.toList());
         }
         
+        // Appliquer le filtre de bodyID si actif (pour n'afficher que le corps approché avec exobio non collecté)
+        if (filteredBodyID != null && CommanderStatus.getInstance().getCurrentStarSystem().equals(system.getSystemName())) {
+            filteredBodies = filteredBodies.stream()
+                    .filter(body -> body.getBodyID() == filteredBodyID)
+                    .collect(Collectors.toList());
+        }
+        
         // Créer les cartes pour chaque corps
         for (ACelesteBody body : filteredBodies) {
             int depth = calculateBodyDepth(body, bodiesMap);
@@ -1976,6 +1996,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable {
                 bodiesListContainer.getChildren().clear();
             }
             currentSystem = null;
+        });
+    }
+    
+    /**
+     * Implémentation de BodyFilterListener
+     * Filtre la liste des corps pour n'afficher que le corps approché avec exobio non collecté
+     */
+    @Override
+    public void onBodyFilter(Integer bodyID) {
+        Platform.runLater(() -> {
+            filteredBodyID = bodyID;
+            // Rafraîchir la liste des corps avec le nouveau filtre
+            if (currentSystem != null) {
+                updateBodiesList(currentSystem);
+            }
         });
     }
 }

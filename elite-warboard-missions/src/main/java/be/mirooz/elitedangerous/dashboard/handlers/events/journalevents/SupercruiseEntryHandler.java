@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -17,7 +18,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class SupercruiseEntryHandler implements JournalEventHandler {
 
     private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
-    
+    private final ExplorationRefreshNotificationService notificationService = ExplorationRefreshNotificationService.getInstance();
+
     @Override
     public void handle(JsonNode event) {
         try {
@@ -32,7 +34,8 @@ public class SupercruiseEntryHandler implements JournalEventHandler {
                 miningStatsService.endCurrentMiningSession(timestamp);
                 System.out.println("⛏️ Session de minage terminée (Supercruise Entry)");
             }
-            
+
+            notificationService.notifyBodyFilter(null);
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement SupercruiseEntry: " + e.getMessage());
         }

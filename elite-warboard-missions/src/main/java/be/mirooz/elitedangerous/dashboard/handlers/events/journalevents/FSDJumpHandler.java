@@ -21,6 +21,7 @@ public class FSDJumpHandler implements JournalEventHandler {
     private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
     private final PlaneteRegistry planeteRegistry = PlaneteRegistry.getInstance();
 
+    private final ExplorationRefreshNotificationService notificationService = ExplorationRefreshNotificationService.getInstance();
     private final DirectionReaderService directionReaderService = DirectionReaderService.getInstance();
     @Override
     public String getEventType() {
@@ -55,6 +56,8 @@ public class FSDJumpHandler implements JournalEventHandler {
                 directionReaderService.stopWatchingStatusFile();
                 // Notifier le refresh du panneau d'exploration
                 ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
+
+                notificationService.notifyBodyFilter(null);
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());
