@@ -58,7 +58,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     @FXML
     private VBox systemsList;
     @FXML
-    private HBox onHoldInfoContainer;
+    private VBox onHoldInfoContainer;
     @FXML
     private HBox explorationOnHoldContainer;
     @FXML

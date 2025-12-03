@@ -12,7 +12,7 @@
 
     <HBox spacing="15" alignment="CENTER_LEFT">
         <Button fx:id="seeCurrentSystemButton" text="See current system" styleClass="exploration-nav-button" onAction="#seeCurrentSystem"/>
-        <HBox fx:id="onHoldInfoContainer" spacing="10" alignment="CENTER_LEFT">
+        <VBox fx:id="onHoldInfoContainer" spacing="5" alignment="CENTER_LEFT">
             <HBox fx:id="explorationOnHoldContainer" spacing="8" alignment="CENTER_LEFT" visible="false" managed="false">
                 <Label text="💰" styleClass="exploration-info-icon"/>
                 <Label fx:id="explorationOnHoldLabel" styleClass="exploration-info-value"/>
@@ -21,7 +21,7 @@
                 <Label text="🧬" styleClass="exploration-info-icon"/>
                 <Label fx:id="organicOnHoldLabel" styleClass="exploration-info-value"/>
             </HBox>
-        </HBox>
+        </VBox>
     </HBox>
     <!-- Zone de navigation avec flèches -->
     <HBox spacing="10" alignment="CENTER" styleClass="exploration-history-navigation">
