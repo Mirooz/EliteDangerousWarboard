@@ -267,47 +267,40 @@ public class RadarComponent {
         Position currentPos = directionService.getCurrentPosition();
         
         if (currentPos != null) {
-            // Dessiner le point central (position actuelle)
-            Circle centerPoint = new Circle(centerX, centerY, 5);
-            centerPoint.setFill(Color.rgb(0, 255, 0)); // Vert pour la position actuelle
-            centerPoint.setStroke(Color.WHITE);
-            centerPoint.setStrokeWidth(1);
-            radarGroup.getChildren().add(centerPoint);
-            
-            // Dessiner la flèche indiquant le heading
+            // Dessiner un triangle indiquant le heading (style radar de jeu vidéo)
             Integer heading = currentPos.getHeading();
             if (heading != null) {
                 // Convertir le heading en radians (0° = Nord, sens horaire)
                 // En JavaFX, 0° = Est, sens anti-horaire, donc on doit ajuster
                 double headingRad = Math.toRadians(90 - heading); // Ajustement pour que 0° = Nord
                 
-                double arrowLength = radius * 0.3;
-                double arrowX = centerX + Math.cos(headingRad) * arrowLength;
-                double arrowY = centerY - Math.sin(headingRad) * arrowLength; // Inverser Y car l'origine est en haut
+                // Taille du triangle (plus petit)
+                double triangleLength = radius * 0.25; // Longueur du triangle (du centre au sommet)
+                double triangleWidth = radius * 0.08; // Largeur de la base du triangle
                 
-                // Dessiner la ligne du heading
-                Line headingLine = new Line(centerX, centerY, arrowX, arrowY);
-                headingLine.setStroke(Color.rgb(0, 255, 0));
-                headingLine.setStrokeWidth(2);
-                radarGroup.getChildren().add(headingLine);
+                // Sommet du triangle (pointe dans la direction)
+                double tipX = centerX + Math.cos(headingRad) * triangleLength;
+                double tipY = centerY - Math.sin(headingRad) * triangleLength; // Inverser Y car l'origine est en haut
                 
-                // Dessiner la pointe de la flèche
-                double arrowSize = 8;
-                double angle1 = headingRad + Math.PI - Math.PI / 6;
-                double angle2 = headingRad + Math.PI + Math.PI / 6;
+                // Points de la base du triangle (perpendiculaires à la direction)
+                double baseAngle1 = headingRad + Math.PI / 2; // Angle perpendiculaire
+                double baseAngle2 = headingRad - Math.PI / 2;
                 
-                double x1 = arrowX + Math.cos(angle1) * arrowSize;
-                double y1 = arrowY - Math.sin(angle1) * arrowSize;
-                double x2 = arrowX + Math.cos(angle2) * arrowSize;
-                double y2 = arrowY - Math.sin(angle2) * arrowSize;
+                double baseX1 = centerX + Math.cos(baseAngle1) * triangleWidth;
+                double baseY1 = centerY - Math.sin(baseAngle1) * triangleWidth;
+                double baseX2 = centerX + Math.cos(baseAngle2) * triangleWidth;
+                double baseY2 = centerY - Math.sin(baseAngle2) * triangleWidth;
                 
-                Polygon arrowHead = new Polygon(
-                    arrowX, arrowY,
-                    x1, y1,
-                    x2, y2
+                // Créer le triangle
+                Polygon directionTriangle = new Polygon(
+                    tipX, tipY,      // Sommet (pointe dans la direction)
+                    baseX1, baseY1,   // Point de base gauche
+                    baseX2, baseY2    // Point de base droit
                 );
-                arrowHead.setFill(Color.rgb(0, 255, 0));
-                radarGroup.getChildren().add(arrowHead);
+                directionTriangle.setFill(Color.rgb(0, 255, 0)); // Vert vif
+                directionTriangle.setStroke(Color.rgb(0, 200, 0)); // Vert plus foncé pour le contour
+                directionTriangle.setStrokeWidth(1.5);
+                radarGroup.getChildren().add(directionTriangle);
             }
             
             // Dessiner les points d'échantillons biologiques
