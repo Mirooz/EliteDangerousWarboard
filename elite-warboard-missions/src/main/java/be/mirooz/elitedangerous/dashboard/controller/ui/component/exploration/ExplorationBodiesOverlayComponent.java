@@ -58,8 +58,10 @@ public class ExplorationBodiesOverlayComponent {
     private Slider textScaleSlider;
     private double textScale = 1.0;
     private StackPane stackPane;
+    private StackPane popupStackPane;
     private VBox contentCard;
     private Function<SystemVisited, VBox> bodyCardFactory;
+    private double popupWidth = 420.0; // Largeur par défaut du popup
     @SuppressWarnings("unused")
     private SystemVisited currentSystem;
     @SuppressWarnings("unused")
@@ -191,12 +193,76 @@ public class ExplorationBodiesOverlayComponent {
                 applyTextScaleToNode(newCard, textScale);
             });
         }
+        // Mettre à jour le popup s'il est ouvert
+        if (overlayPopup != null && overlayPopup.isShowing() && popupStackPane != null && bodyCardFactory != null) {
+            Platform.runLater(() -> {
+                updatePopupContent(system);
+            });
+        }
+    }
+
+    /**
+     * Met à jour le contenu du popup
+     */
+    private void updatePopupContent(SystemVisited system) {
+        if (popupStackPane == null || popupStackPane.getChildren().isEmpty()) {
+            return;
+        }
+        
+        VBox oldCard = (VBox) popupStackPane.getChildren().get(0);
+        double currentWidth = oldCard.getPrefWidth();
+        if (currentWidth <= 0) {
+            currentWidth = popupWidth; // Utiliser la largeur stockée si nécessaire
+        }
+        
+        // Créer la nouvelle carte
+        VBox newCard = createOverlayCard(system);
+        
+        // Récupérer la ScrollPane et extraire le contenu comme dans createPopup
+        if (newCard.getChildren().size() > 0) {
+            ScrollPane scrollPane = (ScrollPane) newCard.getChildren().get(0);
+            Parent content = (Parent) scrollPane.getContent();
+            
+            // Supprimer la ScrollPane et ajouter le contenu directement
+            newCard.getChildren().remove(scrollPane);
+            newCard.getChildren().add(content);
+            
+            // Forcer la largeur du contenu avant le layout
+            if (content instanceof Region contentRegion) {
+                contentRegion.setPrefWidth(currentWidth);
+                contentRegion.setMinWidth(currentWidth);
+                contentRegion.setMaxWidth(currentWidth);
+            }
+            
+            // Forcer application du CSS et layout avec la largeur fixe
+            content.applyCss();
+            content.autosize();
+            content.layout();
+            
+            double contentHeight = content.getBoundsInLocal().getHeight();
+            double finalHeight = Math.max(MIN_HEIGHT_OVERLAY, contentHeight + 20);
+            
+            // Appliquer la taille
+            newCard.setPrefSize(currentWidth, finalHeight);
+            popupStackPane.setPrefSize(currentWidth, finalHeight);
+        }
+        
+        // Remplacer l'ancienne carte par la nouvelle
+        popupStackPane.getChildren().set(0, newCard);
     }
 
     /**
      * Vérifie si l'overlay est actuellement affiché
      */
     public boolean isShowing() {
+        return (overlayStage != null && overlayStage.isShowing()) || 
+               (overlayPopup != null && overlayPopup.isShowing());
+    }
+
+    /**
+     * Vérifie si l'overlay (Stage) est actuellement affiché
+     */
+    public boolean isOverlayShowing() {
         return overlayStage != null && overlayStage.isShowing();
     }
 
@@ -226,6 +292,22 @@ public class ExplorationBodiesOverlayComponent {
     }
 
     /**
+     * Affiche un popup pour le système donné avec une largeur spécifique
+     */
+    public void showPopup(SystemVisited system, boolean showOnlyHighValue, double leftPanelWidth) {
+        this.currentSystem = system;
+        this.showOnlyHighValue = showOnlyHighValue;
+        this.popupWidth = leftPanelWidth;
+
+        // Si le popup est déjà ouvert, on le ferme
+        if (overlayPopup != null && overlayPopup.isShowing()) {
+            closePopup();
+        }
+
+        createPopup(system);
+    }
+
+    /**
      * Ferme le popup s'il est ouvert
      */
     public void closePopup() {
@@ -248,7 +330,7 @@ public class ExplorationBodiesOverlayComponent {
         overlayPopup.setAutoHide(false);
         overlayPopup.setAutoFix(false);
 
-        double width = 420;
+        double width = popupWidth;
         double minHeight = MIN_HEIGHT_OVERLAY;
 
         VBox popupContentCard = createOverlayCard(system);
@@ -273,7 +355,7 @@ public class ExplorationBodiesOverlayComponent {
         popupContentCard.setPrefSize(width, finalHeight);
 
         // stackPane = visuel, style, click-through
-        StackPane popupStackPane = new StackPane(popupContentCard);
+        popupStackPane = new StackPane(popupContentCard);
         popupStackPane.setPrefSize(width, finalHeight);
         popupStackPane.setMouseTransparent(true);
         popupStackPane.setCursor(Cursor.NONE);

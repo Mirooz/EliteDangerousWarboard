@@ -1900,14 +1900,23 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (isOnFoot) {
                 // Si on est à pied, utiliser le popup
                 // Si l'overlay est ouvert, le fermer
-                if (bodiesOverlayComponent.isShowing()) {
+                if (bodiesOverlayComponent.isOverlayShowing()) {
                     bodiesOverlayComponent.closeOverlay();
                 }
                 // Si le popup est déjà ouvert, le fermer (toggle)
                 if (bodiesOverlayComponent.isPopupShowing()) {
                     bodiesOverlayComponent.closePopup();
                 } else {
-                    bodiesOverlayComponent.showPopup(currentSystem);
+                    // Récupérer la largeur du panneau de gauche
+                    double leftPanelWidth = 450.0; // Largeur par défaut
+                    if (bodiesListPanel != null) {
+                        leftPanelWidth = bodiesListPanel.getWidth();
+                        // Si la largeur n'est pas encore calculée, utiliser la largeur préférée ou minimale
+                        if (leftPanelWidth <= 0) {
+                            leftPanelWidth = Math.max(bodiesListPanel.getPrefWidth(), bodiesListPanel.getMinWidth());
+                        }
+                    }
+                    bodiesOverlayComponent.showPopup(currentSystem, showOnlyHighValue, leftPanelWidth);
                 }
             } else {
                 // Si on n'est pas à pied, utiliser l'overlay
@@ -1941,9 +1950,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             
             if (isOnFoot) {
                 // Si on est à pied, fermer l'overlay et ouvrir le popup
-                if (bodiesOverlayComponent.isShowing()) {
+                if (bodiesOverlayComponent.isOverlayShowing()) {
                     bodiesOverlayComponent.closeOverlay();
-                    bodiesOverlayComponent.showPopup(currentSystem);
+                    // Récupérer la largeur du panneau de gauche
+                    double leftPanelWidth = 450.0; // Largeur par défaut
+                    if (bodiesListPanel != null) {
+                        leftPanelWidth = bodiesListPanel.getWidth();
+                        if (leftPanelWidth <= 0) {
+                            leftPanelWidth = Math.max(bodiesListPanel.getPrefWidth(), bodiesListPanel.getMinWidth());
+                        }
+                    }
+                    bodiesOverlayComponent.showPopup(currentSystem, showOnlyHighValue, leftPanelWidth);
                 }
             } else {
                 // Si on n'est plus à pied, fermer le popup et ouvrir l'overlay
