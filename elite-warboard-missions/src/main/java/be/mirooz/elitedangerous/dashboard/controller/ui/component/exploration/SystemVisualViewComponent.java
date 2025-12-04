@@ -1636,12 +1636,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 price.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 14px; -fx-font-weight: bold;");
                 headerRow.getChildren().add(price);
             }
-        }
-        
-        cardContent.getChildren().add(headerRow);
-        
-        // Informations exobio (X/Y) - seulement pour les planètes
-        if (body instanceof PlaneteDetail planet) {
+            
+            // Informations exobio (X/Y) - ajoutées dans le headerRow
             // Calculer le nombre d'espèces collectées et détectées
             int confirmedSpeciesCount = 0;
             int numSpeciesDetected = 0;
@@ -1660,19 +1656,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
                  (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()))) {
                 
-                // Conteneur pour l'info exobio avec fond visible - remplir tout le panneau
-                HBox exobioContainer = new HBox(10);
-                exobioContainer.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                exobioContainer.setPadding(new javafx.geometry.Insets(8, 12, 8, 12));
-                exobioContainer.getStyleClass().add("exploration-body-exobio-container");
-                exobioContainer.setMaxWidth(Double.MAX_VALUE);
-                HBox.setHgrow(exobioContainer, javafx.scene.layout.Priority.ALWAYS);
+                // Espaceur pour pousser les éléments exobio vers la droite
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+                headerRow.getChildren().add(spacer);
                 
                 ImageView exobioIconView = new ImageView(exobioImage);
                 exobioIconView.setFitWidth(20);
                 exobioIconView.setFitHeight(20);
                 exobioIconView.setPreserveRatio(true);
-                exobioContainer.getChildren().add(exobioIconView);
+                headerRow.getChildren().add(exobioIconView);
                 
                 // Déterminer la couleur selon le nombre d'espèces collectées
                 String color;
@@ -1692,18 +1685,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     "-fx-padding: 5px 10px;",
                     color));
                 speciesCountLabel.getStyleClass().add("exploration-body-exobio-count");
-                exobioContainer.getChildren().add(speciesCountLabel);
+                headerRow.getChildren().add(speciesCountLabel);
                 
                 // Ajouter un label si wasFootfalled est false (première découverte)
                 if (!planet.isWasFootfalled()) {
                     Label firstDiscoveryLabel = new Label("FIRST");
                     firstDiscoveryLabel.getStyleClass().add("exploration-body-first-discovery");
-                    exobioContainer.getChildren().add(firstDiscoveryLabel);
+                    headerRow.getChildren().add(firstDiscoveryLabel);
                 }
-                
-                cardContent.getChildren().add(exobioContainer);
             }
-            
+        }
+        
+        cardContent.getChildren().add(headerRow);
+        
+        // Informations exobio (X/Y) - seulement pour les planètes
+        if (body instanceof PlaneteDetail planet) {
             // Liste des BioSpecies avec probabilités
             if (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) {
                 VBox speciesList = new VBox(4);
