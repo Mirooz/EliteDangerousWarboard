@@ -55,7 +55,6 @@ public class ExplorationBodiesOverlayComponent {
     private double overlayOpacity = 0.92;
     private Label resizeHandle;
     private Slider opacitySlider;
-    private Slider textScaleSlider;
     private double textScale = 1.0;
     private StackPane stackPane;
     private StackPane popupStackPane;
@@ -475,26 +474,21 @@ public class ExplorationBodiesOverlayComponent {
 
         // Créer le curseur de transparence
         opacitySlider = createOpacitySlider();
-        
-        // Créer le curseur de scaling du texte
-        textScaleSlider = createTextScaleSlider();
+
         
         stackPane = new StackPane();
         makeNodeDraggable(stackPane, overlayStage);
 
         // Ordre important: contentCard en premier
-        stackPane.getChildren().addAll(contentCard, resizeHandle, opacitySlider, textScaleSlider);
+        stackPane.getChildren().addAll(contentCard, resizeHandle, opacitySlider);
         StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
-        StackPane.setAlignment(textScaleSlider, Pos.BOTTOM_RIGHT);
 
         StackPane.setMargin(opacitySlider, new Insets(0, 30, 0, 0));
-        StackPane.setMargin(textScaleSlider, new Insets(0, 60, 20, 0));
         stackPane.setPickOnBounds(true);
         
         // S'assurer que les sliders sont cliquables même avec opacity 0
         opacitySlider.setMouseTransparent(false);
-        textScaleSlider.setMouseTransparent(false);
         resizeHandle.setMouseTransparent(false);
 
         // Appliquer le style initial
@@ -505,7 +499,6 @@ public class ExplorationBodiesOverlayComponent {
 
         // Configurer les listeners
         setupOpacitySliderListener();
-        setupTextScaleSliderListener();
     }
 
     /**
@@ -621,16 +614,7 @@ public class ExplorationBodiesOverlayComponent {
             overlayOpacity = opacity;
         });
     }
-    
-    /**
-     * Configure le listener du curseur de scaling du texte
-     */
-    private void setupTextScaleSliderListener() {
-        textScaleSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            textScale = newVal.doubleValue();
-            updateTextScale(textScale);
-        });
-    }
+
 
     /**
      * Met à jour le style du StackPane
@@ -700,12 +684,10 @@ public class ExplorationBodiesOverlayComponent {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
                 if (resizeHandle != null) resizeHandle.setOpacity(1.0);
                 if (opacitySlider != null) opacitySlider.setOpacity(0.8);
-                if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
                 if (resizeHandle != null) resizeHandle.setOpacity(0.8);
                 if (opacitySlider != null) opacitySlider.setOpacity(0.8);
-                if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
             }
         });
 
@@ -713,14 +695,12 @@ public class ExplorationBodiesOverlayComponent {
         scene.setOnMouseExited(e -> {
             if (resizeHandle != null) resizeHandle.setOpacity(0.0);
             if (opacitySlider != null) opacitySlider.setOpacity(0.0);
-            if (textScaleSlider != null) textScaleSlider.setOpacity(0.0);
         });
 
         // Afficher les contrôles quand la souris entre dans la scène
         scene.setOnMouseEntered(e -> {
             if (resizeHandle != null) resizeHandle.setOpacity(0.8);
             if (opacitySlider != null) opacitySlider.setOpacity(0.8);
-            if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
         });
     }
 
@@ -754,11 +734,6 @@ public class ExplorationBodiesOverlayComponent {
 
         overlayStage.setX(finalX);
         overlayStage.setY(finalY);
-        
-        // Appliquer le scaling du texte
-        if (textScaleSlider != null) {
-            textScaleSlider.setValue(textScale);
-        }
     }
 
     /**
