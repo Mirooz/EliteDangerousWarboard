@@ -37,7 +37,7 @@ import java.util.function.Function;
 public class ExplorationBodiesOverlayComponent {
 
     public static final double MIN_OPPACITY = 0.01;
-    public static final int MIN_WIDTH_OVERLAY = 400;
+    public static final int MIN_WIDTH_OVERLAY = 430;
     public static final int MIN_HEIGHT_OVERLAY = 300;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();

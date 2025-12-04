@@ -75,7 +75,6 @@ public class DashboardService {
             } finally {
                 listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
                 DashboardContext.getInstance().refreshUI();
-                PlaneteRegistry.getInstance().getAllPlanetes();
 
             }
         }).start();

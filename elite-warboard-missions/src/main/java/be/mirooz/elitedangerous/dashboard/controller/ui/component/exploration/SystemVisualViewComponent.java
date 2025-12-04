@@ -1638,6 +1638,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         VBox card = new VBox(5);
         card.getStyleClass().add("exploration-body-card");
         
+        // Définir une largeur minimale et préférée pour uniformiser toutes les cartes
+        // Largeur du panneau (450px) moins les paddings et marges
+        double cardMinWidth = 420.0; // Légèrement moins que 450 pour tenir compte des paddings
+        card.setMinWidth(cardMinWidth);
+        card.setPrefWidth(cardMinWidth);
+        card.setMaxWidth(Double.MAX_VALUE); // Permettre l'expansion si nécessaire
+        
         // Créer un conteneur pour les lignes hiérarchiques et le contenu
         HBox mainContainer = new HBox(0);
         mainContainer.setAlignment(javafx.geometry.Pos.TOP_LEFT);
@@ -1653,6 +1660,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Contenu de la carte
         VBox cardContent = new VBox(5);
         cardContent.setPadding(new javafx.geometry.Insets(8));
+        // S'assurer que le contenu prend toute la largeur disponible
+        cardContent.setMinWidth(Region.USE_PREF_SIZE);
+        cardContent.setPrefWidth(Region.USE_COMPUTED_SIZE);
+        HBox.setHgrow(cardContent, Priority.ALWAYS);
         
         // Nom du corps
         HBox headerRow = new HBox(5);
@@ -1883,6 +1894,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
                         
                         // Vérifier si cette espèce est en cours d'analyse
+                        boolean isAnalyzing = false;
                         ExplorationService explorationService = ExplorationService.getInstance();
                         if (explorationService.isBiologicalAnalysisInProgress() &&
                             explorationService.getCurrentAnalysisPlanet() != null &&
@@ -1896,12 +1908,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             if (speciesToCheck != null && currentSpecies != null &&
                                 speciesToCheck.getName() != null && currentSpecies.getName() != null &&
                                 speciesToCheck.getName().equals(currentSpecies.getName())) {
-                                // Ajouter la bordure animée
-                                addAnimatedBorder(speciesRow);
+                                isAnalyzing = true;
                             }
                         }
                         
+                        // Ajouter le speciesRow à la liste d'abord
                         speciesList.getChildren().add(speciesRow);
+                        
+                        // Ensuite, si c'est en cours d'analyse, ajouter la bordure animée
+                        if (isAnalyzing) {
+                            Platform.runLater(() -> {
+                                addAnimatedBorder(speciesRow);
+                            });
+                        }
                     }
                 }
                 
@@ -2169,6 +2188,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Ajoute une bordure animée autour d'un HBox pour indiquer qu'une espèce est en cours d'analyse
      */
     private void addAnimatedBorder(HBox speciesRow) {
+        // Vérifier que le HBox a un parent
+        if (speciesRow.getParent() == null || !(speciesRow.getParent() instanceof VBox)) {
+            return;
+        }
+        
+        VBox parent = (VBox) speciesRow.getParent();
+        int index = parent.getChildren().indexOf(speciesRow);
+        if (index < 0) {
+            return;
+        }
+        
         // Ajouter une classe CSS pour la bordure animée
         speciesRow.getStyleClass().add("exobio-species-analyzing");
         
@@ -2177,22 +2207,25 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         StackPane borderContainer = new StackPane();
         borderContainer.setPadding(new javafx.geometry.Insets(2));
         
-        // Créer un Rectangle pour la bordure avec un dégradé animé
+        // Créer un Rectangle pour la bordure animée
         Rectangle borderRect = new Rectangle();
         borderRect.setFill(Color.TRANSPARENT);
         borderRect.setStroke(Color.web("#00FF88")); // Vert Elite Dangerous
-        borderRect.setStrokeWidth(2);
-        borderRect.setArcWidth(4);
-        borderRect.setArcHeight(4);
+        borderRect.setStrokeWidth(3); // Bordure plus épaisse pour être visible
+        borderRect.setArcWidth(6);
+        borderRect.setArcHeight(6);
         
-        // Lier la taille du rectangle à celle du HBox
+        // Lier la taille du rectangle à celle du HBox (avec padding)
         borderRect.widthProperty().bind(speciesRow.widthProperty().add(4));
         borderRect.heightProperty().bind(speciesRow.heightProperty().add(4));
         
-        // Créer une animation de pulsation pour la bordure
+        // S'assurer que le rectangle a une taille minimale
+        borderRect.setManaged(false);
+        
+        // Créer une animation de pulsation pour la bordure (opacité)
         javafx.animation.FadeTransition fadeTransition = new javafx.animation.FadeTransition(
-            javafx.util.Duration.seconds(1.5), borderRect);
-        fadeTransition.setFromValue(0.4);
+            javafx.util.Duration.seconds(1.0), borderRect);
+        fadeTransition.setFromValue(0.3);
         fadeTransition.setToValue(1.0);
         fadeTransition.setCycleCount(javafx.animation.Animation.INDEFINITE);
         fadeTransition.setAutoReverse(true);
@@ -2201,35 +2234,43 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         javafx.animation.Timeline colorTimeline = new javafx.animation.Timeline();
         colorTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
         
-        // Créer des keyframes pour changer la couleur de la bordure
+        // Créer des keyframes pour changer la couleur de la bordure (effet de rotation)
         javafx.animation.KeyFrame kf1 = new javafx.animation.KeyFrame(
             javafx.util.Duration.ZERO,
-            e -> borderRect.setStroke(Color.web("#00FF88"))
+            e -> borderRect.setStroke(Color.web("#00FF88")) // Vert
         );
         javafx.animation.KeyFrame kf2 = new javafx.animation.KeyFrame(
-            javafx.util.Duration.seconds(0.5),
-            e -> borderRect.setStroke(Color.web("#88FF00"))
+            javafx.util.Duration.seconds(0.25),
+            e -> borderRect.setStroke(Color.web("#44FF88")) // Vert clair
         );
         javafx.animation.KeyFrame kf3 = new javafx.animation.KeyFrame(
-            javafx.util.Duration.seconds(1.0),
-            e -> borderRect.setStroke(Color.web("#00FF88"))
+            javafx.util.Duration.seconds(0.5),
+            e -> borderRect.setStroke(Color.web("#88FF00")) // Jaune-vert
         );
-        colorTimeline.getKeyFrames().addAll(kf1, kf2, kf3);
+        javafx.animation.KeyFrame kf4 = new javafx.animation.KeyFrame(
+            javafx.util.Duration.seconds(0.75),
+            e -> borderRect.setStroke(Color.web("#44FF88")) // Vert clair
+        );
+        javafx.animation.KeyFrame kf5 = new javafx.animation.KeyFrame(
+            javafx.util.Duration.seconds(1.0),
+            e -> borderRect.setStroke(Color.web("#00FF88")) // Vert
+        );
+        colorTimeline.getKeyFrames().addAll(kf1, kf2, kf3, kf4, kf5);
         
-        // Ajouter le rectangle et le HBox au StackPane
+        // Ajouter le rectangle et le HBox au StackPane (rectangle en premier pour être derrière)
         borderContainer.getChildren().addAll(borderRect, speciesRow);
         
-        // Démarrer les animations
-        fadeTransition.play();
-        colorTimeline.play();
+        // Remplacer le HBox par le StackPane dans le parent AVANT de démarrer les animations
+        parent.getChildren().set(index, borderContainer);
         
-        // Remplacer le HBox par le StackPane dans le parent
-        if (speciesRow.getParent() != null && speciesRow.getParent() instanceof VBox parent) {
-            int index = parent.getChildren().indexOf(speciesRow);
-            if (index >= 0) {
-                parent.getChildren().set(index, borderContainer);
-            }
-        }
+        // Forcer un layout pour s'assurer que les tailles sont calculées
+        borderContainer.layout();
+        
+        // Démarrer les animations après le layout
+        Platform.runLater(() -> {
+            fadeTransition.play();
+            colorTimeline.play();
+        });
         
         // Stocker les animations pour pouvoir les arrêter plus tard
         borderContainer.getProperties().put("fadeTransition", fadeTransition);
