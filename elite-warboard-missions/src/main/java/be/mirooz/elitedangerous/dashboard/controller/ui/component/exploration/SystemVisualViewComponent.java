@@ -1877,7 +1877,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         long price;
                         if (!planet.isWasFootfalled()) {
                             // Si wasFootfalled est false, prendre bonusValue
-                            price = speciesForPrice.getBonusValue();
+                            price = speciesForPrice.getBonusValue() +  speciesForPrice.getBaseValue();
                         } else {
                             // Sinon, prendre baseValue
                             price = speciesForPrice.getBaseValue();

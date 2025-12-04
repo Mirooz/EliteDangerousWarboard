@@ -544,7 +544,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                         if (species.isCollected()) {
                             // Utiliser bonusValue si wasFootfalled est false, sinon baseValue
                             if (!planet.isWasFootfalled()) {
-                                exobioValue += species.getBonusValue();
+                                exobioValue += species.getBonusValue() + species.getBaseValue();
                             } else {
                                 exobioValue += species.getBaseValue();
                             }
@@ -622,7 +622,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                             if (species.isCollected()) {
                                 // Utiliser bonusValue si wasFootfalled est false, sinon baseValue
                                 if (!planet.isWasFootfalled()) {
-                                    total += species.getBonusValue();
+                                    total += species.getBonusValue() + species.getBaseValue();
                                 } else {
                                     total += species.getBaseValue();
                                 }
