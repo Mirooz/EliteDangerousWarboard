@@ -18,6 +18,7 @@ public class ExplorationService {
     @Getter
     // Analyse biologique en cours
     private PlaneteDetail currentAnalysisPlanet = null;
+    @Getter
     private BioSpecies currentAnalysisSpecies = null;
 
     private ExplorationService() {}

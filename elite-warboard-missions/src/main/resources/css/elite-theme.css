@@ -4503,6 +4503,14 @@
     -fx-padding: 2px 0;
 }
 
+/* Bordure animée pour les espèces exobio en cours d'analyse */
+.exobio-species-analyzing {
+    -fx-border-color: #00FF88;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
 .exploration-radar-placeholder {
     -fx-background-color: -fx-elite-dark;
     -fx-border-color: -fx-elite-light-gray;
