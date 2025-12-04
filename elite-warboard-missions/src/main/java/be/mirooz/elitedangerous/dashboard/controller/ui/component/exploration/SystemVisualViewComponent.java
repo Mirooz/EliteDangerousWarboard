@@ -1890,7 +1890,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (bodiesOverlayComponent != null) {
             boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
                                        showOnlyHighValueBodiesCheckBox.isSelected();
-            bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
+
+            //bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
+            bodiesOverlayComponent.showPopup(currentSystem, showOnlyHighValue);
             updateBodiesOverlayButtonText();
         }
     }
@@ -1932,7 +1934,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 // (un Node JavaFX ne peut avoir qu'un seul parent, donc on ne peut pas réutiliser le même)
                 RadarComponent overlayRadar = new RadarComponent();
                 overlayRadar.showRadar();
-                container.getChildren().add(overlayRadar.getRadarPane());
+                Pane overlayRadarPane = overlayRadar.getRadarPane();
+                
+                // Faire en sorte que le radar prenne la largeur du container
+                // Utiliser un listener pour mettre à jour la largeur quand le container change
+                container.widthProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.doubleValue() > 0) {
+                        overlayRadarPane.setPrefWidth(newVal.doubleValue() - 10); // -10 pour le padding
+                    }
+                });
+                
+                container.getChildren().add(overlayRadarPane);
             }
         }
         

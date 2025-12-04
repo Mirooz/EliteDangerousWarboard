@@ -8,14 +8,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import java.util.Locale;
 import java.util.function.Function;
@@ -46,6 +49,7 @@ public class ExplorationBodiesOverlayComponent {
     private static final String EXPLORATION_BODIES_OVERLAY_TEXT_SCALE_KEY = "exploration_bodies_overlay.text_scale";
 
     private Stage overlayStage;
+    private Popup overlayPopup;
     private double overlayOpacity = 0.92;
     private Label resizeHandle;
     private Slider opacitySlider;
@@ -191,7 +195,182 @@ public class ExplorationBodiesOverlayComponent {
      * Vérifie si l'overlay est actuellement affiché
      */
     public boolean isShowing() {
-        return overlayStage != null && overlayStage.isShowing();
+        return (overlayStage != null && overlayStage.isShowing()) || (overlayPopup != null && overlayPopup.isShowing());
+    }
+    /**
+     * Affiche un popup pour le système donné avec une largeur spécifique
+     * Le popup utilise la largeur du panneau de gauche et calcule la hauteur nécessaire
+     * mais n'est pas modifiable ni cliquable
+     */
+    public void showPopup(SystemVisited system, boolean showOnlyHighValue) {
+        this.currentSystem = system;
+        this.showOnlyHighValue = showOnlyHighValue;
+
+        // Si le popup est déjà ouvert, on le ferme
+        if (overlayPopup != null && overlayPopup.isShowing()) {
+            closePopup();
+            return;
+        }
+
+        createPopup(system, showOnlyHighValue);
+    }
+
+    /**
+     * Ferme le popup s'il est ouvert
+     */
+    public void closePopup() {
+        if (overlayPopup != null && overlayPopup.isShowing()) {
+            overlayPopup.hide();
+            // Nettoyer l'enregistrement si nécessaire
+            if (overlayPopup.getOwnerWindow() != null) {
+                popupManager.unregisterContainer((Stage) overlayPopup.getOwnerWindow());
+            }
+            overlayPopup = null;
+        }
+    }
+
+    /**
+     * Crée le popup
+     */
+    private void createPopup(SystemVisited system, boolean showOnlyHighValue) {
+        // Créer le popup
+        overlayPopup = new Popup();
+        overlayPopup.setAutoHide(false);
+        overlayPopup.setAutoFix(false);
+
+        // Récupérer les préférences sauvegardées pour la position, l'opacité et le text scale
+        String savedOpacityStr = preferencesService.getPreference(EXPLORATION_BODIES_OVERLAY_OPACITY_KEY, "0.92");
+        String savedXStr = preferencesService.getPreference(EXPLORATION_BODIES_OVERLAY_X_KEY, "100");
+        String savedYStr = preferencesService.getPreference(EXPLORATION_BODIES_OVERLAY_Y_KEY, "100");
+        String savedTextScaleStr = preferencesService.getPreference(EXPLORATION_BODIES_OVERLAY_TEXT_SCALE_KEY, "1.0");
+
+        double savedX = Double.parseDouble(savedXStr);
+        double savedY = Double.parseDouble(savedYStr);
+        double popupOpacity = Double.parseDouble(savedOpacityStr);
+        double popupTextScale = Double.parseDouble(savedTextScaleStr);
+        
+        // Largeur fixe basée sur la largeur du panneau de gauche
+        double width = 420;
+
+        // Créer le contenu du popup (sans les contrôles)
+        VBox popupContentCard = createOverlayCard(system);
+        
+        // Appliquer le scaling du texte
+        applyTextScaleToNode(popupContentCard, popupTextScale);
+        
+        // Créer le StackPane
+        StackPane popupStackPane = new StackPane();
+        
+        // Appliquer le style avec l'opacité
+        updatePaneStyle(popupOpacity, popupStackPane);
+        
+        // Ajouter uniquement le contenu (pas de sliders ni de resize handle)
+        popupStackPane.getChildren().add(popupContentCard);
+        
+        // Calculer uniquement la hauteur nécessaire (la largeur est fixe)
+        double preferredHeight = MIN_HEIGHT_OVERLAY;
+        
+        if (popupContentCard.getChildren().size() > 0) {
+            Node firstChild = popupContentCard.getChildren().get(0);
+            if (firstChild instanceof javafx.scene.control.ScrollPane scrollPane) {
+                Node scrollContent = scrollPane.getContent();
+                if (scrollContent instanceof Parent contentParent) {
+                    // Créer une scène temporaire juste pour le contenu pour permettre le layout
+                    Scene tempContentScene = new Scene(contentParent);
+                    tempContentScene.setFill(Color.TRANSPARENT);
+                    tempContentScene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
+                    
+                    // Si c'est un Region, permettre au contenu de s'étendre naturellement
+                    if (contentParent instanceof Region contentRegion) {
+                        contentRegion.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+                        contentRegion.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                        contentRegion.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                    }
+                    
+                    // Layout avec la largeur fixe et une hauteur très large pour permettre l'expansion complète
+                    double tempHeight = 5000;
+                    if (contentParent instanceof Region contentRegion) {
+                        contentRegion.resize(width-30, tempHeight);
+                    }
+                    contentParent.layout();
+                    
+                    // Obtenir la taille réelle du contenu après layout
+                    double contentHeight = contentParent.getBoundsInLocal().getHeight();
+                    
+                    // Si les bounds sont valides et raisonnables, les utiliser
+                    if (contentHeight > 0 && !Double.isNaN(contentHeight) && contentHeight < tempHeight && contentHeight > 50) {
+                        preferredHeight = contentHeight + 100; // Padding plus généreux pour éviter la coupure
+                    }
+                    
+                    // Si les bounds ne sont pas valides, essayer prefHeight
+                    if (preferredHeight == MIN_HEIGHT_OVERLAY) {
+                        double prefH = contentParent.prefHeight(width);
+                        
+                        if (prefH > 0 && !Double.isNaN(prefH) && prefH < tempHeight && prefH > 50) {
+                            preferredHeight = prefH + 100;
+                        }
+                    }
+                }
+            }
+        }
+
+        // S'assurer que la hauteur respecte le minimum
+        double height = Math.max(preferredHeight, MIN_HEIGHT_OVERLAY);
+        
+        // Appliquer la taille calculée au StackPane
+        popupStackPane.setPrefSize(width, height);
+        popupStackPane.setMinSize(width, height);
+        popupStackPane.setMaxSize(width, height);
+        
+        // Rendre le popup non cliquable (les événements de souris passent à travers)
+        popupStackPane.setMouseTransparent(true);
+        popupContentCard.setMouseTransparent(true);
+        
+        // Appliquer les styles CSS
+        popupStackPane.getStyleClass().add("mirror-overlay");
+        
+        // Note: Les stylesheets CSS doivent être chargées globalement ou via les classes CSS
+        // Pour un Popup, les styles sont appliqués via les classes CSS sur les nœuds
+        
+        // Configurer le contenu du popup
+        overlayPopup.getContent().add(popupStackPane);
+        
+        // Calculer la position finale (s'assurer qu'elle est dans les limites de l'écran)
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double screenWidth = screenBounds.getWidth();
+        double screenHeight = screenBounds.getHeight();
+        double finalX = Math.max(0, Math.min(savedX, screenWidth - width));
+        double finalY = Math.max(0, Math.min(savedY, screenHeight - height));
+        
+        // Trouver une fenêtre owner (utiliser l'overlayStage s'il existe, sinon la première fenêtre visible)
+        Window ownerWindow = null;
+        if (overlayStage != null && overlayStage.isShowing()) {
+            ownerWindow = overlayStage;
+        } else {
+            ownerWindow = Stage.getWindows().stream()
+                    .filter(window -> window.isShowing() && window instanceof Stage)
+                    .findFirst()
+                    .orElse(null);
+        }
+        
+        if (ownerWindow != null) {
+            // Définir la position du popup
+            overlayPopup.setX(finalX);
+            overlayPopup.setY(finalY);
+            
+            // Afficher le popup avec l'owner
+            overlayPopup.show(ownerWindow);
+            
+            // Enregistrer le container pour les popups (utiliser l'ownerWindow comme clé)
+            if (ownerWindow instanceof Stage stage) {
+                popupManager.registerContainer(stage, popupStackPane);
+            }
+        } else {
+            // Fallback : afficher sans owner (peut ne pas fonctionner correctement)
+            overlayPopup.setX(finalX);
+            overlayPopup.setY(finalY);
+            overlayPopup.show(ownerWindow);
+        }
     }
 
     /**
