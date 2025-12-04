@@ -1051,8 +1051,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         BodyPosition bodyPos = bodyPositions.get(body.getBodyID());
         double bodySize = bodyPos != null ? bodyPos.size : 60.0; // Fallback à 60px si non trouvé
         double bodyRadius = bodySize / 2;
-        double offsetX = 6; // Décalage horizontal depuis le bord de la planète
-        double offsetY = 6; // Décalage vertical depuis le bord de la planète
+        double offsetX = 2; // Décalage horizontal depuis le bord de la planète
+        double offsetY = 2; // Décalage vertical depuis le bord de la planète
         
         // Pour une forme ronde, utiliser un point légèrement en dessous de 45° pour un meilleur alignement visuel
         // Un angle d'environ 30-35° donne un meilleur positionnement pour le badge
