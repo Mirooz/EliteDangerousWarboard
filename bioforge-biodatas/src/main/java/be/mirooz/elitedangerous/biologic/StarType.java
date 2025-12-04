@@ -15,7 +15,8 @@ public enum StarType {
     BROWN_DWARF("brown dwarf", 1200),
 
     // Wolf-Rayet (W, WC, WN, WNC, WO)
-    WOLF_RAYET("wolf-rayet", 1200);
+    WOLF_RAYET("wolf-rayet", 1200),
+    NULL("null", 0);
     private final String label;
     private final int kValue;
 
@@ -67,6 +68,7 @@ public enum StarType {
             case BROWN_DWARF -> "Star_L.png"; // Utilise L comme image par défaut pour les naines brunes
             case WOLF_RAYET -> "Star_Wolf_Rayet.png";
             case STAR -> "Star_G.png"; // Étoile normale (type G comme le soleil)
+            case NULL -> "Star_null.png";
         };
     }
 

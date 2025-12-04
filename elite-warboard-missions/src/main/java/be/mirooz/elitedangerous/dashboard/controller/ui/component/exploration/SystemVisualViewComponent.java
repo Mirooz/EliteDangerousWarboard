@@ -438,9 +438,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         String directParentType = null;
                         int maxBodyID = -1;
                         
+                        Integer nullParentBodyID = null; // BodyID du parent "Null" si présent
+                        
                         for (var parent : parents) {
                             if ("Null".equalsIgnoreCase(parent.getType())) {
-                                continue; // Ignorer les parents "Null"
+                                // Sauvegarder le bodyID du parent "Null" pour créer un fake soleil partagé
+                                if (nullParentBodyID == null) {
+                                    nullParentBodyID = parent.getBodyID();
+                                }
+                                continue; // Ignorer les parents "Null" pour la recherche du parent réel
                             }
                             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
                             if (parentBody != null && parent.getBodyID() > maxBodyID) {
@@ -448,6 +454,40 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 directParentType = parent.getType();
                                 maxBodyID = parent.getBodyID();
                             }
+                        }
+                        
+                        // Si aucune planète n'a de parent réel (seulement "Null"), créer ou réutiliser un fake soleil
+                        if (directParent == null && nullParentBodyID != null) {
+                            // Créer un bodyID unique pour le fake soleil basé sur le bodyID du parent "Null"
+                            // Utiliser un préfixe négatif pour éviter les conflits avec les vrais bodyIDs
+                            int fakeStarBodyID = -1000000 - nullParentBodyID;
+                            
+                            // Vérifier si ce fake soleil existe déjà (partagé par plusieurs planètes avec le même parent "Null")
+                            StarDetail fakeStar = (StarDetail) bodiesMap.get(fakeStarBodyID);
+                            if (fakeStar == null) {
+                                // Créer le fake soleil
+                                fakeStar = StarDetail.builder()
+                                        .bodyName("null")
+                                        .bodyID(fakeStarBodyID)
+                                        .starSystem(body.getStarSystem())
+                                        .systemAddress(body.getSystemAddress())
+                                        .starType(StarType.NULL)
+                                        .starTypeString("null")
+                                        .stellarMass(1.0)
+                                        .wasDiscovered(false)
+                                        .wasMapped(false)
+                                        .wasFootfalled(false)
+                                        .build();
+                                
+                                // Ajouter le fake soleil à la map et à la liste des étoiles
+                                bodiesMap.put(fakeStarBodyID, fakeStar);
+                                stars.add(fakeStar);
+                                starToDirectPlanets.put(fakeStar, new ArrayList<>());
+                            }
+                            
+                            // Associer la planète au fake soleil (partagé avec d'autres planètes ayant le même parent "Null")
+                            directParent = fakeStar;
+                            directParentType = "Star";
                         }
                         
                         if (directParent != null && directParentType != null) {
