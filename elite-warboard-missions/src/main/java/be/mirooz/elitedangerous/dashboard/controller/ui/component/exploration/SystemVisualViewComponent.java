@@ -92,7 +92,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // S'abonner au service de notification
-        ExplorationRefreshNotificationService.getInstance().addBodyFilterListener(this);
+        ExplorationRefreshNotificationService notificationService = ExplorationRefreshNotificationService.getInstance();
+        notificationService.addBodyFilterListener(this);
+        // S'abonner aux changements d'état "à pied" pour gérer la transition overlay/popup
+        notificationService.addOnFootStateListener(this::handleOnFootStateChanged);
         // Initialiser le composant overlay
         bodiesOverlayComponent = new ExplorationBodiesOverlayComponent();
         bodiesOverlayComponent.setBodyCardFactory(this::createBodiesListForOverlay);
@@ -1890,11 +1893,68 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (bodiesOverlayComponent != null) {
             boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
                                        showOnlyHighValueBodiesCheckBox.isSelected();
-
-            //bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
-            bodiesOverlayComponent.showPopup(currentSystem, showOnlyHighValue);
+            
+            CommanderStatus commanderStatus = CommanderStatus.getInstance();
+            boolean isOnFoot = commanderStatus.isOnFoot();
+            
+            if (isOnFoot) {
+                // Si on est à pied, utiliser le popup
+                // Si l'overlay est ouvert, le fermer
+                if (bodiesOverlayComponent.isShowing()) {
+                    bodiesOverlayComponent.closeOverlay();
+                }
+                // Si le popup est déjà ouvert, le fermer (toggle)
+                if (bodiesOverlayComponent.isPopupShowing()) {
+                    bodiesOverlayComponent.closePopup();
+                } else {
+                    bodiesOverlayComponent.showPopup(currentSystem);
+                }
+            } else {
+                // Si on n'est pas à pied, utiliser l'overlay
+                // Si le popup est ouvert, le fermer
+                if (bodiesOverlayComponent.isPopupShowing()) {
+                    bodiesOverlayComponent.closePopup();
+                }
+                // Si l'overlay est déjà ouvert, le fermer (toggle)
+                if (bodiesOverlayComponent.isShowing()) {
+                    bodiesOverlayComponent.closeOverlay();
+                } else {
+                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
+                }
+            }
+            
             updateBodiesOverlayButtonText();
         }
+    }
+
+    /**
+     * Gère le changement d'état "à pied" pour faire la transition automatique overlay/popup
+     */
+    private void handleOnFootStateChanged(boolean isOnFoot) {
+        Platform.runLater(() -> {
+            if (bodiesOverlayComponent == null || currentSystem == null) {
+                return;
+            }
+            
+            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
+                                       showOnlyHighValueBodiesCheckBox.isSelected();
+            
+            if (isOnFoot) {
+                // Si on est à pied, fermer l'overlay et ouvrir le popup
+                if (bodiesOverlayComponent.isShowing()) {
+                    bodiesOverlayComponent.closeOverlay();
+                    bodiesOverlayComponent.showPopup(currentSystem);
+                }
+            } else {
+                // Si on n'est plus à pied, fermer le popup et ouvrir l'overlay
+                if (bodiesOverlayComponent.isPopupShowing()) {
+                    bodiesOverlayComponent.closePopup();
+                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
+                }
+            }
+            
+            updateBodiesOverlayButtonText();
+        });
     }
     
     /**
@@ -1905,7 +1965,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             String text;
             String icon;
 
-            if (bodiesOverlayComponent.isShowing()) {
+            if (bodiesOverlayComponent.isShowing() || bodiesOverlayComponent.isPopupShowing()) {
                 text = "Fermer";
                 icon = "✖"; // Croix pour fermer
             } else {

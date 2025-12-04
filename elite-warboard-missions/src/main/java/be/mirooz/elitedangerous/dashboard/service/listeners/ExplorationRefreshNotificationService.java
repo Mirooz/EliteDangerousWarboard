@@ -112,5 +112,48 @@ public class ExplorationRefreshNotificationService {
             }
         }
     }
+
+    /**
+     * Interface pour écouter les changements d'état "à pied"
+     */
+    public interface OnFootStateListener {
+        /**
+         * Appelé quand l'état "à pied" change
+         * @param isOnFoot true si on est à pied, false sinon
+         */
+        void onOnFootStateChanged(boolean isOnFoot);
+    }
+
+    private final List<OnFootStateListener> onFootStateListeners = new CopyOnWriteArrayList<>();
+
+    /**
+     * Ajoute un listener pour les changements d'état "à pied"
+     */
+    public void addOnFootStateListener(OnFootStateListener listener) {
+        if (listener != null && !onFootStateListeners.contains(listener)) {
+            onFootStateListeners.add(listener);
+        }
+    }
+
+    /**
+     * Retire un listener d'état "à pied"
+     */
+    public void removeOnFootStateListener(OnFootStateListener listener) {
+        onFootStateListeners.remove(listener);
+    }
+
+    /**
+     * Notifie tous les listeners qu'il y a eu un changement d'état "à pied"
+     */
+    public void notifyOnFootStateChanged(boolean isOnFoot) {
+        for (OnFootStateListener listener : onFootStateListeners) {
+            try {
+                listener.onOnFootStateChanged(isOnFoot);
+            } catch (Exception e) {
+                System.err.println("❌ Erreur lors de la notification de changement d'état 'à pied': " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 }
 

@@ -21,6 +21,7 @@ public class CommanderStatus {
     private String commanderName;
     private String FID;
     private Boolean isOnline;
+    private boolean isOnFoot = false;
 
     private CommanderShip ship;
 
@@ -55,5 +56,13 @@ public class CommanderStatus {
     public void setOnline(boolean value) {
         this.isOnline = value;
         component.setOnline(value);
+    }
+
+    public void setOnFoot(boolean value) {
+        this.isOnFoot = value;
+    }
+
+    public boolean isOnFoot() {
+        return isOnFoot;
     }
 }

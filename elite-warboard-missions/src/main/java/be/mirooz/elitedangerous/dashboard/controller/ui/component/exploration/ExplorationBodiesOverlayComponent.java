@@ -195,14 +195,22 @@ public class ExplorationBodiesOverlayComponent {
      * Vérifie si l'overlay est actuellement affiché
      */
     public boolean isShowing() {
-        return (overlayStage != null && overlayStage.isShowing()) || (overlayPopup != null && overlayPopup.isShowing());
+        return overlayStage != null && overlayStage.isShowing();
     }
+
+    /**
+     * Vérifie si le popup est actuellement affiché
+     */
+    public boolean isPopupShowing() {
+        return overlayPopup != null && overlayPopup.isShowing();
+    }
+
     /**
      * Affiche un popup pour le système donné avec une largeur spécifique
      * Le popup utilise la largeur du panneau de gauche et calcule la hauteur nécessaire
      * mais n'est pas modifiable ni cliquable
      */
-    public void showPopup(SystemVisited system, boolean showOnlyHighValue) {
+    public void showPopup(SystemVisited system) {
         this.currentSystem = system;
         this.showOnlyHighValue = showOnlyHighValue;
 
@@ -212,7 +220,7 @@ public class ExplorationBodiesOverlayComponent {
             return;
         }
 
-        createPopup(system, showOnlyHighValue);
+        createPopup(system);
     }
 
     /**
@@ -232,7 +240,7 @@ public class ExplorationBodiesOverlayComponent {
     /**
      * Crée le popup
      */
-    private void createPopup(SystemVisited system, boolean showOnlyHighValue) {
+    private void createPopup(SystemVisited system) {
         // Créer le popup
         overlayPopup = new Popup();
         overlayPopup.setAutoHide(false);
