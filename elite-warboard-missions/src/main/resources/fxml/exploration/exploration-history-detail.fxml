@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
@@ -12,13 +13,13 @@
 
     <HBox spacing="15" alignment="CENTER_LEFT">
         <Button fx:id="seeCurrentSystemButton" text="See current system" styleClass="exploration-nav-button" onAction="#seeCurrentSystem"/>
-        <VBox fx:id="onHoldInfoContainer" spacing="5" alignment="CENTER_LEFT">
+        <VBox fx:id="onHoldInfoContainer" spacing="5" alignment="CENTER_LEFT" visible="false" managed="false">
             <HBox fx:id="explorationOnHoldContainer" spacing="8" alignment="CENTER_LEFT" visible="false" managed="false">
-                <Label text="💰" styleClass="exploration-info-icon"/>
+                <ImageView fx:id="explorationOnHoldIcon" fitWidth="20" fitHeight="20" preserveRatio="true"/>
                 <Label fx:id="explorationOnHoldLabel" styleClass="exploration-info-value"/>
             </HBox>
             <HBox fx:id="organicOnHoldContainer" spacing="8" alignment="CENTER_LEFT" visible="false" managed="false">
-                <Label text="🧬" styleClass="exploration-info-icon"/>
+                <ImageView fx:id="organicOnHoldIcon" fitWidth="20" fitHeight="20" preserveRatio="true"/>
                 <Label fx:id="organicOnHoldLabel" styleClass="exploration-info-value"/>
             </HBox>
         </VBox>

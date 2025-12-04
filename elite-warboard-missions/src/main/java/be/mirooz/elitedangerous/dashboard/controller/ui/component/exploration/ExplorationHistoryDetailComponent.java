@@ -62,9 +62,13 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     @FXML
     private HBox explorationOnHoldContainer;
     @FXML
+    private javafx.scene.image.ImageView explorationOnHoldIcon;
+    @FXML
     private Label explorationOnHoldLabel;
     @FXML
     private HBox organicOnHoldContainer;
+    @FXML
+    private javafx.scene.image.ImageView organicOnHoldIcon;
     @FXML
     private Label organicOnHoldLabel;
 
@@ -668,6 +672,12 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             int systemsCount = explorationOnHold.getSystemsVisitedMap() != null ? 
                               explorationOnHold.getSystemsVisitedMap().size() : 0;
             explorationOnHoldLabel.setText(String.format("%,d Cr (%d systèmes)", totalEarnings, systemsCount));
+            // Appliquer une couleur différente pour l'exploration (cyan par exemple)
+            explorationOnHoldLabel.setStyle("-fx-text-fill: #00FFFF; -fx-font-size: 14px; -fx-font-weight: bold;");
+            // Définir l'icône mapped
+            if (mappedImage != null && explorationOnHoldIcon != null) {
+                explorationOnHoldIcon.setImage(mappedImage);
+            }
             explorationOnHoldContainer.setVisible(true);
             explorationOnHoldContainer.setManaged(true);
         } else {
@@ -686,6 +696,12 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             int bioCount = organicOnHold.getBioData() != null ? organicOnHold.getBioData().size() : 0;
             long total = totalValue + totalBonus;
             organicOnHoldLabel.setText(String.format("%,d Cr (%d espèces)", total, bioCount));
+            // Appliquer une couleur différente pour l'exobio (vert par exemple)
+            organicOnHoldLabel.setStyle("-fx-text-fill: #00FF88; -fx-font-size: 14px; -fx-font-weight: bold;");
+            // Définir l'icône exobio
+            if (exobioImage != null && organicOnHoldIcon != null) {
+                organicOnHoldIcon.setImage(exobioImage);
+            }
             organicOnHoldContainer.setVisible(true);
             organicOnHoldContainer.setManaged(true);
         } else {
