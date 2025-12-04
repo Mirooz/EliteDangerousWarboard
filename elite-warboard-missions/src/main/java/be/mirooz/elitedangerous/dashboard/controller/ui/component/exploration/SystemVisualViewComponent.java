@@ -1919,7 +1919,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (bodiesOverlayComponent.isShowing()) {
                     bodiesOverlayComponent.closeOverlay();
                 } else {
-                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
+                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue,true);
                 }
             }
             
@@ -1949,7 +1949,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 // Si on n'est plus à pied, fermer le popup et ouvrir l'overlay
                 if (bodiesOverlayComponent.isPopupShowing()) {
                     bodiesOverlayComponent.closePopup();
-                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue);
+                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue,false);
                 }
             }
             

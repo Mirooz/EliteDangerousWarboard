@@ -81,7 +81,7 @@ public class ExplorationBodiesOverlayComponent {
     /**
      * Affiche l'overlay pour le système donné
      */
-    public void showOverlay(SystemVisited system, boolean showOnlyHighValue) {
+    public void showOverlay(SystemVisited system, boolean showOnlyHighValue,boolean setSelected) {
         this.currentSystem = system;
         this.showOnlyHighValue = showOnlyHighValue;
 
@@ -93,7 +93,7 @@ public class ExplorationBodiesOverlayComponent {
             return;
         }
 
-        createOverlayStage(system, showOnlyHighValue);
+        createOverlayStage(system, showOnlyHighValue,setSelected);
     }
     private void makeNodeDraggable(Node node, Stage stage) {
         final double[] offset = new double[2];
@@ -384,7 +384,7 @@ public class ExplorationBodiesOverlayComponent {
     /**
      * Crée la fenêtre overlay
      */
-    private void createOverlayStage(SystemVisited system, boolean showOnlyHighValue) {
+    private void createOverlayStage(SystemVisited system, boolean showOnlyHighValue, boolean setSelected) {
         // Création de la fenêtre overlay
         overlayStage = new Stage();
         overlayStage.initStyle(StageStyle.TRANSPARENT);
@@ -412,7 +412,10 @@ public class ExplorationBodiesOverlayComponent {
         // Enregistrer le container pour les popups
         popupManager.registerContainer(overlayStage, stackPane);
         // Style racine pour cibler les scrollbars overlay
-        stackPane.getStyleClass().addAll("overlay-root", "overlay-root-bordered");
+        stackPane.getStyleClass().addAll("overlay-root");
+        if (setSelected){
+            stackPane.getStyleClass().add("overlay-root-bordered");
+        }
         stackPane.setOnMouseExited(event -> {
             stackPane.getStyleClass().remove("overlay-root-bordered");
         });
