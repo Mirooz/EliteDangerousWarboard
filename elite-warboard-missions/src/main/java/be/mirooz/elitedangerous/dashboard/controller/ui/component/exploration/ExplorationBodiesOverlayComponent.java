@@ -252,6 +252,40 @@ public class ExplorationBodiesOverlayComponent {
     }
 
     /**
+     * Recalcule et met à jour la taille du popup
+     */
+    public void resizePopup() {
+        if (popupStackPane == null || popupStackPane.getChildren().isEmpty() || currentSystem == null) {
+            return;
+        }
+        
+        VBox card = (VBox) popupStackPane.getChildren().get(0);
+        double currentWidth = card.getPrefWidth();
+        if (currentWidth <= 0) {
+            currentWidth = popupWidth;
+        }
+        
+        // Recalculer la hauteur du contenu
+        if (card.getChildren().size() > 0) {
+            Node content = card.getChildren().get(0);
+            
+            // Forcer application du CSS et layout
+            if (content instanceof Parent contentParent) {
+                contentParent.applyCss();
+                contentParent.autosize();
+                contentParent.layout();
+                
+                double contentHeight = contentParent.getBoundsInLocal().getHeight();
+                double finalHeight = Math.max(MIN_HEIGHT_OVERLAY, contentHeight + 20);
+                
+                // Appliquer la nouvelle taille
+                card.setPrefSize(currentWidth, finalHeight);
+                popupStackPane.setPrefSize(currentWidth, finalHeight);
+            }
+        }
+    }
+
+    /**
      * Vérifie si l'overlay est actuellement affiché
      */
     public boolean isShowing() {

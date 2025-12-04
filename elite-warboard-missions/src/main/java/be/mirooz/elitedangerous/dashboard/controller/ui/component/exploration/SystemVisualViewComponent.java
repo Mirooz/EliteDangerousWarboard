@@ -171,6 +171,24 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Créer le composant radar
         radarComponent = new RadarComponent();
         
+        // Ajouter un listener sur la visibilité du radar pour mettre à jour l'overlay
+        if (radarComponent.getRadarPane() != null) {
+            radarComponent.getRadarPane().visibleProperty().addListener((obs, oldVal, newVal) -> {
+                // Mettre à jour l'overlay/popup si ouvert
+                if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing() && currentSystem != null) {
+                    boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
+                                               showOnlyHighValueBodiesCheckBox.isSelected();
+                    bodiesOverlayComponent.updateContent(currentSystem, showOnlyHighValue);
+                    // Recalculer la taille du popup si ouvert
+                    if (bodiesOverlayComponent.isPopupShowing()) {
+                        Platform.runLater(() -> {
+                            bodiesOverlayComponent.resizePopup();
+                        });
+                    }
+                }
+            });
+        }
+        
         // Ajouter le radar au-dessus de la liste des corps
         if (bodiesListPanel != null) {
             // Insérer le radar après le titre et la checkbox, avant le ScrollPane
@@ -1474,6 +1492,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 bodiesListContainer.getChildren().add(card);
             }
         }
+        
+        // Mettre à jour l'overlay et le popup si ils sont ouverts
+        if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing() && system != null) {
+            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
+                                       showOnlyHighValueBodiesCheckBox.isSelected();
+            bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
+            // Recalculer la taille du popup si ouvert
+            if (bodiesOverlayComponent.isPopupShowing()) {
+                Platform.runLater(() -> {
+                    bodiesOverlayComponent.resizePopup();
+                });
+            }
+        }
     }
     
     /**
@@ -2009,6 +2040,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (radarPane.isVisible()) {
                 // Créer un nouveau RadarComponent pour l'overlay
                 // (un Node JavaFX ne peut avoir qu'un seul parent, donc on ne peut pas réutiliser le même)
+                // Note: Le constructeur ne remplace pas l'instance statique si elle existe déjà,
+                // donc l'instance principale reste accessible via getInstance()
                 RadarComponent overlayRadar = new RadarComponent();
                 overlayRadar.showRadar();
                 Pane overlayRadarPane = overlayRadar.getRadarPane();

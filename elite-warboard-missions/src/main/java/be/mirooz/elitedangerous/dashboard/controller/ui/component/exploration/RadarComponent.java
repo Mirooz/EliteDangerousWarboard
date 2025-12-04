@@ -30,7 +30,11 @@ public class RadarComponent {
     
     public RadarComponent() {
         directionService = DirectionReaderService.getInstance();
-        instance = this;
+        // Ne remplacer l'instance statique que si elle n'existe pas encore
+        // Cela permet de garder l'instance du panel principal même si on crée des instances pour l'overlay
+        if (instance == null) {
+            instance = this;
+        }
         
         // Créer un conteneur Pane pour superposer le radar clippé et les labels non clippés
         // Utiliser un Pane au lieu d'un StackPane pour éviter le centrage automatique
