@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.biologic.*;
+import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ParentBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
@@ -51,7 +52,7 @@ public class ScanHandler implements JournalEventHandler {
             double surfaceTemperature = jsonNode.path("SurfaceTemperature").asDouble(0.0);
             double surfacePressure = jsonNode.path("SurfacePressure").asDouble(0.0);
             boolean landable = jsonNode.path("Landable").asBoolean(false);
-            
+
             // Distance depuis l'arrivée
             double distanceFromArrivalLS = jsonNode.path("DistanceFromArrivalLS").asDouble(0.0);
 
@@ -92,8 +93,7 @@ public class ScanHandler implements JournalEventHandler {
                     } else if (parent.has("Star")) {
                         int starID = parent.path("Star").asInt();
                         parents.add(ParentBody.builder().type("Star").bodyID(starID).build());
-                    }
-                    else if (parent.has("Null")) {
+                    } else if (parent.has("Null")) {
                         int starID = parent.path("Null").asInt();
                         parents.add(ParentBody.builder().type("Null").bodyID(starID).build());
                     }
@@ -142,7 +142,7 @@ public class ScanHandler implements JournalEventHandler {
 
                 // Enregistrement de la planète dans le registre
                 PlaneteRegistry.getInstance().addOrUpdateBody(planeteDetail);
-            } else if (jsonNode.has("PlanetClass")){
+            } else if (jsonNode.has("PlanetClass")) {
                 double massEm = jsonNode.has("MassEM") ? jsonNode.get("MassEM").asDouble() : 0.0;
                 boolean terraformable = terraformState != null && !terraformState.isEmpty();
                 String planetClassStr = jsonNode.path("PlanetClass").asText();
@@ -177,6 +177,8 @@ public class ScanHandler implements JournalEventHandler {
 
                 // Enregistrement de la planète dans le registre
                 PlaneteRegistry.getInstance().addOrUpdateBody(planeteDetail);
+                BiologicalSignalProcessor.getInstance().startProcessingIfPresent(bodyName);
+
             }
             // Notifier le refresh du panneau d'exploration
             ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
