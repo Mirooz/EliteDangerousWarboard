@@ -275,8 +275,8 @@ public class RadarComponent {
                 double headingRad = Math.toRadians(90 - heading); // Ajustement pour que 0° = Nord
                 
                 // Taille du triangle (plus petit)
-                double triangleLength = radius * 0.25; // Longueur du triangle (du centre au sommet)
-                double triangleWidth = radius * 0.08; // Largeur de la base du triangle
+                double triangleLength = radius * 0.2; // Longueur du triangle (du centre au sommet)
+                double triangleWidth = radius * 0.06; // Largeur de la base du triangle
                 
                 // Sommet du triangle (pointe dans la direction)
                 double tipX = centerX + Math.cos(headingRad) * triangleLength;
