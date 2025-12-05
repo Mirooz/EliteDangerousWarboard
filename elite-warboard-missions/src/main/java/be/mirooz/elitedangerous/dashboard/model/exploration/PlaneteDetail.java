@@ -102,24 +102,47 @@ public class PlaneteDetail extends ACelesteBody {
                                 method == VariantMethods.SURFACE_MATERIALS
                                         && this.materials != null
                                         && this.materials.containsKey(colorCond);
-                        // --- CAS 2 : RADIANT STAR ---
-                        boolean radiantMatch =
-                                method == VariantMethods.RADIANT_STAR
-                                        && parents != null
-                                        && parents.stream().anyMatch(parent ->
-                                        "Star".equalsIgnoreCase(parent.getType())
-                                                &&
-                                                PlaneteRegistry.getInstance()
-                                                        .getAllPlanetes().stream()
-                                                        .filter(body -> body instanceof StarDetail)
-                                                        .map(body -> (StarDetail) body)
-                                                        .anyMatch(star ->
-                                                                star.getBodyID() == parent.getBodyID()
-                                                                        && star.getStarTypeString().equalsIgnoreCase(species.getColorConditionName())
-                                                        )
-                                );
+
+                        // CAS 2 : RADIANT STAR
+                        boolean radiantMatch = false;
+
+                        if (method == VariantMethods.RADIANT_STAR && parents != null) {
+
+                            // Récupère toutes les étoiles du système
+                            List<StarDetail> allStars = PlaneteRegistry.getInstance()
+                                    .getAllPlanetes().stream()
+                                    .filter(body -> body instanceof StarDetail)
+                                    .map(body -> (StarDetail) body)
+                                    .toList();
+
+                            // Vérifie si un parent est une étoile
+                            Optional<ParentBody> parentStar = parents.stream()
+                                    .filter(p -> "Star".equalsIgnoreCase(p.getType()))
+                                    .findFirst();
+
+                            StarDetail starToUse;
+
+                            if (parentStar.isPresent()) {
+                                // On utilise l'étoile correspondante au parent
+                                int parentStarId = parentStar.get().getBodyID();
+                                starToUse = allStars.stream()
+                                        .filter(star -> star.getBodyID() == parentStarId)
+                                        .findFirst()
+                                        .orElse(null);
+                            } else {
+                                // Aucun parent Star → on prend la première étoile du système
+                                starToUse = allStars.stream().findFirst().orElse(null);
+                            }
+
+                            // Si on a une étoile (par parent ou fallback)
+                            if (starToUse != null) {
+                                radiantMatch = starToUse.getStarTypeString()
+                                        .equalsIgnoreCase(species.getColorConditionName());
+                            }
+                        }
 
                         return surfaceMatch || radiantMatch;
+
                     })
                     .toList();
 
