@@ -234,7 +234,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             }
         }
         
-        String endFormatted = "N/A";
+        String endFormatted = "/";
         if (endTime != null && !endTime.isEmpty()) {
             try {
                 var dateTime = DateUtil.parseTimestamp(endTime);

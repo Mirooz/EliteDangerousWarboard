@@ -20,9 +20,20 @@ import java.util.Map;
 public class ExplorationDataOnHold implements ExplorationData {
     @Builder.Default
     private Map<String,SystemVisited> systemsVisitedMap = new HashMap<>();
-    private long totalEarnings; // Somme de tous les BaseValue
     private String startTimeStamp;
 
+
+    @Override
+    public long getTotalEarnings() {
+        if (systemsVisitedMap == null || systemsVisitedMap.isEmpty()) {
+            return 0;
+        }
+
+        return systemsVisitedMap.values().stream()
+                .flatMap(system -> system.getCelesteBodies().stream())
+                .mapToLong(ACelesteBody::computeBodyValue)
+                .sum();
+    }
     @Override
     public List<SystemVisited> getSystemsVisited(){
         return systemsVisitedMap.values().stream().toList();

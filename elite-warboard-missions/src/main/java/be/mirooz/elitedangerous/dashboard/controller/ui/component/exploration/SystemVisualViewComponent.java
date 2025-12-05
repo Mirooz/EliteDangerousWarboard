@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -50,7 +51,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private VBox bodiesListContainer;
     @FXML
     private Label systemTitleLabel;
-    
+
     private RadarComponent radarComponent;
     @FXML
     private CheckBox showOnlyHighValueBodiesCheckBox;
@@ -100,12 +101,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Initialiser le composant overlay
         bodiesOverlayComponent = new ExplorationBodiesOverlayComponent();
         bodiesOverlayComponent.setBodyCardFactory(this::createBodiesListForOverlay);
-        
+
         // Mettre à jour le texte du bouton overlay
         Platform.runLater(() -> {
             updateBodiesOverlayButtonText();
         });
-        
+
         // Charger les images
         try {
             gasImage = new Image(getClass().getResourceAsStream("/images/exploration/gas.png"));
@@ -127,27 +128,27 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de l'image mapped.png: " + e.getMessage());
         }
-        
+
         // Charger les images par type de planète
         loadPlanetImages();
 
         loadRingImage();
         // Charger les images par type d'étoile
         loadStarImages();
-        
+
         // Initialiser la transformation de zoom
         zoomTransform = new Scale(1.0, 1.0);
         bodiesGroup.getTransforms().add(zoomTransform);
-        
+
         // Désactiver les scrollbars
         bodiesScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         bodiesScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        
+
         // Empêcher complètement le défilement du ScrollPane
         bodiesScrollPane.setPannable(false);
         bodiesScrollPane.setFitToWidth(true);
         bodiesScrollPane.setFitToHeight(true);
-        
+
         // Bloquer tous les événements de défilement qui pourraient causer un scroll
         bodiesScrollPane.addEventFilter(ScrollEvent.ANY, event -> {
             // Consommer l'événement pour empêcher le défilement par défaut
@@ -155,30 +156,30 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Gérer le zoom manuellement
             handleScroll(event);
         });
-        
+
         // Cocher la checkbox par défaut
         if (showOnlyHighValueBodiesCheckBox != null) {
             showOnlyHighValueBodiesCheckBox.setSelected(true);
         }
-        
+
         // Initialiser le radar
         initializeRadar();
     }
-    
+
     /**
      * Initialise le composant radar
      */
     private void initializeRadar() {
         // Créer le composant radar
         radarComponent = new RadarComponent();
-        
+
         // Ajouter un listener sur la visibilité du radar pour mettre à jour l'overlay
         if (radarComponent.getRadarPane() != null) {
             radarComponent.getRadarPane().visibleProperty().addListener((obs, oldVal, newVal) -> {
                 // Mettre à jour l'overlay/popup si ouvert
                 if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing() && currentSystem != null) {
-                    boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
-                                               showOnlyHighValueBodiesCheckBox.isSelected();
+                    boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
+                            showOnlyHighValueBodiesCheckBox.isSelected();
                     bodiesOverlayComponent.updateContent(currentSystem, showOnlyHighValue);
                     // Recalculer la taille du popup si ouvert
                     if (bodiesOverlayComponent.isPopupShowing()) {
@@ -189,7 +190,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 }
             });
         }
-        
+
         // Ajouter le radar au-dessus de la liste des corps
         if (bodiesListPanel != null) {
             // Insérer le radar après le titre et la checkbox, avant le ScrollPane
@@ -202,26 +203,26 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
         }
     }
-    
+
     /**
      * Gère le zoom avec la molette de la souris
      * Zoom simple sans tenir compte de la position de la souris
      */
     private void handleScroll(ScrollEvent event) {
         // L'événement est déjà consommé par l'EventFilter, pas besoin de le consommer à nouveau
-        
+
         double deltaY = event.getDeltaY();
         if (deltaY == 0) {
             return;
         }
-        
+
         // Calculer le nouveau niveau de zoom
         double zoomChange = deltaY > 0 ? (1 + ZOOM_FACTOR) : (1 - ZOOM_FACTOR);
         double newZoom = currentZoom * zoomChange;
-        
+
         // Limiter le zoom entre MIN_ZOOM et MAX_ZOOM
         newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
-        
+
         if (newZoom != currentZoom) {
             // Appliquer le zoom simple
             zoomTransform.setPivotX(0);
@@ -231,7 +232,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             currentZoom = newZoom;
         }
     }
-    
+
     /**
      * Calcule et applique le zoom optimal pour afficher tout le contenu dans la vue
      * Le coin haut gauche est toujours visible
@@ -240,19 +241,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Obtenir les dimensions du viewport
         double viewportWidth = bodiesScrollPane.getViewportBounds().getWidth();
         double viewportHeight = bodiesScrollPane.getViewportBounds().getHeight();
-        
+
         if (viewportWidth <= 0 || viewportHeight <= 0) {
             // Réessayer plus tard si les dimensions ne sont pas encore disponibles
             Platform.runLater(() -> calculateAndApplyOptimalZoom());
             return;
         }
-        
+
         // Calculer les dimensions réelles du contenu en parcourant les positions des corps
         double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE;
         double maxY = Double.MIN_VALUE;
-        
+
         // Parcourir toutes les positions des corps pour trouver les limites réelles
         boolean hasBodies = false;
         for (BodyPosition pos : bodyPositions.values()) {
@@ -264,13 +265,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             minY = Math.min(minY, pos.y - bodyRadius);
             maxY = Math.max(maxY, pos.y + bodyRadius);
         }
-        
+
         // Si aucun corps n'a été trouvé, utiliser les dimensions du pane
         double contentWidth;
         double contentHeight;
         double offsetX = 0;
         double offsetY = 0;
-        
+
         if (hasBodies && minX != Double.MAX_VALUE) {
             // Utiliser les dimensions réelles du contenu avec une marge
             // Le minX et minY représentent le coin haut gauche réel
@@ -282,7 +283,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Fallback sur les dimensions du pane
             contentWidth = Math.max(bodiesPane.getPrefWidth(), bodiesPane.getMinWidth());
             contentHeight = Math.max(bodiesPane.getPrefHeight(), bodiesPane.getMinHeight());
-            
+
             if (contentWidth <= 0) {
                 contentWidth = bodiesPane.getWidth();
             }
@@ -290,25 +291,25 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 contentHeight = bodiesPane.getHeight();
             }
         }
-        
+
         if (contentWidth <= 0 || contentHeight <= 0) {
             // Réessayer plus tard si les dimensions ne sont pas encore disponibles
             Platform.runLater(() -> calculateAndApplyOptimalZoom());
             return;
         }
-        
+
         // Calculer le zoom nécessaire pour que tout le contenu soit visible
         // Avec une marge de 15% de chaque côté pour être sûr que tout est visible
-        double zoomX = (viewportWidth * 0.85) / contentWidth;
-        double zoomY = (viewportHeight * 0.85) / contentHeight;
-        
+        double zoomX = (viewportWidth * 0.95) / contentWidth;
+        double zoomY = (viewportHeight * 0.95) / contentHeight;
+
         // Prendre le minimum pour que tout soit visible
         double optimalZoom = Math.min(zoomX, zoomY);
-        
+
         // S'assurer qu'on peut dézoomer suffisamment (ne pas limiter trop haut)
         // Limiter le zoom entre MIN_ZOOM et MAX_ZOOM, mais permettre un zoom plus faible si nécessaire
         optimalZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, optimalZoom));
-        
+
         // Si le zoom calculé est trop grand (contenu plus petit que le viewport), prendre un zoom qui affiche tout
         if (optimalZoom > 1.0 && (contentWidth * optimalZoom < viewportWidth * 0.9 || contentHeight * optimalZoom < viewportHeight * 0.9)) {
             // Recalculer avec une marge plus grande
@@ -317,7 +318,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             optimalZoom = Math.min(zoomX, zoomY);
             optimalZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, optimalZoom));
         }
-        
+
         // Appliquer le zoom optimal
         // Le pivot doit être à (0, 0) pour que le zoom se fasse depuis le coin haut gauche
         zoomTransform.setPivotX(0);
@@ -325,13 +326,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         zoomTransform.setX(optimalZoom);
         zoomTransform.setY(optimalZoom);
         currentZoom = optimalZoom;
-        
+
         // Positionner le coin haut gauche visible
         // Toujours positionner le scroll à 0,0 pour que la première étoile soit en haut à gauche
         bodiesScrollPane.setHvalue(0.0);
         bodiesScrollPane.setVvalue(0.0);
     }
-
     @Override
     public void refreshUI() {
         refresh();
@@ -390,9 +390,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
             if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
                 return;
-            }
-            if (this.currentSystem.getSystemName().equals("Wregoe FH-D d12-63")){
-                System.out.println("here");
             }
             // Créer une map pour lookup rapide
             Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
@@ -687,13 +684,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             double fixedHeight = 450;
             bodiesPane.setMinWidth(600);
             bodiesPane.setMinHeight(300);
-            bodiesPane.setPrefWidth(fixedWidth);
-            bodiesPane.setPrefHeight(fixedHeight);
-            bodiesPane.setMaxWidth(fixedWidth);
-            bodiesPane.setMaxHeight(600);
+            bodiesPane.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+            bodiesPane.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
             
             // Calculer et appliquer le zoom optimal pour afficher tout le contenu
             // Utiliser plusieurs Platform.runLater pour s'assurer que les dimensions sont mises à jour
+/*            bodiesScrollPane.viewportBoundsProperty().addListener((obs, oldVal, newVal) -> {
+                Platform.runLater(() -> calculateAndApplyOptimalZoom());
+            });*/
             Platform.runLater(() -> {
                 Platform.runLater(() -> {
                     calculateAndApplyOptimalZoom();
@@ -1125,7 +1123,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         } else {
             JsonTreeItem emptyItem = new JsonTreeItem("", null);
             TreeItem<JsonTreeItem> root = new TreeItem<>(emptyItem);
-            root.setValue(new JsonTreeItem("Aucun JSON disponible", null));
+            root.setValue(new JsonTreeItem("No JSON available", null));
             jsonTreeView.setRoot(root);
             jsonTreeView.setShowRoot(true);
         }
@@ -1364,6 +1362,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 .filter(body -> !processed.contains(body.getBodyID()))
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                 .forEach(body -> {
+                    if (processed.contains(body.getBodyID())) {
+                        return; // skip, déjà ajouté
+                    }
                     result.add(body);
                     processed.add(body.getBodyID());
                     addChildrenRecursively(body, bodies, result, processed);

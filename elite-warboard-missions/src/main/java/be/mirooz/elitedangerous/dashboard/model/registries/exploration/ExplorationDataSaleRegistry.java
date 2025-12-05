@@ -37,26 +37,10 @@ public class ExplorationDataSaleRegistry {
     public void addToOnHold(SystemVisited systemVisited) {
         if (explorationDataOnHold == null) {
             explorationDataOnHold = ExplorationDataOnHold.builder()
-                    .totalEarnings(0)
                     .startTimeStamp(systemVisited.getLastVisitedTime())
                     .build();
         }
-        // Si déja ajouté : on enleve les anciennes valeur pour ajouter les nouvelles
-        if (explorationDataOnHold.getSystemsVisitedMap().containsKey(systemVisited.getSystemName())){
-            long value = 0;
-            for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
-                value+= celesteBody.computeBodyValue();
-            }
-            explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings()-value);
-        }
         explorationDataOnHold.getSystemsVisitedMap().put(systemVisited.getSystemName(),systemVisited);
-        long value = 0;
-        for (ACelesteBody celesteBody : systemVisited.getCelesteBodies()){
-            value+= celesteBody.computeBodyValue();
-        }
-        if (!systemVisited.isSold()) {
-            explorationDataOnHold.setTotalEarnings(explorationDataOnHold.getTotalEarnings() + value);
-        }
     }
     /**
      * Ajoute ou met à jour la vente en cours avec de nouvelles données.
