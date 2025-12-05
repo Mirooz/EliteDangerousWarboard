@@ -10,10 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -52,12 +49,16 @@ public class PlaneteDetail extends ACelesteBody {
     private List<BioSpecies> confirmedSpecies = new ArrayList<>();
 
 
-    /** Conversion Pascal → Atmosphères */
+    /**
+     * Conversion Pascal → Atmosphères
+     */
     public static double pascalToAtm(double pascal) {
         return pascal / 101325.0;
     }
 
-    /** Conversion m/s² → G */
+    /**
+     * Conversion m/s² → G
+     */
     public static double ms2ToG(double ms2) {
         return ms2 / 9.80665;
     }
@@ -67,10 +68,10 @@ public class PlaneteDetail extends ACelesteBody {
      */
     public void calculBioScan(Integer count, int level, List<String> genuses) {
         this.numSpeciesDetected = count;
-        if (this.bioSpecies != null && !this.bioSpecies.isEmpty()){
+        if (this.bioSpecies != null && !this.bioSpecies.isEmpty()) {
             for (Scan scan : this.bioSpecies) {
                 //Scan level déja fait
-                if (scan.getScanNumber() == level){
+                if (scan.getScanNumber() == level) {
                     return;
                 }
             }
@@ -120,40 +121,37 @@ public class PlaneteDetail extends ACelesteBody {
 
 
             // Niveau 2 : filtre par genuses
-            if (level == 2 && genuses != null && !genuses.isEmpty()) {
-                matchingSpecies = matchingSpecies.stream()
-                        .filter(species ->
-                                genuses.stream().anyMatch(
-                                        genus -> genus.split("_")[2].equals(species.getKey().getFdevname().split("_")[2])
-                                )
-                        )
-                        .toList();
+            if (level == 2) {
+
+                if (genuses != null && !genuses.isEmpty()) {
+                    matchingSpecies = matchingSpecies.stream()
+                            .filter(species ->
+                                    genuses.stream().anyMatch(
+                                            genus -> genus.split("_")[2].equals(species.getKey().getFdevname().split("_")[2])
+                                    )
+                            )
+                            .toList();
+                }
+                else{
+                    SpeciesProbability brainTreeProbability = new SpeciesProbability(BioSpecies.brainTree(), 100.0);
+                    this.bioSpecies.add(new Scan(level, new ArrayList<>(List.of(brainTreeProbability))));
+                    return;
+                }
             }
-//
-//            double totalOccurrences = matchingSpecies.stream()
-//                    .mapToDouble(Map.Entry::getValue)
-//                    .sum();
-//
-//            List<SpeciesProbability> probabilities = matchingSpecies.stream()
-//                    .map(e -> {
-//                        double f = e.getValue() / totalOccurrences;  // fréquence brute
-//                        double adjusted = 1 - Math.pow(1 - f, count); // proba cumulée
-//                        return new SpeciesProbability(e.getKey(), adjusted * 100);
-//                    })
-//                    .collect(Collectors.toCollection(ArrayList::new));
-            //
-            List<SpeciesProbability> probabilities  =computeProbabilities(matchingSpecies, count);
+
+            List<SpeciesProbability> probabilities = computeProbabilities(matchingSpecies, count);
             System.out.println("Bio pour body :" + this.bodyName + " level " + level + " count " + count + (genuses != null ? " genus " + genuses : ""));
             for (SpeciesProbability probability : probabilities) {
-                System.out.println("    " +probability.getBioSpecies().getFullName() + " : " + probability.getProbability());
+                System.out.println("    " + probability.getBioSpecies().getFullName() + " : " + probability.getProbability());
             }
-            System.out.println("    " );
+            System.out.println("    ");
             this.bioSpecies.add(new Scan(level, probabilities));
 
         } catch (Exception e) {
             System.err.println("❌ Erreur calculBioScan: " + e.getMessage());
         }
     }
+
     private List<SpeciesProbability> computeProbabilities(
             List<Map.Entry<BioSpecies, Double>> matchingSpecies,
             int count
@@ -191,7 +189,7 @@ public class PlaneteDetail extends ACelesteBody {
         Map<String, SpeciesProbability> bestByName =
                 rawList.stream()
                         .collect(Collectors.toMap(
-                                sp -> sp.getBioSpecies().getName()+ " " +sp.getBioSpecies().getSpecieName(), // clé de regroupement
+                                sp -> sp.getBioSpecies().getName() + " " + sp.getBioSpecies().getSpecieName(), // clé de regroupement
                                 sp -> sp,
                                 (p1, p2) -> p1.getProbability() >= p2.getProbability() ? p1 : p2
                         ));
@@ -237,7 +235,9 @@ public class PlaneteDetail extends ACelesteBody {
         }
     }
 
-    /** Retrouve l'espèce correspondante dans la bibliothèque bio */
+    /**
+     * Retrouve l'espèce correspondante dans la bibliothèque bio
+     */
     private BioSpecies findMatchingSpecies(ScanOrganicData scanOrganicData) {
         try {
             return BioSpeciesService.getInstance()
@@ -246,11 +246,12 @@ public class PlaneteDetail extends ACelesteBody {
                     .filter(species -> species.getFdevname()
                             .equalsIgnoreCase(scanOrganicData.getVariant()))
                     .findFirst()
-                    .orElse(null);
+                    .orElse(BioSpecies.brainTree());
         } catch (Exception e) {
             return null;
         }
     }
+
     private BioSpecies createNewSpecies(BioSpecies base, ScanOrganicData scanData) {
         BioSpecies newSpecie = BioSpecies.builder()
                 .name(base.getName())
@@ -273,6 +274,7 @@ public class PlaneteDetail extends ACelesteBody {
         confirmedSpecies.add(newSpecie);
         return newSpecie;
     }
+
     private void handleScanTypeActions(ScanTypeBio scanTypeBio, BioSpecies specie, BioSpecies matchingSpecies) {
 
         switch (scanTypeBio) {
@@ -281,7 +283,7 @@ public class PlaneteDetail extends ACelesteBody {
                         .addAnalyzedOrganicData(specie, this.isWasFootfalled());
             }
 
-            case SAMPLE,LOG -> {
+            case SAMPLE, LOG -> {
                 explorationService.setCurrentBiologicalAnalysis(this, matchingSpecies);
             }
 
@@ -302,7 +304,7 @@ public class PlaneteDetail extends ACelesteBody {
         this.atmosphere = src.atmosphere;
         this.volcanism = src.volcanism;
         this.materials = src.materials;
-        this.rings=src.rings;
+        this.rings = src.rings;
         this.jsonNode = src.jsonNode;
 
         // flags comme avant :
@@ -316,7 +318,7 @@ public class PlaneteDetail extends ACelesteBody {
         boolean firstDiscover = !wasDiscovered;
         boolean firstMapped = !wasMapped;
         boolean isFleetCarrierSale = false;
-        boolean isOdyssey =true;
+        boolean isOdyssey = true;
         boolean isEfficiencyBonus = efficiencyTargetMap;
         double kValue = this.terraformable ? planetClass.getTerraformableK() : planetClass.getBaseK();
         final double q = 0.56591828;

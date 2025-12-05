@@ -1918,7 +1918,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Ensuite, si c'est en cours d'analyse, ajouter la bordure animée
                         if (isAnalyzing) {
                             Platform.runLater(() -> {
-                                addAnimatedBorder(speciesRow);
+                                addBorder(speciesRow);
                             });
                         }
                     }
@@ -2185,98 +2185,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
     
     /**
-     * Ajoute une bordure animée autour d'un HBox pour indiquer qu'une espèce est en cours d'analyse
+     * Ajoute une bordure verte autour d'un HBox pour indiquer qu'une espèce est en cours d'analyse
      */
-    private void addAnimatedBorder(HBox speciesRow) {
-        // Vérifier que le HBox a un parent
-        if (speciesRow.getParent() == null || !(speciesRow.getParent() instanceof VBox)) {
-            return;
-        }
-        
-        VBox parent = (VBox) speciesRow.getParent();
-        int index = parent.getChildren().indexOf(speciesRow);
-        if (index < 0) {
-            return;
-        }
-        
-        // Ajouter une classe CSS pour la bordure animée
+    private void addBorder(HBox speciesRow) {
+        // Ajouter une classe CSS pour la bordure verte
         speciesRow.getStyleClass().add("exobio-species-analyzing");
-        
-        // Créer une bordure animée avec un effet de rotation
-        // Utiliser un StackPane pour superposer une bordure
-        StackPane borderContainer = new StackPane();
-        borderContainer.setPadding(new javafx.geometry.Insets(2));
-        
-        // Créer un Rectangle pour la bordure animée
-        Rectangle borderRect = new Rectangle();
-        borderRect.setFill(Color.TRANSPARENT);
-        borderRect.setStroke(Color.web("#00FF88")); // Vert Elite Dangerous
-        borderRect.setStrokeWidth(3); // Bordure plus épaisse pour être visible
-        borderRect.setArcWidth(6);
-        borderRect.setArcHeight(6);
-        
-        // Lier la taille du rectangle à celle du HBox (avec padding)
-        borderRect.widthProperty().bind(speciesRow.widthProperty().add(4));
-        borderRect.heightProperty().bind(speciesRow.heightProperty().add(4));
-        
-        // S'assurer que le rectangle a une taille minimale
-        borderRect.setManaged(false);
-        
-        // Créer une animation de pulsation pour la bordure (opacité)
-        javafx.animation.FadeTransition fadeTransition = new javafx.animation.FadeTransition(
-            javafx.util.Duration.seconds(1.0), borderRect);
-        fadeTransition.setFromValue(0.3);
-        fadeTransition.setToValue(1.0);
-        fadeTransition.setCycleCount(javafx.animation.Animation.INDEFINITE);
-        fadeTransition.setAutoReverse(true);
-        
-        // Créer une animation de couleur pour un effet de rotation visuel
-        javafx.animation.Timeline colorTimeline = new javafx.animation.Timeline();
-        colorTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
-        
-        // Créer des keyframes pour changer la couleur de la bordure (effet de rotation)
-        javafx.animation.KeyFrame kf1 = new javafx.animation.KeyFrame(
-            javafx.util.Duration.ZERO,
-            e -> borderRect.setStroke(Color.web("#00FF88")) // Vert
-        );
-        javafx.animation.KeyFrame kf2 = new javafx.animation.KeyFrame(
-            javafx.util.Duration.seconds(0.25),
-            e -> borderRect.setStroke(Color.web("#44FF88")) // Vert clair
-        );
-        javafx.animation.KeyFrame kf3 = new javafx.animation.KeyFrame(
-            javafx.util.Duration.seconds(0.5),
-            e -> borderRect.setStroke(Color.web("#88FF00")) // Jaune-vert
-        );
-        javafx.animation.KeyFrame kf4 = new javafx.animation.KeyFrame(
-            javafx.util.Duration.seconds(0.75),
-            e -> borderRect.setStroke(Color.web("#44FF88")) // Vert clair
-        );
-        javafx.animation.KeyFrame kf5 = new javafx.animation.KeyFrame(
-            javafx.util.Duration.seconds(1.0),
-            e -> borderRect.setStroke(Color.web("#00FF88")) // Vert
-        );
-        colorTimeline.getKeyFrames().addAll(kf1, kf2, kf3, kf4, kf5);
-        
-        // Ajouter le rectangle et le HBox au StackPane (rectangle en premier pour être derrière)
-        borderContainer.getChildren().addAll(borderRect, speciesRow);
-        
-        // Remplacer le HBox par le StackPane dans le parent AVANT de démarrer les animations
-        parent.getChildren().set(index, borderContainer);
-        
-        // Forcer un layout pour s'assurer que les tailles sont calculées
-        borderContainer.layout();
-        
-        // Démarrer les animations après le layout
-        Platform.runLater(() -> {
-            fadeTransition.play();
-            colorTimeline.play();
-        });
-        
-        // Stocker les animations pour pouvoir les arrêter plus tard
-        borderContainer.getProperties().put("fadeTransition", fadeTransition);
-        borderContainer.getProperties().put("colorTimeline", colorTimeline);
     }
-    
+
     /**
      * Efface l'affichage
      */

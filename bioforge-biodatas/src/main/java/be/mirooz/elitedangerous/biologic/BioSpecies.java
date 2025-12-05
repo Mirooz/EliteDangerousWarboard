@@ -54,4 +54,17 @@ public class BioSpecies {
         this.scanType.removeIf(type -> type == ScanTypeBio.SAMPLE);
         sampleNumber = 0;
     }
+
+    public static BioSpecies brainTree(){
+        return builder()
+                .id("Brain Tree")
+                .name("Brain Tree")
+                .specieName("")
+                .variantLocalised("")
+                .colonyRangeMeters(100)
+                .baseValue(1593700)
+                .bonusValue(1593700*4)
+                .color("")
+                .build();
+    }
 }
