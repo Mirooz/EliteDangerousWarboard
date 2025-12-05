@@ -86,7 +86,11 @@ public class PlaneteDetail extends ACelesteBody {
                             .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
                             .toList();
 
-            if (matchingSpecies.isEmpty()) return;
+            if (matchingSpecies.isEmpty()) {
+                SpeciesProbability brainTreeProbability = new SpeciesProbability(BioSpecies.brainTree(), 100.0);
+                this.bioSpecies.add(new Scan(level, new ArrayList<>(List.of(brainTreeProbability))));
+                return;
+            }
 
             matchingSpecies = matchingSpecies.stream()
                     .filter(entry -> {
@@ -218,7 +222,8 @@ public class PlaneteDetail extends ACelesteBody {
 
             BioSpecies matchingSpecies = findMatchingSpecies(scanOrganicData);
             if (matchingSpecies == null) return;
-
+            if (matchingSpecies.getId().equals("Brain Tree"))
+                System.out.println("here");
             BioSpecies specie = confirmedSpecies.stream()
                     .filter(s -> s.getId().equalsIgnoreCase(matchingSpecies.getId()))
                     .findFirst()

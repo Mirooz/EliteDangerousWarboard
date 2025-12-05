@@ -67,7 +67,7 @@ public class ExplorationService {
     }
     public void setCurrentBiologicalAnalysis(PlaneteDetail planeteDetail, BioSpecies species) {
         if (planeteDetail != null &&  species != null) {
-            if (planeteDetail != currentAnalysisPlanet || species != currentAnalysisSpecies) {
+            if (planeteDetail != currentAnalysisPlanet || !species.getId().equals(currentAnalysisSpecies.getId())) {
                 species.removeAllSamples();
                 clearCurrentBiologicalAnalysis();
             }
