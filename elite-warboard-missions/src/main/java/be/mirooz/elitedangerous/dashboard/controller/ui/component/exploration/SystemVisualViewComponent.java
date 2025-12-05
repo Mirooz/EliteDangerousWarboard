@@ -535,6 +535,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 bodyPositions.put(star.getBodyID(), new BodyPosition(startX, currentStarY, star, starSize));
                 Node starView = createBodyImageView(star, startX, currentStarY, BodyHierarchyType.STAR);
                 bodiesPane.getChildren().add(starView);
+                addBodyNameLabel(star, startX, currentStarY, BodyHierarchyType.STAR);
 
                 // Positionner les planètes directes de cette étoile en chaîne horizontale à droite
                 List<ACelesteBody> directPlanets = starToDirectPlanets.get(star);
@@ -551,6 +552,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         bodyPositions.put(planet.getBodyID(), new BodyPosition(planetX, planetY, planet, planetSize));
                         Node planetView = createBodyImageView(planet, planetX, planetY, BodyHierarchyType.PLANET);
                         bodiesPane.getChildren().add(planetView);
+                        addBodyNameLabel(planet, planetX, planetY, BodyHierarchyType.PLANET);
                         
                         // Ajouter les icônes sous la planète (exobio et mapped)
                         addPlanetIcons(planet, planetX, planetY);
@@ -567,6 +569,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 bodyPositions.put(moon.getBodyID(), new BodyPosition(planetX, moonY, moon, moonSize));
                                 Node moonView = createBodyImageView(moon, planetX, moonY, BodyHierarchyType.MOON);
                                 bodiesPane.getChildren().add(moonView);
+                                addBodyNameLabel(moon, planetX, moonY, BodyHierarchyType.MOON);
                                 
                                 // Ajouter les icônes sous la lune (exobio et mapped)
                                 addPlanetIcons(moon, planetX, moonY);
@@ -580,6 +583,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         bodyPositions.put(subMoon.getBodyID(), new BodyPosition(subMoonX, moonY, subMoon, subMoonSize));
                                         Node subMoonView = createBodyImageView(subMoon, subMoonX, moonY, BodyHierarchyType.SUB_MOON);
                                         bodiesPane.getChildren().add(subMoonView);
+                                        addBodyNameLabel(subMoon, subMoonX, moonY, BodyHierarchyType.SUB_MOON);
                                         
                                         // Ajouter les icônes sous la lune de lune (exobio et mapped)
                                         addPlanetIcons(subMoon, subMoonX, moonY);
@@ -660,6 +664,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                             bodyPositions.put(body.getBodyID(), new BodyPosition(subMoonX, subMoonY, body, subMoonSize));
                                             Node subMoonView = createBodyImageView(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
                                             bodiesPane.getChildren().add(subMoonView);
+                                            addBodyNameLabel(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
                                             
                                             // Ajouter les icônes sous la lune de lune (exobio et mapped)
                                             addPlanetIcons(body, subMoonX, subMoonY);
@@ -1070,6 +1075,53 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         badge.setLayoutY(badgeY);
         
         bodiesPane.getChildren().add(badge);
+    }
+
+    /**
+     * Ajoute un label avec le nom du body en bas à droite de chaque corps céleste
+     */
+    private void addBodyNameLabel(ACelesteBody body, double x, double y, BodyHierarchyType hierarchyType) {
+        if (body == null) {
+            return;
+        }
+        
+        // Obtenir le nom du body sans le nom du système
+        String bodyName = getBodyNameWithoutSystem(body);
+        // Ne pas afficher si le nom est null, vide, ou la chaîne "null"
+        if (bodyName == null || bodyName.isEmpty() || "null".equalsIgnoreCase(bodyName.trim())) {
+            return;
+        }
+        
+        // Pour les étoiles : si le nom est équivalent au nom du système, remplacer par "A"
+        if (body instanceof StarDetail) {
+            String systemName = body.getStarSystem();
+            if (systemName != null && bodyName.equalsIgnoreCase(systemName)) {
+                bodyName = "A";
+            }
+        }
+        
+        // Créer le label
+        Label nameLabel = new Label(bodyName);
+        nameLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 11px; -fx-font-weight: bold;");
+        
+        // Calculer la position : en bas à droite du cercle, mais remonté vers le haut-gauche
+        // Pour un cercle, utiliser un angle légèrement supérieur à 45° pour remonter
+        double size = getBodySize(hierarchyType);
+        double radius = size / 2;
+        
+        // Angle d'environ 50-55° pour remonter vers le haut-gauche tout en restant en bas-droite
+        double angle = Math.PI / 3.5; // Environ 51° pour remonter un peu
+        double offsetX = radius * Math.cos(angle);
+        double offsetY = radius * Math.sin(angle);
+        
+        // Position du label : point sur le cercle + très petit décalage pour coller à la planète
+        double labelX = x + offsetX + 2; // 2px d'espacement à droite (réduit pour coller)
+        double labelY = y + offsetY - 2; // -2px pour remonter vers le haut
+        
+        nameLabel.setLayoutX(labelX);
+        nameLabel.setLayoutY(labelY);
+        
+        bodiesPane.getChildren().add(nameLabel);
     }
 
     /**
