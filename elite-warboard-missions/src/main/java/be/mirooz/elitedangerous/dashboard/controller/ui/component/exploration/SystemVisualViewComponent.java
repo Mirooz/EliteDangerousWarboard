@@ -391,7 +391,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
                 return;
             }
-
+            if (this.currentSystem.getSystemName().equals("Wregoe FH-D d12-63")){
+                System.out.println("here");
+            }
             // Créer une map pour lookup rapide
             Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
                     .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
@@ -443,7 +445,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         for (var parent : parents) {
                             if ("Null".equalsIgnoreCase(parent.getType())) {
                                 // Sauvegarder le bodyID du parent "Null" pour créer un fake soleil partagé
-                                if (nullParentBodyID == null) {
+                                if (nullParentBodyID == null || parent.getBodyID() < nullParentBodyID) {
                                     nullParentBodyID = parent.getBodyID();
                                 }
                                 continue; // Ignorer les parents "Null" pour la recherche du parent réel

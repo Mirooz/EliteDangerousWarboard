@@ -245,8 +245,7 @@ public class PlaneteDetail extends ACelesteBody {
 
             BioSpecies matchingSpecies = findMatchingSpecies(scanOrganicData);
             if (matchingSpecies == null) return;
-            if (matchingSpecies.getId().equals("Brain Tree"))
-                System.out.println("here");
+
             BioSpecies specie = confirmedSpecies.stream()
                     .filter(s -> s.getId().equalsIgnoreCase(matchingSpecies.getId()))
                     .findFirst()
