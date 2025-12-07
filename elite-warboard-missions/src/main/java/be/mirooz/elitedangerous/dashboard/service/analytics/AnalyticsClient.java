@@ -83,9 +83,11 @@ public class AnalyticsClient {
         try {
 
             String appVersion = getAppVersion();
+            String operatingSystem = getOperatingSystem();
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("commanderName", commanderName);
             requestBody.put("appVersion", appVersion);
+            requestBody.put("operatingSystem", operatingSystem);
 
             String jsonBody = objectMapper.writeValueAsString(requestBody);
 
@@ -157,6 +159,26 @@ public class AnalyticsClient {
         }
     }
 
+    /**
+     * Récupère le système d'exploitation
+     */
+    private String getOperatingSystem() {
+        String osName = System.getProperty("os.name", "Unknown");
+        String osVersion = System.getProperty("os.version", "");
+        String osArch = System.getProperty("os.arch", "");
+        
+        // Formater le nom du système d'exploitation de manière lisible
+        String os = osName;
+        if (!osVersion.isEmpty()) {
+            os += " " + osVersion;
+        }
+        if (!osArch.isEmpty()) {
+            os += " (" + osArch + ")";
+        }
+        
+        return os;
+    }
+ 
     public void endSession() {
         if (currentSessionId == null) {
             return;

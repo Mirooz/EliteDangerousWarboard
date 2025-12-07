@@ -13,5 +13,6 @@ import lombok.NoArgsConstructor;
 public class StartSessionRequest {
     private String commanderName;
     private String appVersion;
+    private String operatingSystem;
 }
 

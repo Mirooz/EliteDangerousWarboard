@@ -48,6 +48,7 @@ public class AnalyticsController {
             UserSession userSession = UserSession.builder()
                     .commanderName(request.getCommanderName())
                     .appVersion(request.getAppVersion())
+                    .operatingSystem(request.getOperatingSystem())
                     .sessionStart(LocalDateTime.now())
                     .build();
 

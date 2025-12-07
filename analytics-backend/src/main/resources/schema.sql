@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     id BIGSERIAL PRIMARY KEY,
     commander_name VARCHAR(255) NOT NULL,
     app_version VARCHAR(50),
+    operating_system VARCHAR(100),
     session_start TIMESTAMP NOT NULL,
     session_end TIMESTAMP,
     duration_seconds BIGINT,
@@ -42,6 +43,7 @@ COMMENT ON TABLE panel_times IS 'Stocke le temps passé sur chaque panel pendant
 
 COMMENT ON COLUMN user_sessions.commander_name IS 'Nom du commandant Elite Dangerous';
 COMMENT ON COLUMN user_sessions.app_version IS 'Version de l''application utilisée';
+COMMENT ON COLUMN user_sessions.operating_system IS 'Système d''exploitation utilisé';
 COMMENT ON COLUMN user_sessions.session_start IS 'Date et heure de début de la session';
 COMMENT ON COLUMN user_sessions.session_end IS 'Date et heure de fin de la session';
 COMMENT ON COLUMN user_sessions.duration_seconds IS 'Durée totale de la session en secondes';

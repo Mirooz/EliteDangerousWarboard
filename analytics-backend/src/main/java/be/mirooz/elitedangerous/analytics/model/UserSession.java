@@ -31,6 +31,9 @@ public class UserSession {
     @Column(name = "app_version", length = 50)
     private String appVersion;
 
+    @Column(name = "operating_system", length = 100)
+    private String operatingSystem;
+
     @Column(name = "session_start", nullable = false)
     private LocalDateTime sessionStart;
 
