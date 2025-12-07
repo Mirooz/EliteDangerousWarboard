@@ -411,6 +411,35 @@
                         </executions>
                     </plugin>
 
+                    <!-- 🔹 Plugin pour remplacer la version dans metainfo.xml (avant la construction du flatpak) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>replace-version-in-metainfo</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml" 
+                                                 token="${project.version}" 
+                                                 value="${project.version}"/>
+                                        <tstamp>
+                                            <format property="CURRENT_DATE" pattern="yyyy-MM-dd"/>
+                                        </tstamp>
+                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml" 
+                                                 token="@DATE@" 
+                                                 value="${CURRENT_DATE}"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                     <!-- 4️⃣ Création du runtime + installeur -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
@@ -529,35 +558,6 @@
                                             flatpak build-bundle repo ../EliteWarboard.flatpak be.mirooz.EliteWarboard master
                                         </argument>
                                     </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    
-                    <!-- 🔹 Plugin pour remplacer la version dans metainfo.xml -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>replace-version-in-metainfo</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml" 
-                                                 token="${project.version}" 
-                                                 value="${project.version}"/>
-                                        <tstamp>
-                                            <format property="CURRENT_DATE" pattern="yyyy-MM-dd"/>
-                                        </tstamp>
-                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml" 
-                                                 token="@DATE@" 
-                                                 value="${CURRENT_DATE}"/>
-                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
