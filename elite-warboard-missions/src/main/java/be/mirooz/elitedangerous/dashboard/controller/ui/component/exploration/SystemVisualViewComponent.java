@@ -2181,6 +2181,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 overlayRadar.showRadar();
                 Pane overlayRadarPane = overlayRadar.getRadarPane();
                 
+                // Retirer le cadre noir (fond et bordure) dans l'overlay/popup
+                overlayRadarPane.setStyle("-fx-background-color: transparent;");
+                
                 // Faire en sorte que le radar prenne la largeur du container
                 // Utiliser un listener pour mettre à jour la largeur quand le container change
                 container.widthProperty().addListener((obs, oldVal, newVal) -> {
