@@ -253,7 +253,7 @@ public class PlaneteDetail extends ACelesteBody {
 
 
             // Actions selon le type
-            handleScanTypeActions(scanTypeBio, specie, matchingSpecies);
+            handleScanTypeActions(scanTypeBio, specie);
             // Ajoute le scan type
             specie.addScanType(scanTypeBio);
 
@@ -302,7 +302,7 @@ public class PlaneteDetail extends ACelesteBody {
         return newSpecie;
     }
 
-    private void handleScanTypeActions(ScanTypeBio scanTypeBio, BioSpecies specie, BioSpecies matchingSpecies) {
+    private void handleScanTypeActions(ScanTypeBio scanTypeBio, BioSpecies specie) {
 
         switch (scanTypeBio) {
             case ANALYSE -> {
@@ -311,7 +311,7 @@ public class PlaneteDetail extends ACelesteBody {
             }
 
             case SAMPLE, LOG -> {
-                explorationService.setCurrentBiologicalAnalysis(this, matchingSpecies);
+                explorationService.setCurrentBiologicalAnalysis(this, specie);
             }
 
             default -> {

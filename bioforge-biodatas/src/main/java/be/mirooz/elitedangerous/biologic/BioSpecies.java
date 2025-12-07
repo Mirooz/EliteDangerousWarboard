@@ -52,6 +52,7 @@ public class BioSpecies {
 
     public void removeAllSamples() {
         this.scanType.removeIf(type -> type == ScanTypeBio.SAMPLE);
+        this.scanType.removeIf(type -> type == ScanTypeBio.LOG);
         sampleNumber = 0;
     }
 

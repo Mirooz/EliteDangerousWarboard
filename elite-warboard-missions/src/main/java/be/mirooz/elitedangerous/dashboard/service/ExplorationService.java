@@ -68,7 +68,8 @@ public class ExplorationService {
     public void setCurrentBiologicalAnalysis(PlaneteDetail planeteDetail, BioSpecies species) {
         if (planeteDetail != null &&  species != null) {
             if (planeteDetail != currentAnalysisPlanet || !species.getId().equals(currentAnalysisSpecies.getId())) {
-                species.removeAllSamples();
+                if (currentAnalysisSpecies!= null)
+                    currentAnalysisSpecies.removeAllSamples();
                 clearCurrentBiologicalAnalysis();
             }
             Position samplePosition = DirectionReaderService.getInstance().readCurrentPosition(planeteDetail.getRadius());

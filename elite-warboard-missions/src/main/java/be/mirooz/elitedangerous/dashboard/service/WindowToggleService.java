@@ -474,7 +474,7 @@ public class WindowToggleService {
                 while (!Thread.currentThread().isInterrupted()) {
                     for (Controller ctrl : activeControllers) {
                         if (!ctrl.poll()) {
-                            System.out.println("⚠️ " + ctrl.getName() + " déconnecté !");
+                            //System.out.println("⚠️ " + ctrl.getName() + " déconnecté !");
                             continue;
                         }
 
