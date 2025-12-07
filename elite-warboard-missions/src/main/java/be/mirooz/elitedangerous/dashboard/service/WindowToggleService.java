@@ -492,7 +492,7 @@ public class WindowToggleService {
                             if (prevValues[i] != value) {
                                 prevValues[i] = value;
 
-                                System.out.println(ctrl.getName() + " - " + name + ": " + value + " ( analogique : " + comp.isAnalog() + ")" + comp.getDeadZone() + " " + comp.isRelative());
+                                //System.out.println(ctrl.getName() + " - " + name + ": " + value + " ( analogique : " + comp.isAnalog() + ")" + comp.getDeadZone() + " " + comp.isRelative());
 
                                 // Vérifier window toggle
                                 if (hasWindowToggle && preferencesService.isWindowToggleEnabled() &&
