@@ -160,7 +160,7 @@ public class BioSpeciesFactory {
      */
     private static HistogramData extractHistogramData(JsonNode node) {
         HistogramData data = new HistogramData();
-        int totalCount = node.get("count").asInt();
+        data.count = node.get("count").asInt();
         if (node.has("histograms") && node.get("histograms").isObject()) {
             JsonNode histograms = node.get("histograms");
 
@@ -312,6 +312,7 @@ public class BioSpeciesFactory {
 
         // temperature: List of bins (min, max, count)
         public List<Bin> temperature;
+        public Integer count;
 
         // volcanic_body_types: Map of (body type, volcanism type) -> count
         public Map<VolcanicBodyType, Double> volcanicBodyTypes;

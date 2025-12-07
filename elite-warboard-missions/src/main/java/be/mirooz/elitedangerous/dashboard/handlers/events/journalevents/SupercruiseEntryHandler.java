@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
+import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,6 +37,7 @@ public class SupercruiseEntryHandler implements JournalEventHandler {
             }
 
             notificationService.notifyBodyFilter(null);
+            DirectionReaderService.getInstance().stopWatchingStatusFile();
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement SupercruiseEntry: " + e.getMessage());
         }

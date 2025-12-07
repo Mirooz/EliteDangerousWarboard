@@ -10,34 +10,83 @@ import java.util.Map;
  * pour qu'une espèce biologique puisse y être trouvée.
  */
 public class BioSpeciesMatcher {
+    public static double TOTAL_BODIES_IN_DATASET;
+    // à remplacer
 
-    public static double probability(PlaneteDetail planete, BioSpecies species){
+    public static double probability(PlaneteDetail planet, BioSpecies species) {
         try {
-            BioSpeciesFactory.HistogramData histogramData = species.getHistogramData();
-            matchesBodyType(planete.getPlanetClass(), histogramData.bodyTypes);
-            Double bodyValue = histogramData.bodyTypes.get(planete.getPlanetClass());
-            Double atmosValue = histogramData.atmosTypes.get(planete.getAtmosphere());
-            Double volcanismValue = histogramData.volcanicBodyTypes.get(new BioSpeciesFactory.VolcanicBodyType(planete.getPlanetClass(), planete.getVolcanism()));
+            BioSpeciesFactory.HistogramData h = species.getHistogramData();
 
-            Double temperatureValue = histogramData.temperature.stream().filter(bin ->
-                            bin.min != null && bin.max != null &&
-                                    planete.getTemperature() >= bin.min && planete.getTemperature() <= bin.max)
-                    .findFirst().map(bin -> bin.value).orElse(0.0);
-            Double gravityValue = histogramData.gravity.stream().filter(bin ->
-                            bin.min != null && bin.max != null &&
-                                    planete.getGravityG() >= bin.min && planete.getGravityG() <= bin.max)
-                    .findFirst().map(bin -> bin.value).orElse(0.0);
-            Double pressureValue = histogramData.pressure.stream().filter(bin ->
-                            bin.min != null && bin.max != null &&
-                                    planete.getPressureAtm() >= bin.min && planete.getPressureAtm() <= bin.max)
-                    .findFirst().map(bin -> bin.value).orElse(0.0);
-            return Math.min(bodyValue, Math.min(atmosValue, Math.min(volcanismValue, Math.min(temperatureValue, Math.min(gravityValue, pressureValue)))));
-        }
-        catch (Exception e){
-            System.out.println("Error in probability");
+            double pBody       = probabilityFromMap(planet.getPlanetClass(), h.bodyTypes);
+            double pAtmos      = probabilityFromMap(planet.getAtmosphere(), h.atmosTypes);
+            double pVolcanism  = probabilityFromMap(
+                    new BioSpeciesFactory.VolcanicBodyType(planet.getPlanetClass(), planet.getVolcanism()),
+                    h.volcanicBodyTypes
+            );
+
+            double pTemp       = probabilityFromBins(planet.getTemperature(), h.temperature);
+            double pGravity    = probabilityFromBins(planet.getGravityG(), h.gravity);
+            double pPressure   = probabilityFromBins(planet.getPressureAtm(), h.pressure);
+
+            double[] probs = { pBody, pAtmos, pVolcanism, pTemp, pGravity, pPressure };
+
+            double product = 1.0;
+            int count = 0;
+
+            for (double p : probs) {
+                if (p > 0) {
+                    product *= p;
+                    count++;
+                }
+            }
+
+            if (count == 0) return 0.0;
+
+            double geometric = Math.pow(product, 1.0 / count);
+
+            // ---- LA correction : intégrer la rareté globale ----
+            double pGlobal = (double) species.getCount() / TOTAL_BODIES_IN_DATASET;
+
+            return geometric * pGlobal;
+
+        } catch (Exception e) {
+            System.out.println("Error in probability: " + e.getMessage());
             return 0.0;
         }
-        }
+    }
+
+    private static <T> double probabilityFromMap(T key, Map<T, Double> histogram) {
+        if (histogram == null || histogram.isEmpty()) return 0.0;
+
+        double total = histogram.values().stream().mapToDouble(v -> v).sum();
+        Double v = histogram.get(key);
+
+        if (v == null) return 0.0;
+        return v / total;
+    }
+    public static double computeTotalBodies(List<BioSpecies> speciesList) {
+        return speciesList.stream()
+                .mapToDouble(BioSpecies::getCount)
+                .sum();
+    }
+
+    private static double probabilityFromBins(double value, List<BioSpeciesFactory.Bin> bins) {
+        if (bins == null || bins.isEmpty()) return 0.0;
+
+        double total = bins.stream()
+                .mapToDouble(bin -> bin.value != null ? bin.value : 0.0)
+                .sum();
+
+        if (total == 0) return 0.0;
+
+        return bins.stream()
+                .filter(bin -> bin.min != null && bin.max != null &&
+                        value >= bin.min && value <= bin.max)
+                .findFirst()
+                .map(bin -> bin.value / total)
+                .orElse(0.0);
+    }
+
     /**
      * Vérifie si une planète correspond aux conditions d'une espèce biologique.
      * 

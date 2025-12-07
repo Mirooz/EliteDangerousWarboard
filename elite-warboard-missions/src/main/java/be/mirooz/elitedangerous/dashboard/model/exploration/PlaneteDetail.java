@@ -78,7 +78,7 @@ public class PlaneteDetail extends ACelesteBody {
         }
         try {
             List<BioSpecies> allSpecies = BioSpeciesService.getInstance().getSpecies();
-
+            BioSpeciesMatcher.TOTAL_BODIES_IN_DATASET = BioSpeciesMatcher.computeTotalBodies(allSpecies);
             List<Map.Entry<BioSpecies, Double>> matchingSpecies =
                     allSpecies.stream()
                             .filter(species -> BioSpeciesMatcher.matches(this, species))
@@ -216,9 +216,14 @@ public class PlaneteDetail extends ACelesteBody {
         Map<String, SpeciesProbability> bestByName =
                 rawList.stream()
                         .collect(Collectors.toMap(
-                                sp -> sp.getBioSpecies().getName() + " " + sp.getBioSpecies().getSpecieName(), // clé de regroupement
+                                sp -> sp.getBioSpecies().getName() + " " + sp.getBioSpecies().getSpecieName(),
                                 sp -> sp,
-                                (p1, p2) -> p1.getProbability() >= p2.getProbability() ? p1 : p2
+                                (p1, p2) -> {
+                                    // Additionner les probabilités
+                                    double newProb = p1.getProbability() + p2.getProbability();
+                                    p1.setProbability(newProb);
+                                    return p1; // fusionne en un seul objet
+                                }
                         ));
 
         List<SpeciesProbability> finalList = new ArrayList<>(bestByName.values());
