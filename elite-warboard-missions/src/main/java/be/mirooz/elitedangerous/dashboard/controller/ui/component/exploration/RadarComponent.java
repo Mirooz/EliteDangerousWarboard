@@ -417,10 +417,14 @@ public class RadarComponent {
                         // Premier sample : magenta/rose
                         sampleColor = Color.rgb(255, 0, 255);
                         colorHex = "#FF00FF";
-                    } else {
-                        // Second sample et suivants : cyan
+                    } else if (sampleIndex == 1) {
+                        // Second sample : cyan
                         sampleColor = Color.rgb(0, 255, 255);
                         colorHex = "#00FFFF";
+                    } else {
+                        // Troisième sample et suivants : jaune
+                        sampleColor = Color.rgb(255, 255, 0);
+                        colorHex = "#FFFF00";
                     }
                     
                     // Dessiner le cercle d'exclusion (toujours avec la position réelle pour suivre le mouvement normal)
