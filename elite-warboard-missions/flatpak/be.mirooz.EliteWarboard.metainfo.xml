@@ -23,4 +23,8 @@
     <url type="homepage">https://github.com/Mirooz/EliteDangerousWarboard</url>
     <update_contact>ewen_gallet@hotmail.com</update_contact>
     <content_rating type="oars-1.1"/>
+    
+    <releases>
+        <release version="${project.version}" date="@DATE@"/>
+    </releases>
 </component>
