@@ -38,6 +38,7 @@ import javafx.scene.transform.Scale;
 
 import java.net.URL;
 import java.util.*;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
@@ -500,9 +501,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             // Vérifier si ce fake soleil existe déjà (partagé par plusieurs planètes avec le même parent "Null")
                             StarDetail fakeStar = (StarDetail) bodiesMap.get(fakeStarBodyID);
                             if (fakeStar == null) {
+                                // Extraire le nom de l'étoile à partir du nom de la planète
+                                String starName = extractStarNameFromPlanetName(body);
+                                
                                 // Créer le fake soleil
                                 fakeStar = StarDetail.builder()
-                                        .bodyName("null")
+                                        .bodyName(starName)
                                         .bodyID(fakeStarBodyID)
                                         .starSystem(body.getStarSystem())
                                         .systemAddress(body.getSystemAddress())
@@ -564,7 +568,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Disposer chaque étoile avec ses planètes et lunes
             int currentStarY = startY;
             int maxX = startX;
-            
+            stars.sort(Comparator.comparing(ACelesteBody::getBodyName));
             for (ACelesteBody star : stars) {
                 // Positionner l'étoile verticalement à gauche
                 double starSize = getBodySize(BodyHierarchyType.STAR);
@@ -2327,6 +2331,57 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (systemTitleLabel != null && currentSystem == null) {
             systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));
         }
+    }
+    
+    /**
+     * Extrait le nom de l'étoile à partir du nom de la planète.
+     * Si la planète s'appelle "nom_systeme AB 1", retourne "nom_systeme AB".
+     * 
+     * @param planet Le corps céleste (planète) dont on veut extraire le nom de l'étoile
+     * @return Le nom de l'étoile extrait (nom_systeme + nom_étoile), ou "null" si l'extraction échoue
+     */
+    private String extractStarNameFromPlanetName(ACelesteBody planet) {
+        String bodyName = planet.getBodyName();
+        String systemName = planet.getStarSystem();
+        
+        if (bodyName == null || systemName == null) {
+            return systemName != null ? systemName + " null" : "null";
+        }
+        
+        // Retirer le nom du système du début du bodyName
+        String nameWithoutSystem = bodyName;
+        if (bodyName.startsWith(systemName)) {
+            nameWithoutSystem = bodyName.substring(systemName.length()).trim();
+            // Si le nom commence par un espace, le retirer
+            if (nameWithoutSystem.startsWith(" ")) {
+                nameWithoutSystem = nameWithoutSystem.substring(1);
+            }
+        }
+        
+        if (nameWithoutSystem.isEmpty()) {
+            return systemName + " null";
+        }
+        
+        // Extraire la partie avant le dernier espace et le numéro
+        // Par exemple : "AB 1" -> "AB", "A 2" -> "A", "ABC 3" -> "ABC"
+        String[] parts = nameWithoutSystem.split("\\s+");
+        String starNamePart;
+        if (parts.length >= 2) {
+            // Vérifier si la dernière partie est un nombre
+            try {
+                Integer.parseInt(parts[parts.length - 1]);
+                // Si c'est un nombre, retourner tout sauf la dernière partie
+                starNamePart = String.join(" ", Arrays.copyOf(parts, parts.length - 1));
+            } catch (NumberFormatException e) {
+                // Si ce n'est pas un nombre, retourner le nom complet
+                starNamePart = nameWithoutSystem;
+            }
+        } else {
+            starNamePart = nameWithoutSystem;
+        }
+        
+        // Retourner le nom du système + le nom de l'étoile
+        return systemName + " " + starNamePart;
     }
 }
 
