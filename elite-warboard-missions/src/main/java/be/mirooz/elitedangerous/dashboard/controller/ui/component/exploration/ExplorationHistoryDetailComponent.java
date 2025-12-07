@@ -365,15 +365,11 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         Label systemNameLabel = new Label(system.getSystemName());
         systemNameLabel.getStyleClass().add("exploration-system-name-compact");
         // Réduire la largeur du nom si on a un badge CURRENT pour faire de la place
-        if (isCurrentSystem) {
-            systemNameLabel.setPrefWidth(150);
-            systemNameLabel.setMinWidth(80);
-            systemNameLabel.setMaxWidth(150);
-        } else {
+
             systemNameLabel.setPrefWidth(180);
             systemNameLabel.setMinWidth(80);
             systemNameLabel.setMaxWidth(180);
-        }
+
         systemNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
         systemNameLabel.setWrapText(false);
         
