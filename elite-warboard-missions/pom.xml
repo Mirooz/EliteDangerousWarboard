@@ -340,6 +340,7 @@
                                 <configuration>
                                     <executable>C:\Program Files (x86)\Inno Setup 6\ISCC.exe</executable>
                                     <arguments>
+                                        <argument>/DAppVersion=${project.version}</argument>
                                         <argument>installer.iss</argument>
                                     </arguments>
                                 </configuration>

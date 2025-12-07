@@ -1,6 +1,10 @@
+#ifndef AppVersion
+  #define AppVersion "1.2.0-SNAPSHOT"
+#endif
+
 [Setup]
 AppName=Elite Warboard
-AppVersion=1.1.2
+AppVersion={#AppVersion}
 DefaultDirName={autopf}\Elite Warboard
 DisableProgramGroupPage=yes
 OutputBaseFilename=EliteWarboard-Setup
