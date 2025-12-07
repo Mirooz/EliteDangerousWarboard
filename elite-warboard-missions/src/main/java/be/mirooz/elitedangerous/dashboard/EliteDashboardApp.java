@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard;
 
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
+import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Application;
@@ -75,6 +76,10 @@ public class EliteDashboardApp extends Application {
                 JournalTailService.getInstance().stop();
                 JournalWatcherService.getInstance().stop();
                 windowToggleService.stop();
+                
+                // Fermer la session analytics
+                    AnalyticsClient.getInstance().endSession();
+                
                 Platform.exit();
                 System.exit(0);
             });

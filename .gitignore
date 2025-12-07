@@ -3,3 +3,4 @@
 /.flatpak-builder/
 /build-dir/
 /repo/
+/analytics-backend/target/

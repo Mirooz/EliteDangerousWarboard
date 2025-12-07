@@ -1,11 +1,14 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.SystemVisualViewComponent;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javafx.animation.*;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
@@ -60,6 +63,8 @@ public class WindowToggleService {
     private Map<javafx.scene.Node, Double> savedNodeOpacities = new HashMap<>(); // Pour sauvegarder les opacités des nœuds
     private Map<javafx.scene.Node, String> savedNodeStyles = new HashMap<>(); // Pour sauvegarder les styles des nœuds
     private String savedRootPaneStyle = null; // Pour sauvegarder le style original du rootPane
+    private AnalyticsClient analyticsClient;
+    private String currentPanel = null; // Panel actuellement actif
 
     private WindowToggleService() {
         this.preferencesService = PreferencesService.getInstance();
@@ -106,6 +111,51 @@ public class WindowToggleService {
         this.missionsTab = missionsTab;
         this.miningTab = miningTab;
         this.explorationTab = explorationTab;
+
+
+        // Ajouter un listener pour tracker les changements d'onglet
+        tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
+            @Override
+            public void changed(ObservableValue<? extends Tab> observable, Tab oldTab, Tab newTab) {
+                if (analyticsClient == null) {
+                    return;
+                }
+                
+                // Arrêter le tracking du panel précédent
+                if (oldTab != null && currentPanel != null) {
+                    analyticsClient.endPanelTime(currentPanel);
+                }
+
+                // Démarrer le tracking du nouveau panel
+                if (newTab == missionsTab) {
+                    currentPanel = "Missions";
+                } else if (newTab == miningTab) {
+                    currentPanel = "Mining";
+                } else if (newTab == explorationTab) {
+                    currentPanel = "Exploration";
+                } else {
+                    currentPanel = null;
+                }
+
+                if (currentPanel != null) {
+                    analyticsClient.startPanelTime(currentPanel);
+                }
+            }
+        });
+
+        // Initialiser le panel actuel
+        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        if (selectedTab == missionsTab) {
+            currentPanel = "Missions";
+        } else if (selectedTab == miningTab) {
+            currentPanel = "Mining";
+        } else if (selectedTab == explorationTab) {
+            currentPanel = "Exploration";
+        }
+
+        if (analyticsClient != null && currentPanel != null) {
+            analyticsClient.startPanelTime(currentPanel);
+        }
     }
 
     /**
