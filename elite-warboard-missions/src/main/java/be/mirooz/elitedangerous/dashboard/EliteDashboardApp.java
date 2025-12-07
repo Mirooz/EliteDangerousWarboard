@@ -78,7 +78,7 @@ public class EliteDashboardApp extends Application {
                 windowToggleService.stop();
                 
                 // Fermer la session analytics
-                    AnalyticsClient.getInstance().endSession();
+                AnalyticsClient.getInstance().endSession();
                 
                 Platform.exit();
                 System.exit(0);

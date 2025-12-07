@@ -63,7 +63,6 @@ public class WindowToggleService {
     private Map<javafx.scene.Node, Double> savedNodeOpacities = new HashMap<>(); // Pour sauvegarder les opacités des nœuds
     private Map<javafx.scene.Node, String> savedNodeStyles = new HashMap<>(); // Pour sauvegarder les styles des nœuds
     private String savedRootPaneStyle = null; // Pour sauvegarder le style original du rootPane
-    private AnalyticsClient analyticsClient;
     private String currentPanel = null; // Panel actuellement actif
 
     private WindowToggleService() {
@@ -117,13 +116,13 @@ public class WindowToggleService {
         tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
             @Override
             public void changed(ObservableValue<? extends Tab> observable, Tab oldTab, Tab newTab) {
-                if (analyticsClient == null) {
+                if (AnalyticsClient.getInstance() == null) {
                     return;
                 }
                 
                 // Arrêter le tracking du panel précédent
                 if (oldTab != null && currentPanel != null) {
-                    analyticsClient.endPanelTime(currentPanel);
+                    AnalyticsClient.getInstance().endPanelTime(currentPanel);
                 }
 
                 // Démarrer le tracking du nouveau panel
@@ -138,7 +137,7 @@ public class WindowToggleService {
                 }
 
                 if (currentPanel != null) {
-                    analyticsClient.startPanelTime(currentPanel);
+                    AnalyticsClient.getInstance().startPanelTime(currentPanel);
                 }
             }
         });
@@ -153,8 +152,8 @@ public class WindowToggleService {
             currentPanel = "Exploration";
         }
 
-        if (analyticsClient != null && currentPanel != null) {
-            analyticsClient.startPanelTime(currentPanel);
+        if (AnalyticsClient.getInstance() != null && currentPanel != null) {
+            AnalyticsClient.getInstance().startPanelTime(currentPanel);
         }
     }
 

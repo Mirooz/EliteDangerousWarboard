@@ -70,11 +70,6 @@
             <artifactId>bioforge-biodatas</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>be.mirooz.elitedangerous</groupId>
-            <artifactId>analytics-backend</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <!-- JavaFX Controls -->
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -315,6 +310,11 @@
                                         <argument>app-image</argument>
                                         <argument>--name</argument>
                                         <argument>Elite Warboard</argument>
+
+                                        <!-- prod -->
+                                        <argument>--java-options</argument>
+                                        <argument>-Dapp.profile=prod</argument>
+
                                         <argument>--dest</argument>
                                         <argument>executable</argument>
                                         <argument>--vendor</argument>
@@ -485,6 +485,10 @@
                                         <argument>app-image</argument>
                                         <argument>--name</argument>
                                         <argument>EliteWarboard</argument>
+                                        <!-- prod -->
+                                        <argument>--java-options</argument>
+                                        <argument>-Dapp.profile=prod</argument>
+
                                         <argument>--dest</argument>
                                         <argument>executable</argument>
                                         <argument>--vendor</argument>
@@ -501,6 +505,7 @@
                                         <argument>${project.build.directory}/runtime</argument>
                                         <argument>--icon</argument>
                                         <argument>src/main/resources/images/elite_dashboard_icon.png</argument>
+
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -521,6 +526,11 @@
                                         <argument>EliteWarboard</argument>
                                         <argument>--app-version</argument>
                                         <argument>${project.version}</argument>
+
+                                        <!-- prod -->
+                                        <argument>--java-options</argument>
+                                        <argument>-Dapp.profile=prod</argument>
+
                                         <argument>--dest</argument>
                                         <argument>executable</argument>
                                         <argument>--vendor</argument>

@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service.analytics;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -9,6 +10,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -31,9 +33,44 @@ public class AnalyticsClient {
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
         this.objectMapper = new ObjectMapper();
-        // URL du backend (peut être configurée via variable d'environnement)
-        this.baseUrl = System.getProperty("analytics.backend.url", 
-                System.getenv().getOrDefault("ANALYTICS_BACKEND_URL", "http://localhost:8080"));
+        // URL du backend (chargée depuis le fichier de propriétés, puis propriété système, puis variable d'environnement)
+        this.baseUrl = loadBackendUrl();
+    }
+
+    /**
+     * Charge l'URL du backend analytics depuis le fichier de propriétés
+     * Ordre de priorité :
+     * 1. Propriété système (analytics.backend.url)
+     * 2. Variable d'environnement (ANALYTICS_BACKEND_URL)
+     * 3. Fichier analytics-client-dev.properties
+     * 4. Valeur par défaut (http://localhost:8080)
+     */
+    private String loadBackendUrl() {
+        // 1. On lit le profil passé en argument JVM (-Dapp.profile=xxx)
+        String profile = System.getProperty("app.profile", "dev"); // dev par défaut
+        String fileName = "/analytics-client-" + profile + ".properties";
+
+        System.out.println("Chargement du profil : " + profile + " → " + fileName);
+
+        // 2. Lecture du fichier correspondant
+        try (InputStream inputStream = getClass().getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                Properties properties = new Properties();
+                properties.load(inputStream);
+
+                String url = properties.getProperty("analytics.backend.url");
+                if (url != null && !url.isBlank()) {
+                    return url;
+                }
+            } else {
+                System.err.println("⚠️ Fichier introuvable : " + fileName);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement de " + fileName + ": " + e.getMessage());
+        }
+
+        // 3. Valeur par défaut
+        return "http://localhost:8080";
     }
 
     public static synchronized AnalyticsClient getInstance() {
@@ -42,14 +79,6 @@ public class AnalyticsClient {
         }
         return instance;
     }
-
-    /**
-     * Démarre une session analytics (appelé au lancement de l'app)
-     * 
-     * @param commanderName Le nom du commandant
-     * @param appVersion La version de l'application
-     * @return L'ID de la session créée, ou null en cas d'erreur
-     */
     public Long startSession(String commanderName) {
         try {
 
@@ -76,6 +105,7 @@ public class AnalyticsClient {
                 panelDurations.clear();
                 panelStartTimes.clear();
                 System.out.println("✅ Session analytics démarrée (ID: " + currentSessionId + ")");
+                startPanelTime("Missions");
                 return currentSessionId;
             } else {
                 System.err.println("Erreur lors du démarrage de la session: " + response.statusCode() + " - " + response.body());
@@ -83,7 +113,6 @@ public class AnalyticsClient {
             }
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics: " + e.getMessage());
-            e.printStackTrace();
             return null;
         }
     }
@@ -127,11 +156,7 @@ public class AnalyticsClient {
             return "1.2.0-SNAPSHOT";
         }
     }
-    /**
-     * Ferme une session analytics (appelé à la fermeture de l'app)
-     * 
-     * @param sessionId L'ID de la session à fermer
-     */
+
     public void endSession() {
         if (currentSessionId == null) {
             return;
