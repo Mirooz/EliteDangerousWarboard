@@ -229,36 +229,45 @@ public class PlaneteDetail extends ACelesteBody {
         }
         if (level == 2) {
 
-            for (SpeciesProbability sp : finalList) {
+            // Regroupement des espèces par genus
+            Map<String, List<SpeciesProbability>> byGenus = finalList.stream()
+                    .collect(Collectors.groupingBy(sp ->
+                            sp.getBioSpecies().getFdevname().split("_")[2]
+                    ));
 
-                BioSpecies species = sp.getBioSpecies();
+            for (Map.Entry<String, List<SpeciesProbability>> entry : byGenus.entrySet()) {
 
-                // genus du species actuel (extrait du FDevName)
-                String speciesGenus = species.getFdevname().split("_")[2];
+                String g = entry.getKey();
+                List<SpeciesProbability> group = entry.getValue();
 
-                // 1) Vérifier que ce genus existe dans ta liste "genus"
+                // Vérifier que ce genus fait partie de la liste "genus" passée en paramètre
                 boolean genusListed = genus.stream().anyMatch(
-                        g -> g.split("_")[2].equals(speciesGenus)
+                        gs -> gs.split("_")[2].equals(g)
                 );
 
-                if (!genusListed) {
-                    continue; // ce n'est pas un genus ciblé → on ignore
+                if (!genusListed)
+                    continue;
+
+                // Si ce genus n'a qu'une seule espèce → mettre à 100%
+                if (group.size() == 1) {
+                    group.get(0).setProbability(100.0);
+                    continue;
                 }
 
-                // 2) Compter combien d'espèces dans finalList partagent ce même genus
-                long countSameGenus = finalList.stream()
-                        .filter(other ->
-                                other.getBioSpecies().getFdevname().split("_")[2]
-                                        .equals(speciesGenus)
-                        )
-                        .count();
+                // Sinon : plusieurs espèces → renormalisation pour que leur somme fasse 100%
+                double sum = group.stream()
+                        .mapToDouble(SpeciesProbability::getProbability)
+                        .sum();
 
-                // 3) S'il n'y en a qu'une → probabilité = 100%
-                if (countSameGenus == 1) {
-                    sp.setProbability(100.0);
+                if (sum > 0) {
+                    for (SpeciesProbability sp : group) {
+                        double newProbability = (sp.getProbability() / sum) * 100.0;
+                        sp.setProbability(newProbability);
+                    }
                 }
             }
         }
+
 
 
 
