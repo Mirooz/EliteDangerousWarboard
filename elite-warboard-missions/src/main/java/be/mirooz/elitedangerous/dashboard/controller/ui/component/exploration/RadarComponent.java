@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.Position;
 import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -25,6 +26,7 @@ public class RadarComponent {
     private final Group radarGroup;
     private final Pane labelsPane;
     private final DirectionReaderService directionService;
+    private final LocalizationService localizationService = LocalizationService.getInstance();
     private AnimationTimer updateTimer;
     private static RadarComponent instance;
     
@@ -356,7 +358,7 @@ public class RadarComponent {
                 
                 // Afficher colonyRangeMeter comme "Min" à droite du cercle du radar (dans le panel)
                 if (colonyRangeMeter != null && colonyRangeMeter > 0) {
-                    Label minDistanceLabel = new Label(String.format("Min: %.0f m", colonyRangeMeter));
+                    Label minDistanceLabel = new Label(String.format(localizationService.getString("exploration.min_distance"), colonyRangeMeter));
                     minDistanceLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 18px; -fx-font-weight: bold;");
                     minDistanceLabel.setLayoutX(centerX + radius + 10);
                     minDistanceLabel.setLayoutY(centerY - radius);
@@ -451,13 +453,13 @@ public class RadarComponent {
                     
                     // Afficher la distance du sample à droite du cercle du radar (dans le panel)
                     if (distance > 0) {
-                        Label distanceLabel = new Label(String.format("%.0f m", distance));
+                        Label distanceLabel = new Label(String.format(localizationService.getString("exploration.distance"), distance));
                         distanceLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-size: 18px;", colorHex));
                         distanceLabel.setLayoutX(centerX + radius + 10);
                         distanceLabel.setLayoutY(centerY - radius + 20 + (sampleIndex * 25));
                         labelsPane.getChildren().add(distanceLabel);
                     } else {
-                        Label distanceLabel = new Label("0 m");
+                        Label distanceLabel = new Label(localizationService.getString("exploration.zero_distance"));
                         distanceLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-size: 18px;", colorHex));
                         distanceLabel.setLayoutX(centerX + radius + 10);
                         distanceLabel.setLayoutY(centerY - radius + 20 + (sampleIndex * 25));

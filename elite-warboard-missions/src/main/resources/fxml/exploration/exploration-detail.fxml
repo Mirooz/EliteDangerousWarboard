@@ -8,7 +8,7 @@
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.ExplorationDetailComponent"
       spacing="10" styleClass="exploration-detail-panel" VBox.vgrow="ALWAYS" minWidth="350">
 
-    <Label text="DÉTAILS DU GROUPE" styleClass="exploration-section-title"/>
+    <Label fx:id="groupDetailsLabel" text="DÉTAILS DU GROUPE" styleClass="exploration-section-title"/>
     
     <!-- Informations générales (simplifiées) -->
     <VBox fx:id="generalInfoContainer" spacing="3" styleClass="exploration-detail-section" visible="false">
@@ -18,7 +18,7 @@
     
     <!-- Liste des systèmes visités (simplifiée avec tooltips) -->
     <VBox spacing="5" styleClass="exploration-detail-section" VBox.vgrow="ALWAYS">
-        <Label text="SYSTÈMES VISITÉS" styleClass="exploration-subsection-title"/>
+        <Label fx:id="visitedSystemsLabel" text="SYSTÈMES VISITÉS" styleClass="exploration-subsection-title"/>
         <ScrollPane fx:id="systemsScrollPane" styleClass="exploration-detail-scroll" 
                    fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
             <VBox fx:id="systemsList" spacing="3" styleClass="exploration-systems-list"/>

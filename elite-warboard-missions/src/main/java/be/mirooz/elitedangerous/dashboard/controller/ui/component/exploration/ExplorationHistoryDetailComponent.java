@@ -12,6 +12,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -71,8 +72,13 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     private javafx.scene.image.ImageView organicOnHoldIcon;
     @FXML
     private Label organicOnHoldLabel;
+    @FXML
+    private Label explorationGroupsHistoryLabel;
+    @FXML
+    private Label visitedSystemsLabel;
 
     private final ExplorationDataSaleRegistry registry = ExplorationDataSaleRegistry.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
     private final OrganicDataSaleRegistry organicRegistry = OrganicDataSaleRegistry.getInstance();
     private List<ExplorationData> allSales = new ArrayList<>();
     private int currentIndex = -1;
@@ -86,8 +92,16 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadImages();
+        updateTranslations();
         refresh();
         DashboardService.getInstance().addBatchListener(this);
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> {
+            Platform.runLater(() -> {
+                updateTranslations();
+            });
+        });
     }
 
     private void loadImages() {
@@ -167,7 +181,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         nextButton.setDisable(allSales.isEmpty() || currentIndex >= allSales.size() - 1);
         
         if (allSales.isEmpty()) {
-            groupNumberLabel.setText("Aucun groupe d'exploration");
+            groupNumberLabel.setText(localizationService.getString("exploration.no_exploration_group"));
             currentLabel.setVisible(false);
             totalEarningsLabel.setText("");
             systemsCountLabel.setText("");
@@ -187,7 +201,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         // Calculer le total avec les exobio collectés
         long totalWithExobio = calculateTotalWithExobio(selectedSale);
         totalEarningsLabel.setText(String.format("%,d Cr", totalWithExobio));
-        systemsCountLabel.setText(String.format("%d systèmes", selectedSale.getSystemsVisited().size()));
+        systemsCountLabel.setText(String.format(localizationService.getString("exploration.systems_count"), selectedSale.getSystemsVisited().size()));
         
         // Formater les timestamps
         String timeRange = formatTimeRange(selectedSale.getStartTimeStamp(), selectedSale.getEndTimeStamp());
@@ -364,7 +378,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         // Badge CURRENT si c'est le système actuel
         if (isCurrentSystem) {
-            Label currentBadge = new Label("CURRENT");
+            Label currentBadge = new Label(localizationService.getString("exploration.current"));
             currentBadge.getStyleClass().add("exploration-system-current-badge");
             // S'assurer que le texte n'est jamais coupé
             currentBadge.setMinWidth(javafx.scene.control.Label.USE_PREF_SIZE);
@@ -381,7 +395,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         }
         
         // 2. Nombre de corps
-        Label bodiesCountLabel = new Label(system.getNumBodies() + " corps");
+        Label bodiesCountLabel = new Label(String.format(localizationService.getString("exploration.bodies_count"), system.getNumBodies()));
         bodiesCountLabel.getStyleClass().add("exploration-bodies-count");
         bodiesCountLabel.setPrefWidth(80);
         bodiesCountLabel.setMinWidth(60);
@@ -668,7 +682,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             long totalEarnings = explorationOnHold.getTotalEarnings();
             int systemsCount = explorationOnHold.getSystemsVisitedMap() != null ? 
                               explorationOnHold.getSystemsVisitedMap().size() : 0;
-            explorationOnHoldLabel.setText(String.format("%,d Cr (%d systèmes)", totalEarnings, systemsCount));
+            explorationOnHoldLabel.setText(String.format(localizationService.getString("exploration.on_hold_exploration_format"), totalEarnings, systemsCount));
             // Appliquer une couleur différente pour l'exploration (cyan par exemple)
             explorationOnHoldLabel.setStyle("-fx-text-fill: #00FFFF; -fx-font-size: 14px; -fx-font-weight: bold;");
             // Définir l'icône mapped
@@ -692,7 +706,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             long totalBonus = organicOnHold.getTotalBonus();
             int bioCount = organicOnHold.getBioData() != null ? organicOnHold.getBioData().size() : 0;
             long total = totalValue + totalBonus;
-            organicOnHoldLabel.setText(String.format("%,d Cr (%d espèces)", total, bioCount));
+            organicOnHoldLabel.setText(String.format(localizationService.getString("exploration.on_hold_organic_format"), total, bioCount));
             // Appliquer une couleur différente pour l'exobio (vert par exemple)
             organicOnHoldLabel.setStyle("-fx-text-fill: #00FF88; -fx-font-size: 14px; -fx-font-weight: bold;");
             // Définir l'icône exobio
@@ -710,6 +724,24 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         boolean hasAnyOnHold = hasExplorationOnHold || hasOrganicOnHold;
         onHoldInfoContainer.setVisible(hasAnyOnHold);
         onHoldInfoContainer.setManaged(hasAnyOnHold);
+    }
+    
+    /**
+     * Met à jour toutes les traductions de l'interface
+     */
+    private void updateTranslations() {
+        if (explorationGroupsHistoryLabel != null) {
+            explorationGroupsHistoryLabel.setText(localizationService.getString("exploration.exploration_groups_history"));
+        }
+        if (seeCurrentSystemButton != null) {
+            seeCurrentSystemButton.setText(localizationService.getString("exploration.see_current_system"));
+        }
+        if (visitedSystemsLabel != null) {
+            visitedSystemsLabel.setText(localizationService.getString("exploration.visited_systems"));
+        }
+        if (currentLabel != null) {
+            currentLabel.setText(localizationService.getString("exploration.in_progress"));
+        }
     }
 }
 

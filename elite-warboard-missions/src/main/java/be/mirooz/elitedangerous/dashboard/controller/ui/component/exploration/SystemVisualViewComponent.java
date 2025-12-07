@@ -14,6 +14,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.SpeciesProbability;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -51,6 +52,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private VBox bodiesListContainer;
     @FXML
     private Label systemTitleLabel;
+    @FXML
+    private Label systemBodiesLabel;
 
     private RadarComponent radarComponent;
     @FXML
@@ -90,6 +93,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private static final double ZOOM_FACTOR = 0.1;
     private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
     private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
+    private final LocalizationService localizationService = LocalizationService.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -105,6 +109,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Mettre à jour le texte du bouton overlay
         Platform.runLater(() -> {
             updateBodiesOverlayButtonText();
+            updateTranslations();
+        });
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> {
+            Platform.runLater(() -> {
+                updateTranslations();
+                updateBodiesOverlayButtonText();
+            });
         });
 
         // Charger les images
@@ -369,7 +382,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (system != null && system.getSystemName() != null) {
                     systemTitleLabel.setText(system.getSystemName());
                 } else {
-                    systemTitleLabel.setText("VUE VISUELLE DU SYSTÈME");
+                    systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));
                 }
             }
             
@@ -1763,7 +1776,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 
                 // Ajouter "FIRST" si firstMapped (wasMapped est false)
                 if (!planet.isWasMapped()) {
-                    Label firstMappedLabel = new Label("FIRST");
+                    Label firstMappedLabel = new Label(localizationService.getString("exploration.first"));
                     firstMappedLabel.getStyleClass().add("exploration-body-first-discovery");
                     headerRow.getChildren().add(firstMappedLabel);
                 }
@@ -1830,7 +1843,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 
                 // Ajouter un label si wasFootfalled est false (première découverte)
                 if (!planet.isWasFootfalled()) {
-                    Label firstDiscoveryLabel = new Label("FIRST");
+                    Label firstDiscoveryLabel = new Label(localizationService.getString("exploration.first"));
                     firstDiscoveryLabel.getStyleClass().add("exploration-body-first-discovery");
                     headerRow.getChildren().add(firstDiscoveryLabel);
                 }
@@ -2149,10 +2162,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             String icon;
 
             if (bodiesOverlayComponent.isShowing() || bodiesOverlayComponent.isPopupShowing()) {
-                text = "Fermer";
+                text = localizationService.getString("exploration.close");
                 icon = "✖"; // Croix pour fermer
             } else {
-                text = "Overlay";
+                text = localizationService.getString("exploration.overlay");
                 icon = "🗔"; // Icône de fenêtre pour ouvrir
             }
 
@@ -2276,6 +2289,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 updateBodiesList(currentSystem);
             }
         });
+    }
+    
+    /**
+     * Met à jour toutes les traductions de l'interface
+     */
+    private void updateTranslations() {
+        if (systemBodiesLabel != null) {
+            systemBodiesLabel.setText(localizationService.getString("exploration.system_bodies"));
+        }
+        if (showOnlyHighValueBodiesCheckBox != null) {
+            showOnlyHighValueBodiesCheckBox.setText(localizationService.getString("exploration.show_only_high_value"));
+        }
+        if (systemTitleLabel != null && currentSystem == null) {
+            systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));
+        }
     }
 }
 

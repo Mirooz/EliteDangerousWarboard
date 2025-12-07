@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 import be.mirooz.elitedangerous.dashboard.controller.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -30,17 +31,30 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
     private ScrollPane systemsScrollPane;
     @FXML
     private VBox systemsList;
+    @FXML
+    private Label groupDetailsLabel;
+    @FXML
+    private Label visitedSystemsLabel;
 
     private ExplorationDataSale currentSale;
     private java.util.function.Consumer<SystemVisited> onSystemSelected;
     private SystemCardController currentExpandedController;
     private Image exobioImage;
     private Image mappedImage;
+    private final LocalizationService localizationService = LocalizationService.getInstance();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Charger les images une seule fois pour toutes les cartes
         loadImages();
+        updateTranslations();
+        
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> {
+            Platform.runLater(() -> {
+                updateTranslations();
+            });
+        });
     }
     
     private void loadImages() {
@@ -70,8 +84,8 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
             }
 
             generalInfoContainer.setVisible(true);
-            detailTotalEarningsLabel.setText("Total: " + String.format("%,d Cr", currentSale.getTotalEarnings()));
-            detailSystemsCountLabel.setText("Systèmes: " + currentSale.getSystemsVisited().size());
+            detailTotalEarningsLabel.setText(localizationService.getString("exploration.total") + " " + String.format("%,d Cr", currentSale.getTotalEarnings()));
+            detailSystemsCountLabel.setText(localizationService.getString("exploration.systems") + " " + currentSale.getSystemsVisited().size());
 
             // Vider la liste
             systemsList.getChildren().clear();
@@ -150,6 +164,18 @@ public class ExplorationDetailComponent implements Initializable, IRefreshable {
     
     public void setOnSystemSelected(java.util.function.Consumer<SystemVisited> callback) {
         this.onSystemSelected = callback;
+    }
+    
+    /**
+     * Met à jour toutes les traductions de l'interface
+     */
+    private void updateTranslations() {
+        if (groupDetailsLabel != null) {
+            groupDetailsLabel.setText(localizationService.getString("exploration.group_details"));
+        }
+        if (visitedSystemsLabel != null) {
+            visitedSystemsLabel.setText(localizationService.getString("exploration.visited_systems"));
+        }
     }
 }
 

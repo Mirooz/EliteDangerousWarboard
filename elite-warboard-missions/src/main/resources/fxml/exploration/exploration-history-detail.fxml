@@ -9,7 +9,7 @@
       fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.ExplorationHistoryDetailComponent"
       spacing="10" styleClass="exploration-history-detail-panel" VBox.vgrow="ALWAYS" minWidth="450" maxWidth="450">
 
-    <Label text="HISTORIQUE DES GROUPES D'EXPLORATION" styleClass="exploration-section-title"/>
+    <Label fx:id="explorationGroupsHistoryLabel" text="HISTORIQUE DES GROUPES D'EXPLORATION" styleClass="exploration-section-title"/>
 
     <HBox spacing="15" alignment="CENTER_LEFT">
         <Button fx:id="seeCurrentSystemButton" text="See current system" styleClass="exploration-nav-button" onAction="#seeCurrentSystem"/>
@@ -30,7 +30,7 @@
         <VBox fx:id="selectedSaleContainer" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="5">
             <HBox spacing="8" alignment="CENTER_LEFT">
                 <Label fx:id="groupNumberLabel" styleClass="exploration-group-number"/>
-                <Label fx:id="currentLabel" text="EN COURS" styleClass="exploration-current-badge" visible="false"/>
+                <Label fx:id="currentLabel" text="EN COURS" styleClass="exploration-current-badge" visible="false" managed="false"/>
             </HBox>
             <HBox spacing="15" alignment="CENTER_LEFT">
                 <HBox spacing="5" alignment="CENTER_LEFT">
@@ -52,7 +52,7 @@
     
     <!-- Liste des systèmes visités de l'historique sélectionné -->
     <VBox spacing="5" styleClass="exploration-detail-section" VBox.vgrow="ALWAYS">
-        <Label text="SYSTÈMES VISITÉS" styleClass="exploration-subsection-title"/>
+        <Label fx:id="visitedSystemsLabel" text="SYSTÈMES VISITÉS" styleClass="exploration-subsection-title"/>
         <ScrollPane fx:id="systemsScrollPane" styleClass="exploration-detail-scroll" 
                    fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
             <VBox fx:id="systemsList" spacing="3" styleClass="exploration-systems-list"/>

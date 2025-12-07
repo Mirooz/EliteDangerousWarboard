@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -41,6 +42,7 @@ public class ExplorationBodiesOverlayComponent {
     public static final int MIN_HEIGHT_OVERLAY = 300;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
+    private final LocalizationService localizationService = LocalizationService.getInstance();
 
     // Clés pour les préférences de l'overlay
     private static final String EXPLORATION_BODIES_OVERLAY_WIDTH_KEY = "exploration_bodies_overlay.width";
@@ -420,7 +422,7 @@ public class ExplorationBodiesOverlayComponent {
         overlayStage = new Stage();
         overlayStage.initStyle(StageStyle.TRANSPARENT);
         overlayStage.setAlwaysOnTop(true);
-        overlayStage.setTitle("Exploration Bodies Overlay");
+        overlayStage.setTitle(localizationService.getString("exploration.exploration_bodies_overlay"));
         overlayStage.setResizable(true);
         overlayStage.setMinWidth(MIN_WIDTH_OVERLAY);
         overlayStage.setMinHeight(MIN_HEIGHT_OVERLAY);
@@ -543,7 +545,7 @@ public class ExplorationBodiesOverlayComponent {
      */
     private VBox createEmptyCard() {
         VBox card = new VBox();
-        Label emptyLabel = new Label("Aucun système sélectionné");
+        Label emptyLabel = new Label(localizationService.getString("exploration.no_system_selected"));
         emptyLabel.getStyleClass().add("exploration-overlay-title");
         card.getChildren().add(emptyLabel);
         card.getStyleClass().add("mirror-overlay");
