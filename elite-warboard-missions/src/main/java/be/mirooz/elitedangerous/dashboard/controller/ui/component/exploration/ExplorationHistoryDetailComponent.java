@@ -390,7 +390,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             // Empêcher le HBox de réduire la taille du badge
             HBox.setHgrow(currentBadge, javafx.scene.layout.Priority.NEVER);
             mainRow.getChildren().add(systemNameLabel);
-            mainRow.getChildren().add(currentBadge);
+           // mainRow.getChildren().add(currentBadge);
         } else {
             mainRow.getChildren().add(systemNameLabel);
         }
