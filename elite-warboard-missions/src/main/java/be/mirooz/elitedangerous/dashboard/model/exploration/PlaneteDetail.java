@@ -166,7 +166,7 @@ public class PlaneteDetail extends ACelesteBody {
                 }
             }
 
-            List<SpeciesProbability> probabilities = computeProbabilities(matchingSpecies, count);
+            List<SpeciesProbability> probabilities = computeProbabilities(matchingSpecies, count,level,genuses);
             System.out.println("Bio pour body :" + this.bodyName + " level " + level + " count " + count + (genuses != null ? " genus " + genuses : ""));
             for (SpeciesProbability probability : probabilities) {
                 System.out.println("    " + probability.getBioSpecies().getFullName() + " : " + probability.getProbability());
@@ -181,7 +181,7 @@ public class PlaneteDetail extends ACelesteBody {
 
     private List<SpeciesProbability> computeProbabilities(
             List<Map.Entry<BioSpecies, Double>> matchingSpecies,
-            int count
+            int count, int level, List<String> genus
     ) {
 
         if (matchingSpecies == null || matchingSpecies.isEmpty()) {
@@ -223,13 +223,47 @@ public class PlaneteDetail extends ACelesteBody {
 
         List<SpeciesProbability> finalList = new ArrayList<>(bestByName.values());
 
-        // -- 6) Trier par probabilité décroissante --
-        finalList.sort(Comparator.comparingDouble(SpeciesProbability::getProbability).reversed());
         // -- 5) SI count == nb d’espèces après regroupement → TOUTES = 100% --
         if (finalList.size() <= count) {
             finalList.forEach(sp -> sp.setProbability(100.0));
         }
+        if (level == 2) {
 
+            for (SpeciesProbability sp : finalList) {
+
+                BioSpecies species = sp.getBioSpecies();
+
+                // genus du species actuel (extrait du FDevName)
+                String speciesGenus = species.getFdevname().split("_")[2];
+
+                // 1) Vérifier que ce genus existe dans ta liste "genus"
+                boolean genusListed = genus.stream().anyMatch(
+                        g -> g.split("_")[2].equals(speciesGenus)
+                );
+
+                if (!genusListed) {
+                    continue; // ce n'est pas un genus ciblé → on ignore
+                }
+
+                // 2) Compter combien d'espèces dans finalList partagent ce même genus
+                long countSameGenus = finalList.stream()
+                        .filter(other ->
+                                other.getBioSpecies().getFdevname().split("_")[2]
+                                        .equals(speciesGenus)
+                        )
+                        .count();
+
+                // 3) S'il n'y en a qu'une → probabilité = 100%
+                if (countSameGenus == 1) {
+                    sp.setProbability(100.0);
+                }
+            }
+        }
+
+
+
+        // -- 6) Trier par probabilité décroissante --
+        finalList.sort(Comparator.comparingDouble(SpeciesProbability::getProbability).reversed());
 
         return finalList;
     }
