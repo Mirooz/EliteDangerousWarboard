@@ -65,10 +65,6 @@ public class ScanOrganicHandler implements JournalEventHandler {
             if (planeteOpt.isPresent()) {
 
                 PlaneteDetail planete = planeteOpt.get();
-                if (planete.getBodyName().equals("Synuefe RP-M d8-8 AB 1")){
-                    System.out.println("here");
-                }
-
                 planete.addConfirmedSpecies(scanOrganicData);
 
                 System.out.printf("🔬 Scan organique traité: %s (BodyID: %d, ScanType: %s, Species: %s)%n",

@@ -136,7 +136,6 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                 allSales.add(registry.getExplorationDataOnHold());
             }
             var sortedSales = registry.getAllSales().stream()
-                    .filter(sale -> sale != registry.getCurrentSale())
                     .sorted(Comparator.comparing((ExplorationDataSale sale) -> {
                         String ts = sale.getEndTimeStamp();
                         return ts != null ? ts : "";
@@ -182,9 +181,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         selectedSale = allSales.get(currentIndex);
         
         // Mettre à jour le numéro du groupe
-        boolean isCurrent = selectedSale == registry.getCurrentSale();
         groupNumberLabel.setText(String.format("%d / %d", currentIndex + 1, allSales.size()));
-        currentLabel.setVisible(isCurrent);
         
         // Mettre à jour les informations financières et systèmes
         // Calculer le total avec les exobio collectés
