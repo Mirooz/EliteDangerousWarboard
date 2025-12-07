@@ -374,20 +374,40 @@ public class RadarComponent {
                     double sampleX;
                     double sampleY;
                     
+                    // Calculer la position réelle du sample (pour le cercle d'exclusion)
+                    double realSampleX;
+                    double realSampleY;
+                    
                     if (distance > 0) {
                         // Calculer la direction depuis la position actuelle vers l'échantillon
                         double direction = currentPos.calculateDirectionTo(sample);
                         double directionRad = Math.toRadians(90 - direction); // Même ajustement que pour le heading
                         
                         // Calculer la position sur le radar (normalisée par rapport à scaleDistance)
-                        // Ne PAS limiter à 1.0 - permettre aux points de sortir du radar
                         double normalizedDistance = distance / scaleDistance;
-                        sampleX = centerX + Math.cos(directionRad) * normalizedDistance * radius * scaleFactor;
-                        sampleY = centerY - Math.sin(directionRad) * normalizedDistance * radius * scaleFactor;
+                        double maxRadius = radius * scaleFactor; // Rayon maximum normal pour les points
+                        
+                        // Calculer la distance du point au centre
+                        double pointDistance = normalizedDistance * maxRadius;
+                        
+                        // Calculer la position réelle (sans limitation) pour le cercle d'exclusion
+                        realSampleX = centerX + Math.cos(directionRad) * pointDistance;
+                        realSampleY = centerY - Math.sin(directionRad) * pointDistance;
+                        
+                        // Si le point sort du radar, le placer exactement sur la bordure du cercle
+                        if (pointDistance > maxRadius) {
+                            // Utiliser le rayon exact du cercle du radar (radius, pas radius * scaleFactor)
+                            pointDistance = radius;
+                        }
+                        
+                        sampleX = centerX + Math.cos(directionRad) * pointDistance;
+                        sampleY = centerY - Math.sin(directionRad) * pointDistance;
                     } else {
                         // Si le sample est à la même position que la currentPosition, le placer au centre
                         sampleX = centerX;
                         sampleY = centerY;
+                        realSampleX = centerX;
+                        realSampleY = centerY;
                     }
                     
                     // Déterminer la couleur selon l'index du sample
@@ -403,14 +423,14 @@ public class RadarComponent {
                         colorHex = "#00FFFF";
                     }
                     
-                    // Dessiner le cercle d'exclusion (zone où on ne peut pas prendre un nouvel échantillon)
+                    // Dessiner le cercle d'exclusion (toujours avec la position réelle pour suivre le mouvement normal)
                     if (colonyRangeMeter != null && colonyRangeMeter > 0) {
                         // Le cercle d'exclusion prend toujours 3/4 du rayon du radar
                         // Peu importe la distance réelle, visuellement il occupe 3/4
                         double exclusionRadius = exclusionRadiusOnRadar;
                         
-                        // Dessiner le cercle d'exclusion (sera clippé par le radarPane)
-                        Circle exclusionCircle = new Circle(sampleX, sampleY, exclusionRadius);
+                        // Utiliser la position réelle pour le cercle d'exclusion (continue son mouvement même si le sample est sur la bordure)
+                        Circle exclusionCircle = new Circle(realSampleX, realSampleY, exclusionRadius);
                         exclusionCircle.setFill(Color.TRANSPARENT);
                         exclusionCircle.setStroke(Color.color(sampleColor.getRed(), sampleColor.getGreen(), sampleColor.getBlue(), 0.6));
                         exclusionCircle.setStrokeWidth(1.5);
