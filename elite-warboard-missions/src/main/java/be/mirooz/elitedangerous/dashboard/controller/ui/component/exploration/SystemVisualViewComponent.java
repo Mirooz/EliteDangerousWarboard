@@ -94,9 +94,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
     private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private static SystemVisualViewComponent instance;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Enregistrer l'instance pour permettre l'accès depuis d'autres composants
+        instance = this;
         // S'abonner au service de notification
         ExplorationRefreshNotificationService notificationService = ExplorationRefreshNotificationService.getInstance();
         notificationService.addBodyFilterListener(this);
@@ -345,6 +348,26 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         bodiesScrollPane.setHvalue(0.0);
         bodiesScrollPane.setVvalue(0.0);
     }
+
+    /**
+     * Méthode publique pour recalculer le zoom optimal
+     * Peut être appelée depuis d'autres composants (ex: WindowToggleService)
+     */
+    public void recalculateOptimalZoom() {
+        Platform.runLater(() -> {
+            Platform.runLater(() -> {
+                calculateAndApplyOptimalZoom();
+            });
+        });
+    }
+
+    /**
+     * Retourne l'instance actuelle du SystemVisualViewComponent (peut être null)
+     */
+    public static SystemVisualViewComponent getInstance() {
+        return instance;
+    }
+
     @Override
     public void refreshUI() {
         refresh();

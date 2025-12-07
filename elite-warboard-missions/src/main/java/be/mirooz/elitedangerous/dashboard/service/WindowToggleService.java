@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.SystemVisualViewComponent;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
@@ -598,10 +599,30 @@ public class WindowToggleService {
         delay.setOnFinished(e -> {
             comboBox.show();
             PauseTransition delay2 = new PauseTransition(Duration.millis(50));
-            delay2.setOnFinished(ev -> comboBox.hide());
+            delay2.setOnFinished(ev -> {
+                comboBox.hide();
+                // Recalculer le zoom optimal pour la vue visuelle du système après restauration
+                recalculateSystemVisualZoom();
+            });
             delay2.play();
         });
         delay.play();
+    }
+
+    /**
+     * Recalcule le zoom optimal de la vue visuelle du système
+     */
+    private void recalculateSystemVisualZoom() {
+        Platform.runLater(() -> {
+            try {
+                SystemVisualViewComponent systemVisualView = SystemVisualViewComponent.getInstance();
+                if (systemVisualView != null) {
+                    systemVisualView.recalculateOptimalZoom();
+                }
+            } catch (Exception ex) {
+                // Ignorer les erreurs silencieusement si le composant n'est pas encore initialisé
+            }
+        });
     }
 
     /**

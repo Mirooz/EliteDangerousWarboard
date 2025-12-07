@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -483,14 +484,15 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                 "-fx-border-width: 1px; " +
                 "-fx-border-radius: 3px;",
                 color, color));
-            
+            speciesCountLabel.setWrapText(false);
+            speciesCountLabel.setMinWidth(Region.USE_PREF_SIZE);
+            speciesCountLabel.setPrefWidth(Region.USE_COMPUTED_SIZE);
+            speciesCountLabel.setMaxWidth(Double.MAX_VALUE);
             // Forcer la visibilité et la gestion
             speciesCountLabel.setVisible(true);
             speciesCountLabel.setManaged(true);
             // S'assurer que le label a une taille minimale visible
             speciesCountLabel.setMinWidth(35);
-            speciesCountLabel.setPrefWidth(javafx.scene.control.Label.USE_PREF_SIZE);
-            speciesCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
         }
         
         // 5. Icône mapped avec compteur X/Y (si nécessaire)
@@ -537,8 +539,10 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             mappedCountLabel.setManaged(true);
             // S'assurer que le label a une taille minimale visible
             mappedCountLabel.setMinWidth(35);
-            mappedCountLabel.setPrefWidth(javafx.scene.control.Label.USE_PREF_SIZE);
-            mappedCountLabel.setMaxWidth(javafx.scene.control.Label.USE_PREF_SIZE);
+            mappedCountLabel.setWrapText(false);
+            mappedCountLabel.setMinWidth(Region.USE_PREF_SIZE);
+            mappedCountLabel.setPrefWidth(Region.USE_COMPUTED_SIZE);
+            mappedCountLabel.setMaxWidth(Double.MAX_VALUE);
         }
         
         // 6. Valeur en Cr (corps célestes + exobio collectés)
