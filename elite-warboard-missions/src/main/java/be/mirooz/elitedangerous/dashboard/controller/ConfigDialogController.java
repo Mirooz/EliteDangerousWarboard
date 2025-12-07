@@ -456,7 +456,7 @@ public class ConfigDialogController implements Initializable {
         // Sauvegarder les paramètres VR mode
         boolean vrModeEnabled = vrModeEnabledCheckBox.isSelected();
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
-        preferencesService.setTabSwitchEnabled(vrModeEnabled);
+        preferencesService.setTabSwitchEnabled(false);
         
         if (isKeyboardBind && capturedKeyCode != -1) {
             // Sauvegarder bind clavier

@@ -70,7 +70,7 @@
             
             <!-- Checkbox pour activer/désactiver VR mode -->
             <CheckBox fx:id="vrModeEnabledCheckBox" text="Enable VR mode" 
-                    onAction="#onVrModeChanged" styleClass="config-checkbox" disable="false"/>
+                    onAction="#onVrModeChanged" styleClass="config-checkbox" disable="true"/>
             
             <!-- Bindings groupés -->
             <VBox spacing="15.0" styleClass="config-subsection" fx:id="bindingsContainer">
@@ -87,9 +87,9 @@
                                visible="false" managed="false"/>
                     </HBox>
                 </VBox>
-                
+
                 <!-- Bind Onglet précédent -->
-                <VBox spacing="5.0">
+                <VBox spacing="5.0" visible="false">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                         <Label fx:id="tabSwitchLeftLabel" text="Previous tab:" styleClass="config-label" prefWidth="180"/>
                         <Button fx:id="tabSwitchLeftButton" text="BIND" 
@@ -101,9 +101,9 @@
                                visible="false" managed="false"/>
                     </HBox>
                 </VBox>
-                
+
                 <!-- Bind Onglet suivant -->
-                <VBox spacing="5.0">
+                <VBox spacing="5.0" visible="false">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                         <Label fx:id="tabSwitchRightLabel" text="Next tab:" styleClass="config-label" prefWidth="180"/>
                         <Button fx:id="tabSwitchRightButton" text="BIND" 

@@ -49,7 +49,7 @@ public class PreferencesService {
         try {
             // Créer le répertoire s'il n'existe pas
             Files.createDirectories(preferencesFile.getParent());
-            
+
             try (FileOutputStream fos = new FileOutputStream(preferencesFile.toFile())) {
                 preferences.store(fos, "Elite Dangerous Dashboard Preferences");
             }
@@ -117,11 +117,11 @@ public class PreferencesService {
      * Récupère le nombre de jours pour la lecture des journaux
      */
     public int getJournalDays() {
-        String daysStr = preferences.getProperty("journal.days", "30");
+        String daysStr = preferences.getProperty("journal.days", "60");
         try {
             return Integer.parseInt(daysStr);
         } catch (NumberFormatException e) {
-            return 30; // Valeur par défaut si parsing échoue
+            return 60; // Valeur par défaut si parsing échoue
         }
     }
 
@@ -144,7 +144,7 @@ public class PreferencesService {
      * Vérifie si le toggle de fenêtre est activé
      */
     public boolean isWindowToggleEnabled() {
-        String value = preferences.getProperty("window.toggle.enabled", "true");
+        String value = preferences.getProperty("window.toggle.enabled", "false");
         return Boolean.parseBoolean(value);
     }
 
@@ -160,11 +160,12 @@ public class PreferencesService {
      * Récupère la touche clavier pour le toggle (par défaut: Espace = 57)
      */
     public int getWindowToggleKeyboardKey() {
-        String value = preferences.getProperty("window.toggle.keyboard.key", "57"); // VC_SPACE = 57
         try {
+            String value = preferences.getProperty("window.toggle.keyboard.key", "-1"); // VC_SPACE = 57
+
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            return 57; // Espace par défaut
+            return -1; // Espace par défaut
         }
     }
 
@@ -195,7 +196,7 @@ public class PreferencesService {
      * Récupère le nom du composant HOTAS pour le toggle
      */
     public String getWindowToggleHotasComponent() {
-        return preferences.getProperty("window.toggle.hotas.component", "Commande de pouce");
+        return preferences.getProperty("window.toggle.hotas.component", null);
     }
 
     /**
@@ -210,11 +211,11 @@ public class PreferencesService {
      * Récupère la valeur du composant HOTAS pour le toggle
      */
     public float getWindowToggleHotasValue() {
-        String value = preferences.getProperty("window.toggle.hotas.value", "0.25");
+        String value = preferences.getProperty("window.toggle.hotas.value", "0");
         try {
             return Float.parseFloat(value);
         } catch (NumberFormatException e) {
-            return 0.25f; // Valeur par défaut
+            return 0; // Valeur par défaut
         }
     }
 
@@ -296,11 +297,11 @@ public class PreferencesService {
      * Récupère la valeur du composant HOTAS pour changer vers l'onglet précédent
      */
     public float getTabSwitchLeftHotasValue() {
-        String value = preferences.getProperty("tab.switch.left.hotas.value", "0.25");
+        String value = preferences.getProperty("tab.switch.left.hotas.value", "0");
         try {
             return Float.parseFloat(value);
         } catch (NumberFormatException e) {
-            return 0.25f;
+            return 0;
         }
     }
 
@@ -366,11 +367,11 @@ public class PreferencesService {
      * Récupère la valeur du composant HOTAS pour changer vers l'onglet suivant
      */
     public float getTabSwitchRightHotasValue() {
-        String value = preferences.getProperty("tab.switch.right.hotas.value", "0.25");
+        String value = preferences.getProperty("tab.switch.right.hotas.value", "0");
         try {
             return Float.parseFloat(value);
         } catch (NumberFormatException e) {
-            return 0.25f;
+            return 0;
         }
     }
 }
