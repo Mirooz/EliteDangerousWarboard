@@ -1,4 +1,4 @@
-FROM bellsoft/liberica-openjdk-debian:17 as build
+FROM bellsoft/liberica-openjdk-debian:17 AS build
 
 WORKDIR /app
 COPY . .
