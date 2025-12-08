@@ -1957,8 +1957,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
                             }
                         } else {
-                            statusLabel.setText(String.format("%.1f%%", sp.getProbability()));
-                            statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF88; -fx-font-weight: bold;");
+                            double prob = sp.getProbability();
+                            statusLabel.setText(String.format("%.1f%%", prob));
+
+                            String color = "#00FF88"; // vert par défaut
+
+                            if (prob < 10) {
+                                color = "#FF6666"; // rouge
+                            } else if (prob < 40) {
+                                color = "#FFA500"; // orange
+                            }
+
+                            statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: " + color + "; -fx-font-weight: bold;");
                             statusLabel.getStyleClass().add("exploration-body-species-prob");
                         }
                         // S'assurer que le pourcentage ne soit jamais coupé - pas de contrainte de largeur
