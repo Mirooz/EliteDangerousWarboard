@@ -4,3 +4,5 @@
 /build-dir/
 /repo/
 /analytics-backend/target/
+/analytics-backend/src/main/resources/.env
+/analytics-backend/.env
