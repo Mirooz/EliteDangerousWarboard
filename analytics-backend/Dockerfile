@@ -1,19 +1,18 @@
-# ---- Étape de build : Liberica JDK ----
-FROM bellsoft/liberica-openjdk-debian:17 AS build
+FROM bellsoft/liberica-openjdk-debian:17 as build
 
 WORKDIR /app
 COPY . .
 
+# Fix Render: rendre le wrapper Maven exécutable
+RUN chmod +x mvnw
+
+# Build
 RUN ./mvnw -q -DskipTests package
 
-# ---- Étape runtime : Liberica JRE ----
+# ---- Runtime ----
 FROM bellsoft/liberica-openjre-debian:17
 
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 8080
-
-ENV JAVA_OPTS="-Dspring.profiles.active=prod"
-
-CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+CMD ["sh", "-c", "java -jar app.jar"]
