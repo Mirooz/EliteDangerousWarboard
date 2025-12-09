@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard;
 
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.LoggingService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -17,12 +18,14 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.Objects;
 
 public class EliteDashboardApp extends Application {
 
     private LocalizationService localizationService = LocalizationService.getInstance();
     private WindowToggleService windowToggleService = WindowToggleService.getInstance();
+    private LoggingService loggingService = LoggingService.getInstance();
     private Stage mainStage;
     private ComboBox<String> comboBox;
     private StackPane rootPane;
@@ -32,6 +35,9 @@ public class EliteDashboardApp extends Application {
 
     @Override
     public void start(Stage stage) {
+        // Initialiser le service de logging en premier
+        loggingService.initialize();
+        
         this.mainStage = stage;
 
         try {
@@ -78,6 +84,9 @@ public class EliteDashboardApp extends Application {
                 JournalTailService.getInstance().stop();
                 JournalWatcherService.getInstance().stop();
                 windowToggleService.stop();
+                
+                // Arrêter le service de logging
+                loggingService.shutdown();
 
                 
                 Platform.exit();
