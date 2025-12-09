@@ -72,13 +72,13 @@ public class EliteDashboardApp extends Application {
             maximizeWindow(stage);
 
             stage.setOnCloseRequest(event -> {
+                // Fermer la session analytics
+                AnalyticsClient.getInstance().endSession();
                 System.out.println("Arrêt des services de journal...");
                 JournalTailService.getInstance().stop();
                 JournalWatcherService.getInstance().stop();
                 windowToggleService.stop();
-                
-                // Fermer la session analytics
-                AnalyticsClient.getInstance().endSession();
+
                 
                 Platform.exit();
                 System.exit(0);

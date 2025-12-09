@@ -2,7 +2,7 @@
 
 ## Description
 
-**Elite Warboard** is a comprehensive companion application designed to optimize your Elite Dangerous gaming experience. The application analyzes game journal files in real-time to provide detailed insights into your missions, combat activities, and mining operations. Whether you're focused on massacre missions, conflict zones, or mining expeditions, this dashboard helps you track progress, find opportunities, and maximize your earnings.
+**Elite Warboard** is a comprehensive companion application designed to optimize your Elite Dangerous gaming experience. The application analyzes game journal files in real-time to provide detailed insights into your missions, combat activities, mining operations, and exploration. Whether you're focused on massacre missions, conflict zones, mining expeditions, or deep space exploration, this dashboard helps you track progress, find opportunities, and maximize your earnings.
 
 ## 🎯 Main Features
 
@@ -26,6 +26,20 @@
 - **Real-time updates** : Live tracking of mining activities as they happen
 
 ![miningpanel.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingpanel.png)
+
+### 🌌 **Exploration Panel**
+- **System visual view** : Interactive orrery view showing all celestial bodies in the current system
+- **Celestial body tracking** : Track all scanned planets, moons, and stars with detailed information
+- **Exobiology tracking** : Monitor organic species detection and collection with X/Y counters
+- **Mapping tracking** : Track mapped planets with visual indicators (X/Y mappable planets)
+- **Exploration history** : Navigate through exploration groups with earnings and system counts
+- **System value calculation** : Real-time calculation of system value including celestial bodies and exobiology bonuses
+- **On-hold data tracking** : Monitor unsold exploration and organic data with credit values
+- **High-value filter** : Filter to show only high-value celestial bodies
+- **JSON detail panel** : View complete JSON data for any celestial body
+- **Exploration overlay** : Display exploration bodies overlay on your Elite Dangerous game window
+- **First discovery tracking** : Track first discoveries and first footfalls
+- **Real-time updates** : Live tracking of scans, organic scans, and exploration data sales
 
 ### 🚀 **Advanced Features**
 - **New commander detection** : Automatic popup and journal re-reading when switching commanders
@@ -58,6 +72,24 @@
 
 ![miningoverlay.png](elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png)
 
+### **Exploration Interface**
+- **Exobiology probability calculation** : Advanced probability calculations based on big data from [Canonn Bioforge](https://bioforge.canonn.tech/)
+  - Uses histogram data from thousands of scanned planets to predict species appearance
+  - Calculates probabilities based on multiple factors: body type, atmosphere, volcanism, temperature, gravity, and pressure
+  - Geometric mean probability calculation combined with global species rarity correction
+  - Displays species probabilities for each planet based on detected biological signals
+  - Filters species with probability < 1% to show only likely candidates
+- **System visual view** : Interactive orrery with zoom and pan capabilities showing celestial body positions
+- **Bodies list panel** : Complete list of all celestial bodies in the system with filtering options
+- **Exploration history panel** : Navigate through exploration groups with previous/next buttons
+- **System cards** : Visual cards showing system name, body count, value, exobiology status (X/Y species), and mapping status (X/Y planets)
+- **On-hold indicators** : Display of unsold exploration data and organic data with credit values
+- **Current system button** : Quick navigation to the currently visited system
+- **Body detail panel** : JSON tree view showing complete data for selected celestial bodies
+- **Exploration overlay** : Overlay window displaying exploration bodies on your game screen
+- **Visual indicators** : Color-coded species collection status (red: 0/Y, orange: partial, green: Y/Y complete)
+- **Mapping indicators** : Color-coded mapping status for mappable planets
+
 ### **Combat System Search**
 1. Click "SEARCH COMBAT SYSTEMS" in the header
 2. Choose "MASSACRE" or "CONFLICT" tab
@@ -76,10 +108,39 @@
 
 ![miningsearch.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingsearch.png)
 
-### **Mission Filtering**
-- **Type** : All, Massacre, Conflict
-- **Status** : All, Active, Completed, Failed
-- **Faction** : Click on a row in statistics to filter
+### **Exploration Panel**
+- **Exobiology probability prediction** : Advanced species prediction using big data from [Canonn Bioforge](https://bioforge.canonn.tech/)
+  - When biological signals are detected on a planet, the system analyzes the planet's characteristics
+  - Compares planet properties (body type, atmosphere, volcanism, temperature, gravity, pressure) against histogram data from thousands of real discoveries
+  - Calculates probability scores for each possible species using geometric mean and global rarity factors
+  - Displays species predictions sorted by probability, helping you identify what you're likely to find
+  - Automatically filters out species with < 1% probability to focus on realistic candidates
+- **System visual view** : Interactive orrery showing all celestial bodies in the current system
+  - Zoom and pan to explore the system layout
+  - Click on bodies to view detailed JSON information
+  - Filter to show only high-value bodies
+- **Bodies list** : Complete list of all celestial bodies with:
+  - Body type and name
+  - Value indicators
+  - Exobiology status (X/Y species collected) with probability predictions
+  - Mapping status (X/Y planets mapped)
+  - First discovery and first footfall indicators
+- **Exploration history** : Navigate through exploration groups
+  - Use previous/next buttons to browse groups
+  - View total earnings and system counts per group
+  - Click "See current system" to jump to your current location
+- **System cards** : Visual representation of visited systems
+  - System name and body count
+  - Total value (celestial bodies + exobiology)
+  - Exobiology collection progress with color indicators
+  - Mapping progress with color indicators
+- **On-hold data** : Monitor unsold exploration and organic data
+  - Exploration data: shows total credits and system count
+  - Organic data: shows total credits and species count
+- **Exploration overlay** : Toggle overlay to display exploration bodies on your game screen
+
+### **VR Integration **
+![screenexplo2.jpeg](elite-warboard-missions/src/main/resources/images/exploration/readme/screenexplo2.jpeg)
 
 ## 🌐 Language Support
 
@@ -112,7 +173,8 @@ The application is available in **English and French** with complete interface t
 - **Jackson** : JSON journal file analysis
 - **Lombok** : Boilerplate code reduction
 - **EdTools API** : Massacre system search and hotspot detection
-- **Inara API** : Conflict zone search and market informationsearch
+- **Inara API** : Conflict zone search and market information
+- **Canonn Bioforge** : Big data exobiology species probability calculations based on [bioforge.canonn.tech](https://bioforge.canonn.tech/)
 - **Inno Setup** : Installer creation with embedded runtime
 - **JDK 17** : Java Development Kit
 - **jpackage** : Installer creation with embedded runtime
@@ -171,6 +233,18 @@ The application automatically processes these Elite Dangerous events:
 - `BuyDrones` : Records mining drone purchases
 - `SellDrones` : Records mining drone sales
 - `MarketSell` : Tracks mineral sales and updates mining statistics
+
+### **Exploration Events**
+- `Scan` : Tracks detailed scans of celestial bodies (planets, moons, stars) with physical properties
+- `ScanOrganic` : Records organic species scans and analysis
+- `SellExplorationData` / `MultiSellExplorationData` : Tracks exploration data sales and groups systems
+- `SellOrganicData` : Tracks organic data sales with species information
+- `FSSBodySignals` : Detects biological signals on planets
+- `SAAScanComplete` : Records Surface Area Analysis scan completions
+- `SAASignalsFound` : Tracks surface signals found during SAA scans
+- `ApproachBody` : Monitors body approach events and filters bodies with uncollected exobiology
+- `LeaveBody` : Tracks body departure events
+- `Embark` / `Disembark` : Monitors on-foot state changes for biological analysis
 
 ### **Ship Events**
 - `Loadout` : Updates ship configuration and cargo capacity
@@ -235,6 +309,25 @@ mvn exec:java
 
 ## 📝 Changelog
 
+### Version 1.2.0
+
+#### Exploration
+
+- ✅ **Exploration Panel** : Complete exploration tracking system with visual system representation
+- ✅ **System Visual View** : Interactive orrery showing all celestial bodies with zoom and pan
+- ✅ **Celestial Body Tracking** : Track all scanned planets, moons, and stars with detailed information
+- ✅ **Exobiology Tracking** : Monitor organic species detection and collection with X/Y progress indicators
+- ✅ **Mapping Tracking** : Track mapped planets with visual status indicators (X/Y mappable planets)
+- ✅ **Exploration History** : Navigate through exploration groups with earnings and system statistics
+- ✅ **System Value Calculation** : Real-time calculation including celestial bodies and exobiology bonuses
+- ✅ **On-Hold Data Tracking** : Monitor unsold exploration and organic data with credit values
+- ✅ **High-Value Filter** : Filter to show only high-value celestial bodies
+- ✅ **JSON Detail Panel** : View complete JSON data for any celestial body
+- ✅ **Exploration Overlay** : Display exploration bodies overlay on your Elite Dangerous game window
+- ✅ **First Discovery Tracking** : Track first discoveries and first footfalls
+- ✅ **Biological Analysis Support** : Track biological sample collection with position monitoring
+- ✅ **Exobiology Probability Calculation** : Advanced species prediction using big data from Canonn Bioforge with histogram-based probability calculations
+
 ### Version 1.1.0
 
 #### Mining
@@ -297,6 +390,16 @@ If you encounter issues:
 - **Track mineral values** and compare prices for optimal selling
 - **Analyze mining efficiency** through session history and statistics
 - **Maximize profits** by choosing the best selling locations
+
+### **For Explorers**
+- **Track all scanned systems** with complete celestial body information
+- **Monitor exobiology collection** with visual indicators showing collection progress (X/Y species)
+- **Track mapping progress** for valuable planets with visual status indicators
+- **Calculate system values** including celestial bodies and exobiology bonuses
+- **Navigate exploration history** to review past exploration groups and earnings
+- **Visual system representation** with interactive orrery view
+- **Monitor unsold data** with on-hold indicators for exploration and organic data
+- **Identify high-value targets** with filtering options for valuable celestial bodies
 
 ### **For All Commanders**
 - **Comprehensive tracking** of all your Elite Dangerous activities

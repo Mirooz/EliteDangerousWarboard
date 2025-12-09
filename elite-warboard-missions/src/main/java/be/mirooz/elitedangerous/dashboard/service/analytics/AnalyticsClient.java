@@ -79,11 +79,11 @@ public class AnalyticsClient {
         }
         return instance;
     }
-    public Long startSession(String commanderName) {
+    public void startSession(String commanderName) {
         try {
-
             String appVersion = getAppVersion();
             String operatingSystem = getOperatingSystem();
+
             Map<String, String> requestBody = new HashMap<>();
             requestBody.put("commanderName", commanderName);
             requestBody.put("appVersion", appVersion);
@@ -98,26 +98,36 @@ public class AnalyticsClient {
                     .timeout(Duration.ofSeconds(10))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // 🔥 FIRE-AND-FORGET — on envoie sans attendre la réponse
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(response -> {
+                        try {
+                            if (response.statusCode() == 200) {
+                                StartSessionResponse sessionResponse =
+                                        objectMapper.readValue(response.body(), StartSessionResponse.class);
 
-            if (response.statusCode() == 200) {
-                StartSessionResponse sessionResponse = objectMapper.readValue(
-                        response.body(), StartSessionResponse.class);
-                currentSessionId = sessionResponse.getSessionId();
-                panelDurations.clear();
-                panelStartTimes.clear();
-                System.out.println("✅ Session analytics démarrée (ID: " + currentSessionId + ")");
-                startPanelTime("Missions");
-                return currentSessionId;
-            } else {
-                System.err.println("Erreur lors du démarrage de la session: " + response.statusCode() + " - " + response.body());
-                return null;
-            }
+                                currentSessionId = sessionResponse.getSessionId();
+                                panelDurations.clear();
+                                panelStartTimes.clear();
+
+                                System.out.println("✅ Session analytics démarrée (ID: " + currentSessionId + ")");
+                                startPanelTime("Missions");
+
+                            } else {
+                                System.err.println("Erreur lors du démarrage de la session: "
+                                        + response.statusCode() + " - " + response.body());
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Erreur traitement async: " + e.getMessage());
+                        }
+                    });
+
+
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics: " + e.getMessage());
-            return null;
         }
     }
+
 
     /**
      * Récupère la version de l'application depuis les propriétés Maven
@@ -178,7 +188,7 @@ public class AnalyticsClient {
         
         return os;
     }
- 
+
     public void endSession() {
         if (currentSessionId == null) {
             return;
@@ -200,20 +210,37 @@ public class AnalyticsClient {
                     .timeout(Duration.ofSeconds(10))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Session analytics fermée ");
+            // 🔥 FIRE-AND-FORGET — on envoie sans attendre la réponse
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(response -> {
+                        try {
+                            if (response.statusCode() == 200) {
+                                EndSessionResponse sessionResponse =
+                                        objectMapper.readValue(response.body(), EndSessionResponse.class);
 
-            if (response.statusCode() == 200) {
-                EndSessionResponse sessionResponse = objectMapper.readValue(
-                        response.body(), EndSessionResponse.class);
-                System.out.println("✅ Session analytics fermée (Durée: " + sessionResponse.getDurationSeconds() + " secondes)");
-            } else {
-                System.err.println("Erreur lors de la fermeture de la session: " + response.statusCode() + " - " + response.body());
-            }
+                                System.out.println("✅ Session analytics fermée (Durée: "
+                                        + sessionResponse.getDurationSeconds() + " secondes)");
+                            } else {
+                                System.err.println("Erreur lors de la fermeture de la session: "
+                                        + response.statusCode() + " - " + response.body());
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Erreur traitement async endSession: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
+
+            // 🔥 IMPORTANT : ne rien attendre → méthode retourne immédiatement
+            try {
+                Thread.sleep(100); // 🔥 Laisse le temps au fire-and-forget de partir
+            } catch (InterruptedException ignored) {}
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 
     /**
      * Démarre le tracking d'un panel (en mémoire uniquement)

@@ -19,7 +19,6 @@
         <module>elite-warboard-missions</module>
         <module>journal-analyzer</module>
         <module>bioforge-biodatas</module>
-        <module>analytics-backend</module>
     </modules>
 
     <properties>
