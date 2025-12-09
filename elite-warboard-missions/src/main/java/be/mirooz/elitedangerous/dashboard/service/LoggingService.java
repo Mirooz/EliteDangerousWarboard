@@ -46,6 +46,20 @@ public class LoggingService {
             Path preferencesDir = Paths.get(System.getProperty("user.home"), ".elite-wardboard");
             Files.createDirectories(preferencesDir);
 
+            // Supprimer les anciens fichiers de log pour ne garder que le dernier
+            File[] oldLogFiles = preferencesDir.toFile().listFiles((dir, name) -> 
+                name.startsWith("elite-warboard_") && name.endsWith(".log")
+            );
+            if (oldLogFiles != null) {
+                for (File oldLog : oldLogFiles) {
+                    try {
+                        Files.deleteIfExists(oldLog.toPath());
+                    } catch (IOException e) {
+                        // Ignorer les erreurs de suppression
+                    }
+                }
+            }
+
             // Créer le fichier de log avec timestamp
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
             logFile = new File(preferencesDir.toFile(), "elite-warboard_" + timestamp + ".log");
