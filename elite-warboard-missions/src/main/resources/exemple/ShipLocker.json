@@ -1,0 +1,38 @@
+{ "timestamp":"2025-12-07T22:00:48Z", "event":"ShipLocker", "Items":[ 
+{ "Name":"geneticsample", "Name_Localised":"Échantillons biologiques", "OwnerID":0, "Count":1 }, 
+{ "Name":"healthmonitor", "Name_Localised":"Moniteur médical", "OwnerID":0, "Count":2 }, 
+{ "Name":"insight", "OwnerID":0, "Count":1 }, 
+{ "Name":"insightdatabank", "Name_Localised":"Banque de données d'Insight", "OwnerID":0, "Count":1 }, 
+{ "Name":"personalcomputer", "Name_Localised":"Ordinateur personnel", "OwnerID":0, "Count":2 }, 
+{ "Name":"compactlibrary", "Name_Localised":"Bibliothèque de poche", "OwnerID":0, "Count":4 }, 
+{ "Name":"infinity", "Name_Localised":"Infini", "OwnerID":0, "Count":2 }, 
+{ "Name":"insightentertainmentsuite", "Name_Localised":"Divertissements Insight", "OwnerID":0, "Count":1 }, 
+{ "Name":"microbialinhibitor", "Name_Localised":"Inhibiteur microbien", "OwnerID":0, "Count":1 }, 
+{ "Name":"nutritionalconcentrate", "Name_Localised":"Concentré nutritif", "OwnerID":0, "Count":1 }, 
+{ "Name":"personaldocuments", "Name_Localised":"Documents personnels", "OwnerID":0, "Count":2 }, 
+{ "Name":"weaponschematic", "Name_Localised":"Plan d'arme", "OwnerID":0, "Count":1 }, 
+{ "Name":"degradedpowerregulator", "Name_Localised":"Régulateur de puissance endommagé", "OwnerID":0, "Count":2 }, 
+{ "Name":"largecapacitypowerregulator", "Name_Localised":"Régulateur de puissance", "OwnerID":0, "Count":1 }
+ ], "Components":[ 
+{ "Name":"graphene", "Name_Localised":"Graphène", "OwnerID":0, "Count":1 }, 
+{ "Name":"chemicalcatalyst", "Name_Localised":"Catalyseur chimique", "OwnerID":0, "Count":12 }, 
+{ "Name":"circuitswitch", "Name_Localised":"Commutateur", "OwnerID":0, "Count":1 }, 
+{ "Name":"electricalfuse", "Name_Localised":"Fusible électrique", "OwnerID":0, "Count":1 }, 
+{ "Name":"encryptedmemorychip", "Name_Localised":"Puce mémoire cryptée", "OwnerID":0, "Count":2 }, 
+{ "Name":"memorychip", "Name_Localised":"Puce mémoire", "OwnerID":0, "Count":4 }, 
+{ "Name":"metalcoil", "Name_Localised":"Bobine métallique", "OwnerID":0, "Count":1 }, 
+{ "Name":"microsupercapacitor", "Name_Localised":"Microsupercondensateur", "OwnerID":0, "Count":1 }, 
+{ "Name":"opticalfibre", "Name_Localised":"Fibre optique", "OwnerID":0, "Count":3 }, 
+{ "Name":"titaniumplating", "Name_Localised":"Plaques en titane", "OwnerID":0, "Count":1 }, 
+{ "Name":"transmitter", "Name_Localised":"Transmetteur", "OwnerID":0, "Count":1 }, 
+{ "Name":"electromagnet", "Name_Localised":"Électroaimant", "OwnerID":0, "Count":1 }, 
+{ "Name":"microelectrode", "Name_Localised":"Microélectrode", "OwnerID":0, "Count":4 }
+ ], "Consumables":[ 
+{ "Name":"healthpack", "Name_Localised":"Médikit", "OwnerID":0, "Count":14 }, 
+{ "Name":"amm_grenade_emp", "Name_Localised":"Neutralisat. de bouclier", "OwnerID":0, "Count":10 }, 
+{ "Name":"amm_grenade_shield", "Name_Localised":"Générateur de bouclier", "OwnerID":0, "Count":14 }, 
+{ "Name":"bypass", "Name_Localised":"Omnipasse", "OwnerID":0, "Count":10 }
+ ], "Data":[ 
+{ "Name":"catmedia", "Name_Localised":"Médiathèque féline", "OwnerID":0, "Count":8 }, 
+{ "Name":"payrollinformation", "Name_Localised":"Informations salariales", "OwnerID":0, "Count":1 }
+ ] }
