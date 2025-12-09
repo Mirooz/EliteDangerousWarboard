@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Client HTTP pour communiquer avec le backend analytics
@@ -212,29 +213,10 @@ public class AnalyticsClient {
 
             System.out.println("Session analytics fermée ");
             // 🔥 FIRE-AND-FORGET — on envoie sans attendre la réponse
-            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenAccept(response -> {
-                        try {
-                            if (response.statusCode() == 200) {
-                                EndSessionResponse sessionResponse =
-                                        objectMapper.readValue(response.body(), EndSessionResponse.class);
-
-                                System.out.println("✅ Session analytics fermée (Durée: "
-                                        + sessionResponse.getDurationSeconds() + " secondes)");
-                            } else {
-                                System.err.println("Erreur lors de la fermeture de la session: "
-                                        + response.statusCode() + " - " + response.body());
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Erreur traitement async endSession: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    });
-
-            // 🔥 IMPORTANT : ne rien attendre → méthode retourne immédiatement
-            try {
-                Thread.sleep(100); // 🔥 Laisse le temps au fire-and-forget de partir
-            } catch (InterruptedException ignored) {}
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+                    .orTimeout(200, TimeUnit.MILLISECONDS)  // max 200ms
+                    .exceptionally(e -> null)              // ignore erreurs
+                    .thenRun(() -> System.out.println("Requête endSession envoyée."));
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics: " + e.getMessage());
             e.printStackTrace();
