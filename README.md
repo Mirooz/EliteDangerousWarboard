@@ -16,7 +16,7 @@
 - **Financial tracking** : Track pending and potential credits from missions
 - **Combat history** : View massacre/conflict sessions with kills and earnings
 
-![missionpanel.png](elite-warboard-missions/src/main/resources/images/missionpanel.png)
+<img src="elite-warboard-missions/src/main/resources/images/missionpanel.png" alt="Mission Panel" style="max-width: 1200px;">
 
 ### ⛏️ **Mining Operations Tracker**
 - **Session tracking** : Monitor your mining sessions with detailed statistics
@@ -25,7 +25,7 @@
 - **Mining history** : View completed sessions with duration and earnings
 - **Real-time updates** : Live tracking of mining activities as they happen
 
-![miningpanel.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingpanel.png)
+<img src="elite-warboard-missions/src/main/resources/images/miningpanel.png" alt="Mining Panel" style="max-width: 1200px;">
 
 ### 🌌 **Exploration Panel**
 - **System visual view** : Interactive orrery view showing all celestial bodies in the current system
@@ -41,7 +41,7 @@
 - **First discovery tracking** : Track first discoveries and first footfalls
 - **Real-time updates** : Live tracking of scans, organic scans, and exploration data sales
 
-![exploboard.png](elite-warboard-missions/src/main/resources/images/exploration/readme/exploboard.png)
+<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/exploboard.png" alt="Exploration Board" style="max-width: 1200px;">
 
 ### 🚀 **Advanced Features**
 - **New commander detection** : Automatic popup and journal re-reading when switching commanders
@@ -62,7 +62,7 @@
 - **Footer** : Commander information and current system
 - **Kills remaining overlay** : Visual indicator of remaining kills
 
-![targetoverlay.png](elite-warboard-missions/src/main/resources/images/combat/targetoverlay.png)
+<img src="elite-warboard-missions/src/main/resources/images/combat/targetoverlay.png" alt="Target Overlay" style="max-width: 1200px;">
 
 ### **Mining Interface**
 - **Mining panel** : Real-time mining session tracking
@@ -72,7 +72,7 @@
 - **Loading indicators** : Visual feedback during data processing
 - **Prospector Overlay** : Displays an overlay on your Elite Dangerous game window
 
-![miningoverlay.png](elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png)
+<img src="elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png" alt="Mining Overlay" style="max-width: 1200px;">
 
 ### **Exploration Interface**
 - **Exobiology probability calculation** : Advanced probability calculations based on big data from [Canonn Bioforge](https://bioforge.canonn.tech/)
@@ -82,7 +82,7 @@
   - Displays species probabilities for each planet based on detected biological signals
   - Filters species with probability < 1% to show only likely candidates
 
-![proba.png](elite-warboard-missions/src/main/resources/images/exploration/readme/proba.png)
+<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/proba.png" alt="Probability Calculation" style="max-width: 1200px;">
 
 - **Exobiology radar (compass)** : Real-time navigation radar for biological sample collection
   - **Compass display** : Circular radar showing cardinal directions (N, S, E, W) with Elite Dangerous orange theme
@@ -97,7 +97,7 @@
   - **Real-time updates** : Updates every 500ms by reading your position from Elite Dangerous Status.json file
   - **Automatic activation** : Radar appears automatically when you start collecting biological samples on a planet
 
-![radar3.png](elite-warboard-missions/src/main/resources/images/exploration/readme/radar3.png)
+<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/radar3.png" alt="Exobiology Radar" style="max-width: 1200px;">
 
 - **System visual view** : Interactive orrery with zoom and pan capabilities showing celestial body positions
 - **Bodies list panel** : Complete list of all celestial bodies in the system with filtering options
@@ -117,7 +117,7 @@
 4. Click "SEARCH" to get results
 5. Click on a system to copy it to clipboard
 
-![searchmission2.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fsearchmission2.png)
+<img src="elite-warboard-missions/src/main/resources/images/searchmission2.png" alt="Combat System Search" style="max-width: 1200px;">
 
 ### **Mining System Search**
 1. Select the mineral you want to mine
@@ -126,7 +126,7 @@
 4. Switch between different stations and rings as needed
 5. Click on a station to copy system name to clipboard
 
-![miningsearch.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingsearch.png)
+<img src="elite-warboard-missions/src/main/resources/images/miningsearch.png" alt="Mining System Search" style="max-width: 1200px;">
 
 ### **Exploration History**
 - **System visit history** : Browse through all visited systems organized by exploration groups
@@ -139,7 +139,7 @@
 - **System cards** : Display system name, body count, value, exobiology status (X/Y species), and mapping status (X/Y planets)
 - **Quick navigation** : "See current system" button automatically finds and displays your current location
 
-![explohistory.png](elite-warboard-missions/src/main/resources/images/exploration/readme/explohistory.png)
+<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/explohistory.png" alt="Exploration History" style="max-width: 1200px;">
 
 ### **VR Integration**
 - **Keyboard and HOTAS binding** : Configure a key or HOTAS button to show/hide the dashboard
@@ -147,7 +147,7 @@
   - **HOTAS binding** : Bind any button on your HOTAS controller (throttle, joystick, etc.) to toggle the dashboard
   - **Configuration** : Set up your bindings in the application preferences/settings menu
 
-![screenexplo2.jpeg](elite-warboard-missions/src/main/resources/images/exploration/readme/screenexplo2.jpeg)
+<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/screenexplo2.jpeg" alt="VR Integration" style="max-width: 1200px;">
 
 ## 🌐 Language Support
 
