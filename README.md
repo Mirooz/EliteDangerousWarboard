@@ -41,6 +41,8 @@
 - **First discovery tracking** : Track first discoveries and first footfalls
 - **Real-time updates** : Live tracking of scans, organic scans, and exploration data sales
 
+![exploboard.png](elite-warboard-missions/src/main/resources/images/exploration/readme/exploboard.png)
+
 ### 🚀 **Advanced Features**
 - **New commander detection** : Automatic popup and journal re-reading when switching commanders
 - **Real-time reading** : Automatic monitoring of new journal files
@@ -79,6 +81,24 @@
   - Geometric mean probability calculation combined with global species rarity correction
   - Displays species probabilities for each planet based on detected biological signals
   - Filters species with probability < 1% to show only likely candidates
+
+![proba.png](elite-warboard-missions/src/main/resources/images/exploration/readme/proba.png)
+
+- **Exobiology radar (compass)** : Real-time navigation radar for biological sample collection
+  - **Compass display** : Circular radar showing cardinal directions (N, S, E, W) with Elite Dangerous orange theme
+  - **Position indicator** : Green triangle showing your current heading and position
+  - **Sample markers** : Color-coded points for collected biological samples
+    - First sample: Magenta (#FF00FF)
+    - Second sample: Cyan (#00FFFF)
+    - Third and subsequent samples: Yellow (#FFFF00)
+  - **Exclusion circles** : Dashed circles around each sample showing the minimum distance (colony range) between biological colonies
+  - **Distance display** : Real-time distance in meters to each collected sample displayed next to the radar
+  - **Minimum distance indicator** : Shows the required minimum distance between samples (colony range) for the current species
+  - **Real-time updates** : Updates every 500ms by reading your position from Elite Dangerous Status.json file
+  - **Automatic activation** : Radar appears automatically when you start collecting biological samples on a planet
+
+![radar3.png](elite-warboard-missions/src/main/resources/images/exploration/readme/radar3.png)
+
 - **System visual view** : Interactive orrery with zoom and pan capabilities showing celestial body positions
 - **Bodies list panel** : Complete list of all celestial bodies in the system with filtering options
 - **Exploration history panel** : Navigate through exploration groups with previous/next buttons
@@ -108,38 +128,25 @@
 
 ![miningsearch.png](elite-warboard-missions%2Fsrc%2Fmain%2Fresources%2Fimages%2Fminingsearch.png)
 
-### **Exploration Panel**
-- **Exobiology probability prediction** : Advanced species prediction using big data from [Canonn Bioforge](https://bioforge.canonn.tech/)
-  - When biological signals are detected on a planet, the system analyzes the planet's characteristics
-  - Compares planet properties (body type, atmosphere, volcanism, temperature, gravity, pressure) against histogram data from thousands of real discoveries
-  - Calculates probability scores for each possible species using geometric mean and global rarity factors
-  - Displays species predictions sorted by probability, helping you identify what you're likely to find
-  - Automatically filters out species with < 1% probability to focus on realistic candidates
-- **System visual view** : Interactive orrery showing all celestial bodies in the current system
-  - Zoom and pan to explore the system layout
-  - Click on bodies to view detailed JSON information
-  - Filter to show only high-value bodies
-- **Bodies list** : Complete list of all celestial bodies with:
-  - Body type and name
-  - Value indicators
-  - Exobiology status (X/Y species collected) with probability predictions
-  - Mapping status (X/Y planets mapped)
-  - First discovery and first footfall indicators
-- **Exploration history** : Navigate through exploration groups
-  - Use previous/next buttons to browse groups
-  - View total earnings and system counts per group
-  - Click "See current system" to jump to your current location
-- **System cards** : Visual representation of visited systems
-  - System name and body count
-  - Total value (celestial bodies + exobiology)
-  - Exobiology collection progress with color indicators
-  - Mapping progress with color indicators
-- **On-hold data** : Monitor unsold exploration and organic data
-  - Exploration data: shows total credits and system count
-  - Organic data: shows total credits and species count
-- **Exploration overlay** : Toggle overlay to display exploration bodies on your game screen
+### **Exploration History**
+- **System visit history** : Browse through all visited systems organized by exploration groups
+  - Navigate between exploration groups using Previous/Next buttons
+  - View total earnings, system count, and time range for each group
+  - Click on any system card to view it in the system visual view
+- **Current data tracking** : Monitor unsold exploration and exobiology data
+  - **Current exploration** : Shows total credits and system count for unsold exploration data
+  - **Current exobiology** : Shows total credits and species count for unsold organic data
+- **System cards** : Display system name, body count, value, exobiology status (X/Y species), and mapping status (X/Y planets)
+- **Quick navigation** : "See current system" button automatically finds and displays your current location
 
-### **VR Integration **
+![explohistory.png](elite-warboard-missions/src/main/resources/images/exploration/readme/explohistory.png)
+
+### **VR Integration**
+- **Keyboard and HOTAS binding** : Configure a key or HOTAS button to show/hide the dashboard
+  - **Keyboard binding** : Bind any keyboard key to toggle dashboard visibility
+  - **HOTAS binding** : Bind any button on your HOTAS controller (throttle, joystick, etc.) to toggle the dashboard
+  - **Configuration** : Set up your bindings in the application preferences/settings menu
+
 ![screenexplo2.jpeg](elite-warboard-missions/src/main/resources/images/exploration/readme/screenexplo2.jpeg)
 
 ## 🌐 Language Support
@@ -327,6 +334,7 @@ mvn exec:java
 - ✅ **First Discovery Tracking** : Track first discoveries and first footfalls
 - ✅ **Biological Analysis Support** : Track biological sample collection with position monitoring
 - ✅ **Exobiology Probability Calculation** : Advanced species prediction using big data from Canonn Bioforge with histogram-based probability calculations
+- ✅ **Exobiology Radar Navigation** : Real-time compass radar for biological sample collection with position tracking, distance display, and exclusion zone visualization
 
 ### Version 1.1.0
 
@@ -394,12 +402,15 @@ If you encounter issues:
 ### **For Explorers**
 - **Track all scanned systems** with complete celestial body information
 - **Monitor exobiology collection** with visual indicators showing collection progress (X/Y species)
+- **Navigate efficiently** with real-time radar compass showing sample positions and distances
+- **Respect colony ranges** with visual exclusion zones indicating minimum distances between samples
 - **Track mapping progress** for valuable planets with visual status indicators
 - **Calculate system values** including celestial bodies and exobiology bonuses
 - **Navigate exploration history** to review past exploration groups and earnings
 - **Visual system representation** with interactive orrery view
 - **Monitor unsold data** with on-hold indicators for exploration and organic data
 - **Identify high-value targets** with filtering options for valuable celestial bodies
+- **Predict species appearance** using advanced probability calculations based on big data
 
 ### **For All Commanders**
 - **Comprehensive tracking** of all your Elite Dangerous activities
