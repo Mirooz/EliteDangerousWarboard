@@ -90,6 +90,7 @@ public class EliteDashboardApp extends Application {
 
                 
                 Platform.exit();
+                System.exit(0);
             });
 
             stage.show();

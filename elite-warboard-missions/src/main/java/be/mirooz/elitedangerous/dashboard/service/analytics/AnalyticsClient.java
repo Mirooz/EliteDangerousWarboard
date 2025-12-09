@@ -214,9 +214,10 @@ public class AnalyticsClient {
             System.out.println("Session analytics fermée ");
             // 🔥 FIRE-AND-FORGET — on envoie sans attendre la réponse
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-                    .orTimeout(200, TimeUnit.MILLISECONDS)  // max 200ms
                     .exceptionally(e -> null)              // ignore erreurs
-                    .thenRun(() -> System.out.println("Requête endSession envoyée."));
+                    .thenRun(() -> System.out.println("Requête endSession envoyée.")).wait();
+
+            Thread.sleep(300);
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics: " + e.getMessage());
             e.printStackTrace();
