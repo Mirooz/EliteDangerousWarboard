@@ -6,7 +6,7 @@
     <parent>
         <groupId>be.mirooz.elitedangerous</groupId>
         <artifactId>elite-warboard-parent</artifactId>
-        <version>1.2.0</version>
+        <version>1.3.0-SNAPSHOT</version>
     </parent>
 
     <groupId>be.mirooz.elitedangerous.lib</groupId>
