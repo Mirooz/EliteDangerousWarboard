@@ -7,7 +7,7 @@
 
     <groupId>be.mirooz.elitedangerous</groupId>
     <artifactId>elite-warboard-parent</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
     <packaging>pom</packaging>
 
     <name>Elite Warboard</name>

@@ -3,14 +3,14 @@
   "runtime": "org.freedesktop.Platform",
   "runtime-version": "21.08",
   "sdk": "org.freedesktop.Sdk",
-  "command": "java -jar /app/bin/elite-warboard-missions-1.2.0-SNAPSHOT.jar",
+  "command": "java -jar /app/bin/elite-warboard-missions-1.2.0.jar",
   "modules": [
     {
       "name": "liberica-jdk-17",
       "buildsystem": "simple",
       "build-commands": [
         "mkdir -p /app/bin",
-        "cp /build/elite-warboard-missions-1.2.0-SNAPSHOT.jar /app/bin/",
+        "cp /build/elite-warboard-missions-1.2.0jar /app/bin/",
         "cp /path/to/liberica/jdk17 /app"
       ],
       "sources": [
