@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/11.0.1"
@@ -46,7 +47,7 @@
             </HBox>
             
             <Label fx:id="journalFolderDescriptionLabel" text="Votre dossier contenant les journaux de log, généralement à C:/Users/Saved Games/Frontier Developments/Elite Dangerous" 
-                   styleClass="config-description"/>
+                   styleClass="config-description" maxWidth="800.0" wrapText="true"/>
         </VBox>
 
         <!-- Section Nombre de jours -->
@@ -61,7 +62,7 @@
             </HBox>
             
             <Label fx:id="journalDaysDescriptionLabel" text="Nombre de jours en arrière pour lire les fichiers journal (par défaut: 30 jours)" 
-                   styleClass="config-description"/>
+                   styleClass="config-description" maxWidth="800.0" wrapText="true"/>
         </VBox>
 
         <!-- Section VR Mode -->
@@ -89,7 +90,7 @@
                 </VBox>
 
                 <!-- Bind Onglet précédent -->
-                <VBox spacing="5.0" visible="false">
+                <VBox spacing="5.0" visible="false" managed="false">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                         <Label fx:id="tabSwitchLeftLabel" text="Previous tab:" styleClass="config-label" prefWidth="180"/>
                         <Button fx:id="tabSwitchLeftButton" text="BIND" 
@@ -103,7 +104,7 @@
                 </VBox>
 
                 <!-- Bind Onglet suivant -->
-                <VBox spacing="5.0" visible="false">
+                <VBox spacing="5.0" visible="false" managed="false">
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                         <Label fx:id="tabSwitchRightLabel" text="Next tab:" styleClass="config-label" prefWidth="180"/>
                         <Button fx:id="tabSwitchRightButton" text="BIND" 
@@ -118,8 +119,17 @@
             </VBox>
         </VBox>
 
+        <!-- Section Support / Don -->
+        <VBox spacing="1.0" styleClass="config-section">
+            <Label fx:id="donateSectionLabel" text="SUPPORT" styleClass="config-section-title"/>
+            <Label fx:id="donateDescriptionLabel" text="Contribuez pour m'acheter un Caspian Explorer !" 
+                   styleClass="config-description"/>
+            <ImageView fx:id="donateButtonImage" fitWidth="120"  preserveRatio="true" smooth="true"
+                      styleClass="donate-button-image" onMouseClicked="#openDonateLink"/>
+        </VBox>
+
         <!-- Panneau des boutons d'action -->
-        <HBox alignment="CENTER_RIGHT" spacing="15.0" styleClass="config-action-panel">
+        <HBox alignment="CENTER_RIGHT" spacing="10.0" styleClass="config-action-panel">
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveConfig"
                     styleClass="elite-button" text="SAUVEGARDER"/>
             <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelConfig"

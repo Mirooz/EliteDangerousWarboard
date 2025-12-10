@@ -890,11 +890,12 @@
 }
 
 .config-description {
-    -fx-font-size: 11px;
+    -fx-font-size: 13px;
     -fx-text-fill: -fx-elite-text-dim;
     -fx-wrap-text: true;
     -fx-padding: 5 0 0 0;
 }
+
 
 .config-radio {
     -fx-text-fill: -fx-elite-text;
@@ -2192,6 +2193,13 @@
      -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.6), 15, 0.5, 0, 0);
      -fx-opacity: 0.9;
  }
+
+.donate-button-image {
+    -fx-cursor: hand;
+}
+.donate-button-image:hover {
+    -fx-opacity: 0.8;
+}
 .massacre-card-count {
     -fx-text-fill: -fx-elite-success;
     -fx-font-size: 13px;

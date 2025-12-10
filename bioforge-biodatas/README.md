@@ -486,6 +486,20 @@ The probability calculation uses:
 - **Global rarity correction**: `(species count) / (total bodies in dataset)`
 - **Filtering**: Species with probability < 1% are excluded
 
+This project uses the probability model
+
+```p = 1 − (1 − f)ⁿ ```
+
+where:
+
+```f is the relative frequency of a species in the Bioforge dataset,``` 
+
+```n is the number of biological species typically found on a planet.```
+
+Mathematically, this expression represents the probability of observing a given species at least once after n independent draws from a distribution where its occurrence rate is f.
+This has the practical effect of boosting the most likely species while keeping rarer ones low—matching the expected distribution of exobiology findings in Elite Dangerous.
+
 ## 🔗 Data Source
 
 Data comes from [Canonn Bioforge](https://bioforge.canonn.tech/), a community project that collects and analyzes exobiology discoveries in Elite Dangerous.
+

@@ -82,7 +82,7 @@
   - Displays species probabilities for each planet based on detected biological signals
   - Filters species with probability < 1% to show only likely candidates
 
-<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/proba.png" alt="Probability Calculation" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/overlayexplo.png" alt="Probability Calculation" style="max-width: 1200px;">
 
 - **Exobiology radar (compass)** : Real-time navigation radar for biological sample collection
   - **Compass display** : Circular radar showing cardinal directions (N, S, E, W) with Elite Dangerous orange theme
@@ -159,10 +159,13 @@ The application is available in **English and French** with complete interface t
 
 ## 🛠️ Installation
 
-### **Simple Installation (Recommended)**
+### **Windows**
 1. Download `EliteWarboard-Setup.exe` from releases
 2. Run the installer
 3. Launch the application from Start Menu or desktop
+
+### **Linux**
+1. Download `.deb` or `.flatpak`  from releases
 
 **✅ No external downloads required** : JDK and JavaFX are embedded in the installer. No Java installation or additional dependencies needed.
 
@@ -175,6 +178,7 @@ The application is available in **English and French** with complete interface t
 
 ## 🔧 Technologies Used
 
+- **JDK 17** : Java Development Kit
 - **JavaFX 17** : Modern user interface
 - **Maven** : Project management and automated build
 - **Jackson** : JSON journal file analysis
@@ -183,7 +187,6 @@ The application is available in **English and French** with complete interface t
 - **Inara API** : Conflict zone search and market information
 - **Canonn Bioforge** : Big data exobiology species probability calculations based on [bioforge.canonn.tech](https://bioforge.canonn.tech/)
 - **Inno Setup** : Installer creation with embedded runtime
-- **JDK 17** : Java Development Kit
 - **jpackage** : Installer creation with embedded runtime
 
 ## 📁 Project Structure

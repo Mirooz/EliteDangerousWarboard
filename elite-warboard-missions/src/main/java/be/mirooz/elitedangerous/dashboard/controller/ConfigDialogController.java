@@ -12,14 +12,19 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import net.java.games.input.Controller;
 import net.java.games.input.ControllerEnvironment;
 
+import java.awt.Desktop;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -129,6 +134,15 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private Button tabSwitchRightUnbindButton;
 
+    @FXML
+    private Label donateSectionLabel;
+
+    @FXML
+    private Label donateDescriptionLabel;
+
+    @FXML
+    private ImageView donateButtonImage;
+
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final DashboardService dashboardService = DashboardService.getInstance();
@@ -193,6 +207,9 @@ public class ConfigDialogController implements Initializable {
         // Mettre à jour l'état des bindings selon le VR mode
         updateBindingsEnabledState();
         
+        // Charger l'image du bouton de don
+        loadDonateButtonImage();
+        
         // Stocker les valeurs initiales pour détecter les changements
         originalJournalFolder = preferencesService.getJournalFolder();
         originalJournalDays = preferencesService.getJournalDays();
@@ -232,6 +249,10 @@ public class ConfigDialogController implements Initializable {
         browseJournalFolderButton.setText(localizationService.getString("config.browse"));
         saveButton.setText(localizationService.getString("config.save"));
         cancelButton.setText(localizationService.getString("config.cancel"));
+        
+        // Traductions pour la section don
+        donateSectionLabel.setText(localizationService.getString("config.donate.title"));
+        donateDescriptionLabel.setText(localizationService.getString("config.donate.description"));
         
         // Mettre à jour les affichages des binds
         updateWindowToggleBindDisplay();
@@ -547,7 +568,7 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private void browseJournalFolder() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Sélectionner le dossier Journal Elite Dangerous");
+        directoryChooser.setTitle("Select Elite Dangerous Journal Folder");
         
         // Définir le répertoire initial
         String currentPath = journalFolderTextField.getText();
@@ -987,6 +1008,33 @@ public class ConfigDialogController implements Initializable {
             return NativeKeyEvent.getKeyText(keyCode);
         } catch (Exception e) {
             return "Key " + keyCode;
+        }
+    }
+
+    private void loadDonateButtonImage() {
+        try {
+            Image donateImage = new Image(getClass().getResourceAsStream("/images/exploration/readme/donate.png"));
+            donateButtonImage.setImage(donateImage);
+        } catch (Exception e) {
+            Logger.getLogger(ConfigDialogController.class.getName())
+                .log(Level.WARNING, "Impossible de charger l'image du bouton de don", e);
+        }
+    }
+
+    @FXML
+    private void openDonateLink(MouseEvent event) {
+        try {
+            URI uri = new URI("https://www.paypal.com/donate/?hosted_button_id=2GSWMTWB4SHA2");
+            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                desktop.browse(uri);
+            } else {
+                Logger.getLogger(ConfigDialogController.class.getName())
+                    .log(Level.WARNING, "Impossible d'ouvrir le navigateur pour le lien de don");
+            }
+        } catch (Exception e) {
+            Logger.getLogger(ConfigDialogController.class.getName())
+                .log(Level.SEVERE, "Erreur lors de l'ouverture du lien de don", e);
         }
     }
 }

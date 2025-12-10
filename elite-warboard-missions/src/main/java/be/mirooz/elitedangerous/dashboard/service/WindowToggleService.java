@@ -28,6 +28,7 @@ import net.java.games.input.Controller;
 import net.java.games.input.ControllerEnvironment;
 
 import java.awt.*;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -97,7 +98,7 @@ public class WindowToggleService {
                 // Listener pour la touche de bind
                 scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressFromScene);
                 // Filtre pour désactiver la navigation au clavier (empêcher la sélection des éléments)
-                scene.addEventFilter(KeyEvent.KEY_PRESSED, this::disableKeyboardNavigation);
+                //scene.addEventFilter(KeyEvent.KEY_PRESSED, this::disableKeyboardNavigation);
             }
         });
     }
@@ -235,9 +236,19 @@ public class WindowToggleService {
             Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
             logger.setLevel(Level.OFF);
 
+            String nativeDir = System.getenv("LOCALAPPDATA") + "\\EliteWarboard\\native";
+            new File(nativeDir).mkdirs();
+
+            // Dire à JNativeHook d'utiliser ce dossier
+            System.setProperty("jnativehook.lib.path", nativeDir);
             // Enregistrer le hook seulement s'il n'est pas déjà enregistré
             if (!GlobalScreen.isNativeHookRegistered()) {
-                GlobalScreen.registerNativeHook();
+                try {
+                    GlobalScreen.registerNativeHook();
+                    System.out.println("Native hook OK, DLL dans : " + nativeDir);
+                } catch (Exception e) {
+                    System.err.println("Échec du chargement natif : " + e.getMessage());
+                }
             }
 
             // Créer et ajouter le listener
@@ -245,15 +256,12 @@ public class WindowToggleService {
                 @Override
                 public void nativeKeyPressed(NativeKeyEvent e) {
                     int keyCode = e.getKeyCode();
+                    if (keyCode == -1)
+                        return;
                     boolean isFocused = mainStage.isFocused();
 
-                    System.out.println("🔑 Touche pressée (GlobalScreen): " + keyCode + " (app focused: " + isFocused + ")");
+                    //System.out.println("🔑 Touche pressée (GlobalScreen): " + keyCode + " (app focused: " + isFocused + ")");
 
-                    // Ne traiter que si l'app n'a pas le focus (sinon c'est le listener JavaFX qui gère)
-                    if (isFocused) {
-                        System.out.println("⏭️ Ignoré car l'app a le focus (JavaFX listener gère)");
-                        return;
-                    }
 
                     if (keyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
                         System.out.println("✅ Touche window toggle détectée (GlobalScreen)! (code: " + windowToggleKeyCode + ")");
@@ -265,7 +273,7 @@ public class WindowToggleService {
                         System.out.println("✅ Touche tab right détectée (GlobalScreen)! (code: " + tabRightKeyCode + ")");
                         Platform.runLater(() -> switchToNextTab());
                     } else {
-                        System.out.println("ℹ️ Touche non bindée (code: " + keyCode + ")");
+                       // System.out.println("ℹ️ Touche non bindée (code: " + keyCode + ")");
                     }
                 }
             };
@@ -289,19 +297,16 @@ public class WindowToggleService {
 
         // Convertir KeyCode JavaFX en code NativeKeyEvent pour comparaison
         int eventKeyCode = convertJavaFXKeyCodeToNative(event.getCode());
-        KeyCode keyCode = event.getCode();
-
-        System.out.println("🔑 Touche pressée (JavaFX): " + keyCode.getName() + " (code: " + eventKeyCode + ")");
+        if (eventKeyCode == -1)
+            return;
+       // System.out.println("🔑 Touche pressée (JavaFX): " + keyCode.getName() + " (code: " + eventKeyCode + ")");
 
         // Vérifier le bind window toggle
         int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
-        if (eventKeyCode == windowToggleKeyCode && windowToggleKeyCode > 0 && preferencesService.isWindowToggleEnabled()) {
-            System.out.println("✅ Touche window toggle détectée! (code: " + windowToggleKeyCode + ")");
-            toggleWindowAndOpenCombo();
-            event.consume();
-            return;
+        if (eventKeyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
+            System.out.println("✅ Touche window toggle détectée (GlobalScreen)! (code: " + windowToggleKeyCode + ")");
+            Platform.runLater(() -> toggleWindowAndOpenCombo());
         }
-
         // Vérifier les binds de changement d'onglet
         if (preferencesService.isTabSwitchEnabled()) {
             int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
@@ -321,7 +326,7 @@ public class WindowToggleService {
                 return;
             }
         } else {
-            System.out.println("⚠️ Changement d'onglet désactivé dans les préférences");
+            //System.out.println("⚠️ Changement d'onglet désactivé dans les préférences");
         }
     }
 
@@ -549,6 +554,7 @@ public class WindowToggleService {
                                         windowToggleController.equalsIgnoreCase(ctrl.getName()) &&
                                         windowToggleComponent.equalsIgnoreCase(name) &&
                                         Math.abs(value - windowToggleValue) < 0.01f) {
+                                    System.out.println(ctrl.getName() + " - " + name + ": " + value + " ( analogique : " + comp.isAnalog() + ")" + comp.getDeadZone() + " " + comp.isRelative());
                                     Platform.runLater(() -> toggleWindowAndOpenCombo());
                                 }
 
