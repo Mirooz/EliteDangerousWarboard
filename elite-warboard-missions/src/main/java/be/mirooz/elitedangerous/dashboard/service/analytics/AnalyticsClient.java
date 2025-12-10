@@ -215,7 +215,7 @@ public class AnalyticsClient {
             // 🔥 FIRE-AND-FORGET — on envoie sans attendre la réponse
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.discarding())
                     .exceptionally(e -> null)              // ignore erreurs
-                    .thenRun(() -> System.out.println("Requête endSession envoyée.")).wait();
+                    .thenRun(() -> System.out.println("Requête endSession envoyée."));
 
             Thread.sleep(300);
         } catch (Exception e) {
