@@ -545,7 +545,7 @@ public class ExplorationBodiesOverlayComponent {
      */
     private VBox createEmptyCard() {
         VBox card = new VBox();
-        Label emptyLabel = new Label(localizationService.getString("exploration.no_system_selected"));
+        Label emptyLabel = new Label("");
         emptyLabel.getStyleClass().add("exploration-overlay-title");
         card.getChildren().add(emptyLabel);
         card.getStyleClass().add("mirror-overlay");

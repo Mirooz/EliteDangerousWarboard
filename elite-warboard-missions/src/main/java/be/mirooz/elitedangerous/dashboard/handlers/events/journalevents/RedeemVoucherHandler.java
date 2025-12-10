@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class RedeemVoucherHandler implements JournalEventHandler {
@@ -29,6 +30,8 @@ public class RedeemVoucherHandler implements JournalEventHandler {
                 destroyedShipsRegistery.clearCombatBond();
                 System.out.println("Reset complet des statistiques de combatbond après encaissement");
             }
+
+            MissionEventNotificationService.getInstance().notifyOnMissionStatusChanged();
 
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de RedeemVoucher: " + e.getMessage());
