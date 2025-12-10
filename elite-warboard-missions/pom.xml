@@ -455,14 +455,15 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml" 
-                                                 token="${project.version}" 
+
+                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml"
+                                                 token="${project.version}"
                                                  value="${project.version}"/>
                                         <tstamp>
                                             <format property="CURRENT_DATE" pattern="yyyy-MM-dd"/>
                                         </tstamp>
-                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml" 
-                                                 token="@DATE@" 
+                                        <replace file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml"
+                                                 token="@DATE@"
                                                  value="${CURRENT_DATE}"/>
                                     </target>
                                 </configuration>

@@ -16,7 +16,7 @@ modules:
   - name: elite-warboard
     buildsystem: simple
     build-commands:
-      # Copie l’exécutable principal (app-image)
+      # Copie l’exécutable principal
       - install -D "elite-warboard-missions/executable/EliteWarboard/bin/EliteWarboard" "/app/bin/EliteWarboard"
 
       # Copie la lib JavaFX + runtime embarqué
