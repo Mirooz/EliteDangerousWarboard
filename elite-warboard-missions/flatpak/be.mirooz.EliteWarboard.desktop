@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Elite Warboard
 Comment=Elite Dangerous mission and mining manager
-Exec=flatpak run be.mirooz.EliteWarboard
+Exec=EliteWarboard
 Icon=be.mirooz.EliteWarboard
 Terminal=false
 Type=Application
