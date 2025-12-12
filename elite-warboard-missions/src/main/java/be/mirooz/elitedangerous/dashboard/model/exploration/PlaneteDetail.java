@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Modèle représentant les détails d'une planète scannée dans Elite Dangerous.
@@ -187,6 +188,55 @@ public class PlaneteDetail extends ACelesteBody {
         if (matchingSpecies == null || matchingSpecies.isEmpty()) {
             return List.of();
         }
+        //grouper les specie avec le name+specie name (juste la couleur qui diffère)
+        matchingSpecies =
+                matchingSpecies.stream()
+                        .collect(Collectors.toMap(
+                                e -> e.getKey().getName() + " " + e.getKey().getSpecieName(),
+                                e -> e,
+                                (e1, e2) -> e1.getValue() >= e2.getValue() ? e1 : e2
+                        ))
+                        .values()
+                        .stream()
+                        .toList();
+
+        //
+        // 4B : si espece de meme type, prendre la plus probable si proba 2x supérieur
+        matchingSpecies =
+                matchingSpecies.stream()
+                        .collect(Collectors.groupingBy(
+                                e -> e.getKey().getName()
+                        ))
+                        .values()
+                        .stream()
+                        .flatMap(group -> {
+                            // valeur max du groupe
+                            double maxValue = group.stream()
+                                    .mapToDouble(Map.Entry::getValue)
+                                    .max()
+                                    .orElse(0.0);
+
+                            double threshold = maxValue / 2.0;
+
+                            // garder uniquement ceux >= max/2
+                            return group.stream()
+                                    .filter(e -> e.getValue() >= threshold);
+                        })
+                        .toList();
+
+        //
+       /* matchingSpecies =
+                matchingSpecies.stream()
+                        .collect(Collectors.toMap(
+                                sp -> sp.getKey().getName() + " " + sp.getKey().getSpecieName(),
+                                sp -> sp,
+                                (p1, p2) -> {
+                                    // Additionner les probabilités
+                                    double newProb = p1.getProbability() + p2.getProbability();
+                                    p1.setProbability(newProb);
+                                    return p1; // fusionne en un seul objet
+                                }
+                        ));*/
 
         // -- 1) Total occurrences brutes --
         double totalOccurrences = matchingSpecies.stream()
@@ -206,14 +256,14 @@ public class PlaneteDetail extends ACelesteBody {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        // -- 3) Filtrer les espèces < 1% --
-        rawList.removeIf(sp -> sp.getProbability() < 1.0);
+        // -- 3) Filtrer les espèces < 5% --
+        rawList.removeIf(sp -> sp.getProbability() < 5.0);
         if (rawList.isEmpty()) {
             return List.of();
         }
 
         // -- 4) Regrouper par nom (= genus ou name) et par genre et garder la plus probable --
-        Map<String, SpeciesProbability> bestByName =
+/*        Map<String, SpeciesProbability> bestByName =
                 rawList.stream()
                         .collect(Collectors.toMap(
                                 sp -> sp.getBioSpecies().getName() + " " + sp.getBioSpecies().getSpecieName(),
@@ -224,9 +274,11 @@ public class PlaneteDetail extends ACelesteBody {
                                     p1.setProbability(newProb);
                                     return p1; // fusionne en un seul objet
                                 }
-                        ));
+                        ));*/
 
-        List<SpeciesProbability> finalList = new ArrayList<>(bestByName.values());
+
+
+        List<SpeciesProbability> finalList = new ArrayList<>(rawList);
 
         // -- 5) SI count == nb d’espèces après regroupement → TOUTES = 100% --
         if (finalList.size() <= count) {
