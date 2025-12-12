@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,7 +24,7 @@ import static java.time.format.DateTimeFormatter.ofLocalizedDateTime;
 /**
  * Contrôleur pour le panneau des vaisseaux détruits
  */
-public class DestroyedShipsController implements Initializable, IRefreshable, IBatchListener {
+public class DestroyedShipsController implements Initializable, IRefreshable, IBatchListener,MissionEventNotificationService.MissionEventListener {
 
     @FXML
     private VBox destroyedShipsPanel;
@@ -119,14 +120,14 @@ public class DestroyedShipsController implements Initializable, IRefreshable, IB
     @Override
     public void onBatchStart(){
         destroyedShipsTable.setItems(null);
+        MissionEventNotificationService.getInstance().clearListeners();
     }
     @Override
     public void onBatchEnd() {
         destroyedShipsTable.setItems(destroyedShipsRegistery.getDestroyedShips());
         updateStatistics();
+        MissionEventNotificationService.getInstance().addListener(this);
     }
-
-
     private void updateStatistics() {
         int shipsSinceReset = destroyedShipsRegistery.getDestroyedShips().size();
         int totalBounty = destroyedShipsRegistery.getTotalBountyEarned();
@@ -182,6 +183,16 @@ public class DestroyedShipsController implements Initializable, IRefreshable, IB
 
     @Override
     public void refreshUI() {
+        //updateStatistics();
+    }
+
+    @Override
+    public void onStatusChanged() {
+        updateStatistics();
+    }
+
+    @Override
+    public void onKillChanged() {
         updateStatistics();
     }
 }
