@@ -302,6 +302,15 @@ public class PlaneteDetail extends ACelesteBody {
             handleScanTypeActions(scanTypeBio, specie);
             // Ajoute le scan type
             specie.addScanType(scanTypeBio);
+            if (scanTypeBio.equals(ScanTypeBio.ANALYSE)){
+                // Si la planète a des exobio non collectés, filtrer la liste pour n'afficher que cette planète
+                if (this.getNumSpeciesDetected() != null && this.getNumSpeciesDetected() > this.getConfirmedSpecies().stream().filter(BioSpecies::isCollected).count()) {
+                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(bodyID);
+                } else {
+                    // Sinon, désactiver le filtre
+                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(null);
+                }
+            }
 
         } catch (Exception e) {
             System.err.println("❌ Erreur addConfirmedSpecies: " + e.getMessage());
@@ -354,13 +363,10 @@ public class PlaneteDetail extends ACelesteBody {
             case ANALYSE -> {
                 OrganicDataSaleRegistry.getInstance()
                         .addAnalyzedOrganicData(specie, this.isWasFootfalled());
-                // Si la planète a des exobio non collectés, filtrer la liste pour n'afficher que cette planète
-                if (this.getNumSpeciesDetected() != null && this.getNumSpeciesDetected() > this.getConfirmedSpecies().stream().filter(BioSpecies::isCollected).count()) {
-                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(bodyID);
-                } else {
-                    // Sinon, désactiver le filtre
-                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(null);
+                if (this.getBodyName().equalsIgnoreCase("Outordy EB-Z c28-0 ABC 2 d")){
+                    System.out.println("hee");
                 }
+
             }
 
             case SAMPLE, LOG -> {
