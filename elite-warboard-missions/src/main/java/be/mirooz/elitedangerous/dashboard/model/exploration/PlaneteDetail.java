@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.biologic.*;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
 import lombok.Builder;
 import lombok.Data;
@@ -158,15 +159,14 @@ public class PlaneteDetail extends ACelesteBody {
                                     )
                             )
                             .toList();
-                }
-                else{
+                } else {
                     SpeciesProbability brainTreeProbability = new SpeciesProbability(BioSpecies.brainTree(), 100.0);
                     this.bioSpecies.add(new Scan(level, new ArrayList<>(List.of(brainTreeProbability))));
                     return;
                 }
             }
 
-            List<SpeciesProbability> probabilities = computeProbabilities(matchingSpecies, count,level,genuses);
+            List<SpeciesProbability> probabilities = computeProbabilities(matchingSpecies, count, level, genuses);
             System.out.println("Bio pour body :" + this.bodyName + " level " + level + " count " + count + (genuses != null ? " genus " + genuses : ""));
             for (SpeciesProbability probability : probabilities) {
                 System.out.println("    " + probability.getBioSpecies().getFullName() + " : " + probability.getProbability());
@@ -274,8 +274,6 @@ public class PlaneteDetail extends ACelesteBody {
         }
 
 
-
-
         // -- 6) Trier par probabilité décroissante --
         finalList.sort(Comparator.comparingDouble(SpeciesProbability::getProbability).reversed());
 
@@ -356,6 +354,13 @@ public class PlaneteDetail extends ACelesteBody {
             case ANALYSE -> {
                 OrganicDataSaleRegistry.getInstance()
                         .addAnalyzedOrganicData(specie, this.isWasFootfalled());
+                // Si la planète a des exobio non collectés, filtrer la liste pour n'afficher que cette planète
+                if (this.getNumSpeciesDetected() != null && this.getNumSpeciesDetected() > this.getConfirmedSpecies().stream().filter(BioSpecies::isCollected).count()) {
+                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(bodyID);
+                } else {
+                    // Sinon, désactiver le filtre
+                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(null);
+                }
             }
 
             case SAMPLE, LOG -> {

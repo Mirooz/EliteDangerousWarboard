@@ -1468,28 +1468,36 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     /**
      * Ajoute récursivement les enfants d'un parent
      */
-    private void addChildrenRecursively(ACelesteBody parent, Collection<ACelesteBody> allBodies,
-                                       List<ACelesteBody> result, Set<Integer> processed) {
-        List<ACelesteBody> children = allBodies.stream()
+    private void addChildrenRecursively(
+            ACelesteBody parent,
+            Collection<ACelesteBody> allBodies,
+            List<ACelesteBody> result,
+            Set<Integer> processed) {
+
+        // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+        List<ACelesteBody> snapshot = new ArrayList<>(allBodies);
+
+        List<ACelesteBody> children = snapshot.stream()
                 .filter(body -> !processed.contains(body.getBodyID()))
                 .filter(body -> {
                     var parents = body.getParents();
                     if (parents == null || parents.isEmpty()) {
                         return false;
                     }
-                    return parents.stream().anyMatch(p -> p.getBodyID() == parent.getBodyID());
+                    return parents.stream()
+                            .anyMatch(p -> p.getBodyID() == parent.getBodyID());
                 })
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
-                .collect(Collectors.toList());
+                .toList(); // Java 16+
 
         for (ACelesteBody child : children) {
-            if (!processed.contains(child.getBodyID())) {
+            if (processed.add(child.getBodyID())) { // micro-optimisation
                 result.add(child);
-                processed.add(child.getBodyID());
                 addChildrenRecursively(child, allBodies, result, processed);
             }
         }
     }
+
 
     /**
      * Calcule la profondeur hiérarchique d'un corps
@@ -2319,6 +2327,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     @Override
     public void onBodyFilter(Integer bodyID) {
+        System.out.println("called here " + bodyID);
+
         Platform.runLater(() -> {
             filteredBodyID = bodyID;
             // Rafraîchir la liste des corps avec le nouveau filtre
