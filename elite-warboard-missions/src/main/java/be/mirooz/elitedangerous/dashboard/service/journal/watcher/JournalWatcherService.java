@@ -2,6 +2,8 @@ package be.mirooz.elitedangerous.dashboard.service.journal.watcher;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JournalWatcherService implements Runnable {
 
@@ -12,60 +14,99 @@ public class JournalWatcherService implements Runnable {
 
     private Thread watcherThread;
     private volatile boolean running = false;
+    private WatchService watchService;
+    private final Set<Path> tailedFiles = ConcurrentHashMap.newKeySet();
 
     private Path journalDir;
     private final JournalTailService tailService = JournalTailService.getInstance();
 
     private JournalWatcherService() {}
 
-    public void start(String journalFolder) {
-        // Si déjà en cours, on arrête avant de redémarrer
-        stop();
+    public synchronized void start(String journalFolder) {
+        if (running) {
+            System.out.println("[Watcher] Already running, ignoring start()");
+            return;
+        }
 
         this.journalDir = Paths.get(journalFolder);
         this.running = true;
 
         watcherThread = new Thread(this, "JournalWatcherThread");
-        watcherThread.setDaemon(true); // ✅ ne bloque pas la fermeture de la JVM
+        watcherThread.setDaemon(true);
         watcherThread.start();
-
-        System.out.println("[Watcher] Service started on folder: " + journalDir);
     }
 
     @Override
     public void run() {
-        try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
+        System.out.println("[Watcher] Thread started");
+
+        try {
+            watchService = FileSystems.getDefault().newWatchService();
             journalDir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
 
-            while (running && !Thread.currentThread().isInterrupted()) {
+            while (running) {
                 WatchKey key;
+
                 try {
-                    key = watchService.take();
+                    key = watchService.take(); // bloque proprement
                 } catch (InterruptedException e) {
+                    // arrêt volontaire
                     break;
                 }
 
                 for (WatchEvent<?> event : key.pollEvents()) {
-                    if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                        Path createdPath = journalDir.resolve((Path) event.context());
-                        String filename = createdPath.getFileName().toString();
 
-                        if (filename.matches("^Journal\\..*\\.log$")) {
-                            System.out.println("[Watcher] New journal detected: " + filename);
-                            tailService.start(createdPath.toFile(),true);
-                        }
+                    if (event.kind() != StandardWatchEventKinds.ENTRY_CREATE) {
+                        continue;
+                    }
+
+                    Path relativePath = (Path) event.context();
+                    Path createdPath = journalDir.resolve(relativePath);
+                    String filename = createdPath.getFileName().toString();
+
+                    if (!filename.matches("^Journal\\..*\\.log$")) {
+                        continue;
+                    }
+
+                    // Empêche de tail le même fichier plusieurs fois
+                    if (!tailedFiles.add(createdPath)) {
+                        continue;
+                    }
+
+                    System.out.println("[Watcher] New journal detected: " + filename);
+
+                    try {
+                        tailService.start(createdPath.toFile(), true);
+                    } catch (Exception ex) {
+                        System.err.println("[Watcher] Failed to start tail for " + filename);
+                        ex.printStackTrace();
                     }
                 }
 
-                if (!key.reset()) break;
+                // IMPORTANT : reset obligatoire
+                if (!key.reset()) {
+                    System.err.println("[Watcher] WatchKey invalid, stopping watcher");
+                    break;
+                }
             }
 
         } catch (IOException e) {
-            if (running) { // si ce n'est pas juste un arrêt volontaire
-                System.err.println("[Watcher] Error: " + e.getMessage());
+            if (running) {
+                System.err.println("[Watcher] IO error: " + e.getMessage());
+                e.printStackTrace();
             }
         } finally {
-            System.out.println("[Watcher] Stopped.");
+            running = false;
+
+            // 🔥 FERMETURE EXPLICITE DU WATCHSERVICE
+            if (watchService != null) {
+                try {
+                    watchService.close();
+                } catch (IOException ignored) {
+                }
+            }
+
+            System.out.println("[Watcher] Thread stopped");
         }
     }
 

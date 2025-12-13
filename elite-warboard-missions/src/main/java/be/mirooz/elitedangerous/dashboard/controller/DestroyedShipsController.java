@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -129,14 +130,17 @@ public class DestroyedShipsController implements Initializable, IRefreshable, IB
         MissionEventNotificationService.getInstance().addListener(this);
     }
     private void updateStatistics() {
-        int shipsSinceReset = destroyedShipsRegistery.getDestroyedShips().size();
-        int totalBounty = destroyedShipsRegistery.getTotalBountyEarned();
-        int totalCombatBond = destroyedShipsRegistery.getTotalConflictBounty();
 
-        totalShipsLabel.setText(String.valueOf(shipsSinceReset));
-        totalBountyLabel.setText(getFormattedNumber(totalBounty+totalCombatBond) + " Cr");
+        Platform.runLater(() -> {
+            int shipsSinceReset = destroyedShipsRegistery.getDestroyedShips().size();
+            int totalBounty = destroyedShipsRegistery.getTotalBountyEarned();
+            int totalCombatBond = destroyedShipsRegistery.getTotalConflictBounty();
 
-        updateFactionBountyStats();
+            totalShipsLabel.setText(String.valueOf(shipsSinceReset));
+            totalBountyLabel.setText(getFormattedNumber(totalBounty + totalCombatBond) + " Cr");
+
+            updateFactionBountyStats();
+        });
     }
 
     private void updateFactionBountyStats() {
