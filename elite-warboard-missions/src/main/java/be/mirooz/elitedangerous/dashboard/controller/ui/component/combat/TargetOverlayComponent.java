@@ -27,6 +27,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -256,9 +258,12 @@ public class TargetOverlayComponent {
         
         LocalizationService localizationService = LocalizationService.getInstance();
 
+        // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+        // La map peut être modifiée pendant l'itération (ObservableMap, etc.)
+        List<Map.Entry<TargetType, CibleStats>> statsSnapshot = new ArrayList<>(stats.entrySet());
         
         // Sections
-        for (Map.Entry<TargetType, CibleStats> entry : stats.entrySet()) {
+        for (Map.Entry<TargetType, CibleStats> entry : statsSnapshot) {
             TargetType targetType = entry.getKey();
             CibleStats cibleStats = entry.getValue();
             
@@ -301,7 +306,9 @@ public class TargetOverlayComponent {
             int totalConflictBounty = registry.getTotalConflictBounty();
             
             // Calculer les pending credits
-            long pendingCredits = missionsRegistry.getGlobalMissionMap().values().stream()
+            // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+            List<Mission> missionsSnapshot = new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
+            long pendingCredits = missionsSnapshot.stream()
                     .filter(Mission::isPending)
                     .mapToLong(Mission::getReward)
                     .sum();
@@ -384,8 +391,13 @@ public class TargetOverlayComponent {
         PopupManager popupManager = PopupManager.getInstance();
         CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
         
-        for (TargetFactionStats targetFaction : cibleStats.getFactions().values()) {
-            int maxKills = targetFaction.getSources().values().stream()
+        // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+        List<TargetFactionStats> factionsSnapshot = new ArrayList<>(cibleStats.getFactions().values());
+        
+        for (TargetFactionStats targetFaction : factionsSnapshot) {
+            // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+            List<SourceFactionStats> sourcesSnapshot = new ArrayList<>(targetFaction.getSources().values());
+            int maxKills = sourcesSnapshot.stream()
                     .mapToInt(SourceFactionStats::getKills)
                     .max()
                     .orElse(0);
@@ -414,7 +426,8 @@ public class TargetOverlayComponent {
             rowIndex++;
             
             // Ajouter les sources liées à cette faction cible
-            for (SourceFactionStats src : targetFaction.getSources().values()) {
+            // Utiliser le snapshot créé plus haut
+            for (SourceFactionStats src : sourcesSnapshot) {
                 Label sourceLabel = new Label("  " + src.getSourceFaction());
                 sourceLabel.getStyleClass().add("source-faction-label");
                 sourceLabel.setWrapText(false);
@@ -475,7 +488,9 @@ public class TargetOverlayComponent {
     private String findDestinationSystemForFaction(String targetFaction, Map<String, Mission> missions) {
         if (missions == null) return null;
         
-        return missions.values().stream()
+        // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+        List<Mission> missionsSnapshot = new ArrayList<>(missions.values());
+        return missionsSnapshot.stream()
                 .filter(mission -> mission.getTargetFaction() != null && mission.getTargetFaction().equals(targetFaction))
                 .filter(mission -> mission.getDestinationSystem() != null && !mission.getDestinationSystem().isEmpty())
                 .map(Mission::getDestinationSystem)
@@ -489,7 +504,9 @@ public class TargetOverlayComponent {
     private String[] findOriginSystemAndStationForFaction(String sourceFaction, Map<String, Mission> missions) {
         if (missions == null) return new String[]{null, null};
         
-        return missions.values().stream()
+        // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+        List<Mission> missionsSnapshot = new ArrayList<>(missions.values());
+        return missionsSnapshot.stream()
                 .filter(mission -> mission.getFaction() != null && mission.getFaction().equals(sourceFaction))
                 .filter(mission -> mission.getOriginSystem() != null && !mission.getOriginSystem().isEmpty())
                 .map(mission -> new String[]{mission.getOriginSystem(), mission.getOriginStation()})
@@ -615,7 +632,10 @@ public class TargetOverlayComponent {
             }
         } else if (node instanceof javafx.scene.layout.Pane) {
             javafx.scene.layout.Pane pane = (javafx.scene.layout.Pane) node;
-            for (javafx.scene.Node child : pane.getChildren()) {
+            // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+            // La liste des enfants peut être modifiée pendant l'itération
+            List<javafx.scene.Node> childrenSnapshot = new ArrayList<>(pane.getChildren());
+            for (javafx.scene.Node child : childrenSnapshot) {
                 applyTextScaleToNode(child, scale);
             }
         }

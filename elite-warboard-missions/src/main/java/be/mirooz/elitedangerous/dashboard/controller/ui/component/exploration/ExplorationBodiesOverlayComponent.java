@@ -653,7 +653,10 @@ public class ExplorationBodiesOverlayComponent {
             label.setStyle(scaleStyle);
         } else if (node instanceof javafx.scene.layout.Pane) {
             javafx.scene.layout.Pane pane = (javafx.scene.layout.Pane) node;
-            for (javafx.scene.Node child : pane.getChildren()) {
+            // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+            // La liste des enfants peut être modifiée pendant l'itération
+            java.util.List<javafx.scene.Node> childrenSnapshot = new java.util.ArrayList<>(pane.getChildren());
+            for (javafx.scene.Node child : childrenSnapshot) {
                 applyTextScaleToNode(child, scale);
             }
         }

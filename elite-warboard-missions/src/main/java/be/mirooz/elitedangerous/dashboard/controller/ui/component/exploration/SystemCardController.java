@@ -207,8 +207,12 @@ public class SystemCardController implements Initializable {
         List<ACelesteBody> result = new ArrayList<>();
         Set<Integer> processed = new HashSet<>();
         
+        // 🔒 SNAPSHOT complet pour éviter ConcurrentModificationException
+        // La collection originale peut être modifiée pendant l'itération (ObservableCollection, etc.)
+        List<ACelesteBody> bodiesSnapshot = new ArrayList<>(bodies);
+        
         // Identifier les soleils (sans parent ou avec parent "Null")
-        List<ACelesteBody> stars = bodies.stream()
+        List<ACelesteBody> stars = bodiesSnapshot.stream()
                 .filter(body -> body instanceof StarDetail)
                 .filter(body -> {
                     var parents = body.getParents();
@@ -223,18 +227,18 @@ public class SystemCardController implements Initializable {
             if (!processed.contains(star.getBodyID())) {
                 result.add(star);
                 processed.add(star.getBodyID());
-                addChildrenRecursively(star, bodies, result, processed);
+                addChildrenRecursively(star, bodiesSnapshot, result, processed);
             }
         }
 
         // Ajouter les corps orphelins
-        bodies.stream()
+        bodiesSnapshot.stream()
                 .filter(body -> !processed.contains(body.getBodyID()))
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                 .forEach(body -> {
                     result.add(body);
                     processed.add(body.getBodyID());
-                    addChildrenRecursively(body, bodies, result, processed);
+                    addChildrenRecursively(body, bodiesSnapshot, result, processed);
                 });
 
         return result;
@@ -245,7 +249,10 @@ public class SystemCardController implements Initializable {
      */
     private void addChildrenRecursively(ACelesteBody parent, Collection<ACelesteBody> allBodies,
                                        List<ACelesteBody> result, Set<Integer> processed) {
-        List<ACelesteBody> children = allBodies.stream()
+        // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+        List<ACelesteBody> snapshot = new ArrayList<>(allBodies);
+        
+        List<ACelesteBody> children = snapshot.stream()
                 .filter(body -> !processed.contains(body.getBodyID()))
                 .filter(body -> {
                     var parents = body.getParents();
@@ -261,7 +268,8 @@ public class SystemCardController implements Initializable {
             if (!processed.contains(child.getBodyID())) {
                 result.add(child);
                 processed.add(child.getBodyID());
-                addChildrenRecursively(child, allBodies, result, processed);
+                // Passer le snapshot au lieu de allBodies pour éviter ConcurrentModificationException
+                addChildrenRecursively(child, snapshot, result, processed);
             }
         }
     }
