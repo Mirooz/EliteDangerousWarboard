@@ -120,10 +120,10 @@ public class VersionCheckService {
             }
             
             // Valeur par défaut
-            return "1.3.0-SNAPSHOT";
+            return "1.2.0-SNAPSHOT";
         } catch (Exception e) {
             System.err.println("Erreur lors de la récupération de la version: " + e.getMessage());
-            return "1.3.0-SNAPSHOT";
+            return "1.2.0-SNAPSHOT";
         }
     }
     
@@ -133,7 +133,7 @@ public class VersionCheckService {
      * @return Version normalisée
      */
     private String normalizeVersion(String version) {
-        if (version == null) return "1.3.0-SNAPSHOT";
+        if (version == null) return "1.2.0-SNAPSHOT";
         
         // Retirer le préfixe "v" si présent
         if (version.startsWith("v") || version.startsWith("V")) {
