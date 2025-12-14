@@ -1,9 +1,12 @@
 package be.mirooz.elitedangerous.dashboard;
 
+import be.mirooz.elitedangerous.dashboard.controller.ui.component.VersionUpdateNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
+import be.mirooz.elitedangerous.dashboard.service.VersionCheckService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
+import be.mirooz.elitedangerous.dashboard.service.analytics.dto.LatestVersionResponse;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Application;
@@ -99,6 +102,9 @@ public class EliteDashboardApp extends Application {
             windowToggleService.initialize(stage, comboBox, rootPane);
             windowToggleService.start();
 
+            // Vérifier la version de l'application de manière asynchrone
+            checkForUpdates(root);
+
             System.out.println("✅ Application démarrée");
 
         } catch (Exception e) {
@@ -112,6 +118,72 @@ public class EliteDashboardApp extends Application {
         stage.setY(bounds.getMinY());
         stage.setWidth(bounds.getWidth());
         stage.setHeight(bounds.getHeight());
+    }
+    
+    /**
+     * Vérifie si une nouvelle version est disponible et affiche une notification si nécessaire
+     */
+    private void checkForUpdates(StackPane rootPane) {
+        // Vérifier de manière asynchrone pour ne pas bloquer le démarrage
+        new Thread(() -> {
+            try {
+                VersionCheckService versionService = VersionCheckService.getInstance();
+                String currentVersion = versionService.getCurrentVersion();
+                LatestVersionResponse latestVersion = versionService.getLatestVersion();
+                
+                if (latestVersion != null) {
+                    String latestVersionTag = latestVersion.getTagName();
+                    if (versionService.isNewerVersion(currentVersion, latestVersionTag)) {
+                        // Afficher la notification sur le thread JavaFX
+                        Platform.runLater(() -> {
+                            // Chercher le popupContainer dans la hiérarchie
+                            StackPane popupContainer = findPopupContainer(rootPane);
+                            if (popupContainer != null) {
+                                new VersionUpdateNotificationComponent(
+                                    latestVersionTag,
+                                    latestVersion.getHtmlUrl(),
+                                    popupContainer
+                                );
+                            } else {
+                                // Fallback: utiliser rootPane directement
+                                new VersionUpdateNotificationComponent(
+                                    latestVersionTag,
+                                    latestVersion.getHtmlUrl(),
+                                    rootPane
+                                );
+                            }
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                // Ignorer silencieusement les erreurs de vérification de version
+                System.err.println("Erreur lors de la vérification de version: " + e.getMessage());
+            }
+        }).start();
+    }
+    
+    /**
+     * Trouve le popupContainer dans la hiérarchie des nœuds
+     */
+    private StackPane findPopupContainer(javafx.scene.Node root) {
+        if (root instanceof StackPane stackPane) {
+            // Vérifier si c'est le popupContainer (chercher par ID ou par structure)
+            if (root.getId() != null && root.getId().equals("popupContainer")) {
+                return stackPane;
+            }
+        }
+        
+        // Parcourir récursivement les enfants
+        if (root instanceof javafx.scene.layout.Pane pane) {
+            for (javafx.scene.Node child : pane.getChildren()) {
+                StackPane found = findPopupContainer(child);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        
+        return null;
     }
 
     public static void main(String[] args) {

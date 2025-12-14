@@ -415,9 +415,6 @@ public class PlaneteDetail extends ACelesteBody {
             case ANALYSE -> {
                 OrganicDataSaleRegistry.getInstance()
                         .addAnalyzedOrganicData(specie, this.isWasFootfalled());
-                if (this.getBodyName().equalsIgnoreCase("Outordy EB-Z c28-0 ABC 2 d")){
-                    System.out.println("hee");
-                }
 
             }
 

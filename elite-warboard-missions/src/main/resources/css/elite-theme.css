@@ -1783,6 +1783,60 @@
     -fx-text-alignment: center;
 }
 
+/* Styles pour la notification de mise à jour de version */
+.version-update-notification {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-success;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 174, 239, 0.5), 15, 0, 0, 3);
+    -fx-max-height: none;
+    -fx-pref-height: auto;
+}
+
+.version-notification-message {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-family: "Arial", sans-serif;
+}
+
+.version-download-button {
+    -fx-background-color: -fx-elite-success;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 12 6 12;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+
+.version-download-button:hover {
+    -fx-background-color: -fx-elite-cyan;
+    -fx-effect: dropshadow(gaussian, rgba(0, 174, 239, 0.6), 8, 0, 0, 2);
+}
+
+.version-close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 8 4 8;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-min-width: 24px;
+    -fx-pref-width: 24px;
+    -fx-max-width: 24px;
+}
+
+.version-close-button:hover {
+    -fx-text-fill: -fx-elite-danger;
+    -fx-background-color: rgba(255, 0, 0, 0.1);
+}
+
 /* Styles pour la fenêtre de dialogue de recherche massacre - Style Elite Dangerous */
 .dialog-content {
     -fx-background-color: -fx-elite-dark;
