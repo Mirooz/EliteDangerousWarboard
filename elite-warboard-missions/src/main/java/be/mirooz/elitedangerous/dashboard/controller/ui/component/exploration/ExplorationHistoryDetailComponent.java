@@ -410,7 +410,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         int mappedPlanetsCount = 0;
         int totalMappablePlanetsCount = 0;
         
-        for (ACelesteBody body : system.getCelesteBodies()) {
+        // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+        List<ACelesteBody> bodiesSnapshot = new ArrayList<>(system.getCelesteBodies());
+        for (ACelesteBody body : bodiesSnapshot) {
             if (body instanceof PlaneteDetail planet) {
                 // Compter les espèces confirmées collectées (avec ANALYSE)
                 if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
@@ -542,13 +544,15 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         }
         
         // 6. Valeur en Cr (corps célestes + exobio collectés)
-        long totalValue = system.getCelesteBodies().stream()
+        // Utiliser le snapshot créé plus haut
+        long totalValue = bodiesSnapshot.stream()
                 .mapToLong(ACelesteBody::computeBodyValue)
                 .sum();
         
         // Calculer le prix total des exobio collectés
         long exobioValue = 0;
-        for (ACelesteBody body : system.getCelesteBodies()) {
+        // Utiliser le snapshot créé plus haut
+        for (ACelesteBody body : bodiesSnapshot) {
             if (body instanceof PlaneteDetail planet) {
                 if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
                     for (BioSpecies species : planet.getConfirmedSpecies()) {
@@ -626,7 +630,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         // Ajouter la valeur des exobio collectés pour tous les systèmes
         for (SystemVisited system : sale.getSystemsVisited()) {
-            for (ACelesteBody body : system.getCelesteBodies()) {
+            // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
+            List<ACelesteBody> bodiesSnapshot = new ArrayList<>(system.getCelesteBodies());
+            for (ACelesteBody body : bodiesSnapshot) {
                 if (body instanceof PlaneteDetail planet) {
                     if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
                         for (BioSpecies species : planet.getConfirmedSpecies()) {
