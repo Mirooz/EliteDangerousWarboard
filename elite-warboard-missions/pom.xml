@@ -315,7 +315,7 @@
                                         --module-path "C:/Progra~1/BellSoft/LibericaJDK-17-Full/jmods"
                                         --add-modules
                                         java.base,javafx.controls,javafx.fxml,java.logging,java.xml,java.net.http,jdk.crypto.ec
-                                        --strip-debug --compress=2
+                                        --strip-debug --compress=2 --no-header-files --no-man-pages --strip-native-commands
                                         --output "${project.build.directory}/runtime"
                                     </commandlineArgs>
                                 </configuration>
