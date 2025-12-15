@@ -2074,7 +2074,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Informations exobio (X/Y) - seulement pour les planètes
         if (body instanceof PlaneteDetail planet) {
             // Liste des BioSpecies avec probabilités
-            if (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) {
+            // Afficher si on a des bioSpecies OU des confirmedSpecies
+            if ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
+                (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty())) {
                 VBox speciesList = new VBox(4);
                 speciesList.setPadding(new javafx.geometry.Insets(8, 8, 8, 8));
                 speciesList.getStyleClass().add("exploration-body-species-list");
@@ -2089,15 +2091,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     }
                 }
                 
+                // Set pour tracker les noms déjà traités avec confirmedSpecies
+                Set<String> processedConfirmedNames = new HashSet<>();
+                
                 // Prendre le scan le plus récent (niveau le plus élevé)
-                Scan latestScan = planet.getBioSpecies().stream()
-                        .max(Comparator.comparingInt(Scan::getScanNumber))
-                        .orElse(null);
+                Scan latestScan = null;
+                if (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) {
+                    latestScan = planet.getBioSpecies().stream()
+                            .max(Comparator.comparingInt(Scan::getScanNumber))
+                            .orElse(null);
+                }
                 
                 if (latestScan != null && latestScan.getSpeciesProbabilities() != null) {
-                    // Set pour tracker les noms déjà traités avec confirmedSpecies
-                    Set<String> processedConfirmedNames = new HashSet<>();
-                    
                     for (SpeciesProbability sp : latestScan.getSpeciesProbabilities()) {
                         BioSpecies bioSpecies = sp.getBioSpecies();
                         BioSpecies confirmedSpecies = null;
@@ -2219,6 +2224,92 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             });
                         }
                     }
+                }
+                
+                // Ajouter les espèces confirmées qui n'ont pas été prédites (pas dans le scan)
+                // Ce code s'exécute même s'il n'y a pas de scan (latestScan == null)
+                if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                        for (BioSpecies confirmedSpecies : planet.getConfirmedSpecies()) {
+                            String confirmedName = confirmedSpecies.getName();
+                            
+                            // Si cette espèce confirmée n'a pas été traitée (pas dans processedConfirmedNames),
+                            // c'est qu'elle n'était pas dans les prédictions, il faut l'ajouter
+                            if (confirmedName != null && !processedConfirmedNames.contains(confirmedName)) {
+                                HBox speciesRow = new HBox(8);
+                                speciesRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                                speciesRow.setPadding(new javafx.geometry.Insets(4, 6, 4, 6));
+                                speciesRow.getStyleClass().add("exploration-body-species-row");
+                                
+                                // Afficher le nom de l'espèce confirmée
+                                String speciesName = confirmedSpecies.getFullName();
+                                Label speciesNameLabel = new Label(speciesName);
+                                speciesNameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-text;");
+                                speciesNameLabel.setMaxWidth(Double.MAX_VALUE);
+                                speciesNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+                                HBox.setHgrow(speciesNameLabel, javafx.scene.layout.Priority.ALWAYS);
+                                
+                                // Afficher ✓ ou ✗ pour l'espèce confirmée
+                                Label statusLabel = new Label();
+                                if (confirmedSpecies.isCollected()) {
+                                    statusLabel.setText("✓");
+                                    statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
+                                }
+                                else if (confirmedSpecies.getSampleNumber() != 0) {
+                                    statusLabel.setText(confirmedSpecies.getSampleNumber() + "/3");
+                                    statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-orange; -fx-font-weight: bold;");
+                                } else {
+                                    statusLabel.setText("✗");
+                                    statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
+                                }
+                                
+                                statusLabel.setMinWidth(Region.USE_PREF_SIZE);
+                                
+                                // Calculer et afficher le prix
+                                long price;
+                                if (!planet.isWasFootfalled()) {
+                                    price = confirmedSpecies.getBonusValue() + confirmedSpecies.getBaseValue();
+                                } else {
+                                    price = confirmedSpecies.getBaseValue();
+                                }
+                                
+                                Label priceLabel = new Label(String.format("%,d Cr", price));
+                                priceLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
+                                priceLabel.setMinWidth(0);
+                                priceLabel.setPrefWidth(-1);
+                                priceLabel.setMaxWidth(Double.MAX_VALUE);
+                                priceLabel.setMinWidth(Region.USE_PREF_SIZE);
+                                
+                                speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
+                                
+                                // Vérifier si cette espèce est en cours d'analyse
+                                boolean isAnalyzing = false;
+                                ExplorationService explorationService = ExplorationService.getInstance();
+                                if (explorationService.isBiologicalAnalysisInProgress() &&
+                                    explorationService.getCurrentAnalysisPlanet() != null &&
+                                    explorationService.getCurrentAnalysisPlanet().getBodyID() == planet.getBodyID() &&
+                                    explorationService.getCurrentAnalysisSpecies() != null) {
+                                    
+                                    BioSpecies currentSpecies = explorationService.getCurrentAnalysisSpecies();
+                                    
+                                    // Comparer les espèces par nom
+                                    if (confirmedSpecies != null && currentSpecies != null &&
+                                        confirmedSpecies.getName() != null && currentSpecies.getName() != null &&
+                                        confirmedSpecies.getName().equals(currentSpecies.getName())) {
+                                        isAnalyzing = true;
+                                    }
+                                }
+                                
+                                // Ajouter le speciesRow à la liste
+                                speciesList.getChildren().add(speciesRow);
+                                
+                                // Si c'est en cours d'analyse, ajouter la bordure animée
+                                if (isAnalyzing) {
+                                    Platform.runLater(() -> {
+                                        addBorder(speciesRow);
+                                    });
+                                }
+                            }
+                        }
                 }
                 
                 if (!speciesList.getChildren().isEmpty()) {
