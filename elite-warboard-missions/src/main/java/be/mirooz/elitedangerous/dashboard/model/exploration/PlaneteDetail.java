@@ -117,29 +117,31 @@ public class PlaneteDetail extends ACelesteBody {
                                     .map(body -> (StarDetail) body)
                                     .toList();
 
-                            // Vérifie si un parent est une étoile
-                            Optional<ParentBody> parentStar = parents.stream()
+                            // Récupère toutes les étoiles parents (pas juste la première)
+                            List<ParentBody> parentStars = parents.stream()
                                     .filter(p -> "Star".equalsIgnoreCase(p.getType()))
-                                    .findFirst();
+                                    .toList();
 
-                            StarDetail starToUse;
-
-                            if (parentStar.isPresent()) {
-                                // On utilise l'étoile correspondante au parent
-                                int parentStarId = parentStar.get().getBodyID();
-                                starToUse = allStars.stream()
-                                        .filter(star -> star.getBodyID() == parentStarId)
-                                        .findFirst()
-                                        .orElse(null);
+                            if (!parentStars.isEmpty()) {
+                                // Vérifie si l'espèce correspond à l'une des étoiles parents
+                                radiantMatch = parentStars.stream()
+                                        .map(p -> {
+                                            // Trouve l'étoile correspondante au parent
+                                            return allStars.stream()
+                                                    .filter(star -> star.getBodyID() == p.getBodyID())
+                                                    .findFirst()
+                                                    .orElse(null);
+                                        })
+                                        .filter(star -> star != null)
+                                        .anyMatch(star -> star.getStarTypeString()
+                                                .equalsIgnoreCase(species.getColorConditionName()));
                             } else {
-                                // Aucun parent Star → on prend la première étoile du système
-                                starToUse = allStars.stream().findFirst().orElse(null);
-                            }
-
-                            // Si on a une étoile (par parent ou fallback)
-                            if (starToUse != null) {
-                                radiantMatch = starToUse.getStarTypeString()
-                                        .equalsIgnoreCase(species.getColorConditionName());
+                                // Aucun parent Star → on prend la première étoile du système (fallback)
+                                StarDetail starToUse = allStars.stream().findFirst().orElse(null);
+                                if (starToUse != null) {
+                                    radiantMatch = starToUse.getStarTypeString()
+                                            .equalsIgnoreCase(species.getColorConditionName());
+                                }
                             }
                         }
 
