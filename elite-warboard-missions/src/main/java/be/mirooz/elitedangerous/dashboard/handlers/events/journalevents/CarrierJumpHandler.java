@@ -1,14 +1,15 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-public class FSDJumpHandler extends AbstractJumpHandler {
+public class CarrierJumpHandler extends AbstractJumpHandler {
 
     @Override
     public String getEventType() {
-        return "FSDJump";
+        return "CarrierJump";
     }
 
     @Override
     protected String getJumpLabel() {
-        return "FSD Jump";
+        return "Carrier Jump";
     }
 }
+

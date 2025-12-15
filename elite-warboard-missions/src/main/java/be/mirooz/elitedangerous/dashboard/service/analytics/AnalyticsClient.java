@@ -82,6 +82,7 @@ public class AnalyticsClient {
     }
     public void startSession(String commanderName) {
         try {
+            if(currentSessionId!=null) return;
             String appVersion = getAppVersion();
             String operatingSystem = getOperatingSystem();
 

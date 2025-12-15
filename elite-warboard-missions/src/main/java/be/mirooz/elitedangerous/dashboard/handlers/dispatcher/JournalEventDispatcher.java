@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.JournalE
 import com.fasterxml.jackson.databind.JsonNode;
 import org.reflections.Reflections;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class JournalEventDispatcher {
@@ -26,14 +27,16 @@ public class JournalEventDispatcher {
                 reflections.getSubTypesOf(JournalEventHandler.class);
 
         Map<String, JournalEventHandler> tempHandlers = new HashMap<>();
-        handlerClasses.forEach(clazz -> {
-            try {
-                JournalEventHandler handler = clazz.getDeclaredConstructor().newInstance();
-                tempHandlers.put(handler.getEventType(), handler);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to instantiate handler: " + clazz, e);
-            }
-        });
+        handlerClasses.stream()
+                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
+                .forEach(clazz -> {
+                    try {
+                        JournalEventHandler handler = clazz.getDeclaredConstructor().newInstance();
+                        tempHandlers.put(handler.getEventType(), handler);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to instantiate handler: " + clazz, e);
+                    }
+                });
 
         // Étape 2 : décoration
         tempHandlers.forEach((key, handler) ->
