@@ -451,7 +451,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             Map<ACelesteBody, List<ACelesteBody>> planetToMoons = new HashMap<>();
             Map<ACelesteBody, List<ACelesteBody>> moonToSubMoons = new HashMap<>();
 
-            // Identifier les étoiles
+            // Identifier les étoiles principales (sans parent ou avec parent "Null")
             for (ACelesteBody body : sortedBodies) {
                 if (body instanceof StarDetail) {
                     var parents = body.getParents();
@@ -459,6 +459,45 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
                         stars.add(body);
                         starToDirectPlanets.put(body, new ArrayList<>());
+                    }
+                }
+            }
+
+            // Identifier les étoiles qui ont une autre étoile comme parent (étoiles en orbite)
+            // Ces étoiles doivent être traitées comme des planètes en orbite autour de l'étoile parente
+            for (ACelesteBody body : sortedBodies) {
+                if (body instanceof StarDetail) {
+                    var parents = body.getParents();
+                    if (parents != null && !parents.isEmpty()) {
+                        // Chercher si l'un des parents est une étoile (pas "Null")
+                        ACelesteBody parentStar = null;
+                        int maxBodyID = -1;
+                        
+                        for (var parent : parents) {
+                            if ("Null".equalsIgnoreCase(parent.getType())) {
+                                continue; // Ignorer les parents "Null"
+                            }
+                            ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
+                            if (parentBody != null && parentBody instanceof StarDetail) {
+                                // Vérifier que cette étoile parente n'a pas elle-même une autre étoile comme parent
+                                // (on cherche les étoiles principales, pas les étoiles en orbite)
+                                var parentStarParents = parentBody.getParents();
+                                boolean isMainStar = parentStarParents == null || parentStarParents.isEmpty() ||
+                                    parentStarParents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
+                                
+                                if (isMainStar && parent.getBodyID() > maxBodyID) {
+                                    parentStar = parentBody;
+                                    maxBodyID = parent.getBodyID();
+                                }
+                            }
+                        }
+                        
+                        // Si cette étoile a une étoile principale comme parent, la traiter comme une planète
+                        if (parentStar != null && stars.contains(parentStar)) {
+                            // Ajouter cette étoile comme "planète" en orbite autour de l'étoile parente
+                            starToDirectPlanets.computeIfAbsent(parentStar, k -> new ArrayList<>()).add(body);
+                            planetToMoons.put(body, new ArrayList<>());
+                        }
                     }
                 }
             }
@@ -537,27 +576,81 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             } else if ("Planet".equalsIgnoreCase(directParentType) && directParent instanceof PlaneteDetail) {
                                 // C'est une lune ou une lune de lune
                                 // Vérifier si le parent direct est une planète directe (a une étoile comme parent)
+                                // ou si c'est déjà une lune (dans planetToMoons d'une autre planète)
                                 boolean isDirectPlanet = true;
-                                var parentParents = directParent.getParents();
-                                if (parentParents != null && !parentParents.isEmpty()) {
-                                    for (var pp : parentParents) {
-                                        if ("Planet".equalsIgnoreCase(pp.getType())) {
-                                            ACelesteBody ppBody = bodiesMap.get(pp.getBodyID());
-                                            if (ppBody instanceof PlaneteDetail) {
-                                                isDirectPlanet = false;
-                                                break;
+                                boolean isMoon = false;
+                                
+                                // Vérifier si le parent direct est déjà une lune (dans planetToMoons)
+                                for (var entry : planetToMoons.entrySet()) {
+                                    if (entry.getValue().contains(directParent)) {
+                                        isMoon = true;
+                                        isDirectPlanet = false;
+                                        break;
+                                    }
+                                }
+                                
+                                // Si ce n'est pas déjà une lune, vérifier les parents du parent
+                                if (!isMoon) {
+                                    var parentParents = directParent.getParents();
+                                    if (parentParents != null && !parentParents.isEmpty()) {
+                                        for (var pp : parentParents) {
+                                            if ("Planet".equalsIgnoreCase(pp.getType())) {
+                                                ACelesteBody ppBody = bodiesMap.get(pp.getBodyID());
+                                                if (ppBody instanceof PlaneteDetail) {
+                                                    isDirectPlanet = false;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
                                 }
                                 
-                                if (isDirectPlanet) {
+                                if (isDirectPlanet && !isMoon) {
                                     // C'est une lune d'une planète directe
                                     planetToMoons.computeIfAbsent(directParent, k -> new ArrayList<>()).add(body);
                                     moonToSubMoons.put(body, new ArrayList<>());
                                 } else {
-                                    // C'est une lune de lune (sub-lune)
+                                    // C'est une lune de lune (sub-lune) ou une lune d'une lune
                                     moonToSubMoons.computeIfAbsent(directParent, k -> new ArrayList<>()).add(body);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Passe supplémentaire : réidentifier les sub-lunes pour s'assurer qu'elles sont toutes correctement identifiées
+            // (certaines peuvent avoir été manquées si leur parent lune n'était pas encore dans planetToMoons)
+            for (ACelesteBody body : sortedBodies) {
+                if (body instanceof PlaneteDetail) {
+                    var parents = body.getParents();
+                    if (parents != null && !parents.isEmpty()) {
+                        // Trouver le parent direct
+                        ACelesteBody directParent = null;
+                        int maxBodyID = -1;
+                        
+                        for (var parent : parents) {
+                            if ("Null".equalsIgnoreCase(parent.getType())) {
+                                continue;
+                            }
+                            ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
+                            if (parentBody != null && parent.getBodyID() > maxBodyID) {
+                                directParent = parentBody;
+                                maxBodyID = parent.getBodyID();
+                            }
+                        }
+                        
+                        // Si le parent direct est une lune (dans planetToMoons), alors ce corps est une sub-lune
+                        if (directParent != null && directParent instanceof PlaneteDetail) {
+                            for (var entry : planetToMoons.entrySet()) {
+                                if (entry.getValue().contains(directParent)) {
+                                    // Le parent est une lune, donc ce corps est une sub-lune
+                                    // Vérifier qu'il n'est pas déjà dans moonToSubMoons
+                                    List<ACelesteBody> existingSubMoons = moonToSubMoons.get(directParent);
+                                    if (existingSubMoons == null || !existingSubMoons.contains(body)) {
+                                        moonToSubMoons.computeIfAbsent(directParent, k -> new ArrayList<>()).add(body);
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -580,6 +673,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 // Positionner les planètes directes de cette étoile en chaîne horizontale à droite
                 List<ACelesteBody> directPlanets = starToDirectPlanets.get(star);
                 if (directPlanets != null && !directPlanets.isEmpty()) {
+                    // Trier les planètes par numéro extrait du nom, puis par bodyID en cas d'égalité
+                    // Cela respecte l'ordre orbital naturel (1, 2, 3, etc.)
+                    directPlanets.sort(Comparator
+                            .comparing((ACelesteBody body) -> extractBodyNumber(body))
+                            .thenComparing(ACelesteBody::getBodyID));
                     int planetX = startX + horizontalSpacing;
                     int planetY = currentStarY;
                     
@@ -587,12 +685,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     for (int i = 0; i < directPlanets.size(); i++) {
                         ACelesteBody planet = directPlanets.get(i);
                         
-                        // Positionner la planète
+                        // Positionner la planète (ou étoile en orbite)
                         double planetSize = getBodySize(BodyHierarchyType.PLANET);
                         bodyPositions.put(planet.getBodyID(), new BodyPosition(planetX, planetY, planet, planetSize));
-                        Node planetView = createBodyImageView(planet, planetX, planetY, BodyHierarchyType.PLANET);
+                        // Si c'est une étoile en orbite, utiliser le type STAR pour le rendu visuel
+                        BodyHierarchyType visualType = (planet instanceof StarDetail) ? BodyHierarchyType.STAR : BodyHierarchyType.PLANET;
+                        Node planetView = createBodyImageView(planet, planetX, planetY, visualType);
                         bodiesPane.getChildren().add(planetView);
-                        addBodyNameLabel(planet, planetX, planetY, BodyHierarchyType.PLANET);
+                        addBodyNameLabel(planet, planetX, planetY, visualType);
                         
                         // Ajouter les icônes sous la planète (exobio et mapped)
                         addPlanetIcons(planet, planetX, planetY);
@@ -600,7 +700,25 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Positionner les lunes de cette planète verticalement en dessous
                         // et calculer la position X maximale atteinte par les sub-lunes
                         int maxSubMoonX = planetX; // Position X maximale des sub-lunes
+                        
+                        // Récupérer les lunes de cette planète
                         List<ACelesteBody> moons = planetToMoons.get(planet);
+                        
+                        // Si c'est une étoile en orbite, récupérer aussi ses planètes depuis starToDirectPlanets
+                        // et les traiter comme des "lunes" visuellement
+                        if (planet instanceof StarDetail orbitingStar) {
+                            List<ACelesteBody> orbitingStarPlanets = starToDirectPlanets.get(orbitingStar);
+                            if (orbitingStarPlanets != null && !orbitingStarPlanets.isEmpty()) {
+                                // Créer une liste combinée pour positionner à la fois les lunes et les planètes de l'étoile en orbite
+                                List<ACelesteBody> allMoons = new ArrayList<>();
+                                if (moons != null) {
+                                    allMoons.addAll(moons);
+                                }
+                                allMoons.addAll(orbitingStarPlanets);
+                                moons = allMoons;
+                            }
+                        }
+                        
                         if (moons != null && !moons.isEmpty()) {
                             int moonY = planetY + moonVerticalSpacing;
                             for (ACelesteBody moon : moons) {
@@ -616,6 +734,20 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
                                 // Positionner les lunes de lune (sub-lunes) horizontalement à droite de la lune
                                 List<ACelesteBody> subMoons = moonToSubMoons.get(moon);
+                                
+                                // Si cette "lune" est en fait une planète (peut arriver pour les planètes d'étoiles en orbite),
+                                // récupérer aussi ses lunes depuis planetToMoons
+                                if (moon instanceof PlaneteDetail) {
+                                    List<ACelesteBody> planetMoons = planetToMoons.get(moon);
+                                    if (planetMoons != null && !planetMoons.isEmpty()) {
+                                        // Combiner les sub-lunes existantes avec les lunes de la planète
+                                        if (subMoons == null) {
+                                            subMoons = new ArrayList<>();
+                                        }
+                                        subMoons.addAll(planetMoons);
+                                    }
+                                }
+                                
                                 if (subMoons != null && !subMoons.isEmpty()) {
                                     int subMoonX = planetX + horizontalSpacing;
                                     for (ACelesteBody subMoon : subMoons) {
@@ -661,6 +793,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (directPlanets != null && !directPlanets.isEmpty()) {
                     for (ACelesteBody planet : directPlanets) {
                         List<ACelesteBody> moons = planetToMoons.get(planet);
+                        
+                        // Si c'est une étoile en orbite, récupérer aussi ses planètes
+                        if (planet instanceof StarDetail orbitingStar) {
+                            List<ACelesteBody> orbitingStarPlanets = starToDirectPlanets.get(orbitingStar);
+                            if (orbitingStarPlanets != null && !orbitingStarPlanets.isEmpty()) {
+                                if (moons == null) {
+                                    moons = new ArrayList<>();
+                                }
+                                moons.addAll(orbitingStarPlanets);
+                            }
+                        }
+                        
                         if (moons != null && !moons.isEmpty()) {
                             // Calculer la position Y de la dernière lune
                             int lastMoonY = currentStarY + moonVerticalSpacing * moons.size();
@@ -1354,6 +1498,20 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Lignes entre lunes et leurs sub-lunes (horizontal)
                         for (ACelesteBody moon : moons) {
                             List<ACelesteBody> subMoons = moonToSubMoons.get(moon);
+                            
+                            // Si cette "lune" est en fait une planète (peut arriver pour les planètes d'étoiles en orbite),
+                            // récupérer aussi ses lunes depuis planetToMoons
+                            if (moon instanceof PlaneteDetail) {
+                                List<ACelesteBody> planetMoons = planetToMoons.get(moon);
+                                if (planetMoons != null && !planetMoons.isEmpty()) {
+                                    // Combiner les sub-lunes existantes avec les lunes de la planète
+                                    if (subMoons == null) {
+                                        subMoons = new ArrayList<>();
+                                    }
+                                    subMoons.addAll(planetMoons);
+                                }
+                            }
+                            
                             if (subMoons != null && !subMoons.isEmpty()) {
                                 BodyPosition moonPos = bodyPositions.get(moon.getBodyID());
                                 if (moonPos != null) {
@@ -2358,6 +2516,41 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
     }
     
+    /**
+     * Extrait le numéro du corps céleste à partir de son nom.
+     * Par exemple : "System AB 1" -> 1, "System A 2" -> 2, "System 3" -> 3
+     * Si aucun numéro n'est trouvé, retourne Integer.MAX_VALUE pour placer ces corps à la fin.
+     * 
+     * @param body Le corps céleste dont on veut extraire le numéro
+     * @return Le numéro extrait, ou Integer.MAX_VALUE si aucun numéro n'est trouvé
+     */
+    private int extractBodyNumber(ACelesteBody body) {
+        String bodyName = getBodyNameWithoutSystem(body);
+        if (bodyName == null || bodyName.isEmpty()) {
+            return Integer.MAX_VALUE;
+        }
+        
+        // Extraire le dernier nombre du nom (généralement après le dernier espace)
+        String[] parts = bodyName.split("\\s+");
+        if (parts.length > 0) {
+            String lastPart = parts[parts.length - 1];
+            try {
+                return Integer.parseInt(lastPart);
+            } catch (NumberFormatException e) {
+                // Si la dernière partie n'est pas un nombre, essayer de trouver un nombre ailleurs
+                for (int i = parts.length - 1; i >= 0; i--) {
+                    try {
+                        return Integer.parseInt(parts[i]);
+                    } catch (NumberFormatException ignored) {
+                        // Continuer à chercher
+                    }
+                }
+            }
+        }
+        
+        return Integer.MAX_VALUE;
+    }
+
     /**
      * Extrait le nom de l'étoile à partir du nom de la planète.
      * Si la planète s'appelle "nom_systeme AB 1", retourne "nom_systeme AB".
