@@ -187,6 +187,9 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>images/readme/**</exclude>
+                </excludes>
             </resource>
 
             <!-- Ressources du module bioforge-biodatas -->
