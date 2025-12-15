@@ -451,20 +451,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             Map<ACelesteBody, List<ACelesteBody>> planetToMoons = new HashMap<>();
             Map<ACelesteBody, List<ACelesteBody>> moonToSubMoons = new HashMap<>();
 
-            // Identifier les étoiles principales (sans parent ou avec parent "Null")
-            for (ACelesteBody body : sortedBodies) {
-                if (body instanceof StarDetail) {
-                    var parents = body.getParents();
-                    if (parents == null || parents.isEmpty() ||
-                        parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
-                        stars.add(body);
-                        starToDirectPlanets.put(body, new ArrayList<>());
-                    }
-                }
-            }
-
             // Identifier les étoiles qui ont une autre étoile comme parent (étoiles en orbite)
             // Ces étoiles doivent être traitées comme des planètes en orbite autour de l'étoile parente
+            // On les identifie d'abord pour éviter de les ajouter à la liste des étoiles principales
+            Set<Integer> orbitingStarIds = new HashSet<>();
+            Map<Integer, ACelesteBody> orbitingStarToParent = new HashMap<>();
+            
             for (ACelesteBody body : sortedBodies) {
                 if (body instanceof StarDetail) {
                     var parents = body.getParents();
@@ -492,13 +484,42 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             }
                         }
                         
-                        // Si cette étoile a une étoile principale comme parent, la traiter comme une planète
-                        if (parentStar != null && stars.contains(parentStar)) {
-                            // Ajouter cette étoile comme "planète" en orbite autour de l'étoile parente
-                            starToDirectPlanets.computeIfAbsent(parentStar, k -> new ArrayList<>()).add(body);
-                            planetToMoons.put(body, new ArrayList<>());
+                        // Si cette étoile a une étoile principale comme parent, c'est une étoile en orbite
+                        if (parentStar != null) {
+                            orbitingStarIds.add(body.getBodyID());
+                            orbitingStarToParent.put(body.getBodyID(), parentStar);
                         }
                     }
+                }
+            }
+
+            // Identifier les étoiles principales (sans parent ou avec parent "Null")
+            // Exclure les étoiles en orbite identifiées précédemment
+            for (ACelesteBody body : sortedBodies) {
+                if (body instanceof StarDetail) {
+                    // Ne pas ajouter les étoiles en orbite à la liste des étoiles principales
+                    if (orbitingStarIds.contains(body.getBodyID())) {
+                        continue;
+                    }
+                    
+                    var parents = body.getParents();
+                    if (parents == null || parents.isEmpty() ||
+                        parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
+                        stars.add(body);
+                        starToDirectPlanets.put(body, new ArrayList<>());
+                    }
+                }
+            }
+
+            // Maintenant ajouter les étoiles en orbite comme "planètes" de leur étoile parente
+            for (Map.Entry<Integer, ACelesteBody> entry : orbitingStarToParent.entrySet()) {
+                ACelesteBody orbitingStar = bodiesMap.get(entry.getKey());
+                ACelesteBody parentStar = entry.getValue();
+                
+                if (orbitingStar != null && parentStar != null && stars.contains(parentStar)) {
+                    // Ajouter cette étoile comme "planète" en orbite autour de l'étoile parente
+                    starToDirectPlanets.computeIfAbsent(parentStar, k -> new ArrayList<>()).add(orbitingStar);
+                    planetToMoons.put(orbitingStar, new ArrayList<>());
                 }
             }
 
