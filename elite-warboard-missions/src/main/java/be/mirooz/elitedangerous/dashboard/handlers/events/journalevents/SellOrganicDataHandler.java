@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SoldBioData;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -89,6 +90,8 @@ public class SellOrganicDataHandler implements JournalEventHandler {
 
             System.out.printf("💰 Vente de données organiques enregistrée: %d espèces, Total Value: %d, Total Bonus: %d%n",
                     bioDataList.size(), totalValue, totalBonus);
+
+            ExplorationRefreshNotificationService.getInstance().notifyRefreshRequired();
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement SellOrganicData: " + e.getMessage());
             e.printStackTrace();
