@@ -1013,7 +1013,7 @@ public class ConfigDialogController implements Initializable {
 
     private void loadDonateButtonImage() {
         try {
-            Image donateImage = new Image(getClass().getResourceAsStream("/images/exploration/readme/donate.png"));
+            Image donateImage = new Image(getClass().getResourceAsStream("/images/readme/donate.png"));
             donateButtonImage.setImage(donateImage);
         } catch (Exception e) {
             Logger.getLogger(ConfigDialogController.class.getName())

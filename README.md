@@ -41,7 +41,7 @@
 - **First discovery tracking** : Track first discoveries and first footfalls
 - **Real-time updates** : Live tracking of scans, organic scans, and exploration data sales
 
-<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/exploboard.png" alt="Exploration Board" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/exploboard.png" alt="Exploration Board" style="max-width: 1200px;">
 
 ### 🚀 **Advanced Features**
 - **New commander detection** : Automatic popup and journal re-reading when switching commanders
@@ -62,7 +62,7 @@
 - **Footer** : Commander information and current system
 - **Kills remaining overlay** : Visual indicator of remaining kills
 
-<img src="elite-warboard-missions/src/main/resources/images/combat/targetoverlay.png" alt="Target Overlay" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/targetoverlay.png" alt="Target Overlay" style="max-width: 1200px;">
 
 ### **Mining Interface**
 - **Mining panel** : Real-time mining session tracking
@@ -82,7 +82,7 @@
   - Displays species probabilities for each planet based on detected biological signals
   - Filters species with probability < 1% to show only likely candidates
 
-<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/overlayexplo.png" alt="Probability Calculation" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/overlayexplo.png" alt="Probability Calculation" style="max-width: 1200px;">
 
 - **Exobiology radar (compass)** : Real-time navigation radar for biological sample collection
   - **Compass display** : Circular radar showing cardinal directions (N, S, E, W) with Elite Dangerous orange theme
@@ -97,7 +97,7 @@
   - **Real-time updates** : Updates every 500ms by reading your position from Elite Dangerous Status.json file
   - **Automatic activation** : Radar appears automatically when you start collecting biological samples on a planet
 
-<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/radar3.png" alt="Exobiology Radar" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/radar3.png" alt="Exobiology Radar" style="max-width: 1200px;">
 
 - **System visual view** : Interactive orrery with zoom and pan capabilities showing celestial body positions
 - **Bodies list panel** : Complete list of all celestial bodies in the system with filtering options
@@ -139,7 +139,7 @@
 - **System cards** : Display system name, body count, value, exobiology status (X/Y species), and mapping status (X/Y planets)
 - **Quick navigation** : "See current system" button automatically finds and displays your current location
 
-<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/explohistory.png" alt="Exploration History" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/explohistory.png" alt="Exploration History" style="max-width: 1200px;">
 
 ### **VR Integration**
 - **Keyboard and HOTAS binding** : Configure a key or HOTAS button to show/hide the dashboard
@@ -147,7 +147,7 @@
   - **HOTAS binding** : Bind any button on your HOTAS controller (throttle, joystick, etc.) to toggle the dashboard
   - **Configuration** : Set up your bindings in the application preferences/settings menu
 
-<img src="elite-warboard-missions/src/main/resources/images/exploration/readme/screenexplo2.jpeg" alt="VR Integration" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/screenexplo2.jpeg" alt="VR Integration" style="max-width: 1200px;">
 
 ## 🌐 Language Support
 
