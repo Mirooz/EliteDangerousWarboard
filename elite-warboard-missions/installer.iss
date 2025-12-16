@@ -31,6 +31,21 @@ const
 function SetWindowPos(hWnd: LongInt; hWndInsertAfter: LongInt; X, Y, cx, cy: Integer; uFlags: LongInt): Boolean;
   external 'SetWindowPos@user32.dll stdcall';
 
+function InitializeSetup(): Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result := True;
+  
+  // Fermer l'application Elite Warboard si elle est en cours d'exécution
+  // Utiliser taskkill pour forcer la fermeture
+  if Exec('taskkill', '/F /IM "Elite Warboard.exe"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  begin
+    // Attendre un peu pour que le processus se termine
+    Sleep(1000);
+  end;
+end;
+
 procedure InitializeWizard;
 begin
   // Forcer la fenêtre à être toujours au-dessus
