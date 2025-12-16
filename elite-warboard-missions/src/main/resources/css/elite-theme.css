@@ -4887,19 +4887,25 @@
 .exploration-json-tree .tree-cell {
     -fx-background-color: transparent;
     -fx-text-fill: -fx-elite-text;
-    -fx-font-family: "Courier New", monospace;
+    -fx-font-family: "Arial", sans-serif;
     -fx-font-size: 12px;
-    -fx-padding: 2px 5px;
+    -fx-padding: 3px 8px;
     -fx-pref-width: -1;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
 }
 
 .exploration-json-tree .tree-cell:hover {
-    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-background-color: rgba(255, 107, 0, 0.08);
+    -fx-border-color: rgba(255, 107, 0, 0.2);
+    -fx-border-width: 0 0 0 2px;
 }
 
 .exploration-json-tree .tree-cell:selected {
-    -fx-background-color: rgba(255, 107, 0, 0.2);
+    -fx-background-color: rgba(255, 107, 0, 0.15);
     -fx-text-fill: -fx-elite-orange;
+    -fx-border-color: rgba(255, 107, 0, 0.4);
+    -fx-border-width: 0 0 0 2px;
 }
 
 .exploration-json-tree .tree-cell:expanded {
@@ -4908,44 +4914,64 @@
 
 .exploration-json-tree .tree-cell:expanded .tree-disclosure-node {
     -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 6 3 L 0 6 Z";
 }
 
 .exploration-json-tree .tree-disclosure-node {
-    -fx-background-color: -fx-elite-gray;
+    -fx-background-color: rgba(255, 107, 0, 0.5);
+    -fx-pref-width: 10px;
+    -fx-pref-height: 10px;
+    -fx-shape: "M 0 0 L 3 0 L 3 6 L 0 6 Z";
 }
 
 .exploration-json-tree .tree-disclosure-node:hover {
     -fx-background-color: -fx-elite-orange;
 }
 
-/* Styles pour les labels dans les cellules JSON */
+/* Styles pour les labels dans les cellules JSON - Style Elite Dangerous amélioré */
 .json-key-label {
-    -fx-text-fill: -fx-elite-cyan;
+    -fx-text-fill: #00FFFF;
     -fx-font-weight: bold;
     -fx-font-size: 12px;
-    -fx-font-family: "Courier New", monospace;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-padding: 0 1px 0 0;
+    -fx-alignment: center-left;
+}
+
+/* Séparateur élégant entre clé et valeur */
+.json-separator {
+    -fx-text-fill: rgba(255, 107, 0, 0.6);
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-padding: 0 1px;
 }
 
 .json-value-label {
     -fx-font-size: 12px;
-    -fx-font-family: "Courier New", monospace;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-padding: 0 0 0 8px;
 }
 
 .json-value-string {
-    -fx-text-fill: -fx-elite-green;
+    -fx-text-fill: #00FF00;
+    -fx-font-weight: normal;
 }
 
 .json-value-number {
     -fx-text-fill: #FFD700;
+    -fx-font-weight: normal;
 }
 
 .json-value-boolean {
     -fx-text-fill: #FF69B4;
+    -fx-font-weight: bold;
 }
 
 .json-value-null {
-    -fx-text-fill: -fx-elite-text-dim;
+    -fx-text-fill: rgba(160, 160, 160, 0.6);
     -fx-font-style: italic;
+    -fx-font-weight: normal;
 }
 
 .json-value-object {
@@ -4954,6 +4980,14 @@
 }
 
 .json-value-array {
-    -fx-text-fill: -fx-elite-cyan;
+    -fx-text-fill: #00FFFF;
     -fx-font-weight: bold;
+}
+
+/* Style spécial pour les tableaux formatés (Materials, Composition, AtmosphereComposition) */
+.json-value-special-array {
+    -fx-text-fill: #FFAA00;
+    -fx-font-weight: normal;
+    -fx-font-size: 11.5px;
+    -fx-padding: 1px 0;
 }

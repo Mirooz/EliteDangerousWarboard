@@ -1401,6 +1401,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             return item;
         }
 
+        // Ne pas développer les tableaux/objets formatés spécialement (affichés directement)
+        if (jsonItem.isSpecialFormat()) {
+            return item; // Pas d'enfants pour les éléments formatés spécialement
+        }
+
         if (node.isObject()) {
             Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
             while (fields.hasNext()) {
