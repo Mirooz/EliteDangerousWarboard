@@ -48,7 +48,7 @@ public class BioSpeciesMatcher {
             double pGlobal = (double) species.getCount() / TOTAL_BODIES_IN_DATASET;
 
             double rarityWeight = Math.sqrt(pGlobal); // ou log, ou clamp
-            return geometric * rarityWeight;
+            return geometric * pGlobal;
 
         } catch (Exception e) {
             System.out.println("Error in probability: " + e.getMessage());

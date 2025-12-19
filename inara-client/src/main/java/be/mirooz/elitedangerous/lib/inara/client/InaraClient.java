@@ -79,10 +79,168 @@ public class InaraClient {
     // ─────────────────────────────────────────────
 
 
-    public List<InaraCommoditiesStats> fetchCommoditiesAllArgs(Mineral coreMineral, String sourceSystem,
-                                                               int maxSystemDistance, boolean largePad, boolean fleetCarrier,
-                                                               int maxStationDistance, int maxPriceAge,
-                                                               int minSupplyDemand) throws IOException {
+    // ─────────────────────────────────────────────
+    // 🏪 FETCH STATION MARKET
+    // ─────────────────────────────────────────────
+    public StationMarket fetchStationMarket(String stationUrl) throws IOException {
+        String url = BASE_URL + stationUrl;
+        System.out.printf("Calling INARA (station market) with URL: %s%n", url);
+        long start = System.currentTimeMillis();
+
+        Document doc = fetchHtml(url);
+
+        long durationCall = System.currentTimeMillis() - start;
+        System.out.println("INARA station market call duration: " + durationCall + " ms");
+
+        StationMarket market = new StationMarket();
+        
+        // Extraire les informations de la station depuis le header
+        parseStationHeader(doc, market);
+        
+        // Extraire les commodités depuis le tableau
+        parseCommoditiesTable(doc, market);
+
+        System.out.println("Successfully parsed station market with " + market.getCommodities().size() + " commodities");
+        return market;
+    }
+
+    public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad, boolean fleetCarrier) throws IOException {
+        return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, fleetCarrier, 15000, 48, supplyDemand);
+    }
+
+    // ─────────────────────────────────────────────
+    // 📊 FETCH COMMODITIES MAX SELL PRICES
+    // ─────────────────────────────────────────────
+
+    /**
+     * Récupère la liste des commodités depuis Inara et extrait le prix max de vente de chaque commodité
+     *
+     * @return Une liste de CommodityMaxSell avec le nom de la commodité et son prix max de vente
+     * @throws IOException Si une erreur se produit lors de l'appel HTTP
+     */
+    public List<CommodityMaxSell> fetchCommoditiesMaxSell() throws IOException {
+        String url = BASE_URL + "/elite/commodities-list/";
+        System.out.println("Fetching commodities list from: " + url);
+
+        long start = System.currentTimeMillis();
+        Document doc = fetchHtml(url);
+        long duration = System.currentTimeMillis() - start;
+        System.out.println("INARA commodities list call duration: " + duration + " ms");
+
+        List<CommodityMaxSell> commodities = new ArrayList<>();
+
+        // Sélectionner toutes les lignes de commodités
+        Elements rows = doc.select("table.tablesortercollapsed tbody tr.taggeditem");
+        System.out.println("Found " + rows.size() + " commodity rows");
+
+        for (Element row : rows) {
+            Elements cols = row.select("td");
+
+            // Vérifier qu'il y a suffisamment de colonnes
+            if (cols.size() < 5) {
+                continue;
+            }
+
+            try {
+                // Colonne 0: Nom de la commodité et lien
+                Element commodityLink = cols.get(0).selectFirst("a[href*='/elite/commodity/']");
+                if (commodityLink == null) {
+                    continue;
+                }
+
+                String commodityName = commodityLink.text().trim();
+                String commodityUrl = commodityLink.attr("href");
+                String inaraId = extractInaraIdFromUrl(commodityUrl);
+
+                // Colonne 4 (index 5 visible): Prix max de vente
+                // La structure HTML est: <td class="alignright" data-order="VALUE">DISPLAY <span class="minor">Cr</span></td>
+                Element maxSellElement = cols.get(4);
+                String maxSellText = maxSellElement.text().replace(",", "").replace("Cr", "").trim();
+
+                int maxSellPrice = 0;
+                if (!maxSellText.isEmpty() && !maxSellText.equals("-")) {
+                    try {
+                        // Essayer d'extraire depuis data-order d'abord (plus fiable)
+                        String dataOrder = maxSellElement.attr("data-order");
+                        if (dataOrder != null && !dataOrder.isEmpty()) {
+                            maxSellPrice = Integer.parseInt(dataOrder);
+                        } else {
+                            maxSellPrice = Integer.parseInt(maxSellText);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.err.println("Error parsing max sell price for " + commodityName + ": " + maxSellText);
+                    }
+                }
+
+                CommodityMaxSell commodityMaxSell = new CommodityMaxSell(commodityName, inaraId, maxSellPrice);
+                commodities.add(commodityMaxSell);
+
+            } catch (Exception e) {
+                System.err.println("Error parsing commodity row: " + e.getMessage());
+            }
+        }
+
+        System.out.println("Successfully parsed " + commodities.size() + " commodities with max sell prices");
+        return commodities;
+    }
+    /**
+     * Parse les informations de la station depuis le header de la page
+     */
+    private void parseStationHeader(Document doc, StationMarket market) {
+        // Nom de la station et URL
+        Element stationLink = doc.selectFirst("h2 a[href]");
+        if (stationLink != null) {
+            market.setStationUrl(stationLink.attr("href"));
+            String stationText = stationLink.text().trim();
+            // Extraire le nom de la station (avant le code entre parenthèses)
+            if (stationText.contains("(")) {
+                market.setStationName(stationText.substring(0, stationText.indexOf("(")).trim());
+            } else {
+                market.setStationName(stationText);
+            }
+        }
+        
+        // Nom du système
+        Element systemLink = doc.selectFirst("h2 a[href*='starsystem']");
+        if (systemLink != null) {
+            market.setSystemName(systemLink.text().trim());
+        }
+        
+        // Informations de la station depuis les itempaircontainer
+        Elements infoContainers = doc.select(".itempaircontainer");
+        for (Element container : infoContainers) {
+            Element label = container.selectFirst(".itempairlabel");
+            Element value = container.selectFirst(".itempairvalue");
+            
+            if (label != null && value != null) {
+                String labelText = label.text().trim();
+                String valueText = value.text().trim();
+                
+                switch (labelText) {
+                    case "Station distance":
+                        market.setStationDistance(valueText);
+                        break;
+                    case "Landing pad":
+                        market.setLandingPadSize(valueText);
+                        break;
+                    case "Market update":
+                        market.setMarketUpdate(valueText);
+                        break;
+                    case "Station update":
+                        market.setStationUpdate(valueText);
+                        break;
+                    case "Location update":
+                        market.setLocationUpdate(valueText);
+                        break;
+                }
+            }
+        }
+    }
+
+    private List<InaraCommoditiesStats> fetchCommoditiesAllArgs(Mineral coreMineral, String sourceSystem,
+                                                                int maxSystemDistance, boolean largePad, boolean fleetCarrier,
+                                                                int maxStationDistance, int maxPriceAge,
+                                                                int minSupplyDemand) throws IOException {
 
         // Encoder les paramètres pour l'URL
         String encodedSystem = URLEncoder.encode(sourceSystem, StandardCharsets.UTF_8);
@@ -148,14 +306,14 @@ public class InaraClient {
         String stationText = stationElement.text().replace("|", "").trim();
         Element stationNameElement = stationElement.selectFirst("span.standardcase");
         stats.setStationName(stationNameElement != null ? stationNameElement.text().replace("|", "").trim() : stationText);
-        
+
         // Extraire l'URL de la station depuis le lien href
         Element stationLink = stationElement.selectFirst("a[href]");
         if (stationLink != null) {
             String href = stationLink.attr("href");
             stats.setStationUrl(href);
         }
-        
+
         boolean isFleetCarrier = false;
         Elements stationIcons = stationElement.select(".stationicon");
         StationType stationType = StationType.CORIOLIS;
@@ -213,85 +371,6 @@ public class InaraClient {
         return stats;
     }
 
-    // ─────────────────────────────────────────────
-    // 🏪 FETCH STATION MARKET
-    // ─────────────────────────────────────────────
-    public StationMarket fetchStationMarket(String stationUrl) throws IOException {
-        String url = BASE_URL + stationUrl;
-        System.out.printf("Calling INARA (station market) with URL: %s%n", url);
-        long start = System.currentTimeMillis();
-
-        Document doc = fetchHtml(url);
-
-        long durationCall = System.currentTimeMillis() - start;
-        System.out.println("INARA station market call duration: " + durationCall + " ms");
-
-        StationMarket market = new StationMarket();
-        
-        // Extraire les informations de la station depuis le header
-        parseStationHeader(doc, market);
-        
-        // Extraire les commodités depuis le tableau
-        parseCommoditiesTable(doc, market);
-
-        System.out.println("Successfully parsed station market with " + market.getCommodities().size() + " commodities");
-        return market;
-    }
-    
-    /**
-     * Parse les informations de la station depuis le header de la page
-     */
-    private void parseStationHeader(Document doc, StationMarket market) {
-        // Nom de la station et URL
-        Element stationLink = doc.selectFirst("h2 a[href]");
-        if (stationLink != null) {
-            market.setStationUrl(stationLink.attr("href"));
-            String stationText = stationLink.text().trim();
-            // Extraire le nom de la station (avant le code entre parenthèses)
-            if (stationText.contains("(")) {
-                market.setStationName(stationText.substring(0, stationText.indexOf("(")).trim());
-            } else {
-                market.setStationName(stationText);
-            }
-        }
-        
-        // Nom du système
-        Element systemLink = doc.selectFirst("h2 a[href*='starsystem']");
-        if (systemLink != null) {
-            market.setSystemName(systemLink.text().trim());
-        }
-        
-        // Informations de la station depuis les itempaircontainer
-        Elements infoContainers = doc.select(".itempaircontainer");
-        for (Element container : infoContainers) {
-            Element label = container.selectFirst(".itempairlabel");
-            Element value = container.selectFirst(".itempairvalue");
-            
-            if (label != null && value != null) {
-                String labelText = label.text().trim();
-                String valueText = value.text().trim();
-                
-                switch (labelText) {
-                    case "Station distance":
-                        market.setStationDistance(valueText);
-                        break;
-                    case "Landing pad":
-                        market.setLandingPadSize(valueText);
-                        break;
-                    case "Market update":
-                        market.setMarketUpdate(valueText);
-                        break;
-                    case "Station update":
-                        market.setStationUpdate(valueText);
-                        break;
-                    case "Location update":
-                        market.setLocationUpdate(valueText);
-                        break;
-                }
-            }
-        }
-    }
-    
     /**
      * Parse le tableau des commodités
      */
@@ -495,83 +574,4 @@ public class InaraClient {
         return text.replaceAll("[^a-zA-Z0-9\\s\\-.,()\\[\\]|+\\s]", "").trim();
     }
 
-    public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad, boolean fleetCarrier) throws IOException {
-        return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, fleetCarrier, 15000, 48, supplyDemand);
-    }
-
-    // ─────────────────────────────────────────────
-    // 📊 FETCH COMMODITIES MAX SELL PRICES
-    // ─────────────────────────────────────────────
-    
-    /**
-     * Récupère la liste des commodités depuis Inara et extrait le prix max de vente de chaque commodité
-     * 
-     * @return Une liste de CommodityMaxSell avec le nom de la commodité et son prix max de vente
-     * @throws IOException Si une erreur se produit lors de l'appel HTTP
-     */
-    public List<CommodityMaxSell> fetchCommoditiesMaxSell() throws IOException {
-        String url = BASE_URL + "/elite/commodities-list/";
-        System.out.println("Fetching commodities list from: " + url);
-        
-        long start = System.currentTimeMillis();
-        Document doc = fetchHtml(url);
-        long duration = System.currentTimeMillis() - start;
-        System.out.println("INARA commodities list call duration: " + duration + " ms");
-        
-        List<CommodityMaxSell> commodities = new ArrayList<>();
-        
-        // Sélectionner toutes les lignes de commodités
-        Elements rows = doc.select("table.tablesortercollapsed tbody tr.taggeditem");
-        System.out.println("Found " + rows.size() + " commodity rows");
-        
-        for (Element row : rows) {
-            Elements cols = row.select("td");
-            
-            // Vérifier qu'il y a suffisamment de colonnes
-            if (cols.size() < 5) {
-                continue;
-            }
-            
-            try {
-                // Colonne 0: Nom de la commodité et lien
-                Element commodityLink = cols.get(0).selectFirst("a[href*='/elite/commodity/']");
-                if (commodityLink == null) {
-                    continue;
-                }
-                
-                String commodityName = commodityLink.text().trim();
-                String commodityUrl = commodityLink.attr("href");
-                String inaraId = extractInaraIdFromUrl(commodityUrl);
-                
-                // Colonne 4 (index 5 visible): Prix max de vente
-                // La structure HTML est: <td class="alignright" data-order="VALUE">DISPLAY <span class="minor">Cr</span></td>
-                Element maxSellElement = cols.get(4);
-                String maxSellText = maxSellElement.text().replace(",", "").replace("Cr", "").trim();
-                
-                int maxSellPrice = 0;
-                if (!maxSellText.isEmpty() && !maxSellText.equals("-")) {
-                    try {
-                        // Essayer d'extraire depuis data-order d'abord (plus fiable)
-                        String dataOrder = maxSellElement.attr("data-order");
-                        if (dataOrder != null && !dataOrder.isEmpty()) {
-                            maxSellPrice = Integer.parseInt(dataOrder);
-                        } else {
-                            maxSellPrice = Integer.parseInt(maxSellText);
-                        }
-                    } catch (NumberFormatException e) {
-                        System.err.println("Error parsing max sell price for " + commodityName + ": " + maxSellText);
-                    }
-                }
-                
-                CommodityMaxSell commodityMaxSell = new CommodityMaxSell(commodityName, inaraId, maxSellPrice);
-                commodities.add(commodityMaxSell);
-                
-            } catch (Exception e) {
-                System.err.println("Error parsing commodity row: " + e.getMessage());
-            }
-        }
-        
-        System.out.println("Successfully parsed " + commodities.size() + " commodities with max sell prices");
-        return commodities;
-    }
 }
