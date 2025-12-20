@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.controller.ui.component.mining;
 
+import be.mirooz.ardentapi.model.CommoditiesStats;
+import be.mirooz.ardentapi.model.StationType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMethod;
 import be.mirooz.elitedangerous.dashboard.controller.IBatchListener;
@@ -13,8 +15,6 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotificationService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
-import be.mirooz.elitedangerous.lib.inara.model.StationType;
 import be.mirooz.ardentapi.model.CommodityMaxSell;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -341,13 +341,13 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
         int minDemand = miningService.getCurrentCargoCapacity();
         miningService.findMineralStation(mineral, sourceSystem, maxDistance, minDemand,
                         padsCheckBox.isSelected(), fleetCarrierCheckBox.isSelected())
-                .thenAccept(inaraCommoditiesStats -> Platform.runLater(() -> {
+                .thenAccept(CommoditiesStats -> Platform.runLater(() -> {
                     // Récupérer tous les résultats depuis le cache d'InaraService
-                    miningService.getInaraService().setSearchResults(inaraCommoditiesStats);
+                    miningService.getArdentApiService().setSearchResults(CommoditiesStats);
                     // Définir l'index de la station à afficher
-                    miningService.getInaraService().setCurrentResultIndex(stationIndex);
-                    if (!inaraCommoditiesStats.isEmpty()) {
-                        InaraCommoditiesStats currentResult = miningService.getInaraService().getCurrentResult();
+                    miningService.getArdentApiService().setCurrentResultIndex(stationIndex);
+                    if (!CommoditiesStats.isEmpty()) {
+                        CommoditiesStats currentResult = miningService.getArdentApiService().getCurrentResult();
                         // Mettre à jour l'affichage de la station
                         updateStationDisplay(currentResult);
                         updateHotspots(currentResult);
@@ -378,8 +378,8 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
         headerStationSystemLabel.setText("");
         headerStationDistanceLabel.setText("--");
 
-        miningService.getInaraService().setHotspots(null);
-        miningService.getInaraService().setCurrentHotspotIndex(0);
+        miningService.getArdentApiService().setHotspots(null);
+        miningService.getArdentApiService().setCurrentHotspotIndex(0);
         setLoadingVisible(false);
 
     }
@@ -672,7 +672,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
     // Méthodes de navigation des stations
     @FXML
     private void navigateToPreviousStation() {
-        int currentIndex = miningService.getInaraService().getCurrentResultIndex();
+        int currentIndex = miningService.getArdentApiService().getCurrentResultIndex();
         if (currentIndex > 0) {
             Mineral selectedMineral = mineralComboBox.getValue() != null ? mineralComboBox.getValue().getMineral() : null;
             if (selectedMineral != null) {
@@ -683,8 +683,8 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
 
     @FXML
     private void navigateToNextStation() {
-        int currentIndex = miningService.getInaraService().getCurrentResultIndex();
-        int totalResults = miningService.getInaraService().getTotalResults();
+        int currentIndex = miningService.getArdentApiService().getCurrentResultIndex();
+        int totalResults = miningService.getArdentApiService().getTotalResults();
         if (currentIndex < totalResults - 1) {
             Mineral selectedMineral = mineralComboBox.getValue() != null ? mineralComboBox.getValue().getMineral() : null;
             if (selectedMineral != null) {
@@ -695,9 +695,9 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
 
     @FXML
     private void navigateToPreviousRing() {
-        int currentIndex = miningService.getInaraService().getCurrentHotspotIndex();
+        int currentIndex = miningService.getArdentApiService().getCurrentHotspotIndex();
         if (currentIndex > 0) {
-            miningService.getInaraService().setCurrentHotspotIndex(currentIndex - 1);
+            miningService.getArdentApiService().setCurrentHotspotIndex(currentIndex - 1);
             updateCurrentHotspotDisplay();
             updateRingNavigationButtons();
         }
@@ -705,10 +705,10 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
 
     @FXML
     private void navigateToNextRing() {
-        int currentIndex = miningService.getInaraService().getCurrentHotspotIndex();
-        int totalHotspots = miningService.getInaraService().getTotalHotspots();
+        int currentIndex = miningService.getArdentApiService().getCurrentHotspotIndex();
+        int totalHotspots = miningService.getArdentApiService().getTotalHotspots();
         if (currentIndex < totalHotspots - 1) {
-            miningService.getInaraService().setCurrentHotspotIndex(currentIndex + 1);
+            miningService.getArdentApiService().setCurrentHotspotIndex(currentIndex + 1);
             updateCurrentHotspotDisplay();
             updateRingNavigationButtons();
         }
@@ -718,7 +718,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
      * Méthode centralisée pour mettre à jour l'affichage de la station et ses hotspots
      * Appelée lors de la sélection d'un minéral ou de la navigation entre stations
      */
-    private void updateHotspots(InaraCommoditiesStats currentResult) {
+    private void updateHotspots(CommoditiesStats currentResult) {
         if (currentResult != null) {
 
             // Récupérer les hotspots pour cette station
@@ -734,7 +734,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
     /**
      * Met à jour l'affichage des informations de la station
      */
-    private void updateStationDisplay(InaraCommoditiesStats station) {
+    private void updateStationDisplay(CommoditiesStats station) {
         headerStationNameLabel.setText(station.getStationName());
         headerStationSystemLabel.setText(station.getSystemName());
         headerStationDistanceLabel.setText(String.format("%.1f LY", station.getSystemDistance()));
@@ -747,7 +747,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
     /**
      * Met à jour l'affichage des hotspots pour une station donnée
      */
-    private void updateHotspotsForStation(InaraCommoditiesStats station, Mineral mineral) {
+    private void updateHotspotsForStation(CommoditiesStats station, Mineral mineral) {
         miningService.findMiningHotspotsForStation(station, mineral)
                 .thenAccept(bestHotspot -> Platform.runLater(() -> {
                     if (bestHotspot != null) {
@@ -776,7 +776,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
      * Met à jour l'affichage du hotspot actuel (utilisé lors de la navigation)
      */
     private void updateCurrentHotspotDisplay() {
-        MiningHotspot currentHotspot = miningService.getInaraService().getCurrentHotspot();
+        MiningHotspot currentHotspot = miningService.getArdentApiService().getCurrentHotspot();
         if (currentHotspot != null) {
             headerRingNameLabel.setText(currentHotspot.getRingName());
             headerRingSystemLabel.setText(currentHotspot.getSystemName());
@@ -792,13 +792,13 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
     /**
      * Met à jour le cache de la station
      */
-    private void updateCurrentStationMarket(InaraCommoditiesStats currentResult) {
-        if (currentResult.getStationUrl() != null) {
+    private void updateCurrentStationMarket(CommoditiesStats currentResult) {
+        if (currentResult.getMarketId() != null) {
             // Récupérer le marché de la station depuis Inara de manière asynchrone
-            miningService.fetchStationMarket(currentResult.getStationUrl())
+            miningService.fetchStationMarket(currentResult.getMarketId())
                     .thenAccept(stationMarket -> Platform.runLater(() -> {
                         // Définir cette station comme station actuelle
-                        miningService.getInaraService().setCurrentStationMarket(
+                        miningService.getArdentApiService().setCurrentStationMarket(
                                 currentResult.getStationName(),
                                 currentResult.getSystemName(),
                                 stationMarket
@@ -817,8 +817,8 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
 
     private void updateStationNavigationButtons() {
         if (previousStationButton != null && nextStationButton != null) {
-            int currentIndex = miningService.getInaraService().getCurrentResultIndex();
-            int totalResults = miningService.getInaraService().getTotalResults();
+            int currentIndex = miningService.getArdentApiService().getCurrentResultIndex();
+            int totalResults = miningService.getArdentApiService().getTotalResults();
 
             previousStationButton.setDisable(currentIndex <= 0);
             nextStationButton.setDisable(currentIndex >= totalResults - 1);
@@ -827,8 +827,8 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
 
     private void updateRingNavigationButtons() {
         if (previousRingButton != null && nextRingButton != null) {
-            int currentIndex = miningService.getInaraService().getCurrentHotspotIndex();
-            int totalHotspots = miningService.getInaraService().getTotalHotspots();
+            int currentIndex = miningService.getArdentApiService().getCurrentHotspotIndex();
+            int totalHotspots = miningService.getArdentApiService().getTotalHotspots();
 
             previousRingButton.setDisable(currentIndex <= 0);
             nextRingButton.setDisable(currentIndex >= totalHotspots - 1);

@@ -5,7 +5,8 @@ import lombok.Getter;
 public enum StationType {
     CORIOLIS("coriolis.png"),
     PORT("port.png"),
-    FLEET("fleet.png");
+    FLEET("fleet.png"),
+    PORTPLANET("planetport.png");
 
     @Getter
     private final String image;

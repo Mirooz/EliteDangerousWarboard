@@ -345,7 +345,7 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
      */
     private long getStationPriceForMineral(Mineral mineral) {
         // Utiliser la station actuellement sélectionnée
-        return miningService.getInaraService().getMineralPriceInCurrentStation(mineral.getInaraName());
+        return miningService.getArdentApiService().getMineralPriceInCurrentStation(mineral.getInaraName());
     }
 
     // Implémentation de MineralPriceNotificationService.MineralPriceListener

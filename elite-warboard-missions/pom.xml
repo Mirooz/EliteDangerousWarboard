@@ -57,11 +57,6 @@
         </dependency>
         <dependency>
             <groupId>be.mirooz.elitedangerous.lib</groupId>
-            <artifactId>inara-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>be.mirooz.elitedangerous.lib</groupId>
             <artifactId>elite-commons</artifactId>
             <version>${project.version}</version>
         </dependency>

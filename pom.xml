@@ -14,7 +14,6 @@
     <description>Elite Dangerous tool to easily stack massacre missions</description>
     <modules>
         <module>edtools-client</module>
-        <module>inara-client</module>
         <module>elite-commons</module>
         <module>elite-warboard-missions</module>
         <module>journal-analyzer</module>

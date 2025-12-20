@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.lib.inara.client;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
-import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
+import be.mirooz.elitedangerous.lib.inara.model.CommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
@@ -104,7 +104,7 @@ public class InaraClient {
         return market;
     }
 
-    public List<InaraCommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad, boolean fleetCarrier) throws IOException {
+    public List<CommoditiesStats> fetchMinerMarket(Mineral coreMineral, String sourceSystem, int distance, int supplyDemand, boolean largePad, boolean fleetCarrier) throws IOException {
         return fetchCommoditiesAllArgs(coreMineral, sourceSystem, distance, largePad, fleetCarrier, 15000, 48, supplyDemand);
     }
 
@@ -237,7 +237,7 @@ public class InaraClient {
         }
     }
 
-    private List<InaraCommoditiesStats> fetchCommoditiesAllArgs(Mineral coreMineral, String sourceSystem,
+    private List<CommoditiesStats> fetchCommoditiesAllArgs(Mineral coreMineral, String sourceSystem,
                                                                 int maxSystemDistance, boolean largePad, boolean fleetCarrier,
                                                                 int maxStationDistance, int maxPriceAge,
                                                                 int minSupplyDemand) throws IOException {
@@ -270,7 +270,7 @@ public class InaraClient {
         long durationCall = System.currentTimeMillis() - start;
         System.out.println("INARA commodities call duration: " + durationCall + " ms");
 
-        List<InaraCommoditiesStats> commodities = new ArrayList<>();
+        List<CommoditiesStats> commodities = new ArrayList<>();
         Element table = doc.selectFirst("table.tablesortercollapsed");
         if (table == null) {
             System.out.println("No commodities table found");
@@ -287,10 +287,10 @@ public class InaraClient {
             if (cols.size() < 6) continue;
 
             try {
-                InaraCommoditiesStats stats = parseCommoditiesRow(cols, coreMineral);
+                CommoditiesStats stats = parseCommoditiesRow(cols, coreMineral);
                 commodities.add(stats);
             } catch (Exception e) {
-                System.err.println("Error parsing inaraCommoditiesStats row: " + e.getMessage());
+                System.err.println("Error parsing CommoditiesStats row: " + e.getMessage());
             }
         }
 
@@ -298,8 +298,8 @@ public class InaraClient {
         return commodities;
     }
 
-    private InaraCommoditiesStats parseCommoditiesRow(Elements cols, Mineral mineral) {
-        InaraCommoditiesStats stats = new InaraCommoditiesStats();
+    private CommoditiesStats parseCommoditiesRow(Elements cols, Mineral mineral) {
+        CommoditiesStats stats = new CommoditiesStats();
 
         // Station name + system
         Element stationElement = cols.get(0);

@@ -1,13 +1,13 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.ardentapi.model.CommoditiesStats;
+import be.mirooz.ardentapi.model.StationMarket;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
-import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
 import be.mirooz.ardentapi.model.CommodityMaxSell;
 
 import java.text.DecimalFormat;
@@ -35,7 +35,6 @@ public class MiningService {
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final ProspectedAsteroidRegistry prospectedRegistry = ProspectedAsteroidRegistry.getInstance();
-    private final InaraService inaraService = InaraService.getInstance();
     public final ArdentApiService ardentApiService = ArdentApiService.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
 
@@ -127,10 +126,10 @@ public class MiningService {
     /**
      * Recherche le prix d'un minéral avec option Fleet Carrier
      */
-    public CompletableFuture<List<InaraCommoditiesStats>> findMineralStation(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
+    public CompletableFuture<List<CommoditiesStats>> findMineralStation(Mineral mineral, String sourceSystem, int maxDistance, int minDemand, boolean largePad, boolean includeFleetCarrier) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return inaraService.fetchMinerMarket(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
+                return ardentApiService.fetchMinerMarket(mineral, sourceSystem, maxDistance, minDemand, largePad, includeFleetCarrier);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -155,11 +154,8 @@ public class MiningService {
         return edToolsService;
     }
 
-    /**
-     * Récupère le service Inara
-     */
-    public InaraService getInaraService() {
-        return inaraService;
+    public ArdentApiService getArdentApiService() {
+        return ardentApiService;
     }
 
     /**
@@ -168,10 +164,10 @@ public class MiningService {
      * @param stationUrl L'URL de la station
      * @return Un CompletableFuture contenant le marché de la station
      */
-    public CompletableFuture<StationMarket> fetchStationMarket(String stationUrl) {
+    public CompletableFuture<StationMarket> fetchStationMarket(String marketId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return inaraService.fetchStationMarket(stationUrl);
+                return ardentApiService.fetchStationMarket(marketId);
             } catch (Exception e) {
                 throw new RuntimeException("Erreur lors de la récupération du marché de station", e);
             }
@@ -224,14 +220,14 @@ public class MiningService {
     /**
      * Recherche les hotspots de minage pour une station spécifique
      */
-    public CompletableFuture<MiningHotspot> findMiningHotspotsForStation(InaraCommoditiesStats station, Mineral mineral) {
+    public CompletableFuture<MiningHotspot> findMiningHotspotsForStation(CommoditiesStats station, Mineral mineral) {
         return getEdToolsService().findMiningHotspots(station.getSystemName(), mineral)
                 .thenApply(hotspots -> {
-                    getInaraService().setHotspots(hotspots);
+                    getArdentApiService().setHotspots(hotspots);
                     if (hotspots != null && !hotspots.isEmpty()) {
                         // Stocker tous les hotspots dans InaraService pour la navigation
                         // Retourner le hotspot actuel (ou le premier si aucun n'est sélectionné)
-                        MiningHotspot currentHotspot = getInaraService().getCurrentHotspot();
+                        MiningHotspot currentHotspot = getArdentApiService().getCurrentHotspot();
                         return Objects.requireNonNullElseGet(currentHotspot, () -> hotspots.stream()
                                 .min(Comparator.comparingDouble(MiningHotspot::getDistanceFromReference))
                                 .orElse(hotspots.get(0)));

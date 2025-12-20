@@ -27,8 +27,6 @@ public class StationMarket {
     @Data
     public static class CommodityMarketEntry {
         private String commodityName;
-        private String commodityUrl;
-        private String category;
         private int sellPrice;
         private int demand;
         private int buyPrice;

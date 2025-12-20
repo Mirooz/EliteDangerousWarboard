@@ -7,7 +7,6 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.SystemCardComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.ConflictCardComponent;
-import be.mirooz.elitedangerous.dashboard.service.InaraService;
 import be.mirooz.elitedangerous.dashboard.service.SiriuscorpService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import be.mirooz.elitedangerous.siriuscorp.model.ConflictSystem;
@@ -141,7 +140,6 @@ public class MassacreSearchDialogController implements Initializable {
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
-    private final InaraService inaraService = InaraService.getInstance();
 
     private final SiriuscorpService siriuscorpService = SiriuscorpService.getInstance();
     private PopupManager popupManager = PopupManager.getInstance();

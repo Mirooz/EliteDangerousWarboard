@@ -4,7 +4,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipCompone
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.service.InaraService;
+import be.mirooz.elitedangerous.dashboard.service.ArdentApiService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.geometry.Insets;
@@ -57,7 +57,7 @@ public class ProspectorOverlayComponent {
     private Label ringLabel;
     private Label stationLabel;
     private HBox infoContainer;
-    private final InaraService inaraService = InaraService.getInstance();
+    private final ArdentApiService ardentApiService = ArdentApiService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
@@ -316,8 +316,8 @@ public class ProspectorOverlayComponent {
      */
     private void updateRingLabel() {
         if (ringLabel != null) {
-            String ringName = inaraService.getCurrentRingName();
-            String ringSystem = inaraService.getCurrentRingSystem();
+            String ringName = ardentApiService.getCurrentRingName();
+            String ringSystem = ardentApiService.getCurrentRingSystem();
             
             if (ringName != null && !ringName.isEmpty()) {
                 ringLabel.setText("Ring: " + ringName);
@@ -343,8 +343,8 @@ public class ProspectorOverlayComponent {
      */
     private void updateStationLabel() {
         if (stationLabel != null) {
-            String stationName = inaraService.getCurrentStationName();
-            String stationSystem = inaraService.getCurrentStationSystem();
+            String stationName = ardentApiService.getCurrentStationName();
+            String stationSystem = ardentApiService.getCurrentStationSystem();
             
             if (stationName != null && !stationName.isEmpty()) {
                 stationLabel.setText("Station: " + stationName);
