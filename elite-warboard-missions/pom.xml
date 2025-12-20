@@ -70,6 +70,11 @@
             <artifactId>bioforge-biodatas</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous</groupId>
+            <artifactId>ardent-api-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- JavaFX Controls -->
         <dependency>
             <groupId>org.openjfx</groupId>

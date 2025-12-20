@@ -1,5 +1,6 @@
-package be.mirooz.elitedangerous.lib.inara.model;
+package be.mirooz.elitedangerous.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CommodityMaxSell {
     private String commodityName;
-    private String inaraId;
     private int maxSellPrice;
 
 }

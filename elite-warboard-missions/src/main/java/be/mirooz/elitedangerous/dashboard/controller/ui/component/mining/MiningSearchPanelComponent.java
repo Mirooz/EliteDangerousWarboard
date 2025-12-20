@@ -13,9 +13,9 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotificationService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationType;
+import be.mirooz.elitedangerous.model.CommodityMaxSell;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -315,7 +315,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
                                 .filter(i -> !i.isSeparator())
                                 .forEach(mineral -> {
                                     Optional<CommodityMaxSell> commodityMaxSell = prices.stream().filter(
-                                                    p -> p.getInaraId().equals(mineral.getMineral().getInaraId()))
+                                                    p -> p.getCommodityName().equals(mineral.getMineral().getCargoJsonName()))
                                             .findFirst();
                                     commodityMaxSell.ifPresent(
                                             maxSell -> mineral.getMineral().setPrice(maxSell.getMaxSellPrice()));

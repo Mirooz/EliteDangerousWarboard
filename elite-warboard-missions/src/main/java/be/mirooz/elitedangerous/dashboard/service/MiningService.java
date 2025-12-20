@@ -6,9 +6,9 @@ import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip.ShipCarg
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
-import be.mirooz.elitedangerous.lib.inara.model.CommodityMaxSell;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
+import be.mirooz.elitedangerous.model.CommodityMaxSell;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -36,6 +36,7 @@ public class MiningService {
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final ProspectedAsteroidRegistry prospectedRegistry = ProspectedAsteroidRegistry.getInstance();
     private final InaraService inaraService = InaraService.getInstance();
+    public final ArdentApiService ardentApiService = ArdentApiService.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
 
     private MiningService() {
@@ -190,7 +191,7 @@ public class MiningService {
     public CompletableFuture <List<CommodityMaxSell>> fetchCommoditiesMaxSell() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return inaraService.fetchCommoditiesMaxSell();
+                return ardentApiService.fetchCommoditiesMaxSell();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
