@@ -8,8 +8,9 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableL
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.SystemCardComponent;
 import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.ConflictCardComponent;
 import be.mirooz.elitedangerous.dashboard.service.InaraService;
+import be.mirooz.elitedangerous.dashboard.service.SiriuscorpService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
-import be.mirooz.elitedangerous.lib.inara.model.conflictsearch.ConflictSystem;
+import be.mirooz.elitedangerous.model.ConflictSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -142,6 +143,7 @@ public class MassacreSearchDialogController implements Initializable {
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final InaraService inaraService = InaraService.getInstance();
 
+    private final SiriuscorpService siriuscorpService = SiriuscorpService.getInstance();
     private PopupManager popupManager = PopupManager.getInstance();
     private List<MassacreSystem> massacreSystems;
 
@@ -367,7 +369,7 @@ public class MassacreSearchDialogController implements Initializable {
     }
 
     private void executeConflictSearch(String referenceSystem) {
-        handleConflictSearch(inaraService.findConflictZoneSystems(referenceSystem));
+        handleConflictSearch(siriuscorpService.findConflictZoneSystems(referenceSystem));
     }
 
     private void handleConflictSearch(CompletableFuture<List<ConflictSystem>> future) {

@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.model.conflictsearch;
+package be.mirooz.elitedangerous.model;
 
 import lombok.Data;
 

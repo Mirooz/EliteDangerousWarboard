@@ -20,6 +20,7 @@
         <module>journal-analyzer</module>
         <module>bioforge-biodatas</module>
         <module>ardent-api-client</module>
+        <module>siriuscorp-client</module>
     </modules>
 
     <properties>
