@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.client.ArdentApiClient;
-import be.mirooz.elitedangerous.model.CommodityMaxSell;
+import be.mirooz.ardentapi.client.ArdentApiClient;
+import be.mirooz.ardentapi.model.CommodityMaxSell;
 
 import java.io.IOException;
 import java.util.List;

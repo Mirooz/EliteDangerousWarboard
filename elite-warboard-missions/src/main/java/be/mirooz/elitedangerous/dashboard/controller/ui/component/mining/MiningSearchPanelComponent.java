@@ -15,7 +15,7 @@ import be.mirooz.elitedangerous.dashboard.service.listeners.MineralPriceNotifica
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationType;
-import be.mirooz.elitedangerous.model.CommodityMaxSell;
+import be.mirooz.ardentapi.model.CommodityMaxSell;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

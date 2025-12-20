@@ -1,6 +1,6 @@
-package be.mirooz.elitedangerous.client;
+package be.mirooz.elitedangerous.siriuscorp.client;
 
-import be.mirooz.elitedangerous.model.ConflictSystem;
+import be.mirooz.elitedangerous.siriuscorp.model.ConflictSystem;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

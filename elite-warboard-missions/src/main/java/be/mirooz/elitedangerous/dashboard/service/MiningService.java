@@ -8,7 +8,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAste
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.elitedangerous.lib.inara.model.InaraCommoditiesStats;
 import be.mirooz.elitedangerous.lib.inara.model.StationMarket;
-import be.mirooz.elitedangerous.model.CommodityMaxSell;
+import be.mirooz.ardentapi.model.CommodityMaxSell;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

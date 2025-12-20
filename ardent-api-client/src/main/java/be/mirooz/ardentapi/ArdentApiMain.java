@@ -1,6 +1,6 @@
-package be.mirooz.elitedangerous;
+package be.mirooz.ardentapi;
 
-import be.mirooz.elitedangerous.client.ArdentApiClient;
+import be.mirooz.ardentapi.client.ArdentApiClient;
 
 import java.io.IOException;
 

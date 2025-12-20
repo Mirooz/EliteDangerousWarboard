@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.model;
+package be.mirooz.ardentapi.model;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import lombok.Data;

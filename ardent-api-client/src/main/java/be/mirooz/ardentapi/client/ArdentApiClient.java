@@ -1,16 +1,14 @@
-package be.mirooz.elitedangerous.client;
+package be.mirooz.ardentapi.client;
 
-import be.mirooz.elitedangerous.model.CommodityMaxSell;
+import be.mirooz.ardentapi.model.CommodityMaxSell;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jsoup.Jsoup;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ArdentApiClient {

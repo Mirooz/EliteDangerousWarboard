@@ -1,8 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.client.ArdentApiClient;
-import be.mirooz.elitedangerous.client.SiriuscorpClient;
-import be.mirooz.elitedangerous.model.ConflictSystem;
+import be.mirooz.elitedangerous.siriuscorp.client.SiriuscorpClient;
+import be.mirooz.elitedangerous.siriuscorp.model.ConflictSystem;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

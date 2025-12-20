@@ -1,6 +1,6 @@
-package be.mirooz.elitedangerous;
+package be.mirooz.elitedangerous.siriuscorp;
 
-import be.mirooz.elitedangerous.client.SiriuscorpClient;
+import be.mirooz.elitedangerous.siriuscorp.client.SiriuscorpClient;
 
 import java.io.IOException;
 

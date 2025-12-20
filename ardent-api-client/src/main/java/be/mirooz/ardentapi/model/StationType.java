@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.model;
+package be.mirooz.ardentapi.model;
 
 import lombok.Getter;
 

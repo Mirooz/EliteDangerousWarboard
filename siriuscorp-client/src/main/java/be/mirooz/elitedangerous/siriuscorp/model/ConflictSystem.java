@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.model;
+package be.mirooz.elitedangerous.siriuscorp.model;
 
 import lombok.Data;
 

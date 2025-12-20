@@ -10,7 +10,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.Conflic
 import be.mirooz.elitedangerous.dashboard.service.InaraService;
 import be.mirooz.elitedangerous.dashboard.service.SiriuscorpService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
-import be.mirooz.elitedangerous.model.ConflictSystem;
+import be.mirooz.elitedangerous.siriuscorp.model.ConflictSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

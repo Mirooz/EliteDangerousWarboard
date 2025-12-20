@@ -4,7 +4,7 @@ import be.mirooz.elitedangerous.dashboard.controller.ui.component.TooltipCompone
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.model.ConflictSystem;
+import be.mirooz.elitedangerous.siriuscorp.model.ConflictSystem;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
