@@ -11,7 +11,7 @@
   This tool provides a clear visual breakdown of your remaining kills per faction, helping you track and optimize your bounty grind efficiently.
 - **Conflict zone management** : Track your conflict zone progression and bounty rewards. The application automatically tracks your conflict zone progression and combat bonds.
 - **System search** : Find systems conducive to massacre missions via EdTools API
-- **Conflict search** : Locate civil war and conflict zones via Inara API
+- **Conflict search** : Locate civil war and conflict zones via SiriusCorp API
 - **Bounty tracking** : History of destroyed ships with bounties and timestamps
 - **Financial tracking** : Track pending and potential credits from missions
 - **Combat history** : View massacre/conflict sessions with kills and earnings
@@ -184,7 +184,8 @@ The application is available in **English and French** with complete interface t
 - **Jackson** : JSON journal file analysis
 - **Lombok** : Boilerplate code reduction
 - **EdTools API** : Massacre system search and hotspot detection
-- **Inara API** : Conflict zone search and market information
+- **Ardent API** : market information
+- **SiriusCorp API** : Conflict zone search and
 - **Canonn Bioforge** : Big data exobiology species probability calculations based on [bioforge.canonn.tech](https://bioforge.canonn.tech/)
 - **Inno Setup** : Installer creation with embedded runtime
 - **jpackage** : Installer creation with embedded runtime
@@ -270,7 +271,7 @@ The application automatically processes these Elite Dangerous events:
 ## 🌐 External APIs
 
 - **EdTools PvE** : Massacre system search, faction conflict data, and mining system information
-- **Inara** : Conflict zone and civil war search, station information, and mining commodity prices
+- **Ardent / SiriusCorp API** : Conflict zone and civil war search, station information, and mining commodity prices
 - **Error handling** : Translated network error popups with user-friendly messages
 - **Real-time data** : Live API integration for up-to-date system information
 - **Fallback mechanisms** : Graceful handling of API unavailability
