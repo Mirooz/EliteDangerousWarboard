@@ -92,4 +92,14 @@ public class AnalyticsService {
     public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequestDTO searchRequestDTO) throws Exception {
         return analyticsClient.searchSpansh(searchRequestDTO);
     }
+    
+    /**
+     * Récupère les résultats d'une recherche Spansh via son GUID
+     * @param guid Le GUID de la recherche Spansh
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO getSpanshSearchByGuid(String guid) throws Exception {
+        return analyticsClient.getSpanshSearchByGuid(guid);
+    }
 }

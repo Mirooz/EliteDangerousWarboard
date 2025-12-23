@@ -552,4 +552,40 @@ public class AnalyticsClient {
             throw e;
         }
     }
+    
+    /**
+     * Récupère les résultats d'une recherche Spansh via son GUID
+     * Appelle l'endpoint GET /api/spansh/search/{guid} du backend analytics
+     * @param guid Le GUID de la recherche Spansh
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO getSpanshSearchByGuid(String guid) throws Exception {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/spansh/search/" + guid))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                // Le backend retourne directement un SpanshSearchResponseDTO
+                SpanshSearchResponseDTO responseDTO = objectMapper.readValue(
+                    response.body(), 
+                    SpanshSearchResponseDTO.class
+                );
+                
+                return responseDTO;
+            } else {
+                throw new Exception("Erreur lors de l'appel à /api/spansh/search/" + guid + ": " 
+                    + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (GUID): " + e.getMessage());
+            throw e;
+        }
+    }
 }

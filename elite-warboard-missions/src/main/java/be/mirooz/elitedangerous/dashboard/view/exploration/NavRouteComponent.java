@@ -84,6 +84,9 @@ public class NavRouteComponent implements Initializable {
     
     @FXML
     private ProgressIndicator loadingIndicator;
+    
+    @FXML
+    private javafx.scene.control.Button reloadButton;
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
     private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
@@ -94,20 +97,30 @@ public class NavRouteComponent implements Initializable {
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final be.mirooz.elitedangerous.dashboard.service.PreferencesService preferencesService = 
+        be.mirooz.elitedangerous.dashboard.service.PreferencesService.getInstance();
     private ChangeListener<String> currentSystemListener;
     private ChangeListener<Number> widthListener;
+    private final Set<String> visitedSystems = new HashSet<>(); // Systèmes visités dans la route actuelle
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialiser le registre avec le mode par défaut
         explorationModeRegistry.setCurrentMode(ExplorationMode.FREE_EXPLORATION);
         
+        // Charger les systèmes visités depuis les préférences
+        loadVisitedSystemsFromPreferences();
+        
         // Initialiser le sélecteur de mode
         initializeModeSelector();
         
         // Écouter les changements de route
         navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
-            Platform.runLater(() -> updateRouteDisplay(newRoute));
+            Platform.runLater(() -> {
+                // Ne pas réinitialiser les systèmes visités - on les maintient même lors du changement de route
+                // Les systèmes visités sont sauvegardés dans les préférences et chargés au démarrage
+                updateRouteDisplay(newRoute);
+            });
         });
         
         // Écouter les changements du système actuel via CommanderStatusComponent
@@ -115,6 +128,24 @@ public class NavRouteComponent implements Initializable {
             be.mirooz.elitedangerous.dashboard.view.common.CommanderStatusComponent.getInstance();
         currentSystemListener = (obs, oldSystem, newSystem) -> {
             Platform.runLater(() -> {
+                // Marquer le système précédent (oldSystem) comme visité s'il était dans la route
+                // (basé sur FSDJumpHandler qui met à jour CommanderStatus quand on arrive dans un nouveau système)
+                if (oldSystem != null && !oldSystem.isEmpty() && newSystem != null && !newSystem.isEmpty()) {
+                    NavRoute route = navRouteRegistry.getCurrentRoute();
+                    if (route != null && route.getRoute() != null) {
+                        for (RouteSystem routeSystem : route.getRoute()) {
+                            if (routeSystem.getSystemName().equals(oldSystem)) {
+                                visitedSystems.add(oldSystem);
+                                System.out.println("✅ Système marqué comme visité: " + oldSystem);
+                                // Sauvegarder dans les préférences
+                                saveVisitedSystemsToPreferences();
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Mettre à jour l'affichage
                 NavRoute route = navRouteRegistry.getCurrentRoute();
                 if (route != null) {
                     updateRouteDisplay(route);
@@ -198,6 +229,76 @@ public class NavRouteComponent implements Initializable {
         if (modeDescriptionLabel != null) {
             updateModeDescription(ExplorationMode.FREE_EXPLORATION);
         }
+        
+        // Initialiser le bouton de rechargement
+        initializeReloadButton();
+    }
+    
+    /**
+     * Initialise le bouton de rechargement
+     */
+    private void initializeReloadButton() {
+        if (reloadButton != null) {
+            // Tooltip
+            Tooltip tooltip = new Tooltip("Recharge les données");
+            reloadButton.setTooltip(tooltip);
+            
+            // Visibilité selon le mode
+            updateReloadButtonVisibility();
+        }
+    }
+    
+    /**
+     * Met à jour la visibilité du bouton de rechargement selon le mode
+     */
+    private void updateReloadButtonVisibility() {
+        if (reloadButton != null) {
+            boolean visible = currentMode != ExplorationMode.FREE_EXPLORATION;
+            reloadButton.setVisible(visible);
+            reloadButton.setManaged(visible);
+        }
+    }
+    
+    /**
+     * Action du bouton de rechargement
+     */
+    @FXML
+    public void onReloadButtonClicked() {
+        if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+            // Effacer le GUID sauvegardé pour forcer une nouvelle recherche avec le système actuel
+            String modeKey = "spansh.guid." + currentMode.name();
+            preferencesService.setPreference(modeKey, "");
+            
+            // Recharger la route avec le système actuel
+            loadStratumRoute();
+        }
+    }
+    
+    /**
+     * Charge les systèmes visités depuis les préférences
+     */
+    private void loadVisitedSystemsFromPreferences() {
+        String modeKey = "navroute.visited." + currentMode.name();
+        String visitedSystemsStr = preferencesService.getPreference(modeKey, "");
+        if (visitedSystemsStr != null && !visitedSystemsStr.isEmpty()) {
+            String[] systems = visitedSystemsStr.split(",");
+            visitedSystems.clear();
+            for (String system : systems) {
+                if (system != null && !system.trim().isEmpty()) {
+                    visitedSystems.add(system.trim());
+                }
+            }
+            System.out.println("📋 Systèmes visités chargés pour le mode " + currentMode.name() + ": " + visitedSystems.size());
+        }
+    }
+    
+    /**
+     * Sauvegarde les systèmes visités dans les préférences
+     */
+    private void saveVisitedSystemsToPreferences() {
+        String modeKey = "navroute.visited." + currentMode.name();
+        String visitedSystemsStr = String.join(",", visitedSystems);
+        preferencesService.setPreference(modeKey, visitedSystemsStr);
     }
     
     /**
@@ -221,9 +322,21 @@ public class NavRouteComponent implements Initializable {
      */
     private void handleModeChange(ExplorationMode newMode) {
         ExplorationMode oldMode = currentMode;
+        
+        // Sauvegarder les systèmes visités de l'ancien mode
+        if (oldMode != null) {
+            saveVisitedSystemsToPreferences();
+        }
+        
         currentMode = newMode;
         explorationModeRegistry.setCurrentMode(newMode); // Mettre à jour le registre
         updateModeDescription(newMode);
+        
+        // Charger les systèmes visités du nouveau mode
+        loadVisitedSystemsFromPreferences();
+        
+        // Mettre à jour la visibilité du bouton de rechargement
+        updateReloadButtonVisibility();
         
         if (newMode == ExplorationMode.STRATUM_UNDISCOVERED) {
             // Sauvegarder la route normale si elle existe
@@ -232,9 +345,15 @@ public class NavRouteComponent implements Initializable {
                 savedNormalRoute = currentRoute;
             }
             
+            // Ne PAS réinitialiser les systèmes visités - on les maintient même lors du rechargement
+            // visitedSystems.clear(); // Commenté pour maintenir les systèmes visités
+            
             // Appeler le backend pour obtenir la route Stratum
             loadStratumRoute();
         } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
+            // Réinitialiser les systèmes visités pour la nouvelle route
+            visitedSystems.clear();
+            
             // Toujours recharger le fichier NavRoute.json pour avoir les données les plus récentes
             // (même si on a une route sauvegardée, car le fichier peut avoir été mis à jour
             // pendant qu'on était en mode Stratum et que les événements NavRoute ont été ignorés)
@@ -273,14 +392,41 @@ public class NavRouteComponent implements Initializable {
                     return;
                 }
                 
-                // Construire le DTO avec le système actuel
-                SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(currentSystem);
+                // Charger le GUID depuis les préférences pour ce mode
+                String modeKey = "spansh.guid." + currentMode.name();
+                String savedGuid = preferencesService.getPreference(modeKey, null);
                 
-                // Appeler le backend directement avec le DTO
-                SpanshSearchResponseDTO responseDTO = analyticsService.searchSpansh(requestDTO);
+                SpanshSearchResponseDTO responseDTO;
+                
+                boolean isNewCall = false;
+                if (savedGuid != null && !savedGuid.isEmpty()) {
+                    // Si on a un GUID, faire un GET (reprise en cours de route)
+                    System.out.println("📋 Utilisation du GUID sauvegardé pour le mode " + currentMode.name() + ": " + savedGuid);
+                    responseDTO = analyticsService.getSpanshSearchByGuid(savedGuid);
+                    isNewCall = false;
+                } else {
+                    // Sinon, faire un POST normal (nouveau call)
+                    System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name());
+                    SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(currentSystem);
+                    responseDTO = analyticsService.searchSpansh(requestDTO);
+                    isNewCall = true;
+                    
+                    // Sauvegarder le GUID reçu
+                    if (responseDTO != null && responseDTO.getSearchReference() != null && !responseDTO.getSearchReference().isEmpty()) {
+                        preferencesService.setPreference(modeKey, responseDTO.getSearchReference());
+                        System.out.println("💾 GUID sauvegardé pour le mode " + currentMode.name() + ": " + responseDTO.getSearchReference());
+                    }
+                }
+                
+                // Sauvegarder les systèmes visités avant de reconstruire la route
+                Set<String> previousVisitedSystems = new HashSet<>(visitedSystems);
                 
                 // Construire la route à partir de la réponse
-                NavRoute stratumRoute = buildRouteFromSpanshResponse(responseDTO, currentSystem);
+                NavRoute stratumRoute = buildRouteFromSpanshResponse(responseDTO, currentSystem, isNewCall);
+                
+                // Restaurer les systèmes visités après reconstruction
+                visitedSystems.clear();
+                visitedSystems.addAll(previousVisitedSystems);
                 
                 // Mettre à jour le registre sur le thread JavaFX
                 Platform.runLater(() -> {
@@ -288,6 +434,8 @@ public class NavRouteComponent implements Initializable {
                     if (stratumRoute != null) {
                         navRouteRegistry.setCurrentRoute(stratumRoute);
                         System.out.println("✅ Route Stratum chargée : " + stratumRoute.getRoute().size() + " systèmes");
+                        // Forcer la mise à jour de l'affichage pour prendre en compte les systèmes visités
+                        updateRouteDisplay(stratumRoute);
                     } else {
                         System.err.println("⚠️ Aucune route Stratum trouvée");
                     }
@@ -327,8 +475,11 @@ public class NavRouteComponent implements Initializable {
     
     /**
      * Construit une NavRoute à partir de la réponse Spansh
+     * @param responseDTO La réponse Spansh
+     * @param currentSystemName Le système de référence (système actuel lors du call)
+     * @param isNewCall true si c'est un nouveau call (POST), false si c'est un rechargement (GET avec GUID)
      */
-    private NavRoute buildRouteFromSpanshResponse(SpanshSearchResponseDTO responseDTO, String currentSystemName) {
+    private NavRoute buildRouteFromSpanshResponse(SpanshSearchResponseDTO responseDTO, String currentSystemName, boolean isNewCall) {
         if (responseDTO == null || responseDTO.getSpanshResponse() == null) {
             return null;
         }
@@ -368,19 +519,44 @@ public class NavRouteComponent implements Initializable {
             .sorted(Comparator.comparingDouble(result -> result.distance))
             .collect(Collectors.toList());
         
-        // Ajouter le système actuel en premier
-        RouteSystem currentSystem = new RouteSystem();
-        currentSystem.setSystemName(currentSystemName);
-        currentSystem.setSystemAddress(0); // On n'a pas l'address du système actuel
-        currentSystem.setStarClass(""); // On n'a pas la classe d'étoile
-        currentSystem.setStarPos(new double[]{0, 0, 0}); // Position par défaut
-        currentSystem.setDistanceFromPrevious(0.0);
-        routeSystems.add(currentSystem);
+        // Déterminer le système de référence à utiliser
+        String referenceSystemName = currentSystemName;
+        double[] referencePosition = null;
+        long referenceId64 = 0;
         
+        if (!isNewCall && spanshResponse.reference != null && spanshResponse.reference.name != null) {
+            // Lors d'un rechargement avec GUID, utiliser le système de référence depuis la réponse
+            referenceSystemName = spanshResponse.reference.name;
+            referenceId64 = spanshResponse.reference.id64;
+            referencePosition = new double[]{
+                spanshResponse.reference.x,
+                spanshResponse.reference.y,
+                spanshResponse.reference.z
+            };
+        }
+        
+        // Ajouter le système de référence en premier (pour nouveau call ET rechargement avec GUID)
         double[] previousPosition = null;
+        RouteSystem referenceSystem = new RouteSystem();
+        referenceSystem.setSystemName(referenceSystemName);
+        referenceSystem.setSystemAddress(referenceId64);
+        referenceSystem.setStarClass(""); // On n'a pas la classe d'étoile du système de référence
+        if (referencePosition != null) {
+            referenceSystem.setStarPos(referencePosition);
+            previousPosition = referencePosition;
+        } else {
+            referenceSystem.setStarPos(new double[]{0, 0, 0}); // Position par défaut
+        }
+        referenceSystem.setDistanceFromPrevious(0.0);
+        routeSystems.add(referenceSystem);
         
-        // Ajouter les systèmes de la réponse Spansh
+        // Ajouter les systèmes de la réponse Spansh (en excluant le système de référence s'il est présent)
         for (SpanshSearchResponse.BodyResult result : sortedResults) {
+            // Ne pas ajouter le système de référence s'il est déjà dans la route
+            if (result.system_name.equals(referenceSystemName)) {
+                continue;
+            }
+            
             RouteSystem routeSystem = new RouteSystem();
             routeSystem.setSystemName(result.system_name);
             routeSystem.setSystemAddress(result.system_id64);
@@ -400,12 +576,16 @@ public class NavRouteComponent implements Initializable {
             // Calculer la distance depuis le système précédent
             double distance = 0.0;
             if (previousPosition != null) {
+                // Calculer la distance depuis le système précédent (système de référence ou système précédent)
                 distance = calculateDistance(previousPosition, starPos);
-            } else if (routeSystems.size() == 1) {
-                // Distance depuis le système actuel (on n'a pas sa position, donc on utilise la distance de Spansh)
+            } else {
+                // Si pas de position précédente, utiliser la distance depuis Spansh
                 distance = result.distance;
             }
             routeSystem.setDistanceFromPrevious(distance);
+            
+            // Mettre à jour la position précédente pour le prochain système
+            previousPosition = starPos;
             
             routeSystems.add(routeSystem);
             previousPosition = starPos;
@@ -543,9 +723,18 @@ public class NavRouteComponent implements Initializable {
                     break;
                 }
             }
-            // Si le système actuel n'est pas dans la route, utiliser le premier
-            if (currentSystemIndex == -1) {
-                currentSystemIndex = 0;
+            
+            // Si le système actuel est dans la route, marquer tous les systèmes précédents comme visités
+            if (currentSystemIndex >= 0) {
+                for (int i = 0; i < currentSystemIndex; i++) {
+                    String systemName = route.getRoute().get(i).getSystemName();
+                    visitedSystems.add(systemName);
+                    System.out.println("✅ Système marqué comme visité (avant système actuel): " + systemName);
+                }
+                // Sauvegarder les systèmes visités
+                saveVisitedSystemsToPreferences();
+            } else {
+                System.out.println("⚠️ Système actuel '" + currentSystemName + "' non trouvé dans la route");
             }
 
             // Calculer l'espacement proportionnel aux distances en AL
@@ -623,7 +812,10 @@ public class NavRouteComponent implements Initializable {
                 double x = currentX;
                 
                 boolean isCurrent = (i == currentSystemIndex);
-                boolean isVisited = (i < currentSystemIndex);
+                // Un système est visité s'il est dans le Set des systèmes visités
+                // ou s'il est avant le système actuel dans la route
+                boolean isVisited = visitedSystems.contains(system.getSystemName()) || 
+                                   (currentSystemIndex >= 0 && i < currentSystemIndex);
 
                 // Dessiner la ligne vers le système suivant (sauf pour le dernier)
                 if (i < systemCount - 1) {

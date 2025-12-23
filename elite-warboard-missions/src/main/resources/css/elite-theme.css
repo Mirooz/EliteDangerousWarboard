@@ -3987,6 +3987,30 @@
     -fx-cursor: hand;
 }
 
+.nav-route-reload-button {
+    -fx-background-color: transparent;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+}
+
+.nav-route-reload-button:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: -fx-elite-blue;
+}
+
+.nav-route-reload-icon {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.nav-route-reload-button:hover .nav-route-reload-icon {
+    -fx-text-fill: -fx-elite-blue;
+}
+
 /* Panel en haut */
 .exploration-top-panel {
     -fx-spacing: 20px;
