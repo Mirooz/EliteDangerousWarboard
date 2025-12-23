@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
@@ -12,9 +13,11 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -66,8 +69,15 @@ public class NavRouteComponent implements Initializable {
     
     @FXML
     private javafx.scene.control.ScrollPane routeScrollPane;
+    
+    @FXML
+    private HBox modeSelectorContainer;
+    
+    @FXML
+    private Label modeDescriptionLabel;
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
+    private ExplorationMode currentMode = ExplorationMode.FREE_EXPLORATION;
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
@@ -77,6 +87,9 @@ public class NavRouteComponent implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Initialiser le sélecteur de mode
+        initializeModeSelector();
+        
         // Écouter les changements de route
         navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
             Platform.runLater(() -> updateRouteDisplay(newRoute));
@@ -111,24 +124,103 @@ public class NavRouteComponent implements Initializable {
         // Afficher la route actuelle si elle existe
         updateRouteDisplay(navRouteRegistry.getCurrentRoute());
     }
+    
+    /**
+     * Initialise le sélecteur de mode d'exploration
+     */
+    private void initializeModeSelector() {
+        if (modeSelectorContainer == null) {
+            return;
+        }
+        
+        // Créer un ComboBox compact pour les modes avec le même style que les combobox de mission
+        ComboBox<ExplorationMode> modeComboBox = new ComboBox<>();
+        modeComboBox.getItems().addAll(ExplorationMode.values());
+        modeComboBox.setValue(ExplorationMode.FREE_EXPLORATION);
+        modeComboBox.getStyleClass().add("elite-combobox");
+        
+        // Afficher le nom du mode
+        modeComboBox.setCellFactory(param -> new javafx.scene.control.ListCell<ExplorationMode>() {
+            @Override
+            protected void updateItem(ExplorationMode mode, boolean empty) {
+                super.updateItem(mode, empty);
+                if (empty || mode == null) {
+                    setText(null);
+                } else {
+                    setText(mode.getDisplayName());
+                }
+            }
+        });
+        
+        // Afficher le nom du mode dans le bouton
+        modeComboBox.setButtonCell(new javafx.scene.control.ListCell<ExplorationMode>() {
+            @Override
+            protected void updateItem(ExplorationMode mode, boolean empty) {
+                super.updateItem(mode, empty);
+                if (empty || mode == null) {
+                    setText(null);
+                } else {
+                    setText(mode.getDisplayName());
+                }
+            }
+        });
+        
+        // Gérer le changement de mode
+        modeComboBox.setOnAction(e -> {
+            ExplorationMode selectedMode = modeComboBox.getSelectionModel().getSelectedItem();
+            if (selectedMode != null) {
+                currentMode = selectedMode;
+                updateModeDescription(selectedMode);
+            }
+        });
+        
+        // Ajouter un label "Mode:" avant le ComboBox
+        Label modeLabel = new Label("Mode:");
+        modeLabel.getStyleClass().add("filter-label");
+        
+        modeSelectorContainer.getChildren().addAll(modeLabel, modeComboBox);
+        
+        // Initialiser la description du mode par défaut
+        if (modeDescriptionLabel != null) {
+            updateModeDescription(ExplorationMode.FREE_EXPLORATION);
+        }
+    }
+    
+    /**
+     * Met à jour la description du mode sélectionné
+     */
+    private void updateModeDescription(ExplorationMode mode) {
+        if (modeDescriptionLabel != null && mode != null) {
+            modeDescriptionLabel.setText(mode.getDescription());
+        }
+    }
+    
+    /**
+     * Récupère le mode d'exploration actuellement sélectionné
+     */
+    public ExplorationMode getCurrentMode() {
+        return currentMode;
+    }
 
     /**
      * Met à jour l'affichage de la route
      */
     private void updateRouteDisplay(NavRoute route) {
-        if (route == null || route.getRoute() == null || route.getRoute().isEmpty()) {
-            // Masquer le composant si pas de route
-            if (navRouteContainer != null) {
-                navRouteContainer.setVisible(false);
-                navRouteContainer.setManaged(false);
-            }
-            return;
-        }
-
-        // Afficher le composant
+        // Toujours afficher le composant
         if (navRouteContainer != null) {
             navRouteContainer.setVisible(true);
             navRouteContainer.setManaged(true);
+        }
+        
+        if (route == null || route.getRoute() == null || route.getRoute().isEmpty()) {
+            // Afficher un message si pas de route
+            if (routeTitleLabel != null) {
+                routeTitleLabel.setText("ROUTE DE NAVIGATION (Aucune route active)");
+            }
+            if (routeSystemsPane != null) {
+                routeSystemsPane.getChildren().clear();
+            }
+            return;
         }
 
         // Mettre à jour le titre

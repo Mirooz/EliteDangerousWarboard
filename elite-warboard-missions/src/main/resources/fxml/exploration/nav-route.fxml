@@ -7,14 +7,20 @@
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.view.exploration.NavRouteComponent"
       fx:id="navRouteContainer"
-      styleClass="nav-route-panel" spacing="10" managed="false" visible="false">
+      styleClass="nav-route-panel" spacing="10">
     
     <padding>
         <Insets top="10" right="15" bottom="10" left="15"/>
     </padding>
     
-    <!-- Titre -->
-    <Label fx:id="routeTitleLabel" text="ROUTE DE NAVIGATION" styleClass="nav-route-title"/>
+    <!-- En-tête avec titre et sélecteur de mode -->
+    <HBox alignment="CENTER_LEFT" spacing="20" styleClass="nav-route-header">
+        <Label fx:id="routeTitleLabel" text="ROUTE DE NAVIGATION" styleClass="nav-route-title"/>
+        <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
+        <HBox fx:id="modeSelectorContainer" spacing="10" alignment="CENTER_LEFT" styleClass="nav-route-mode-selector"/>
+        <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
+        <Label fx:id="modeDescriptionLabel" styleClass="nav-route-mode-description" wrapText="true" HBox.hgrow="ALWAYS"/>
+    </HBox>
     
     <!-- Pane pour la représentation graphique des systèmes -->
     <ScrollPane fx:id="routeScrollPane" fitToWidth="true" fitToHeight="false" 

@@ -3856,6 +3856,63 @@
 }
 
 /* Panel de route de navigation */
+/* Sélecteur de mode d'exploration */
+.exploration-mode-selector {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.exploration-mode-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.exploration-mode-buttons {
+    -fx-alignment: center-left;
+}
+
+.exploration-mode-radio {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+}
+
+.exploration-mode-radio .radio {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.exploration-mode-radio:selected .radio {
+    -fx-background-color: -fx-elite-orange;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.exploration-mode-radio .dot {
+    -fx-background-color: -fx-elite-dark;
+    -fx-background-radius: 5px;
+}
+
+.exploration-mode-radio:selected .dot {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.exploration-mode-radio:hover {
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.exploration-mode-description {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-padding: 5 0 0 0;
+}
+
 .nav-route-panel {
     -fx-background-color: -fx-elite-gray;
     -fx-border-color: -fx-elite-orange;
@@ -3864,10 +3921,30 @@
     -fx-background-radius: 5px;
 }
 
+.nav-route-header {
+    -fx-alignment: center-left;
+}
+
 .nav-route-title {
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
+}
+
+.nav-route-separator {
+    -fx-pref-height: 20px;
+    -fx-pref-width: 1px;
+}
+
+.nav-route-mode-selector {
+    -fx-spacing: 5px;
+}
+
+.nav-route-mode-description {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-padding: 0 10 0 0;
 }
 
 .nav-route-scroll {
