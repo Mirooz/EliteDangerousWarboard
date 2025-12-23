@@ -5,7 +5,7 @@
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.MiningController"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.mining.MiningController"
       styleClass="mining-panel">
 
     <!-- Header avec filtre de recherche -->

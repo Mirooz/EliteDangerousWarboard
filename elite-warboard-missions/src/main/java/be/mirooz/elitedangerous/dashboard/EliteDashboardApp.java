@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.VersionUpdateNotificationComponent;
+import be.mirooz.elitedangerous.dashboard.view.common.VersionUpdateNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
 import be.mirooz.elitedangerous.dashboard.service.VersionCheckService;

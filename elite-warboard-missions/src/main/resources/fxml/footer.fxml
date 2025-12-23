@@ -6,7 +6,7 @@
 
 <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="footer-panel" xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.FooterController">
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.FooterController">
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" />
    </padding>

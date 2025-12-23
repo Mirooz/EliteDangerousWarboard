@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service.listeners;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
-import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;

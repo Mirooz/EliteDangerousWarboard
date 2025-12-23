@@ -5,9 +5,9 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView?>
+<?import be.mirooz.elitedangerous.dashboard.view.common.NotSelectableListView?>
 <StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="be.mirooz.elitedangerous.dashboard.controller.MassacreSearchDialogController">
+           fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.MassacreSearchDialogController">
 
     <VBox spacing="20.0" styleClass="dialog-content">
     <padding>

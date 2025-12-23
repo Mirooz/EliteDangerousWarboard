@@ -6,7 +6,7 @@
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="be.mirooz.elitedangerous.dashboard.controller.DashboardController">
+            fx:controller="be.mirooz.elitedangerous.dashboard.view.main.DashboardController">
     <center>
         <StackPane fx:id="popupContainer">
             <VBox>

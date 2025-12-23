@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent;
+import be.mirooz.elitedangerous.dashboard.view.exploration.RadarComponent;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Position;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -121,8 +121,7 @@ public class DirectionReaderService {
         System.out.println("[StatusWatcher] Démarrage de la surveillance de Status.json");
         
         // Afficher le panel du radar
-        be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent radarComponent = 
-            be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent.getInstance();
+        RadarComponent radarComponent = RadarComponent.getInstance();
         if (radarComponent != null) {
             javafx.application.Platform.runLater(() -> radarComponent.showRadar());
         }
@@ -201,8 +200,7 @@ public class DirectionReaderService {
         currentBiologicalSamplePositions.clear();
         
         // Cacher le panel du radar
-        RadarComponent radarComponent =
-            be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.RadarComponent.getInstance();
+        RadarComponent radarComponent = RadarComponent.getInstance();
         if (radarComponent != null) {
             javafx.application.Platform.runLater(radarComponent::hideRadar);
         }

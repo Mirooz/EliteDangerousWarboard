@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox styleClass="header-panel" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.HeaderController">
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.HeaderController">
     <children>
         <!-- Statistiques des missions -->
         <HBox alignment="CENTER_LEFT" spacing="30.0" styleClass="stats-panel">

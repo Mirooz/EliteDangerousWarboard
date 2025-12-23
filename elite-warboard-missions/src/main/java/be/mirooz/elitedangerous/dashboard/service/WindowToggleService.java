@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.SystemVisualViewComponent;
+import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;

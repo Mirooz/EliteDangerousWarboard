@@ -3,10 +3,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.ToggleSwitch?>
+<?import be.mirooz.elitedangerous.dashboard.view.mining.ToggleSwitch?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.mining.CurrentCargoComponent"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.mining.CurrentCargoComponent"
       spacing="10" HBox.hgrow="ALWAYS">
 
     <Label fx:id="currentCargoLabel" text="CARGO ACTUEL" styleClass="mining-section-title"/>

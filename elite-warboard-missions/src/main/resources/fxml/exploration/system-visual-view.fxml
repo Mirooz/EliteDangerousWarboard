@@ -6,7 +6,7 @@
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.SystemVisualViewComponent"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent"
       spacing="0" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS">
 
     <Label fx:id="systemTitleLabel" text="VUE VISUELLE DU SYSTÈME" styleClass="exploration-section-title" />

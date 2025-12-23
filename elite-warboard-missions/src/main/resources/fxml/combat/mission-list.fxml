@@ -4,12 +4,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.NotSelectableListView?>
+<?import be.mirooz.elitedangerous.dashboard.view.common.NotSelectableListView?>
 <?import be.mirooz.elitedangerous.dashboard.model.commander.Mission?>
-<?import be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.TargetPanelComponent?>
+<?import be.mirooz.elitedangerous.dashboard.view.combat.TargetPanelComponent?>
 <VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.MissionListController">
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.MissionListController">
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
    </padding>

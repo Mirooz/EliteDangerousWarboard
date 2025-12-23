@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.combat;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionStatus;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;

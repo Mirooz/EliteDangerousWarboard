@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.JournalEventHandler;
 import com.fasterxml.jackson.databind.JsonNode;
 

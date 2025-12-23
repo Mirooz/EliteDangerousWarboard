@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ParentBody;

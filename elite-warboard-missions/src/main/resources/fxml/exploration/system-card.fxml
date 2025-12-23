@@ -6,7 +6,7 @@
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.exploration.SystemCardController"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.exploration.SystemCardController"
       fx:id="root" spacing="5" styleClass="exploration-system-card" style="-fx-cursor: hand">
     <padding>
         <Insets top="3" right="3" bottom="3" left="3"/>

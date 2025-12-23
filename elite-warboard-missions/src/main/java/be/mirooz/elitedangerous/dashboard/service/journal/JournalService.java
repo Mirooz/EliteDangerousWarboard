@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.journal;
 
-import be.mirooz.elitedangerous.dashboard.controller.ui.component.DialogComponent;
-import be.mirooz.elitedangerous.dashboard.controller.ui.manager.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
@@ -10,7 +10,7 @@ import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispat
 import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
-import be.mirooz.elitedangerous.dashboard.controller.ui.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import com.fasterxml.jackson.databind.JsonNode;

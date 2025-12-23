@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.DestroyedShipsController"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.DestroyedShipsController"
       styleClass="destroyed-ships-panel"
       spacing="10.0">
 

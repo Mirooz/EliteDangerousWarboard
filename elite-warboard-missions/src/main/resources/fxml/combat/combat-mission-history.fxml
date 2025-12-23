@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.controller.ui.component.combat.CombatMissionHistoryComponent"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.CombatMissionHistoryComponent"
       spacing="10" styleClass="combat-history-container">
    
    <padding>
