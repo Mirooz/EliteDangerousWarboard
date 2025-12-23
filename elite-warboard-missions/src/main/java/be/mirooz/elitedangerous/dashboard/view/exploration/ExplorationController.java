@@ -1,10 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
-
-import be.mirooz.elitedangerous.dashboard.view.exploration.*;
-import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
+import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -41,6 +39,9 @@ public class ExplorationController implements Initializable,IBatchListener {
     public void onBatchEnd(){
         // S'abonner au service de notification pour le refresh
         ExplorationRefreshNotificationService.getInstance().addListener(this::refresh);
+        
+        // Charger la route de navigation après la fin du batch
+        NavRouteService.getInstance().loadAndStoreNavRoute();
     }
     @Override
     public void onBatchStart(){

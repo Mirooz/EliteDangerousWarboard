@@ -3855,6 +3855,52 @@
     -fx-spacing: 10px;
 }
 
+/* Panel de route de navigation */
+.nav-route-panel {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.nav-route-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.nav-route-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.nav-route-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.nav-route-systems-pane {
+    -fx-background-color: transparent;
+    -fx-min-height: 70px;
+    -fx-pref-height: 70px;
+}
+
+.nav-route-scoop-indicator {
+    -fx-cursor: hand;
+}
+
+.nav-route-circle {
+    -fx-cursor: hand;
+}
+
+.nav-route-circle-current {
+    -fx-cursor: hand;
+}
+
+.nav-route-line {
+    -fx-cursor: hand;
+}
+
 /* Panel en haut */
 .exploration-top-panel {
     -fx-spacing: 20px;

@@ -8,6 +8,9 @@
       fx:controller="be.mirooz.elitedangerous.dashboard.view.exploration.ExplorationController"
       styleClass="exploration-panel" spacing="10">
 
+    <!-- Panel de route de navigation (affiché si route active) -->
+    <fx:include source="nav-route.fxml"/>
+
     <!-- Zone principale : Panel haut + Panel gauche (Vue visuelle) + Panel droit (Détails + Historique) -->
     <HBox spacing="20" styleClass="exploration-content" VBox.vgrow="ALWAYS">
         

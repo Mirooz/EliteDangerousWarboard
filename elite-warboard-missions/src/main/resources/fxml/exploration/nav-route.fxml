@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.exploration.NavRouteComponent"
+      fx:id="navRouteContainer"
+      styleClass="nav-route-panel" spacing="10" managed="false" visible="false">
+    
+    <padding>
+        <Insets top="10" right="15" bottom="10" left="15"/>
+    </padding>
+    
+    <!-- Titre -->
+    <Label fx:id="routeTitleLabel" text="ROUTE DE NAVIGATION" styleClass="nav-route-title"/>
+    
+    <!-- Pane pour la représentation graphique des systèmes -->
+    <ScrollPane fx:id="routeScrollPane" fitToWidth="true" fitToHeight="false" 
+                styleClass="nav-route-scroll" 
+                hbarPolicy="AS_NEEDED" 
+                vbarPolicy="NEVER"
+                minHeight="70" 
+                prefHeight="70">
+        <Pane fx:id="routeSystemsPane" styleClass="nav-route-systems-pane"/>
+    </ScrollPane>
+    
+</VBox>
+
