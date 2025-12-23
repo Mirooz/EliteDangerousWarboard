@@ -3021,6 +3021,12 @@
 /* ✅ Style pour l'indicateur de chargement */
 .progress-indicator {
     -fx-progress-color: -fx-elite-success;
+    -fx-min-width: 60px;
+    -fx-pref-width: 60px;
+    -fx-max-width: 60px;
+    -fx-min-height: 60px;
+    -fx-pref-height: 60px;
+    -fx-max-height: 60px;
 }
 
 
@@ -3919,6 +3925,9 @@
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
+    -fx-min-height: 120px;
+    -fx-pref-height: 120px;
+    -fx-max-height: 120px;
 }
 
 .nav-route-header {

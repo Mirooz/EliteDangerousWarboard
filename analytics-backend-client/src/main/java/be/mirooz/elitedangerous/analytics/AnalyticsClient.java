@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.analytics;
 import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshOffsetDateTimeDeserializer;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequest;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponse;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -502,6 +503,44 @@ public class AnalyticsClient {
                 SpanshSearchResponseDTO responseDTO = new SpanshSearchResponseDTO();
                 responseDTO.setSearchReference(spanshResponse.search_reference);
                 responseDTO.setSpanshResponse(spanshResponse);
+                
+                return responseDTO;
+            } else {
+                throw new Exception("Erreur lors de l'appel à /api/spansh/search: " 
+                    + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    /**
+     * Appelle l'endpoint /api/spansh/search du backend analytics avec un DTO
+     * @param searchRequestDTO Le DTO de requête de recherche Spansh (contient uniquement le système de référence)
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequestDTO searchRequestDTO) throws Exception {
+        try {
+            String jsonBody = objectMapper.writeValueAsString(searchRequestDTO);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/spansh/search"))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                // Le backend retourne directement un SpanshSearchResponseDTO
+                SpanshSearchResponseDTO responseDTO = objectMapper.readValue(
+                    response.body(), 
+                    SpanshSearchResponseDTO.class
+                );
                 
                 return responseDTO;
             } else {

@@ -1,10 +1,15 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponse;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
+import be.mirooz.elitedangerous.dashboard.service.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
@@ -15,6 +20,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -28,8 +34,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Composant pour afficher la route de navigation dans le panel d'exploration
@@ -75,10 +81,16 @@ public class NavRouteComponent implements Initializable {
     
     @FXML
     private Label modeDescriptionLabel;
+    
+    @FXML
+    private ProgressIndicator loadingIndicator;
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
+    private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
     private ExplorationMode currentMode = ExplorationMode.FREE_EXPLORATION;
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private final AnalyticsService analyticsService = AnalyticsService.getInstance();
+    private NavRoute savedNormalRoute = null; // Route normale sauvegardée quand on passe en mode STRATUM
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -87,6 +99,9 @@ public class NavRouteComponent implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Initialiser le registre avec le mode par défaut
+        explorationModeRegistry.setCurrentMode(ExplorationMode.FREE_EXPLORATION);
+        
         // Initialiser le sélecteur de mode
         initializeModeSelector();
         
@@ -168,9 +183,8 @@ public class NavRouteComponent implements Initializable {
         // Gérer le changement de mode
         modeComboBox.setOnAction(e -> {
             ExplorationMode selectedMode = modeComboBox.getSelectionModel().getSelectedItem();
-            if (selectedMode != null) {
-                currentMode = selectedMode;
-                updateModeDescription(selectedMode);
+            if (selectedMode != null && selectedMode != currentMode) {
+                handleModeChange(selectedMode);
             }
         });
         
@@ -200,6 +214,287 @@ public class NavRouteComponent implements Initializable {
      */
     public ExplorationMode getCurrentMode() {
         return currentMode;
+    }
+    
+    /**
+     * Gère le changement de mode d'exploration
+     */
+    private void handleModeChange(ExplorationMode newMode) {
+        ExplorationMode oldMode = currentMode;
+        currentMode = newMode;
+        explorationModeRegistry.setCurrentMode(newMode); // Mettre à jour le registre
+        updateModeDescription(newMode);
+        
+        if (newMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+            // Sauvegarder la route normale si elle existe
+            NavRoute currentRoute = navRouteRegistry.getCurrentRoute();
+            if (currentRoute != null && oldMode == ExplorationMode.FREE_EXPLORATION) {
+                savedNormalRoute = currentRoute;
+            }
+            
+            // Appeler le backend pour obtenir la route Stratum
+            loadStratumRoute();
+        } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
+            // Toujours recharger le fichier NavRoute.json pour avoir les données les plus récentes
+            // (même si on a une route sauvegardée, car le fichier peut avoir été mis à jour
+            // pendant qu'on était en mode Stratum et que les événements NavRoute ont été ignorés)
+            be.mirooz.elitedangerous.dashboard.service.NavRouteService.getInstance().loadAndStoreNavRoute();
+            
+            // Nettoyer la route sauvegardée puisqu'on recharge toujours depuis le fichier
+            savedNormalRoute = null;
+            
+            // Forcer le rafraîchissement de l'UI
+            Platform.runLater(() -> {
+                NavRoute route = navRouteRegistry.getCurrentRoute();
+                if (route != null) {
+                    updateRouteDisplay(route);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Charge la route depuis Spansh pour le mode Stratum Undiscovered
+     */
+    private void loadStratumRoute() {
+        // Afficher l'indicateur de chargement
+        setLoadingVisible(true);
+        
+        // Exécuter dans un thread séparé pour ne pas bloquer l'UI
+        new Thread(() -> {
+            try {
+                // Obtenir le système actuel comme référence
+                String currentSystem = commanderStatus.getCurrentStarSystem();
+                if (currentSystem == null || currentSystem.isEmpty()) {
+                    Platform.runLater(() -> {
+                        System.err.println("⚠️ Impossible de charger la route Stratum : système actuel inconnu");
+                        setLoadingVisible(false);
+                    });
+                    return;
+                }
+                
+                // Construire le DTO avec le système actuel
+                SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(currentSystem);
+                
+                // Appeler le backend directement avec le DTO
+                SpanshSearchResponseDTO responseDTO = analyticsService.searchSpansh(requestDTO);
+                
+                // Construire la route à partir de la réponse
+                NavRoute stratumRoute = buildRouteFromSpanshResponse(responseDTO, currentSystem);
+                
+                // Mettre à jour le registre sur le thread JavaFX
+                Platform.runLater(() -> {
+                    setLoadingVisible(false);
+                    if (stratumRoute != null) {
+                        navRouteRegistry.setCurrentRoute(stratumRoute);
+                        System.out.println("✅ Route Stratum chargée : " + stratumRoute.getRoute().size() + " systèmes");
+                    } else {
+                        System.err.println("⚠️ Aucune route Stratum trouvée");
+                    }
+                });
+                
+            } catch (Exception e) {
+                System.err.println("❌ Erreur lors du chargement de la route Stratum: " + e.getMessage());
+                e.printStackTrace();
+                Platform.runLater(() -> {
+                    setLoadingVisible(false);
+                    // En cas d'erreur, restaurer la route normale si elle existe
+                    if (savedNormalRoute != null) {
+                        navRouteRegistry.setCurrentRoute(savedNormalRoute);
+                    }
+                });
+            }
+        }).start();
+    }
+    
+    /**
+     * Gère la visibilité de l'indicateur de chargement
+     */
+    private void setLoadingVisible(boolean visible) {
+        Platform.runLater(() -> {
+            if (loadingIndicator != null) {
+                loadingIndicator.setVisible(visible);
+                loadingIndicator.setManaged(visible);
+            }
+            
+            // Cacher le contenu du panel pendant le chargement
+            if (routeScrollPane != null) {
+                routeScrollPane.setVisible(!visible);
+                routeScrollPane.setManaged(!visible);
+            }
+        });
+    }
+    
+    /**
+     * Construit une NavRoute à partir de la réponse Spansh
+     */
+    private NavRoute buildRouteFromSpanshResponse(SpanshSearchResponseDTO responseDTO, String currentSystemName) {
+        if (responseDTO == null || responseDTO.getSpanshResponse() == null) {
+            return null;
+        }
+        
+        SpanshSearchResponse spanshResponse = responseDTO.getSpanshResponse();
+        if (spanshResponse.results == null || spanshResponse.results.isEmpty()) {
+            return null;
+        }
+        
+        NavRoute route = new NavRoute();
+        route.setTimestamp(java.time.Instant.now().toString());
+        
+        List<RouteSystem> routeSystems = new ArrayList<>();
+        
+        // Grouper les résultats par système pour éviter les doublons et collecter toutes les infos
+        Map<String, List<SpanshSearchResponse.BodyResult>> systemsMap = spanshResponse.results.stream()
+            .collect(Collectors.groupingBy(result -> result.system_name));
+        
+        // Créer une map pour stocker la classe d'étoile principale de chaque système
+        Map<String, String> systemStarClassMap = new HashMap<>();
+        
+        // Pour chaque système, trouver l'étoile principale
+        for (Map.Entry<String, List<SpanshSearchResponse.BodyResult>> entry : systemsMap.entrySet()) {
+            String systemName = entry.getKey();
+            List<SpanshSearchResponse.BodyResult> systemResults = entry.getValue();
+            
+            // Chercher l'étoile principale dans les résultats du système
+            String starClass = findMainStarClass(systemResults);
+            if (starClass != null && !starClass.isEmpty()) {
+                systemStarClassMap.put(systemName, starClass);
+            }
+        }
+        
+        // Trier les systèmes par distance (prendre le premier résultat de chaque système pour la distance)
+        List<SpanshSearchResponse.BodyResult> sortedResults = systemsMap.values().stream()
+            .map(results -> results.get(0)) // Prendre le premier résultat de chaque système
+            .sorted(Comparator.comparingDouble(result -> result.distance))
+            .collect(Collectors.toList());
+        
+        // Ajouter le système actuel en premier
+        RouteSystem currentSystem = new RouteSystem();
+        currentSystem.setSystemName(currentSystemName);
+        currentSystem.setSystemAddress(0); // On n'a pas l'address du système actuel
+        currentSystem.setStarClass(""); // On n'a pas la classe d'étoile
+        currentSystem.setStarPos(new double[]{0, 0, 0}); // Position par défaut
+        currentSystem.setDistanceFromPrevious(0.0);
+        routeSystems.add(currentSystem);
+        
+        double[] previousPosition = null;
+        
+        // Ajouter les systèmes de la réponse Spansh
+        for (SpanshSearchResponse.BodyResult result : sortedResults) {
+            RouteSystem routeSystem = new RouteSystem();
+            routeSystem.setSystemName(result.system_name);
+            routeSystem.setSystemAddress(result.system_id64);
+            
+            // Récupérer la classe d'étoile depuis la map
+            String starClass = systemStarClassMap.get(result.system_name);
+            routeSystem.setStarClass(starClass != null ? starClass : "");
+            
+            // Position du système
+            double[] starPos = new double[]{
+                result.system_x,
+                result.system_y,
+                result.system_z
+            };
+            routeSystem.setStarPos(starPos);
+            
+            // Calculer la distance depuis le système précédent
+            double distance = 0.0;
+            if (previousPosition != null) {
+                distance = calculateDistance(previousPosition, starPos);
+            } else if (routeSystems.size() == 1) {
+                // Distance depuis le système actuel (on n'a pas sa position, donc on utilise la distance de Spansh)
+                distance = result.distance;
+            }
+            routeSystem.setDistanceFromPrevious(distance);
+            
+            routeSystems.add(routeSystem);
+            previousPosition = starPos;
+        }
+        
+        route.setRoute(routeSystems);
+        return route;
+    }
+    
+    /**
+     * Trouve la classe de l'étoile principale d'un système à partir des résultats Spansh
+     * Cherche dans les parents des bodies pour trouver l'étoile principale
+     */
+    private String findMainStarClass(List<SpanshSearchResponse.BodyResult> systemResults) {
+        if (systemResults == null || systemResults.isEmpty()) {
+            return null;
+        }
+        
+        // Chercher d'abord si un body est une étoile principale (is_main_star = true)
+        for (SpanshSearchResponse.BodyResult result : systemResults) {
+            if (result.is_main_star != null && result.is_main_star && "Star".equals(result.type)) {
+                // Extraire la première lettre du subtype (ex: "K (Yellow-Orange) Star" -> "K")
+                return extractStarClassFromSubtype(result.subtype);
+            }
+        }
+        
+        // Sinon, chercher dans les parents pour trouver une étoile principale
+        for (SpanshSearchResponse.BodyResult result : systemResults) {
+            if (result.parents != null && !result.parents.isEmpty()) {
+                for (SpanshSearchResponse.Parent parent : result.parents) {
+                    if ("Star".equals(parent.type)) {
+                        // Extraire la première lettre du subtype
+                        return extractStarClassFromSubtype(parent.subtype);
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Extrait la classe d'étoile depuis le subtype Spansh
+     * Ex: "K (Yellow-Orange) Star" -> "K"
+     * Ex: "Neutron Star" -> "N"
+     * Ex: "DA White Dwarf" -> "D"
+     */
+    private String extractStarClassFromSubtype(String subtype) {
+        if (subtype == null || subtype.isEmpty()) {
+            return "";
+        }
+        
+        // Pour les naines blanches, chercher "White Dwarf" ou "Dwarf"
+        if (subtype.contains("White Dwarf") || subtype.contains("Dwarf")) {
+            return "D";
+        }
+        
+        // Pour les étoiles à neutrons
+        if (subtype.contains("Neutron")) {
+            return "N";
+        }
+        
+        // Pour les autres étoiles, prendre la première lettre
+        // Ex: "K (Yellow-Orange) Star" -> "K"
+        String trimmed = subtype.trim();
+        if (!trimmed.isEmpty()) {
+            String firstChar = trimmed.substring(0, 1).toUpperCase();
+            // Vérifier que c'est une lettre valide (K, G, B, F, O, A, M, etc.)
+            if (firstChar.matches("[A-Z]")) {
+                return firstChar;
+            }
+        }
+        
+        return "";
+    }
+    
+    /**
+     * Calcule la distance en années-lumière entre deux positions 3D
+     */
+    private double calculateDistance(double[] pos1, double[] pos2) {
+        if (pos1 == null || pos2 == null || pos1.length != 3 || pos2.length != 3) {
+            return 0.0;
+        }
+        
+        double dx = pos2[0] - pos1[0];
+        double dy = pos2[1] - pos1[1];
+        double dz = pos2[2] - pos1[2];
+        
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     /**

@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.analytics.AnalyticsClient;
 import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequest;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
 
 /**
@@ -80,5 +81,15 @@ public class AnalyticsService {
      */
     public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequest searchRequest) throws Exception {
         return analyticsClient.searchSpansh(searchRequest);
+    }
+    
+    /**
+     * Appelle l'endpoint /api/spansh/search du backend analytics avec un DTO
+     * @param searchRequestDTO Le DTO de requête de recherche Spansh (contient uniquement le système de référence)
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequestDTO searchRequestDTO) throws Exception {
+        return analyticsClient.searchSpansh(searchRequestDTO);
     }
 }
