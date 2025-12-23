@@ -3,10 +3,9 @@ package be.mirooz.elitedangerous.dashboard;
 import be.mirooz.elitedangerous.dashboard.view.common.VersionUpdateNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
-import be.mirooz.elitedangerous.dashboard.service.VersionCheckService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
-import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
-import be.mirooz.elitedangerous.dashboard.service.analytics.dto.LatestVersionResponse;
+import be.mirooz.elitedangerous.dashboard.service.AnalyticsService;
+import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Application;
@@ -83,7 +82,7 @@ public class EliteDashboardApp extends Application {
             stage.setOnCloseRequest(event -> {
                 stage.hide();
                 // Fermer la session analytics
-                AnalyticsClient.getInstance().endSession();
+                AnalyticsService.getInstance().endSession();
                 System.out.println("Arrêt des services de journal...");
                 JournalTailService.getInstance().stop();
                 JournalWatcherService.getInstance().stop();
@@ -127,13 +126,13 @@ public class EliteDashboardApp extends Application {
         // Vérifier de manière asynchrone pour ne pas bloquer le démarrage
         new Thread(() -> {
             try {
-                VersionCheckService versionService = VersionCheckService.getInstance();
-                String currentVersion = versionService.getCurrentVersion();
-                LatestVersionResponse latestVersion = versionService.getLatestVersion();
+                AnalyticsService analyticsService = AnalyticsService.getInstance();
+                String currentVersion = analyticsService.getCurrentVersion();
+                LatestVersionResponse latestVersion = analyticsService.getLatestVersion();
                 
                 if (latestVersion != null) {
                     String latestVersionTag = latestVersion.getTagName();
-                    if (versionService.isNewerVersion(currentVersion, latestVersionTag)) {
+                    if (analyticsService.isNewerVersion(currentVersion, latestVersionTag)) {
                         // Afficher la notification sur le thread JavaFX
                         Platform.runLater(() -> {
                             // Chercher le popupContainer dans la hiérarchie

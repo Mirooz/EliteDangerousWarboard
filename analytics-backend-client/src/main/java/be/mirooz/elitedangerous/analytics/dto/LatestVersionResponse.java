@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service.analytics.dto;
+package be.mirooz.elitedangerous.analytics.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +17,3 @@ public class LatestVersionResponse {
     private String htmlUrl;
     private String body;
 }
-

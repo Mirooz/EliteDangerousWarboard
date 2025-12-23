@@ -1,6 +1,13 @@
-package be.mirooz.elitedangerous.dashboard.service.analytics;
+package be.mirooz.elitedangerous.analytics;
 
+import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshOffsetDateTimeDeserializer;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequest;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponse;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -12,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Client HTTP pour communiquer avec le backend analytics
@@ -33,9 +39,24 @@ public class AnalyticsClient {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = createObjectMapper();
         // URL du backend (chargée depuis le fichier de propriétés, puis propriété système, puis variable d'environnement)
         this.baseUrl = loadBackendUrl();
+    }
+    
+    /**
+     * Crée un ObjectMapper configuré pour désérialiser les réponses Spansh
+     */
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        
+        // Enregistrer le désérialiseur personnalisé pour OffsetDateTime (format Spansh)
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(java.time.OffsetDateTime.class, new SpanshOffsetDateTimeDeserializer());
+        mapper.registerModule(module);
+        
+        return mapper;
     }
 
     /**
@@ -327,5 +348,169 @@ public class AnalyticsClient {
             this.message = message;
         }
     }
-}
 
+    /**
+     * Récupère la dernière version disponible depuis l'API
+     * @return LatestVersionResponse ou null en cas d'erreur
+     */
+    public LatestVersionResponse getLatestVersion() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/analytics/version/latest"))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .timeout(Duration.ofSeconds(10))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                return objectMapper.readValue(response.body(), LatestVersionResponse.class);
+            } else {
+                System.err.println("Erreur lors de la vérification de version: " + response.statusCode());
+                return null;
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la vérification de version: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Récupère la version actuelle de l'application
+     * @return Version actuelle (ex: "1.2.0" ou "1.2.0-SNAPSHOT")
+     */
+    public String getCurrentVersion() {
+        try {
+            // Essayer de lire depuis les propriétés système
+            String version = System.getProperty("project.version");
+            if (version != null && !version.isEmpty()) {
+                return normalizeVersion(version);
+            }
+            
+            // Essayer de lire depuis le manifest JAR
+            Package pkg = getClass().getPackage();
+            if (pkg != null) {
+                String implVersion = pkg.getImplementationVersion();
+                if (implVersion != null && !implVersion.isEmpty()) {
+                    return normalizeVersion(implVersion);
+                }
+            }
+            
+            // Essayer de lire depuis les ressources Maven
+            try (var inputStream = getClass().getResourceAsStream("/META-INF/maven/be.mirooz.elitedangerous/elite-warboard-missions/pom.properties")) {
+                if (inputStream != null) {
+                    var properties = new java.util.Properties();
+                    properties.load(inputStream);
+                    version = properties.getProperty("version");
+                    if (version != null && !version.isEmpty()) {
+                        return normalizeVersion(version);
+                    }
+                }
+            }
+            
+            // Valeur par défaut
+            return "1.2.0-SNAPSHOT";
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la récupération de la version: " + e.getMessage());
+            return "1.2.0-SNAPSHOT";
+        }
+    }
+    
+    /**
+     * Normalise la version en retirant le préfixe "v" et le suffixe "-SNAPSHOT"
+     * @param version Version à normaliser
+     * @return Version normalisée
+     */
+    private String normalizeVersion(String version) {
+        if (version == null) return "1.2.0-SNAPSHOT";
+        
+        // Retirer le préfixe "v" si présent
+        if (version.startsWith("v") || version.startsWith("V")) {
+            version = version.substring(1);
+        }
+        
+        return version;
+    }
+    
+    /**
+     * Compare deux versions
+     * @param currentVersion Version actuelle
+     * @param latestVersion Version la plus récente
+     * @return true si latestVersion est plus récente que currentVersion
+     */
+    public boolean isNewerVersion(String currentVersion, String latestVersion) {
+        if (currentVersion == null || latestVersion == null) {
+            return false;
+        }
+        
+        // Normaliser les versions
+        currentVersion = normalizeVersion(currentVersion);
+        latestVersion = normalizeVersion(latestVersion);
+        
+        // Retirer les suffixes comme -SNAPSHOT pour la comparaison
+        currentVersion = currentVersion.split("-")[0];
+        latestVersion = latestVersion.split("-")[0];
+        
+        // Comparer les versions (format: X.Y.Z)
+        String[] currentParts = currentVersion.split("\\.");
+        String[] latestParts = latestVersion.split("\\.");
+        
+        int maxLength = Math.max(currentParts.length, latestParts.length);
+        
+        for (int i = 0; i < maxLength; i++) {
+            int currentPart = i < currentParts.length ? Integer.parseInt(currentParts[i]) : 0;
+            int latestPart = i < latestParts.length ? Integer.parseInt(latestParts[i]) : 0;
+            
+            if (latestPart > currentPart) {
+                return true;
+            } else if (latestPart < currentPart) {
+                return false;
+            }
+        }
+        
+        return false; // Versions identiques
+    }
+    
+    /**
+     * Appelle l'endpoint /api/spansh/search du backend analytics
+     * @param searchRequest La requête de recherche Spansh
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequest searchRequest) throws Exception {
+        try {
+            String jsonBody = objectMapper.writeValueAsString(searchRequest);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/spansh/search"))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                SpanshSearchResponse spanshResponse = objectMapper.readValue(
+                    response.body(), 
+                    SpanshSearchResponse.class
+                );
+                
+                // Construire le DTO de réponse
+                SpanshSearchResponseDTO responseDTO = new SpanshSearchResponseDTO();
+                responseDTO.setSearchReference(spanshResponse.search_reference);
+                responseDTO.setSpanshResponse(spanshResponse);
+                
+                return responseDTO;
+            } else {
+                throw new Exception("Erreur lors de l'appel à /api/spansh/search: " 
+                    + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh: " + e.getMessage());
+            throw e;
+        }
+    }
+}

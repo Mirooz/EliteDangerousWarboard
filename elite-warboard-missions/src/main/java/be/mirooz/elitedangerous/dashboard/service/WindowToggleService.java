@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
+import be.mirooz.elitedangerous.dashboard.service.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -117,13 +117,13 @@ public class WindowToggleService {
         tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
             @Override
             public void changed(ObservableValue<? extends Tab> observable, Tab oldTab, Tab newTab) {
-                if (AnalyticsClient.getInstance() == null) {
+                if (AnalyticsService.getInstance() == null) {
                     return;
                 }
                 
                 // Arrêter le tracking du panel précédent
                 if (oldTab != null && currentPanel != null) {
-                    AnalyticsClient.getInstance().endPanelTime(currentPanel);
+                    AnalyticsService.getInstance().endPanelTime(currentPanel);
                 }
 
                 // Démarrer le tracking du nouveau panel
@@ -138,7 +138,7 @@ public class WindowToggleService {
                 }
 
                 if (currentPanel != null) {
-                    AnalyticsClient.getInstance().startPanelTime(currentPanel);
+                    AnalyticsService.getInstance().startPanelTime(currentPanel);
                 }
             }
         });
@@ -153,8 +153,8 @@ public class WindowToggleService {
             currentPanel = "Exploration";
         }
 
-        if (AnalyticsClient.getInstance() != null && currentPanel != null) {
-            AnalyticsClient.getInstance().startPanelTime(currentPanel);
+        if (AnalyticsService.getInstance() != null && currentPanel != null) {
+            AnalyticsService.getInstance().startPanelTime(currentPanel);
         }
     }
 

@@ -7,7 +7,7 @@ import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
-import be.mirooz.elitedangerous.dashboard.service.analytics.AnalyticsClient;
+import be.mirooz.elitedangerous.dashboard.service.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -46,7 +46,7 @@ public class JournalService {
     private final JournalEventDispatcher dispatcher;
 
 
-    private AnalyticsClient analyticsClient = AnalyticsClient.getInstance();
+    private AnalyticsService analyticsService = AnalyticsService.getInstance();
     private JournalService() {
         this.dispatcher = JournalEventDispatcher.getInstance();
     }
@@ -71,7 +71,7 @@ public class JournalService {
                 commanderName = "Unknown";
             }
             // Récupérer la version de l'application depuis le pom.xml parent
-            analyticsClient.startSession(commanderName);
+            analyticsService.startSession(commanderName);
 
             // Utiliser la nouvelle méthode qui traite tous les fichiers et met à jour les missions
             return parseAllJournalFiles();
