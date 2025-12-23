@@ -1295,6 +1295,18 @@
     -fx-font-weight: bold;
 }
 
+/* Style pour le système cliquable dans le footer - doit override footer-value */
+.footer-value.clickable-system-source {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.footer-value.clickable-system-source:hover {
+    -fx-text-fill: -fx-elite-blue;
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-background-radius: 3px;
+}
+
 /* Effets de lueur */
 .glow-effect {
     -fx-effect: dropshadow(gaussian, -fx-elite-orange, 10, 0.5, 0, 0);

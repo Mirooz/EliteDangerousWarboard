@@ -12,11 +12,13 @@ import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcher
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.combat.HeaderController;
-import be.mirooz.elitedangerous.dashboard.view.combat.FooterController;
 import be.mirooz.elitedangerous.dashboard.view.combat.MissionListController;
 import be.mirooz.elitedangerous.dashboard.view.combat.DestroyedShipsController;
 import be.mirooz.elitedangerous.dashboard.view.mining.MiningController;
 import be.mirooz.elitedangerous.dashboard.view.exploration.ExplorationController;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
+import javafx.scene.input.MouseEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -27,7 +29,6 @@ import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -78,14 +79,26 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     @FXML
     private StackPane popupContainer;
     
+    // Labels pour commander, system, station (déplacés du footer vers le header)
     @FXML
-    private HBox footerContainer;
+    private Label commanderLabel;
+    @FXML
+    private Label systemLabel;
+    @FXML
+    private Label stationLabel;
+    @FXML
+    private Label commanderHeaderLabel;
+    @FXML
+    private Label systemHeaderLabel;
+    @FXML
+    private Label stationHeaderLabel;
+    
     private final DashboardService dashboardService = DashboardService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final CommanderStatusComponent commanderStatusComponent= CommanderStatusComponent.getInstance();
     private final WindowToggleService windowToggleService = WindowToggleService.getInstance();
-
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadComponents();
@@ -100,12 +113,26 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
         UIManager.getInstance().register(this);
         updateTranslations();
+        initializeCommanderStatusLabels();
 
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
         
         // Initialiser le TabPane dans le service de bind unifié
         windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab, explorationTab);
+    }
+    
+    /**
+     * Initialise les labels de statut du commandant (commander, system, station)
+     */
+    private void initializeCommanderStatusLabels() {
+        // Ajouter la fonctionnalité de copie au clic sur le système
+        if (systemLabel != null) {
+            systemLabel.setOnMouseClicked(this::onSystemLabelClicked);
+            // S'assurer que les classes CSS sont dans le bon ordre
+            systemLabel.getStyleClass().clear();
+            systemLabel.getStyleClass().addAll("clickable-system-source", "footer-value");
+        }
     }
 
     private void loadComponents() {
@@ -116,7 +143,6 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             createHeaderPanel();
             createMissionPanel();
             createDestroyedShipsPanel();
-            createFooterPanel();
             
             // Charger l'onglet Mining
             createMiningPanel();
@@ -136,13 +162,6 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         missionsPane.setTop(header);
     }
 
-    private void createFooterPanel() throws IOException {
-        FXMLLoader footerLoader = new FXMLLoader(getClass().getResource("/fxml/footer.fxml"));
-        javafx.scene.layout.HBox footer = footerLoader.load();
-        FooterController footerController = footerLoader.getController();
-        dashboardService.addBatchListener(footerController);
-        footerContainer.getChildren().add(footer);
-    }
 
     private void createMissionPanel() throws IOException {
         FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/combat/mission-list.fxml"));
@@ -270,14 +289,34 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     }
 
     private void updateTranslations(){
-
         appTitleLabel.setText(localizationService.getString("header.app.title"));
         appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
         updateStatusLabel();
+        
+        // Mettre à jour les traductions des labels commander/system/station
+        if (commanderHeaderLabel != null) {
+            commanderHeaderLabel.setText(localizationService.getString("footer.commander"));
+        }
+        if (systemHeaderLabel != null) {
+            systemHeaderLabel.setText(localizationService.getString("footer.system"));
+        }
+        if (stationHeaderLabel != null) {
+            stationHeaderLabel.setText(localizationService.getString("footer.station"));
+        }
     }
     @Override
     public void onBatchStart(){
         statusLabel.styleProperty().unbind();
+        // Détacher les bindings des labels commander/system/station
+        if (stationLabel != null) {
+            stationLabel.textProperty().unbind();
+        }
+        if (systemLabel != null) {
+            systemLabel.textProperty().unbind();
+        }
+        if (commanderLabel != null) {
+            commanderLabel.textProperty().unbind();
+        }
     }
 
     @Override
@@ -288,7 +327,31 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
                         .getIsOnline()).then("-fx-text-fill: #00ff00;") // Vert si en ligne
                 .otherwise("-fx-text-fill: #ff0000;") // Rouge si hors ligne
         );
-
+        
+        // Attacher les bindings des labels commander/system/station
+        if (stationLabel != null) {
+            stationLabel.textProperty().bind(commanderStatusComponent.getCurrentStationName());
+        }
+        if (systemLabel != null) {
+            systemLabel.textProperty().bind(commanderStatusComponent.getCurrentStarSystem());
+        }
+        if (commanderLabel != null) {
+            commanderLabel.textProperty().bind(commanderStatusComponent.getCommanderName());
+        }
+    }
+    
+    /**
+     * Gère le clic sur le label du système pour copier le nom dans le presse-papier
+     */
+    @FXML
+    private void onSystemLabelClicked(MouseEvent event) {
+        if (systemLabel == null) return;
+        String systemName = systemLabel.getText();
+        if (systemName != null && !systemName.isEmpty() && !systemName.equals("[NON IDENTIFIÉ]")) {
+            copyClipboardManager.copyToClipboard(systemName);
+            Stage stage = (Stage) systemLabel.getScene().getWindow();
+            popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(), stage);
+        }
     }
 
     private void updateStatusLabel() {
