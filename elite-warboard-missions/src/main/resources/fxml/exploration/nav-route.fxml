@@ -20,7 +20,9 @@
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
         <HBox fx:id="modeSelectorContainer" spacing="10" alignment="CENTER_LEFT" styleClass="nav-route-mode-selector"/>
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
-        <Label fx:id="modeDescriptionLabel" styleClass="nav-route-mode-description" wrapText="true" HBox.hgrow="ALWAYS"/>
+        <VBox fx:id="modeDescriptionContainer" spacing="0" HBox.hgrow="NEVER">
+            <Label fx:id="modeDescriptionLabel" styleClass="nav-route-mode-description" wrapText="true"/>
+        </VBox>
         <Button fx:id="stratumInfoButton" styleClass="nav-route-info-button" visible="false" managed="false" 
                 minWidth="20" maxWidth="20" minHeight="20" maxHeight="20">
             <graphic>

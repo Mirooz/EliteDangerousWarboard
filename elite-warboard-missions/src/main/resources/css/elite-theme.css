@@ -3954,6 +3954,12 @@
     -fx-font-size: 11px;
     -fx-font-style: italic;
     -fx-padding: 0 10 0 0;
+    -fx-wrap-text: true;
+}
+
+#modeDescriptionContainer {
+    -fx-max-width: 300px;
+    -fx-pref-width: 300px;
 }
 
 .nav-route-remaining-jumps {
@@ -4047,6 +4053,33 @@
 
 .nav-route-info-button:hover .nav-route-info-icon {
     -fx-text-fill: -fx-elite-blue;
+}
+
+.nav-route-save-guid-checkbox {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-padding: 5px 0 0 0;
+}
+
+.nav-route-save-guid-checkbox .box {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.nav-route-save-guid-checkbox:selected .box {
+    -fx-background-color: -fx-elite-orange;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.nav-route-save-guid-checkbox:selected .mark {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.nav-route-save-guid-checkbox:hover .box {
+    -fx-border-color: -fx-elite-blue;
 }
 
 /* Panel en haut */
