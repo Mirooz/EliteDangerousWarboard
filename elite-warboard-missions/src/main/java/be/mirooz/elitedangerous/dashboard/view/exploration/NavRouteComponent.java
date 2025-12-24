@@ -166,6 +166,32 @@ public class NavRouteComponent implements Initializable {
                     }
                 }
 
+                // En mode Stratum Undiscovered, copier automatiquement le système suivant dans le clipboard
+                if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED && newSystem != null && !newSystem.isEmpty()) {
+                    NavRoute route = navRouteRegistry.getCurrentRoute();
+                    if (route != null && route.getRoute() != null) {
+                        // Trouver l'index du système actuel dans la route
+                        int currentSystemIndex = -1;
+                        for (int i = 0; i < route.getRoute().size(); i++) {
+                            if (route.getRoute().get(i).getSystemName().equals(newSystem)) {
+                                currentSystemIndex = i;
+                                break;
+                            }
+                        }
+                        
+                        // Si le système actuel est dans la route et qu'il y a un système suivant
+                        if (currentSystemIndex >= 0 && currentSystemIndex < route.getRoute().size() - 1) {
+                            RouteSystem nextSystem = route.getRoute().get(currentSystemIndex + 1);
+                            if (nextSystem != null && nextSystem.getSystemName() != null && !nextSystem.getSystemName().isEmpty()) {
+                                // Copier le système suivant dans le clipboard
+                                copyClipboardManager.copyToClipboard(nextSystem.getSystemName());
+                                lastCopiedSystemName = nextSystem.getSystemName();
+                                System.out.println("📋 Système suivant copié automatiquement: " + nextSystem.getSystemName());
+                            }
+                        }
+                    }
+                }
+
                 // Mettre à jour l'affichage
                 NavRoute route = navRouteRegistry.getCurrentRoute();
                 if (route != null) {
