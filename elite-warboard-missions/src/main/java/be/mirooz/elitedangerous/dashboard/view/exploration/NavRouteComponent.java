@@ -96,6 +96,8 @@ public class NavRouteComponent implements Initializable {
     @FXML
     private Label remainingJumpsLabel;
 
+    private ComboBox<ExplorationMode> modeComboBox; // Référence au ComboBox pour les mises à jour de traduction
+
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
     private final NavRouteTargetRegistry navRouteTargetRegistry = NavRouteTargetRegistry.getInstance();
     private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
@@ -189,6 +191,16 @@ public class NavRouteComponent implements Initializable {
         // S'abonner au service de notification pour le refresh de la route
         NavRouteNotificationService.getInstance().addListener(this::refreshRouteDisplay);
         
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> {
+            Platform.runLater(() -> {
+                updateTranslations();
+            });
+        });
+
+        // Initialiser les traductions
+        updateTranslations();
+        
         // Afficher la route actuelle si elle existe
         updateRouteDisplay(navRouteRegistry.getCurrentRoute());
     }
@@ -227,7 +239,7 @@ public class NavRouteComponent implements Initializable {
         }
         
         // Créer un ComboBox compact pour les modes avec le même style que les combobox de mission
-        ComboBox<ExplorationMode> modeComboBox = new ComboBox<>();
+        modeComboBox = new ComboBox<>();
         modeComboBox.getItems().addAll(ExplorationMode.values());
         modeComboBox.setValue(ExplorationMode.FREE_EXPLORATION);
         modeComboBox.getStyleClass().add("elite-combobox");
@@ -240,7 +252,8 @@ public class NavRouteComponent implements Initializable {
                 if (empty || mode == null) {
                     setText(null);
                 } else {
-                    setText(mode.getDisplayName());
+                    String displayNameKey = "exploration.mode." + mode.name().toLowerCase();
+                    setText(localizationService.getString(displayNameKey));
                 }
             }
         });
@@ -253,7 +266,8 @@ public class NavRouteComponent implements Initializable {
                 if (empty || mode == null) {
                     setText(null);
                 } else {
-                    setText(mode.getDisplayName());
+                    String displayNameKey = "exploration.mode." + mode.name().toLowerCase();
+                    setText(localizationService.getString(displayNameKey));
                 }
             }
         });
@@ -267,7 +281,7 @@ public class NavRouteComponent implements Initializable {
         });
         
         // Ajouter un label "Mode:" avant le ComboBox
-        Label modeLabel = new Label("Mode:");
+        Label modeLabel = new Label(localizationService.getString("nav.route.mode.label"));
         modeLabel.getStyleClass().add("filter-label");
         
         modeSelectorContainer.getChildren().addAll(modeLabel, modeComboBox);
@@ -290,11 +304,20 @@ public class NavRouteComponent implements Initializable {
     private void initializeReloadButton() {
         if (reloadButton != null) {
             // Tooltip
-            TooltipComponent tooltip = new TooltipComponent("Recharge les données");
-            reloadButton.setTooltip(tooltip);
+            updateReloadButtonTooltip();
             
             // Visibilité selon le mode
             updateReloadButtonVisibility();
+        }
+    }
+
+    /**
+     * Met à jour le tooltip du bouton de rechargement
+     */
+    private void updateReloadButtonTooltip() {
+        if (reloadButton != null) {
+            TooltipComponent tooltip = new TooltipComponent(localizationService.getString("nav.route.reload.tooltip"));
+            reloadButton.setTooltip(tooltip);
         }
     }
     
@@ -314,19 +337,23 @@ public class NavRouteComponent implements Initializable {
      */
     private void initializeStratumInfoButton() {
         if (stratumInfoButton != null) {
-            // Tooltip avec la description en anglais
-            String tooltipText =
-                    "These systems are very likely unexplored and may host Stratum Tectonicas (~95M CR). " +
-                            "Move away from the human bubble to improve accuracy. " +
-                            "Click the 'Reload' button to plot a new route.";
+            updateStratumInfoButtonTooltip();
+            
+            // Visibilité selon le mode
+            updateStratumInfoButtonVisibility();
+        }
+    }
 
+    /**
+     * Met à jour le tooltip du bouton d'information Stratum
+     */
+    private void updateStratumInfoButtonTooltip() {
+        if (stratumInfoButton != null) {
+            String tooltipText = localizationService.getString("nav.route.stratum.info");
             TooltipComponent tooltip = new TooltipComponent(tooltipText);
             tooltip.setWrapText(true);
             tooltip.setMaxWidth(400);
             stratumInfoButton.setTooltip(tooltip);
-            
-            // Visibilité selon le mode
-            updateStratumInfoButtonVisibility();
         }
     }
     
@@ -388,7 +415,8 @@ public class NavRouteComponent implements Initializable {
      */
     private void updateModeDescription(ExplorationMode mode) {
         if (modeDescriptionLabel != null && mode != null) {
-            modeDescriptionLabel.setText(mode.getDescription());
+            String descriptionKey = "exploration.mode." + mode.name().toLowerCase() + ".description";
+            modeDescriptionLabel.setText(localizationService.getString(descriptionKey));
         }
     }
     
@@ -773,7 +801,7 @@ public class NavRouteComponent implements Initializable {
         if (route == null || route.getRoute() == null || route.getRoute().isEmpty()) {
             // Afficher un message si pas de route
             if (routeTitleLabel != null) {
-                routeTitleLabel.setText("ROUTE DE NAVIGATION (Aucune route active)");
+                routeTitleLabel.setText(localizationService.getString("nav.route.title.no_route"));
             }
             if (routeSystemsPane != null) {
                 routeSystemsPane.getChildren().clear();
@@ -783,7 +811,7 @@ public class NavRouteComponent implements Initializable {
 
         // Mettre à jour le titre
         if (routeTitleLabel != null) {
-            routeTitleLabel.setText("ROUTE DE NAVIGATION (" + route.getRoute().size() + " systèmes)");
+            routeTitleLabel.setText(localizationService.getString("nav.route.title.with_systems", route.getRoute().size()));
         }
 
         // Vider le conteneur des systèmes
@@ -984,7 +1012,7 @@ public class NavRouteComponent implements Initializable {
         indicator.setY(y - circleRadius - 6); // Positionner au-dessus du cercle
         indicator.getStyleClass().add("nav-route-scoop-indicator");
         
-        Tooltip tooltip = new TooltipComponent("Système scoopable");
+        Tooltip tooltip = new TooltipComponent(localizationService.getString("nav.route.scoopable"));
         Tooltip.install(indicator, tooltip);
         
         return indicator;
@@ -1049,10 +1077,10 @@ public class NavRouteComponent implements Initializable {
         // Tooltip au survol pour afficher le nom du système
         String tooltipText = system.getSystemName();
         if (system.getDistanceFromPrevious() > 0) {
-            tooltipText += " (" + String.format("%.2f AL", system.getDistanceFromPrevious()) + ")";
+            tooltipText += " (" + String.format(localizationService.getString("nav.route.distance.format"), system.getDistanceFromPrevious()) + ")";
         }
         if (isScoopable(system.getStarClass())) {
-            tooltipText += " - Scoopable";
+            tooltipText += localizationService.getString("nav.route.scoopable.suffix");
         }
         Tooltip tooltip = new TooltipComponent(tooltipText);
         Tooltip.install(circle, tooltip);
@@ -1108,7 +1136,7 @@ public class NavRouteComponent implements Initializable {
     private void updateRemainingJumpsLabel(int remainingJumps) {
         if (remainingJumpsLabel != null) {
             if (remainingJumps >= 0) {
-                remainingJumpsLabel.setText(remainingJumps + " saut(s) restant(s)");
+                remainingJumpsLabel.setText(localizationService.getString("nav.route.remaining_jumps", remainingJumps));
                 remainingJumpsLabel.setVisible(true);
                 remainingJumpsLabel.setManaged(true);
             } else {
@@ -1116,6 +1144,53 @@ public class NavRouteComponent implements Initializable {
                 remainingJumpsLabel.setVisible(false);
                 remainingJumpsLabel.setManaged(false);
             }
+        }
+    }
+
+    /**
+     * Met à jour toutes les traductions du panel
+     */
+    private void updateTranslations() {
+        // Mettre à jour le titre de base
+        if (routeTitleLabel != null) {
+            NavRoute currentRoute = navRouteRegistry.getCurrentRoute();
+            if (currentRoute == null || currentRoute.getRoute() == null || currentRoute.getRoute().isEmpty()) {
+                routeTitleLabel.setText(localizationService.getString("nav.route.title.no_route"));
+            } else {
+                routeTitleLabel.setText(localizationService.getString("nav.route.title.with_systems", currentRoute.getRoute().size()));
+            }
+        }
+
+        // Mettre à jour le label "Mode:" dans le modeSelectorContainer
+        if (modeSelectorContainer != null && modeSelectorContainer.getChildren().size() > 0) {
+            javafx.scene.Node firstChild = modeSelectorContainer.getChildren().get(0);
+            if (firstChild instanceof Label) {
+                ((Label) firstChild).setText(localizationService.getString("nav.route.mode.label"));
+            }
+        }
+
+        // Mettre à jour le ComboBox (forcer la mise à jour en réinitialisant la valeur)
+        if (modeComboBox != null) {
+            ExplorationMode currentValue = modeComboBox.getValue();
+            modeComboBox.setValue(null);
+            modeComboBox.setValue(currentValue);
+        }
+
+        // Mettre à jour le bouton Reload
+        if (reloadButton != null) {
+            reloadButton.setText(localizationService.getString("nav.route.reload.button"));
+            updateReloadButtonTooltip();
+        }
+
+        // Mettre à jour le tooltip du bouton Stratum
+        updateStratumInfoButtonTooltip();
+
+        // Mettre à jour le label des sauts restants
+        updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
+
+        // Mettre à jour la description du mode
+        if (modeDescriptionLabel != null) {
+            updateModeDescription(currentMode);
         }
     }
     
