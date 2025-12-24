@@ -111,7 +111,6 @@ public class NavRouteComponent implements Initializable {
     private ExplorationMode currentMode = ExplorationMode.FREE_EXPLORATION;
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     private final AnalyticsService analyticsService = AnalyticsService.getInstance();
-    private NavRoute savedNormalRoute = null; // Route normale sauvegardée quand on passe en mode STRATUM
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -137,7 +136,10 @@ public class NavRouteComponent implements Initializable {
             Platform.runLater(() -> {
                 // Ne pas réinitialiser les systèmes visités - on les maintient même lors du changement de route
                 // Les systèmes visités sont sauvegardés dans les préférences et chargés au démarrage
-                updateRouteDisplay(newRoute);
+                // Vérifier que la route correspond au mode actuel avant de l'afficher
+                if (newRoute != null) {
+                    updateRouteDisplay(newRoute);
+                }
             });
         });
 
@@ -574,15 +576,9 @@ public class NavRouteComponent implements Initializable {
         updateSaveGuidCheckBoxVisibility();
 
         if (newMode == ExplorationMode.STRATUM_UNDISCOVERED) {
-            // Sauvegarder la route normale si elle existe
-            NavRoute currentRoute = navRouteRegistry.getCurrentRoute();
-            if (currentRoute != null && oldMode == ExplorationMode.FREE_EXPLORATION) {
-                savedNormalRoute = currentRoute;
-            }
-
             // Ne PAS réinitialiser les systèmes visités - on les maintient même lors du rechargement
             // visitedSystems.clear(); // Commenté pour maintenir les systèmes visités
-
+            
             // Charger l'état de la checkbox depuis les préférences pour le nouveau mode
             if (saveGuidCheckBox != null) {
                 String checkboxKey = "spansh.save.guid." + newMode.name();
@@ -590,29 +586,34 @@ public class NavRouteComponent implements Initializable {
                 boolean savedState = Boolean.parseBoolean(savedStateStr);
                 saveGuidCheckBox.setSelected(savedState);
             }
-
-            // Appeler le backend pour obtenir la route Stratum
-            // Ne pas utiliser l'ancien GUID sauf si la checkbox est cochée
-            loadStratumRoute();
+            
+            // Charger la route Stratum depuis le registre (si elle existe déjà)
+            NavRoute stratumRoute = navRouteRegistry.getRouteForMode(ExplorationMode.STRATUM_UNDISCOVERED);
+            if (stratumRoute != null && saveGuidCheckBox.isSelected()) {
+                // Afficher la route Stratum existante
+                Platform.runLater(() -> {
+                    updateRouteDisplay(stratumRoute);
+                });
+            } else {
+                // Appeler le backend pour obtenir la route Stratum
+                // Ne pas utiliser l'ancien GUID sauf si la checkbox est cochée
+                loadStratumRoute();
+            }
         } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
             // Réinitialiser les systèmes visités pour la nouvelle route
             visitedSystems.clear();
-
-            // Toujours recharger le fichier NavRoute.json pour avoir les données les plus récentes
-            // (même si on a une route sauvegardée, car le fichier peut avoir été mis à jour
-            // pendant qu'on était en mode Stratum et que les événements NavRoute ont été ignorés)
-            be.mirooz.elitedangerous.dashboard.service.NavRouteService.getInstance().loadAndStoreNavRoute();
-
-            // Nettoyer la route sauvegardée puisqu'on recharge toujours depuis le fichier
-            savedNormalRoute = null;
-
-            // Forcer le rafraîchissement de l'UI
-            Platform.runLater(() -> {
-                NavRoute route = navRouteRegistry.getCurrentRoute();
-                if (route != null) {
-                    updateRouteDisplay(route);
-                }
-            });
+            
+            // Charger la route Free Exploration depuis le registre (si elle existe déjà)
+            NavRoute freeRoute = navRouteRegistry.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
+            if (freeRoute != null) {
+                // Afficher la route Free Exploration existante
+                Platform.runLater(() -> {
+                    updateRouteDisplay(freeRoute);
+                });
+            } else {
+                // Toujours recharger le fichier NavRoute.json pour avoir les données les plus récentes
+                be.mirooz.elitedangerous.dashboard.service.NavRouteService.getInstance().loadAndStoreNavRoute();
+            }
         }
     }
 
@@ -684,7 +685,8 @@ public class NavRouteComponent implements Initializable {
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
                     if (stratumRoute != null) {
-                        navRouteRegistry.setCurrentRoute(stratumRoute);
+                        // Sauvegarder la route Stratum dans le registre pour le mode Stratum
+                        navRouteRegistry.setRouteForMode(stratumRoute, ExplorationMode.STRATUM_UNDISCOVERED);
                         System.out.println("✅ Route Stratum chargée : " + stratumRoute.getRoute().size() + " systèmes");
                         // Forcer la mise à jour de l'affichage pour prendre en compte les systèmes visités
                         updateRouteDisplay(stratumRoute);
@@ -698,10 +700,8 @@ public class NavRouteComponent implements Initializable {
                 e.printStackTrace();
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
-                    // En cas d'erreur, restaurer la route normale si elle existe
-                    if (savedNormalRoute != null) {
-                        navRouteRegistry.setCurrentRoute(savedNormalRoute);
-                    }
+                    // En cas d'erreur, la route Stratum reste dans le registre (si elle existait)
+                    // On ne fait rien, l'utilisateur peut recharger manuellement
                 });
             }
         }).start();

@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
@@ -38,10 +39,10 @@ public class NavRouteService {
         NavRoute navRoute = readNavRouteFile();
         
         if (navRoute != null) {
-            // Stocker la route dans le registre pour l'affichage UI
-            navRouteRegistry.setCurrentRoute(navRoute);
+            // Stocker la route dans le registre pour le mode Free Exploration uniquement
+            navRouteRegistry.setRouteForMode(navRoute, ExplorationMode.FREE_EXPLORATION);
             
-            System.out.println("✅ Route de navigation chargée : " + navRoute.getRoute().size() + " systèmes");
+            System.out.println("✅ Route de navigation Free Exploration chargée : " + navRoute.getRoute().size() + " systèmes");
             
             // Afficher les détails de la route
             for (int i = 0; i < navRoute.getRoute().size(); i++) {
@@ -56,8 +57,8 @@ public class NavRouteService {
                 }
             }
         } else {
-            // Si pas de route, effacer le registre
-            navRouteRegistry.clearRoute();
+            // Si pas de route, effacer le registre pour Free Exploration
+            navRouteRegistry.clearRouteForMode(ExplorationMode.FREE_EXPLORATION);
         }
     }
 

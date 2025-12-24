@@ -31,18 +31,12 @@ public class NavRouteHandler implements JournalEventHandler {
             return;
         }
         
-        // Ne charger la route que si on est en mode Free Exploration
-        // Sinon, on garde la route actuelle (ex: route Spansh pour Stratum Undiscovered)
-        if (!explorationModeRegistry.isFreeExploration()) {
-            // En mode Stratum, notifier le service pour rafraîchir l'affichage
-            navRouteNotificationService.notifyRouteRefreshRequired();
-            return;
-        }
-        
-        // Sinon, lire immédiatement le fichier NavRoute.json
+        // Toujours charger la route depuis NavRoute.json pour Free Exploration
+        // Cela n'affectera pas la route Stratum qui est stockée séparément
         navRouteService.loadAndStoreNavRoute();
-        // Notifier le service pour rafraîchir l'affichage après le chargement
-        navRouteNotificationService.notifyRouteRefreshRequired();
+
+            navRouteNotificationService.notifyRouteRefreshRequired();
+
     }
 }
 
