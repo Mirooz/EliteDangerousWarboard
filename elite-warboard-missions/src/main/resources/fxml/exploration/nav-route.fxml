@@ -36,15 +36,10 @@
     
     <!-- Pane pour la représentation graphique des systèmes avec indicateur de chargement -->
     <StackPane alignment="CENTER">
-        <ScrollPane fx:id="routeScrollPane" fitToWidth="true" fitToHeight="false" 
-                    styleClass="nav-route-scroll" 
-                    hbarPolicy="AS_NEEDED" 
-                    vbarPolicy="NEVER"
-                    minHeight="70" 
-                    prefHeight="70"
-                    maxHeight="70">
-            <Pane fx:id="routeSystemsPane" styleClass="nav-route-systems-pane"/>
-        </ScrollPane>
+        <Pane fx:id="routeSystemsPane" styleClass="nav-route-systems-pane"
+              minHeight="70" 
+              prefHeight="70"
+              maxHeight="70"/>
         
         <!-- Indicateur de chargement -->
         <ProgressIndicator fx:id="loadingIndicator" 

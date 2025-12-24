@@ -76,9 +76,6 @@ public class NavRouteComponent implements Initializable {
     private Pane routeSystemsPane;
     
     @FXML
-    private javafx.scene.control.ScrollPane routeScrollPane;
-    
-    @FXML
     private HBox modeSelectorContainer;
     
     @FXML
@@ -165,8 +162,8 @@ public class NavRouteComponent implements Initializable {
         };
         statusComponent.getCurrentStarSystem().addListener(currentSystemListener);
         
-        // Écouter les changements de largeur du ScrollPane pour recalculer l'espacement
-        if (routeScrollPane != null) {
+        // Écouter les changements de largeur du conteneur pour recalculer l'espacement
+        if (navRouteContainer != null) {
             widthListener = (obs, oldWidth, newWidth) -> {
                 Platform.runLater(() -> {
                     NavRoute route = navRouteRegistry.getCurrentRoute();
@@ -175,7 +172,7 @@ public class NavRouteComponent implements Initializable {
                     }
                 });
             };
-            routeScrollPane.widthProperty().addListener(widthListener);
+            navRouteContainer.widthProperty().addListener(widthListener);
         }
         
         // Écouter les changements de RemainingJumpsInRoute
@@ -577,9 +574,9 @@ public class NavRouteComponent implements Initializable {
             }
             
             // Cacher le contenu du panel pendant le chargement
-            if (routeScrollPane != null) {
-                routeScrollPane.setVisible(!visible);
-                routeScrollPane.setManaged(!visible);
+            if (routeSystemsPane != null) {
+                routeSystemsPane.setVisible(!visible);
+                routeSystemsPane.setManaged(!visible);
             }
         });
     }
@@ -849,12 +846,12 @@ public class NavRouteComponent implements Initializable {
             }
 
             // Calculer l'espacement proportionnel aux distances en AL
-            // Utiliser la largeur du ScrollPane ou du conteneur
+            // Utiliser la largeur du conteneur
             double availableWidth = 800; // Largeur par défaut
-            if (routeScrollPane != null && routeScrollPane.getWidth() > 0) {
-                availableWidth = routeScrollPane.getWidth() - PADDING_X * 2 - 30; // -30 pour padding/marges
-            } else if (navRouteContainer != null && navRouteContainer.getWidth() > 0) {
-                availableWidth = navRouteContainer.getWidth() - PADDING_X * 2 - 30;
+            if (navRouteContainer != null && navRouteContainer.getWidth() > 0) {
+                availableWidth = navRouteContainer.getWidth() - PADDING_X * 2 - 30; // -30 pour padding/marges
+            } else if (routeSystemsPane != null && routeSystemsPane.getWidth() > 0) {
+                availableWidth = routeSystemsPane.getWidth() - PADDING_X * 2 - 30;
             }
             
             // Calculer la distance totale de la route
