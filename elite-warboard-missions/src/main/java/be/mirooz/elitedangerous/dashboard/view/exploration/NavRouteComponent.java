@@ -119,6 +119,7 @@ public class NavRouteComponent implements Initializable {
     private ChangeListener<String> currentSystemListener;
     private ChangeListener<Number> widthListener;
     private final Set<String> visitedSystems = new HashSet<>(); // Systèmes visités dans la route actuelle
+    private String lastCopiedSystemName = null; // Nom du dernier système copié dans le clipboard
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -1082,7 +1083,15 @@ public class NavRouteComponent implements Initializable {
 
                 // Dessiner le cercle pour le système
                 double radius = isCurrent ? currentCircleRadius : circleRadius;
-                Circle circle = createCircle(x, centerY, system, isCurrent, isVisited, radius);
+                boolean isLastCopied = system.getSystemName().equals(lastCopiedSystemName);
+                
+                // Ajouter l'indicateur visuel pour le dernier système copié (avant le cercle pour qu'il soit en arrière-plan)
+                if (isLastCopied) {
+                    Circle copiedIndicator = createCopiedIndicator(x, centerY, radius);
+                    routeSystemsPane.getChildren().add(copiedIndicator);
+                }
+                
+                Circle circle = createCircle(x, centerY, system, isCurrent, isVisited, radius, isLastCopied);
                 routeSystemsPane.getChildren().add(circle);
 
                 // Ajouter l'indicateur scoopable si applicable
@@ -1191,9 +1200,29 @@ public class NavRouteComponent implements Initializable {
     }
 
     /**
+     * Crée un indicateur visuel autour du dernier système copié
+     */
+    private Circle createCopiedIndicator(double x, double y, double circleRadius) {
+        // Créer un cercle plus grand autour du cercle du système
+        double indicatorRadius = circleRadius + 6; // 6 pixels de plus que le cercle
+        Circle indicator = new Circle(x, y, indicatorRadius);
+        
+        // Cercle avec contour animé (vert pour indiquer qu'il est copié)
+        indicator.setFill(Color.TRANSPARENT);
+        indicator.setStroke(Color.rgb(0, 255, 0, 0.8)); // Vert avec transparence
+        indicator.setStrokeWidth(2.5);
+        indicator.getStyleClass().add("nav-route-copied-indicator");
+        
+        // Le rendre non interactif pour ne pas bloquer les clics sur le cercle du système
+        indicator.setMouseTransparent(true);
+        
+        return indicator;
+    }
+
+    /**
      * Crée un cercle pour représenter un système
      */
-    private Circle createCircle(double x, double y, RouteSystem system, boolean isCurrent, boolean isVisited, double radius) {
+    private Circle createCircle(double x, double y, RouteSystem system, boolean isCurrent, boolean isVisited, double radius, boolean isLastCopied) {
         Circle circle = new Circle(x, y, radius);
 
         if (isCurrent) {
@@ -1265,6 +1294,13 @@ public class NavRouteComponent implements Initializable {
 
         String systemName = system.getSystemName();
         copyClipboardManager.copyToClipboard(systemName);
+
+        // Mettre à jour le dernier système copié et rafraîchir l'affichage
+        lastCopiedSystemName = systemName;
+        NavRoute route = navRouteRegistry.getCurrentRoute();
+        if (route != null) {
+            updateRouteDisplay(route);
+        }
 
         // Afficher un popup de confirmation
         Stage stage = (Stage) routeSystemsPane.getScene().getWindow();
