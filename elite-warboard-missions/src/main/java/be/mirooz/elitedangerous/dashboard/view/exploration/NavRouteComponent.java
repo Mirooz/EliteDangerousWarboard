@@ -220,22 +220,27 @@ public class NavRouteComponent implements Initializable {
      */
     private void refreshRouteDisplay() {
         Platform.runLater(() -> {
-            // En mode Stratum, forcer le rafraîchissement en créant une nouvelle instance de la route
-            if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
-                NavRoute currentRoute = navRouteRegistry.getCurrentRoute();
-                if (currentRoute != null) {
+            // Toujours rafraîchir l'affichage, même en mode Stratum
+            // car on affiche des informations basées sur la route Free Exploration (nombre de sauts)
+            NavRoute route = navRouteRegistry.getCurrentRoute();
+            if (route != null) {
+                // En mode Stratum, forcer le rafraîchissement en créant une nouvelle instance de la route
+                if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
                     // Créer une nouvelle instance pour forcer le listener à se déclencher
                     NavRoute refreshedRoute = new NavRoute();
-                    refreshedRoute.setTimestamp(currentRoute.getTimestamp());
-                    refreshedRoute.setRoute(new java.util.ArrayList<>(currentRoute.getRoute()));
+                    refreshedRoute.setTimestamp(route.getTimestamp());
+                    refreshedRoute.setRoute(new java.util.ArrayList<>(route.getRoute()));
                     navRouteRegistry.setCurrentRoute(refreshedRoute);
-                }
-            } else {
-                // En mode Free Exploration, simplement mettre à jour l'affichage
-                NavRoute route = navRouteRegistry.getCurrentRoute();
-                if (route != null) {
+                    // Forcer aussi un appel direct à updateRouteDisplay pour s'assurer que l'UI se met à jour
+                    // (car le nombre de sauts dépend de la route Free Exploration qui vient de changer)
+                    updateRouteDisplay(refreshedRoute);
+                } else {
+                    // En mode Free Exploration, simplement mettre à jour l'affichage
                     updateRouteDisplay(route);
                 }
+            } else {
+                // Même si pas de route, mettre à jour l'affichage pour rafraîchir les infos Free Exploration
+                updateRouteDisplay(null);
             }
         });
     }
@@ -1078,6 +1083,26 @@ public class NavRouteComponent implements Initializable {
                     boolean hasBoost = isBoostStar(system.getStarClass());
                     Line line = createLine(x, centerY, nextX, centerY, nextSystem, isVisited, hasBoost);
                     routeSystemsPane.getChildren().add(line);
+                    
+                    // En mode Stratum, vérifier et afficher le nombre de sauts restants pour toutes les lignes
+                    if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+                        NavRoute freeExplorationRoute = navRouteRegistry.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
+                        if (freeExplorationRoute != null && freeExplorationRoute.getRoute() != null && !freeExplorationRoute.getRoute().isEmpty()) {
+                            RouteSystem lastFreeSystem = freeExplorationRoute.getRoute().get(freeExplorationRoute.getRoute().size() - 1);
+                            // Vérifier si le dernier système de Free Exploration correspond à la prochaine boule
+                            if (lastFreeSystem.getSystemName().equals(nextSystem.getSystemName())) {
+                                // Utiliser le nombre de sauts restants du registre (celui du label "x jump remaining")
+                                int remainingJumps = navRouteTargetRegistry.getRemainingJumpsInRoute();
+                                if (remainingJumps > 0) {
+                                    // Afficher le nombre de sauts au-dessus de la ligne, au milieu
+                                    double midX = (x + nextX) / 2;
+                                    Label jumpsLabel = createJumpsRemainingLabel(midX, centerY - 15, remainingJumps);
+                                    routeSystemsPane.getChildren().add(jumpsLabel);
+                                }
+                            }
+                        }
+                    }
+                    
                     currentX = nextX;
                 }
 
@@ -1197,6 +1222,29 @@ public class NavRouteComponent implements Initializable {
         line.setMouseTransparent(true);
 
         return line;
+    }
+
+    /**
+     * Crée un label pour afficher le nombre de sauts restants
+     */
+    private Label createJumpsRemainingLabel(double x, double y, int remainingJumps) {
+        Label label = new Label(String.valueOf(remainingJumps));
+        label.getStyleClass().add("nav-route-jumps-remaining-label");
+        label.setTextFill(Color.rgb(255, 255, 0, 0.9)); // Jaune
+        label.setFont(Font.font(12));
+        
+        // Centrer le label horizontalement en utilisant translateX
+        label.layoutBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+            if (newBounds != null && newBounds.getWidth() > 0) {
+                label.setTranslateX(-newBounds.getWidth() / 2);
+            }
+        });
+        
+        // Position initiale
+        label.setLayoutX(x);
+        label.setLayoutY(y);
+        
+        return label;
     }
 
     /**
