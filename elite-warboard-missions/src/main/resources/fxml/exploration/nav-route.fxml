@@ -21,6 +21,8 @@
         <HBox fx:id="modeSelectorContainer" spacing="10" alignment="CENTER_LEFT" styleClass="nav-route-mode-selector"/>
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
         <Label fx:id="modeDescriptionLabel" styleClass="nav-route-mode-description" wrapText="true" HBox.hgrow="ALWAYS"/>
+        <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
+        <Label fx:id="remainingJumpsLabel" text="" styleClass="nav-route-remaining-jumps"/>
         <Button fx:id="reloadButton" styleClass="nav-route-reload-button" visible="false" managed="false" 
                 onAction="#onReloadButtonClicked" minWidth="30" maxWidth="30" minHeight="30" maxHeight="30">
             <graphic>

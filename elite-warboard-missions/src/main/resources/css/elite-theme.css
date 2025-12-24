@@ -3956,6 +3956,13 @@
     -fx-padding: 0 10 0 0;
 }
 
+.nav-route-remaining-jumps {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 10 0 0;
+}
+
 .nav-route-scroll {
     -fx-background-color: transparent;
     -fx-border-color: transparent;

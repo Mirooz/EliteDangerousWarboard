@@ -174,5 +174,19 @@ public class NavRouteService {
         
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
+    
+    /**
+     * Récupère le nom du dernier système de la route dans NavRoute.json
+     * @return Le nom du dernier système, ou null si le fichier n'existe pas ou est vide
+     */
+    public String getFinalTargetSystem() {
+        NavRoute navRoute = readNavRouteFile();
+        if (navRoute != null && navRoute.getRoute() != null && !navRoute.getRoute().isEmpty()) {
+            List<RouteSystem> route = navRoute.getRoute();
+            RouteSystem lastSystem = route.get(route.size() - 1);
+            return lastSystem.getSystemName();
+        }
+        return null;
+    }
 }
 

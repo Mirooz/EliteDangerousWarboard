@@ -9,8 +9,10 @@ import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteTargetRegistry;
 import be.mirooz.elitedangerous.dashboard.service.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -87,8 +89,12 @@ public class NavRouteComponent implements Initializable {
     
     @FXML
     private javafx.scene.control.Button reloadButton;
+    
+    @FXML
+    private Label remainingJumpsLabel;
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
+    private final NavRouteTargetRegistry navRouteTargetRegistry = NavRouteTargetRegistry.getInstance();
     private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
     private ExplorationMode currentMode = ExplorationMode.FREE_EXPLORATION;
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
@@ -167,8 +173,46 @@ public class NavRouteComponent implements Initializable {
             routeScrollPane.widthProperty().addListener(widthListener);
         }
         
+        // Écouter les changements de RemainingJumpsInRoute
+        navRouteTargetRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
+            Platform.runLater(() -> {
+                updateRemainingJumpsLabel(newValue.intValue());
+            });
+        });
+        
+        // Initialiser le label avec la valeur actuelle
+        updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
+        
+        // S'abonner au service de notification pour le refresh de la route
+        NavRouteNotificationService.getInstance().addListener(this::refreshRouteDisplay);
+        
         // Afficher la route actuelle si elle existe
         updateRouteDisplay(navRouteRegistry.getCurrentRoute());
+    }
+    
+    /**
+     * Méthode appelée par le service de notification pour rafraîchir l'affichage de la route
+     */
+    private void refreshRouteDisplay() {
+        Platform.runLater(() -> {
+            // En mode Stratum, forcer le rafraîchissement en créant une nouvelle instance de la route
+            if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+                NavRoute currentRoute = navRouteRegistry.getCurrentRoute();
+                if (currentRoute != null) {
+                    // Créer une nouvelle instance pour forcer le listener à se déclencher
+                    NavRoute refreshedRoute = new NavRoute();
+                    refreshedRoute.setTimestamp(currentRoute.getTimestamp());
+                    refreshedRoute.setRoute(new java.util.ArrayList<>(currentRoute.getRoute()));
+                    navRouteRegistry.setCurrentRoute(refreshedRoute);
+                }
+            } else {
+                // En mode Free Exploration, simplement mettre à jour l'affichage
+                NavRoute route = navRouteRegistry.getCurrentRoute();
+                if (route != null) {
+                    updateRouteDisplay(route);
+                }
+            }
+        });
     }
     
     /**
@@ -1018,5 +1062,23 @@ public class NavRouteComponent implements Initializable {
         Stage stage = (Stage) routeSystemsPane.getScene().getWindow();
         popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(), stage);
     }
+    
+    /**
+     * Met à jour le label affichant le nombre de sauts restants
+     */
+    private void updateRemainingJumpsLabel(int remainingJumps) {
+        if (remainingJumpsLabel != null) {
+            if (remainingJumps >= 0) {
+                remainingJumpsLabel.setText(remainingJumps + " saut(s) restant(s)");
+                remainingJumpsLabel.setVisible(true);
+                remainingJumpsLabel.setManaged(true);
+            } else {
+                remainingJumpsLabel.setText("");
+                remainingJumpsLabel.setVisible(false);
+                remainingJumpsLabel.setManaged(false);
+            }
+        }
+    }
+    
 }
 
