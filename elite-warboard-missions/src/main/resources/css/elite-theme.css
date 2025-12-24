@@ -4001,11 +4001,16 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
     -fx-cursor: hand;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 5px 10px;
 }
 
 .nav-route-reload-button:hover {
     -fx-background-color: rgba(255, 107, 0, 0.1);
     -fx-border-color: -fx-elite-blue;
+    -fx-text-fill: -fx-elite-blue;
 }
 
 .nav-route-reload-icon {
@@ -4015,6 +4020,32 @@
 }
 
 .nav-route-reload-button:hover .nav-route-reload-icon {
+    -fx-text-fill: -fx-elite-blue;
+}
+
+.nav-route-info-button {
+    -fx-background-color: transparent;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.nav-route-info-button:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: -fx-elite-blue;
+}
+
+.nav-route-info-icon {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+.nav-route-info-button:hover .nav-route-info-icon {
     -fx-text-fill: -fx-elite-blue;
 }
 

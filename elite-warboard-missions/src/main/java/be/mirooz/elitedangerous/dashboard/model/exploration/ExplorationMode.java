@@ -13,7 +13,7 @@ public enum ExplorationMode {
     ),
     STRATUM_UNDISCOVERED(
         "Stratum Undiscovered",
-        "Find undiscovered systems with potential stratum bodies from Spansh"
+        "Find undiscovered systems with potential stratum bodies"
     );
 
     private final String displayName;

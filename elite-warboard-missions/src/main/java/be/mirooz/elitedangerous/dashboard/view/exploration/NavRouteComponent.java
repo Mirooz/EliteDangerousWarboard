@@ -91,6 +91,9 @@ public class NavRouteComponent implements Initializable {
     private javafx.scene.control.Button reloadButton;
     
     @FXML
+    private javafx.scene.control.Button stratumInfoButton;
+    
+    @FXML
     private Label remainingJumpsLabel;
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
@@ -276,6 +279,9 @@ public class NavRouteComponent implements Initializable {
         
         // Initialiser le bouton de rechargement
         initializeReloadButton();
+        
+        // Initialiser le bouton d'information Stratum
+        initializeStratumInfoButton();
     }
     
     /**
@@ -284,7 +290,7 @@ public class NavRouteComponent implements Initializable {
     private void initializeReloadButton() {
         if (reloadButton != null) {
             // Tooltip
-            Tooltip tooltip = new Tooltip("Recharge les données");
+            TooltipComponent tooltip = new TooltipComponent("Recharge les données");
             reloadButton.setTooltip(tooltip);
             
             // Visibilité selon le mode
@@ -300,6 +306,38 @@ public class NavRouteComponent implements Initializable {
             boolean visible = currentMode != ExplorationMode.FREE_EXPLORATION;
             reloadButton.setVisible(visible);
             reloadButton.setManaged(visible);
+        }
+    }
+    
+    /**
+     * Initialise le bouton d'information Stratum
+     */
+    private void initializeStratumInfoButton() {
+        if (stratumInfoButton != null) {
+            // Tooltip avec la description en anglais
+            String tooltipText =
+                    "These systems are very likely unexplored and may host Stratum Tectonicas (~95M CR). " +
+                            "Move away from the human bubble to improve accuracy. " +
+                            "Click the 'Reload' button to plot a new route.";
+
+            TooltipComponent tooltip = new TooltipComponent(tooltipText);
+            tooltip.setWrapText(true);
+            tooltip.setMaxWidth(400);
+            stratumInfoButton.setTooltip(tooltip);
+            
+            // Visibilité selon le mode
+            updateStratumInfoButtonVisibility();
+        }
+    }
+    
+    /**
+     * Met à jour la visibilité du bouton d'information Stratum selon le mode
+     */
+    private void updateStratumInfoButtonVisibility() {
+        if (stratumInfoButton != null) {
+            boolean visible = currentMode == ExplorationMode.STRATUM_UNDISCOVERED;
+            stratumInfoButton.setVisible(visible);
+            stratumInfoButton.setManaged(visible);
         }
     }
     
@@ -379,8 +417,9 @@ public class NavRouteComponent implements Initializable {
         // Charger les systèmes visités du nouveau mode
         loadVisitedSystemsFromPreferences();
         
-        // Mettre à jour la visibilité du bouton de rechargement
+        // Mettre à jour la visibilité des boutons
         updateReloadButtonVisibility();
+        updateStratumInfoButtonVisibility();
         
         if (newMode == ExplorationMode.STRATUM_UNDISCOVERED) {
             // Sauvegarder la route normale si elle existe
