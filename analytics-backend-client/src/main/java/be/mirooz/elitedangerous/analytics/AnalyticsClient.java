@@ -1,11 +1,7 @@
 package be.mirooz.elitedangerous.analytics;
 
 import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshOffsetDateTimeDeserializer;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequest;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponse;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -520,13 +516,26 @@ public class AnalyticsClient {
      * @param searchRequestDTO Le DTO de requête de recherche Spansh (contient uniquement le système de référence)
      * @return SpanshSearchResponseDTO contenant la réponse de l'API
      * @throws Exception en cas d'erreur lors de l'appel HTTP
+     * @deprecated Utiliser searchSpanshByEndpoint à la place
      */
+    @Deprecated
     public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequestDTO searchRequestDTO) throws Exception {
+        return searchSpanshByEndpoint("search", searchRequestDTO);
+    }
+
+    /**
+     * Appelle un endpoint Spansh spécifique du backend analytics avec un DTO
+     * @param endpoint Le nom de l'endpoint (ex: "stratum-undiscovered", "expressway-to-exomastery", "road-to-riches")
+     * @param searchRequestDTO Le DTO de requête de recherche Spansh (contient uniquement le système de référence)
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO searchSpanshByEndpoint(String endpoint, SpanshSearchRequestDTO searchRequestDTO) throws Exception {
         try {
             String jsonBody = objectMapper.writeValueAsString(searchRequestDTO);
             
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/api/spansh/search"))
+                    .uri(URI.create(baseUrl + "/api/spansh/" + endpoint))
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
@@ -544,11 +553,96 @@ public class AnalyticsClient {
                 
                 return responseDTO;
             } else {
-                throw new Exception("Erreur lors de l'appel à /api/spansh/search: " 
+                throw new Exception("Erreur lors de l'appel à /api/spansh/" + endpoint + ": " 
                     + response.statusCode() + " - " + response.body());
             }
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh: " + e.getMessage());
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (" + endpoint + "): " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Appelle un endpoint Spansh spécifique du backend analytics avec un DTO de route (contient maxJumpRange)
+     * @param endpoint Le nom de l'endpoint (ex: "expressway-to-exomastery", "road-to-riches")
+     * @param routeRequestDTO Le DTO de requête de route Spansh (contient maxJumpRange et systemName)
+     * @return SpanshRouteResponseDTO contenant searchReference et spanshResponse avec les résultats
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshRouteResponseDTO searchSpanshRouteByEndpoint(String endpoint, SpanshRouteRequestDTO routeRequestDTO) throws Exception {
+        try {
+            String jsonBody = objectMapper.writeValueAsString(routeRequestDTO);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/spansh/" + endpoint))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            System.out.println("📥 Réponse HTTP pour " + endpoint + " : status=" + response.statusCode());
+            
+            if (response.statusCode() == 200) {
+                // Le backend retourne un wrapper avec searchReference et spanshResponse
+                try {
+                    SpanshRouteResponseDTO responseDTO = objectMapper.readValue(
+                        response.body(), 
+                        SpanshRouteResponseDTO.class
+                    );
+                    
+                    System.out.println("✅ DTO parsé : searchReference=" + (responseDTO != null ? responseDTO.getSearchReference() : "null") + 
+                                      ", systèmes=" + (responseDTO != null && responseDTO.getSpanshResponse() != null && responseDTO.getSpanshResponse().result != null ? responseDTO.getSpanshResponse().result.size() : 0));
+                    return responseDTO;
+                } catch (Exception e) {
+                    System.err.println("❌ Erreur lors du parsing de la réponse : " + e.getMessage());
+                    System.err.println("📄 Contenu JSON : " + response.body());
+                    throw new Exception("Erreur lors du parsing de la réponse pour " + endpoint + ": " + e.getMessage(), e);
+                }
+            } else {
+                throw new Exception("Erreur lors de l'appel à /api/spansh/" + endpoint + ": " 
+                    + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (" + endpoint + "): " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Récupère les résultats d'une route Spansh via son GUID (job)
+     * Appelle l'endpoint GET /api/spansh/results/{job} du backend analytics
+     * @param job Le GUID (job) de la route Spansh
+     * @return SpanshRouteResultsResponseDTO contenant les résultats de la route
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshRouteResultsResponseDTO getSpanshRouteResultsByJob(String job) throws Exception {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/spansh/results/" + job))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                // Le backend retourne directement un SpanshRouteResultsResponseDTO
+                SpanshRouteResultsResponseDTO responseDTO = objectMapper.readValue(
+                    response.body(), 
+                    SpanshRouteResultsResponseDTO.class
+                );
+                
+                return responseDTO;
+            } else {
+                throw new Exception("Erreur lors de l'appel à /api/spansh/results/" + job + ": " 
+                    + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (results, job: " + job + "): " + e.getMessage());
             throw e;
         }
     }
@@ -559,11 +653,25 @@ public class AnalyticsClient {
      * @param guid Le GUID de la recherche Spansh
      * @return SpanshSearchResponseDTO contenant la réponse de l'API
      * @throws Exception en cas d'erreur lors de l'appel HTTP
+     * @deprecated Utiliser getSpanshSearchByGuidAndEndpoint à la place
      */
+    @Deprecated
     public SpanshSearchResponseDTO getSpanshSearchByGuid(String guid) throws Exception {
+        return getSpanshSearchByGuidAndEndpoint("search", guid);
+    }
+
+    /**
+     * Récupère les résultats d'une recherche Spansh via son GUID et l'endpoint spécifique
+     * Appelle l'endpoint GET /api/spansh/{endpoint}/{guid} du backend analytics
+     * @param endpoint Le nom de l'endpoint (ex: "stratum-undiscovered", "expressway-to-exomastery", "road-to-riches")
+     * @param guid Le GUID de la recherche Spansh
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO getSpanshSearchByGuidAndEndpoint(String endpoint, String guid) throws Exception {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/api/spansh/search/" + guid))
+                    .uri(URI.create(baseUrl + "/api/spansh/" + endpoint + "/" + guid))
                     .header("Accept", "application/json")
                     .GET()
                     .timeout(Duration.ofSeconds(30))
@@ -580,11 +688,11 @@ public class AnalyticsClient {
                 
                 return responseDTO;
             } else {
-                throw new Exception("Erreur lors de l'appel à /api/spansh/search/" + guid + ": " 
+                throw new Exception("Erreur lors de l'appel à /api/spansh/" + endpoint + "/" + guid + ": " 
                     + response.statusCode() + " - " + response.body());
             }
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (GUID): " + e.getMessage());
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (" + endpoint + ", GUID: " + guid + "): " + e.getMessage());
             throw e;
         }
     }

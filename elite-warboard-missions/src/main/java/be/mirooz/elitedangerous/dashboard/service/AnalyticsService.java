@@ -5,6 +5,9 @@ import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequest;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteRequestDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResponseDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResultsResponseDTO;
 
 /**
  * Service pour gérer les analytics de l'application.
@@ -98,8 +101,53 @@ public class AnalyticsService {
      * @param guid Le GUID de la recherche Spansh
      * @return SpanshSearchResponseDTO contenant la réponse de l'API
      * @throws Exception en cas d'erreur lors de l'appel HTTP
+     * @deprecated Utiliser getSpanshSearchByGuidAndEndpoint à la place
      */
+    @Deprecated
     public SpanshSearchResponseDTO getSpanshSearchByGuid(String guid) throws Exception {
         return analyticsClient.getSpanshSearchByGuid(guid);
+    }
+
+    /**
+     * Appelle un endpoint Spansh spécifique du backend analytics avec un DTO
+     * @param endpoint Le nom de l'endpoint (ex: "stratum-undiscovered", "expressway-to-exomastery", "road-to-riches")
+     * @param searchRequestDTO Le DTO de requête de recherche Spansh (contient uniquement le système de référence)
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO searchSpanshByEndpoint(String endpoint, SpanshSearchRequestDTO searchRequestDTO) throws Exception {
+        return analyticsClient.searchSpanshByEndpoint(endpoint, searchRequestDTO);
+    }
+
+    /**
+     * Récupère les résultats d'une recherche Spansh via son GUID et l'endpoint spécifique
+     * @param endpoint Le nom de l'endpoint (ex: "stratum-undiscovered", "expressway-to-exomastery", "road-to-riches")
+     * @param guid Le GUID de la recherche Spansh
+     * @return SpanshSearchResponseDTO contenant la réponse de l'API
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshSearchResponseDTO getSpanshSearchByGuidAndEndpoint(String endpoint, String guid) throws Exception {
+        return analyticsClient.getSpanshSearchByGuidAndEndpoint(endpoint, guid);
+    }
+
+    /**
+     * Appelle un endpoint Spansh spécifique du backend analytics avec un DTO de route (contient maxJumpRange)
+     * @param endpoint Le nom de l'endpoint (ex: "expressway-to-exomastery", "road-to-riches")
+     * @param routeRequestDTO Le DTO de requête de route Spansh (contient maxJumpRange et systemName)
+     * @return SpanshRouteResponseDTO contenant searchReference et spanshResponse avec les résultats
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshRouteResponseDTO searchSpanshRouteByEndpoint(String endpoint, SpanshRouteRequestDTO routeRequestDTO) throws Exception {
+        return analyticsClient.searchSpanshRouteByEndpoint(endpoint, routeRequestDTO);
+    }
+
+    /**
+     * Récupère les résultats d'une route Spansh via son GUID (job)
+     * @param job Le GUID (job) de la route Spansh
+     * @return SpanshRouteResultsResponseDTO contenant les résultats de la route
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshRouteResultsResponseDTO getSpanshRouteResultsByJob(String job) throws Exception {
+        return analyticsClient.getSpanshRouteResultsByJob(job);
     }
 }

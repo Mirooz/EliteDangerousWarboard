@@ -1,8 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteRequestDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponse;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResponseDTO;
+import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResultsResponseDTO;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
@@ -166,8 +169,8 @@ public class NavRouteComponent implements Initializable {
                     }
                 }
 
-                // En mode Stratum Undiscovered, copier automatiquement le système suivant dans le clipboard
-                if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED && newSystem != null && !newSystem.isEmpty()) {
+                // En mode nécessitant l'API Spansh, copier automatiquement le système suivant dans le clipboard
+                if (currentMode != null && currentMode.requiresSpanshApi() && newSystem != null && !newSystem.isEmpty()) {
                     copyNextSystemAndShowPopup(newSystem);
                 }
 
@@ -229,8 +232,8 @@ public class NavRouteComponent implements Initializable {
             // car on affiche des informations basées sur la route Free Exploration (nombre de sauts)
             NavRoute route = navRouteRegistry.getCurrentRoute();
             if (route != null) {
-                // En mode Stratum, forcer le rafraîchissement en créant une nouvelle instance de la route
-                if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+                // En mode nécessitant l'API Spansh, forcer le rafraîchissement en créant une nouvelle instance de la route
+                if (currentMode != null && currentMode.requiresSpanshApi()) {
                     // Créer une nouvelle instance pour forcer le listener à se déclencher
                     NavRoute refreshedRoute = new NavRoute();
                     refreshedRoute.setTimestamp(route.getTimestamp());
@@ -417,7 +420,7 @@ public class NavRouteComponent implements Initializable {
      */
     private void updateSaveGuidCheckBoxVisibility() {
         if (saveGuidCheckBox != null) {
-            boolean visible = currentMode == ExplorationMode.STRATUM_UNDISCOVERED;
+            boolean visible = currentMode != null && currentMode.requiresSpanshApi();
             saveGuidCheckBox.setVisible(visible);
             saveGuidCheckBox.setManaged(visible);
         }
@@ -437,11 +440,11 @@ public class NavRouteComponent implements Initializable {
     }
 
     /**
-     * Met à jour la visibilité du bouton d'information Stratum selon le mode
+     * Met à jour la visibilité du bouton d'information selon le mode
      */
     private void updateStratumInfoButtonVisibility() {
         if (stratumInfoButton != null) {
-            boolean visible = currentMode == ExplorationMode.STRATUM_UNDISCOVERED;
+            boolean visible = currentMode != null && currentMode.requiresSpanshApi();
             stratumInfoButton.setVisible(visible);
             stratumInfoButton.setManaged(visible);
         }
@@ -452,7 +455,7 @@ public class NavRouteComponent implements Initializable {
      */
     @FXML
     public void onReloadButtonClicked() {
-        if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+        if (currentMode != null && currentMode.requiresSpanshApi()) {
             // Démarrer le timer de 1 minute
             startReloadTimer();
 
@@ -464,7 +467,7 @@ public class NavRouteComponent implements Initializable {
             }
 
             // Recharger la route avec le système actuel
-            loadStratumRoute(false);
+            loadSpanshRoute(false);
         }
     }
 
@@ -586,7 +589,7 @@ public class NavRouteComponent implements Initializable {
         updateStratumInfoButtonVisibility();
         updateSaveGuidCheckBoxVisibility();
 
-        if (newMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+        if (newMode != null && newMode.requiresSpanshApi()) {
             // Ne PAS réinitialiser les systèmes visités - on les maintient même lors du rechargement
             // visitedSystems.clear(); // Commenté pour maintenir les systèmes visités
             
@@ -598,12 +601,12 @@ public class NavRouteComponent implements Initializable {
                 saveGuidCheckBox.setSelected(savedState);
             }
             
-            // Charger la route Stratum depuis le registre (si elle existe déjà)
-            NavRoute stratumRoute = navRouteRegistry.getRouteForMode(ExplorationMode.STRATUM_UNDISCOVERED);
-            if (stratumRoute != null && saveGuidCheckBox.isSelected()) {
-                // Afficher la route Stratum existante
+            // Charger la route depuis le registre (si elle existe déjà)
+            NavRoute spanshRoute = navRouteRegistry.getRouteForMode(newMode);
+            if (spanshRoute != null && saveGuidCheckBox.isSelected()) {
+                // Afficher la route existante
                 Platform.runLater(() -> {
-                    updateRouteDisplay(stratumRoute);
+                    updateRouteDisplay(spanshRoute);
                     ShowLoadPopup();
                     // Copier automatiquement le système suivant dans le clipboard
                     String currentSystem = commanderStatus.getCurrentStarSystem();
@@ -612,9 +615,9 @@ public class NavRouteComponent implements Initializable {
                     }
                 });
             } else {
-                // Appeler le backend pour obtenir la route Stratum
+                // Appeler le backend pour obtenir la route
                 // Ne pas utiliser l'ancien GUID sauf si la checkbox est cochée
-                loadStratumRoute(true);
+                loadSpanshRoute(true);
             }
         } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
             // Réinitialiser les systèmes visités pour la nouvelle route
@@ -783,20 +786,29 @@ public class NavRouteComponent implements Initializable {
     }
 
     /**
-     * Charge la route depuis Spansh pour le mode Stratum Undiscovered
+     * Charge la route depuis Spansh pour le mode actuel (générique pour tous les modes nécessitant l'API Spansh)
      */
-    private void loadStratumRoute(boolean loadPopup) {
+    private void loadSpanshRoute(boolean loadPopup) {
         // Afficher l'indicateur de chargement
         setLoadingVisible(true);
 
         // Exécuter dans un thread séparé pour ne pas bloquer l'UI
         new Thread(() -> {
             try {
+                // Vérifier que le mode actuel nécessite l'API Spansh
+                if (currentMode == null || !currentMode.requiresSpanshApi() || currentMode.getSpanshEndpoint() == null) {
+                    Platform.runLater(() -> {
+                        System.err.println("⚠️ Le mode actuel ne nécessite pas l'API Spansh");
+                        setLoadingVisible(false);
+                    });
+                    return;
+                }
+
                 // Obtenir le système actuel comme référence
                 String currentSystem = commanderStatus.getCurrentStarSystem();
                 if (currentSystem == null || currentSystem.isEmpty()) {
                     Platform.runLater(() -> {
-                        System.err.println("⚠️ Impossible de charger la route Stratum : système actuel inconnu");
+                        System.err.println("⚠️ Impossible de charger la route " + currentMode.name() + " : système actuel inconnu");
                         setLoadingVisible(false);
                     });
                     return;
@@ -814,33 +826,105 @@ public class NavRouteComponent implements Initializable {
                     useSavedGuid = (savedGuid != null && !savedGuid.isEmpty());
                 }
 
-                SpanshSearchResponseDTO responseDTO;
+                String endpoint = currentMode.getSpanshEndpoint();
+                boolean requiresMaxJumpRange = currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY 
+                    || currentMode == ExplorationMode.ROAD_TO_RICHES;
 
-                boolean isNewCall = false;
+                final NavRoute[] spanshRouteRef = new NavRoute[1]; // Utiliser un tableau pour rendre la variable effectively final
+                String savedJobGuid = null;
+
                 if (useSavedGuid) {
                     // Si on a un GUID et que la checkbox est cochée, faire un GET (reprise en cours de route)
                     System.out.println("📋 Utilisation du GUID sauvegardé pour le mode " + currentMode.name() + ": " + savedGuid);
-                    responseDTO = analyticsService.getSpanshSearchByGuid(savedGuid);
-                    isNewCall = false;
+                    
+                    if (requiresMaxJumpRange) {
+                        // Pour les routes, utiliser getSpanshRouteResultsByJob avec le GUID sauvegardé
+                        SpanshRouteResultsResponseDTO routeResults = analyticsService.getSpanshRouteResultsByJob(savedGuid);
+                        spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
+                        savedJobGuid = savedGuid;
+                    } else {
+                        // Pour les recherches, utiliser getSpanshSearchByGuidAndEndpoint
+                        SpanshSearchResponseDTO responseDTO = analyticsService.getSpanshSearchByGuidAndEndpoint(endpoint, savedGuid);
+                        spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, false);
+                    }
                 } else {
                     // Sinon, faire un POST normal (nouveau call)
-                    System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name());
-                    SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(currentSystem);
-                    responseDTO = analyticsService.searchSpansh(requestDTO);
-                    isNewCall = true;
-
-                    // Toujours sauvegarder le GUID reçu (pour pouvoir l'utiliser si on coche la checkbox plus tard)
-                    if (responseDTO != null && responseDTO.getSearchReference() != null && !responseDTO.getSearchReference().isEmpty()) {
-                        preferencesService.setPreference(modeKey, responseDTO.getSearchReference());
-                        System.out.println("💾 GUID sauvegardé pour le mode " + currentMode.name() + ": " + responseDTO.getSearchReference());
+                    System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name() + " (endpoint: " + endpoint + ")");
+                    
+                    if (requiresMaxJumpRange) {
+                        // Récupérer la portée maximale de saut depuis le vaisseau
+                        Double maxJumpRange = null;
+                        if (commanderStatus.getShip() != null) {
+                            maxJumpRange = commanderStatus.getShip().getMaxRange();
+                        }
+                        
+                        if (maxJumpRange == null || maxJumpRange <= 0) {
+                            Platform.runLater(() -> {
+                                System.err.println("⚠️ Impossible de charger la route " + currentMode.name() + " : portée de saut inconnue");
+                                setLoadingVisible(false);
+                            });
+                            return;
+                        }
+                        
+                        // Pour les routes : POST retourne un wrapper avec searchReference et spanshResponse
+                        SpanshRouteRequestDTO routeRequestDTO = new SpanshRouteRequestDTO(maxJumpRange, currentSystem);
+                        System.out.println("📤 Envoi de la requête route : maxJumpRange=" + maxJumpRange + ", systemName=" + currentSystem);
+                        
+                        SpanshRouteResponseDTO routeResponse = analyticsService.searchSpanshRouteByEndpoint(endpoint, routeRequestDTO);
+                        
+                        if (routeResponse != null && routeResponse.getSpanshResponse() != null) {
+                            SpanshRouteResultsResponseDTO routeResults = routeResponse.getSpanshResponse();
+                            
+                            System.out.println("📊 Résultats de route reçus : " + (routeResults.result != null ? routeResults.result.size() : 0) + " systèmes");
+                            System.out.println("📊 État de la route : " + routeResults.state + ", Statut : " + routeResults.status);
+                            
+                            // Sauvegarder le searchReference ou le job
+                            if (routeResponse.getSearchReference() != null && !routeResponse.getSearchReference().isEmpty()) {
+                                savedJobGuid = routeResponse.getSearchReference();
+                                System.out.println("💾 SearchReference reçu : " + savedJobGuid);
+                            } else if (routeResults.job != null && !routeResults.job.isEmpty()) {
+                                savedJobGuid = routeResults.job;
+                                System.out.println("💾 Job reçu : " + savedJobGuid);
+                            }
+                            
+                            if (routeResults.result != null && !routeResults.result.isEmpty()) {
+                                System.out.println("📋 Premier système : " + routeResults.result.get(0).name);
+                            }
+                            
+                            spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
+                            
+                            if (spanshRouteRef[0] != null) {
+                                System.out.println("✅ Route construite avec " + spanshRouteRef[0].getRoute().size() + " systèmes");
+                            } else {
+                                System.err.println("❌ Échec de construction de la route");
+                            }
+                            
+                            // Sauvegarder le GUID (searchReference ou job) si disponible
+                            if (savedJobGuid != null && !savedJobGuid.isEmpty()) {
+                                preferencesService.setPreference(modeKey, savedJobGuid);
+                                System.out.println("💾 GUID sauvegardé pour le mode " + currentMode.name() + ": " + savedJobGuid);
+                            }
+                        } else {
+                            System.err.println("❌ Réponse de route est null ou spanshResponse est null");
+                        }
+                    } else {
+                        // Pour stratum-undiscovered, utiliser le DTO simple
+                        SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(currentSystem);
+                        SpanshSearchResponseDTO responseDTO = analyticsService.searchSpanshByEndpoint(endpoint, requestDTO);
+                        spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, true);
+                        
+                        // Sauvegarder le GUID reçu
+                        if (responseDTO != null && responseDTO.getSearchReference() != null && !responseDTO.getSearchReference().isEmpty()) {
+                            preferencesService.setPreference(modeKey, responseDTO.getSearchReference());
+                            System.out.println("💾 GUID sauvegardé pour le mode " + currentMode.name() + ": " + responseDTO.getSearchReference());
+                        }
                     }
                 }
 
                 // Sauvegarder les systèmes visités avant de reconstruire la route
                 Set<String> previousVisitedSystems = new HashSet<>(visitedSystems);
-
-                // Construire la route à partir de la réponse
-                NavRoute stratumRoute = buildRouteFromSpanshResponse(responseDTO, currentSystem, isNewCall);
+                
+                final NavRoute spanshRoute = spanshRouteRef[0]; // Variable final pour utilisation dans lambda
 
                 // Restaurer les systèmes visités après reconstruction
                 visitedSystems.clear();
@@ -849,31 +933,37 @@ public class NavRouteComponent implements Initializable {
                 // Mettre à jour le registre sur le thread JavaFX
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
-                    if (stratumRoute != null) {
-                        // Sauvegarder la route Stratum dans le registre pour le mode Stratum
-                        navRouteRegistry.setRouteForMode(stratumRoute, ExplorationMode.STRATUM_UNDISCOVERED);
-                        System.out.println("✅ Route Stratum chargée : " + stratumRoute.getRoute().size() + " systèmes");
+                    if (spanshRoute != null && spanshRoute.getRoute() != null && !spanshRoute.getRoute().isEmpty()) {
+                        // Sauvegarder la route dans le registre pour le mode actuel
+                        navRouteRegistry.setRouteForMode(spanshRoute, currentMode);
+                        System.out.println("✅ Route " + currentMode.name() + " chargée : " + spanshRoute.getRoute().size() + " systèmes");
                         // Forcer la mise à jour de l'affichage pour prendre en compte les systèmes visités
-                        updateRouteDisplay(stratumRoute);
+                        updateRouteDisplay(spanshRoute);
                         // Copier automatiquement le système suivant dans le clipboard
                         String currentSystemForCopy = commanderStatus.getCurrentStarSystem();
                         if (currentSystemForCopy != null && !currentSystemForCopy.isEmpty()) {
                             copyNextSystemAndShowPopup(currentSystemForCopy);
                         }
                     } else {
-                        System.err.println("⚠️ Aucune route Stratum trouvée");
+                        if (spanshRoute == null) {
+                            System.err.println("⚠️ Aucune route " + currentMode.name() + " trouvée (route est null)");
+                        } else if (spanshRoute.getRoute() == null) {
+                            System.err.println("⚠️ Aucune route " + currentMode.name() + " trouvée (liste de route est null)");
+                        } else {
+                            System.err.println("⚠️ Aucune route " + currentMode.name() + " trouvée (liste de route est vide, " + spanshRoute.getRoute().size() + " systèmes)");
+                        }
                     }
                 });
                 if (loadPopup)
                     ShowLoadPopup();
 
             } catch (Exception e) {
-                System.err.println("❌ Erreur lors du chargement de la route Stratum: " + e.getMessage());
+                System.err.println("❌ Erreur lors du chargement de la route " + currentMode.name() + ": " + e.getMessage());
                 e.printStackTrace();
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
                     updateRouteDisplay(null);
-                    // En cas d'erreur, la route Stratum reste dans le registre (si elle existait)
+                    // En cas d'erreur, la route reste dans le registre (si elle existait)
                     // On ne fait rien, l'utilisateur peut recharger manuellement
                 });
             }
@@ -1015,6 +1105,89 @@ public class NavRouteComponent implements Initializable {
             routeSystems.add(routeSystem);
             previousPosition = starPos;
         }
+
+        route.setRoute(routeSystems);
+        return route;
+    }
+
+    /**
+     * Construit une NavRoute à partir de la réponse de résultats de route Spansh (pour expressway-to-exomastery et road-to-riches)
+     * Le premier système dans result est le système de référence (source), il doit être inclus comme premier système de la route
+     * @param routeResults La réponse de résultats de route Spansh
+     * @param currentSystemName Le système de référence (système actuel lors du call)
+     */
+    private NavRoute buildRouteFromSpanshRouteResults(SpanshRouteResultsResponseDTO routeResults, String currentSystemName) {
+        if (routeResults == null) {
+            System.err.println("❌ buildRouteFromSpanshRouteResults: routeResults est null");
+            return null;
+        }
+        
+        if (routeResults.result == null) {
+            System.err.println("❌ buildRouteFromSpanshRouteResults: result est null");
+            return null;
+        }
+        
+        if (routeResults.result.isEmpty()) {
+            System.err.println("❌ buildRouteFromSpanshRouteResults: result est vide");
+            return null;
+        }
+
+        System.out.println("🔧 Construction de la route depuis " + routeResults.result.size() + " systèmes (système de référence: " + currentSystemName + ")");
+
+        NavRoute route = new NavRoute();
+        route.setTimestamp(java.time.Instant.now().toString());
+
+        List<RouteSystem> routeSystems = new ArrayList<>();
+        double[] previousPosition = null;
+
+        // Trier les systèmes par nombre de sauts (jumps) pour avoir l'ordre correct
+        List<SpanshRouteResultsResponseDTO.SystemResult> sortedSystems = new ArrayList<>(routeResults.result);
+        sortedSystems.sort(Comparator.comparingInt(s -> s.jumps));
+
+        // Ajouter tous les systèmes de la route (le premier est le système de référence)
+        for (SpanshRouteResultsResponseDTO.SystemResult systemResult : sortedSystems) {
+            if (systemResult.name == null || systemResult.name.isEmpty()) {
+                System.out.println("⏭️ Système ignoré (nom vide)");
+                continue;
+            }
+
+            RouteSystem routeSystem = new RouteSystem();
+            routeSystem.setSystemName(systemResult.name);
+            
+            // Convertir id64 en long si possible
+            try {
+                long systemId64 = Long.parseLong(systemResult.id64);
+                routeSystem.setSystemAddress(systemId64);
+            } catch (NumberFormatException e) {
+                // Si la conversion échoue, utiliser 0
+                routeSystem.setSystemAddress(0L);
+            }
+
+            // Pour les routes, on n'a pas d'information sur la classe d'étoile
+            routeSystem.setStarClass("");
+
+            // Position du système
+            double[] starPos = new double[]{
+                systemResult.x,
+                systemResult.y,
+                systemResult.z
+            };
+            routeSystem.setStarPos(starPos);
+
+            // Calculer la distance depuis le système précédent
+            double distance = 0.0;
+            if (previousPosition != null) {
+                distance = calculateDistance(previousPosition, starPos);
+            }
+            routeSystem.setDistanceFromPrevious(distance);
+
+            // Mettre à jour la position précédente pour le prochain système
+            previousPosition = starPos;
+
+            routeSystems.add(routeSystem);
+        }
+
+        System.out.println("✅ Route construite : " + routeSystems.size() + " systèmes ajoutés (premier système: " + (routeSystems.isEmpty() ? "aucun" : routeSystems.get(0).getSystemName()) + ")");
 
         route.setRoute(routeSystems);
         return route;
@@ -1252,7 +1425,7 @@ public class NavRouteComponent implements Initializable {
                     routeSystemsPane.getChildren().add(line);
                     
                     // En mode Stratum, vérifier et afficher le nombre de sauts restants pour toutes les lignes
-                    if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+                    if (currentMode != null && currentMode.requiresSpanshApi()) {
                         NavRoute freeExplorationRoute = navRouteRegistry.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
                         if (freeExplorationRoute != null && freeExplorationRoute.getRoute() != null && !freeExplorationRoute.getRoute().isEmpty()) {
                             RouteSystem lastFreeSystem = freeExplorationRoute.getRoute().get(freeExplorationRoute.getRoute().size() - 1);

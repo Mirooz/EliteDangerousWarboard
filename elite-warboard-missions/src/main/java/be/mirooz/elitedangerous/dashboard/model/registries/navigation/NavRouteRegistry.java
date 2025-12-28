@@ -5,6 +5,9 @@ import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Registry pour stocker les routes de navigation par mode d'exploration.
  * Singleton observable pour la UI.
@@ -13,17 +16,19 @@ public class NavRouteRegistry {
 
     private static final NavRouteRegistry INSTANCE = new NavRouteRegistry();
 
-    // Routes séparées par mode
-    private final ObjectProperty<NavRoute> freeExplorationRoute = new SimpleObjectProperty<>(null);
-    private final ObjectProperty<NavRoute> stratumRoute = new SimpleObjectProperty<>(null);
+    // Map générique pour stocker les routes par mode
+    private final Map<ExplorationMode, ObjectProperty<NavRoute>> routeMap = new HashMap<>();
     
     // Property combinée pour la compatibilité avec le code existant
     private final ObjectProperty<NavRoute> currentRoute = new SimpleObjectProperty<>(null);
 
     private NavRouteRegistry() {
-        // Écouter les changements des routes individuelles pour mettre à jour currentRoute
-        freeExplorationRoute.addListener((obs, oldRoute, newRoute) -> updateCurrentRoute());
-        stratumRoute.addListener((obs, oldRoute, newRoute) -> updateCurrentRoute());
+        // Initialiser les propriétés pour tous les modes
+        for (ExplorationMode mode : ExplorationMode.values()) {
+            ObjectProperty<NavRoute> routeProperty = new SimpleObjectProperty<>(null);
+            routeProperty.addListener((obs, oldRoute, newRoute) -> updateCurrentRoute());
+            routeMap.put(mode, routeProperty);
+        }
     }
 
     public static NavRouteRegistry getInstance() {
@@ -48,10 +53,9 @@ public class NavRouteRegistry {
      * Met à jour la route pour un mode spécifique
      */
     public void setRouteForMode(NavRoute route, ExplorationMode mode) {
-        if (mode == ExplorationMode.FREE_EXPLORATION) {
-            freeExplorationRoute.set(route);
-        } else if (mode == ExplorationMode.STRATUM_UNDISCOVERED) {
-            stratumRoute.set(route);
+        ObjectProperty<NavRoute> routeProperty = routeMap.get(mode);
+        if (routeProperty != null) {
+            routeProperty.set(route);
         }
     }
 
@@ -59,12 +63,8 @@ public class NavRouteRegistry {
      * Récupère la route pour un mode spécifique
      */
     public NavRoute getRouteForMode(ExplorationMode mode) {
-        if (mode == ExplorationMode.FREE_EXPLORATION) {
-            return freeExplorationRoute.get();
-        } else if (mode == ExplorationMode.STRATUM_UNDISCOVERED) {
-            return stratumRoute.get();
-        }
-        return null;
+        ObjectProperty<NavRoute> routeProperty = routeMap.get(mode);
+        return routeProperty != null ? routeProperty.get() : null;
     }
 
     /**
@@ -77,7 +77,8 @@ public class NavRouteRegistry {
             currentRoute.set(route);
         } catch (Exception e) {
             // Si le registre n'est pas encore initialisé, utiliser Free Exploration par défaut
-            currentRoute.set(freeExplorationRoute.get());
+            ObjectProperty<NavRoute> freeExplorationProperty = routeMap.get(ExplorationMode.FREE_EXPLORATION);
+            currentRoute.set(freeExplorationProperty != null ? freeExplorationProperty.get() : null);
         }
     }
 
