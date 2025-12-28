@@ -427,14 +427,30 @@ public class NavRouteComponent implements Initializable {
     }
 
     /**
-     * Met à jour le tooltip du bouton d'information Stratum
+     * Met à jour le tooltip du bouton d'information selon le mode
      */
     private void updateStratumInfoButtonTooltip() {
         if (stratumInfoButton != null) {
-            String tooltipText = localizationService.getString("nav.route.stratum.info");
+            String tooltipText;
+            String tooltipKey;
+            
+            // Adapter le texte selon le mode
+            if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED) {
+                tooltipKey = "nav.route.stratum.info";
+            } else if (currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY) {
+                tooltipKey = "nav.route.expressway.info";
+            } else if (currentMode == ExplorationMode.ROAD_TO_RICHES) {
+                tooltipKey = "nav.route.road_to_riches.info";
+            } else {
+                tooltipKey = "nav.route.stratum.info"; // Fallback
+            }
+            
+            tooltipText = localizationService.getString(tooltipKey);
             TooltipComponent tooltip = new TooltipComponent(tooltipText);
             tooltip.setWrapText(true);
             tooltip.setMaxWidth(400);
+            // Faire en sorte que le tooltip reste affiché tant que la souris est dessus
+            tooltip.setShowDuration(javafx.util.Duration.INDEFINITE);
             stratumInfoButton.setTooltip(tooltip);
         }
     }
@@ -588,6 +604,9 @@ public class NavRouteComponent implements Initializable {
         updateReloadButtonVisibility();
         updateStratumInfoButtonVisibility();
         updateSaveGuidCheckBoxVisibility();
+        
+        // Mettre à jour le tooltip du bouton d'information selon le nouveau mode
+        updateStratumInfoButtonTooltip();
 
         if (newMode != null && newMode.requiresSpanshApi()) {
             // Ne PAS réinitialiser les systèmes visités - on les maintient même lors du rechargement
