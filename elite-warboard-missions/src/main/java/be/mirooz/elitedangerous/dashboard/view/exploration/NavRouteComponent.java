@@ -497,8 +497,14 @@ public class NavRouteComponent implements Initializable {
             
             // Charger la route depuis le registre (si elle existe déjà)
             NavRoute spanshRoute = navRouteRegistry.getRouteForMode(newMode);
-            if (spanshRoute != null) {
-                // Afficher la route existante (toujours sauvegardée par défaut)
+            
+            // Vérifier si un GUID est sauvegardé pour ce mode
+            String modeKey = "spansh.guid." + newMode.name();
+            String savedGuid = preferencesService.getPreference(modeKey, null);
+            boolean hasSavedGuid = (savedGuid != null && !savedGuid.isEmpty());
+            
+            if (spanshRoute != null && hasSavedGuid) {
+                // Afficher la route existante (rechargée depuis un GUID sauvegardé)
                 Platform.runLater(() -> {
                     updateRouteDisplay(spanshRoute);
                     ShowLoadPopup();
@@ -509,7 +515,7 @@ public class NavRouteComponent implements Initializable {
                     }
                 });
             } else {
-                // Appeler le backend pour obtenir la route
+                // Appeler le backend pour obtenir la route (nouvelle route ou route sans GUID sauvegardé)
                 loadSpanshRoute(true);
             }
         } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
@@ -712,12 +718,14 @@ public class NavRouteComponent implements Initializable {
                 }
 
                 // Charger le GUID depuis les préférences pour ce mode
-                // UNIQUEMENT si la checkbox est cochée
                 String modeKey = "spansh.guid." + currentMode.name();
                 String savedGuid = null;
                 // Toujours utiliser le GUID sauvegardé s'il existe (sauvegarde par défaut)
                 savedGuid = preferencesService.getPreference(modeKey, null);
                 boolean useSavedGuid = (savedGuid != null && !savedGuid.isEmpty());
+                
+                // Variable pour savoir si on doit afficher le popup (uniquement si on recharge une route existante)
+                final boolean shouldShowPopup = useSavedGuid;
 
                 String endpoint = currentMode.getSpanshEndpoint();
                 boolean requiresMaxJumpRange = currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY 
@@ -854,8 +862,10 @@ public class NavRouteComponent implements Initializable {
                         }
                     }
                 });
-                if (loadPopup)
+                // Afficher le popup uniquement si on a rechargé une route existante (GUID sauvegardé)
+                if (loadPopup && shouldShowPopup) {
                     ShowLoadPopup();
+                }
 
             } catch (Exception e) {
                 System.err.println("❌ Erreur lors du chargement de la route " + currentMode.name() + ": " + e.getMessage());
