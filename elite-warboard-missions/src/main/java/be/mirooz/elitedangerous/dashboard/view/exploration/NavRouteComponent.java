@@ -168,28 +168,7 @@ public class NavRouteComponent implements Initializable {
 
                 // En mode Stratum Undiscovered, copier automatiquement le système suivant dans le clipboard
                 if (currentMode == ExplorationMode.STRATUM_UNDISCOVERED && newSystem != null && !newSystem.isEmpty()) {
-                    NavRoute route = navRouteRegistry.getCurrentRoute();
-                    if (route != null && route.getRoute() != null) {
-                        // Trouver l'index du système actuel dans la route
-                        int currentSystemIndex = -1;
-                        for (int i = 0; i < route.getRoute().size(); i++) {
-                            if (route.getRoute().get(i).getSystemName().equals(newSystem)) {
-                                currentSystemIndex = i;
-                                break;
-                            }
-                        }
-                        
-                        // Si le système actuel est dans la route et qu'il y a un système suivant
-                        if (currentSystemIndex >= 0 && currentSystemIndex < route.getRoute().size() - 1) {
-                            RouteSystem nextSystem = route.getRoute().get(currentSystemIndex + 1);
-                            if (nextSystem != null && nextSystem.getSystemName() != null && !nextSystem.getSystemName().isEmpty()) {
-                                // Copier le système suivant dans le clipboard
-                                copyClipboardManager.copyToClipboard(nextSystem.getSystemName());
-                                lastCopiedSystemName = nextSystem.getSystemName();
-                                System.out.println("📋 Système suivant copié automatiquement: " + nextSystem.getSystemName());
-                            }
-                        }
-                    }
+                    copyNextSystemAndShowPopup(newSystem);
                 }
 
                 // Mettre à jour l'affichage
@@ -625,11 +604,12 @@ public class NavRouteComponent implements Initializable {
                 // Afficher la route Stratum existante
                 Platform.runLater(() -> {
                     updateRouteDisplay(stratumRoute);
-
                     ShowLoadPopup();
-                    // Afficher un popup pour indiquer que la route précédente a été rechargée
-                    // Positionner le popup à côté de la combobox
-
+                    // Copier automatiquement le système suivant dans le clipboard
+                    String currentSystem = commanderStatus.getCurrentStarSystem();
+                    if (currentSystem != null && !currentSystem.isEmpty()) {
+                        copyNextSystemAndShowPopup(currentSystem);
+                    }
                 });
             } else {
                 // Appeler le backend pour obtenir la route Stratum
@@ -674,6 +654,132 @@ public class NavRouteComponent implements Initializable {
                 }
             });
         }
+    }
+
+    /**
+     * Copie automatiquement le système suivant dans le clipboard, met à jour l'affichage et affiche le popup
+     * @param currentSystem Le système actuel
+     */
+    private void copyNextSystemAndShowPopup(String currentSystem) {
+        if (currentSystem == null || currentSystem.isEmpty()) {
+            return;
+        }
+        
+        NavRoute route = navRouteRegistry.getCurrentRoute();
+        if (route == null || route.getRoute() == null) {
+            return;
+        }
+        
+        // Trouver l'index du système actuel dans la route
+        int currentSystemIndex = -1;
+        for (int i = 0; i < route.getRoute().size(); i++) {
+            if (route.getRoute().get(i).getSystemName().equals(currentSystem)) {
+                currentSystemIndex = i;
+                break;
+            }
+        }
+        
+        // Si le système actuel est dans la route et qu'il y a un système suivant
+        if (currentSystemIndex >= 0 && currentSystemIndex < route.getRoute().size() - 1) {
+            RouteSystem nextSystem = route.getRoute().get(currentSystemIndex + 1);
+            if (nextSystem != null && nextSystem.getSystemName() != null && !nextSystem.getSystemName().isEmpty()) {
+                String copiedSystemName = nextSystem.getSystemName();
+                // Copier le système suivant dans le clipboard
+                copyClipboardManager.copyToClipboard(copiedSystemName);
+                lastCopiedSystemName = copiedSystemName;
+                System.out.println("📋 Système suivant copié automatiquement: " + copiedSystemName);
+                
+                // Mettre à jour l'affichage pour afficher l'indicateur du système copié
+                updateRouteDisplay(route);
+                
+                // Afficher le popup "System copied" sur la boule correspondante
+                if (routeSystemsPane != null && routeSystemsPane.getScene() != null) {
+                    Stage stage = (Stage) routeSystemsPane.getScene().getWindow();
+                    showSystemCopiedPopup(copiedSystemName, -1, -1, stage);
+                }
+            }
+        }
+    }
+
+    /**
+     * Calcule la position X d'un système dans la route pour l'affichage
+     * Retourne la position X, ou -1 si le système n'est pas trouvé
+     */
+    private double calculateSystemXPosition(NavRoute route, String systemName) {
+        if (route == null || route.getRoute() == null || systemName == null || systemName.isEmpty()) {
+            return -1;
+        }
+
+        int systemCount = route.getRoute().size();
+        if (systemCount == 0) {
+            return -1;
+        }
+
+        // Trouver l'index du système
+        int systemIndex = -1;
+        for (int i = 0; i < systemCount; i++) {
+            if (route.getRoute().get(i).getSystemName().equals(systemName)) {
+                systemIndex = i;
+                break;
+            }
+        }
+        if (systemIndex < 0) {
+            return -1;
+        }
+
+        // Calculer la largeur disponible (même logique que dans updateRouteDisplay)
+        double availableWidth = 800;
+        if (navRouteContainer != null && navRouteContainer.getWidth() > 0) {
+            availableWidth = navRouteContainer.getWidth() - PADDING_X * 2 - 30;
+        } else if (routeSystemsPane != null && routeSystemsPane.getWidth() > 0) {
+            availableWidth = routeSystemsPane.getWidth() - PADDING_X * 2 - 30;
+        }
+
+        // Calculer la distance totale
+        double totalDistance = 0.0;
+        for (int i = 1; i < systemCount; i++) {
+            totalDistance += route.getRoute().get(i).getDistanceFromPrevious();
+        }
+
+        // Calculer les espacements (même logique que dans updateRouteDisplay)
+        double[] spacings = new double[systemCount - 1];
+        if (totalDistance <= 0 || systemCount <= 1) {
+            double uniformSpacing = systemCount <= 1 ? MAX_SPACING :
+                Math.max(MIN_SPACING, Math.min(MAX_SPACING, (availableWidth - PADDING_X * 2) / (systemCount - 1)));
+            for (int i = 0; i < systemCount - 1; i++) {
+                spacings[i] = uniformSpacing;
+            }
+        } else {
+            double scaleFactor = (availableWidth - PADDING_X * 2) / totalDistance;
+            for (int i = 0; i < systemCount - 1; i++) {
+                double distance = route.getRoute().get(i + 1).getDistanceFromPrevious();
+                double proportionalSpacing = distance * scaleFactor;
+                spacings[i] = Math.max(MIN_SPACING, Math.min(MAX_SPACING, proportionalSpacing));
+            }
+
+            // Ajuster si nécessaire
+            double totalSpacing = 0;
+            for (double spacing : spacings) {
+                totalSpacing += spacing;
+            }
+            if (totalSpacing > availableWidth - PADDING_X * 2) {
+                double adjustmentFactor = (availableWidth - PADDING_X * 2) / totalSpacing;
+                for (int i = 0; i < spacings.length; i++) {
+                    spacings[i] *= adjustmentFactor;
+                    if (spacings[i] < MIN_SPACING) {
+                        spacings[i] = MIN_SPACING;
+                    }
+                }
+            }
+        }
+
+        // Calculer la position X du système
+        double x = PADDING_X;
+        for (int i = 0; i < systemIndex; i++) {
+            x += spacings[i];
+        }
+
+        return x;
     }
 
     /**
@@ -749,6 +855,11 @@ public class NavRouteComponent implements Initializable {
                         System.out.println("✅ Route Stratum chargée : " + stratumRoute.getRoute().size() + " systèmes");
                         // Forcer la mise à jour de l'affichage pour prendre en compte les systèmes visités
                         updateRouteDisplay(stratumRoute);
+                        // Copier automatiquement le système suivant dans le clipboard
+                        String currentSystemForCopy = commanderStatus.getCurrentStarSystem();
+                        if (currentSystemForCopy != null && !currentSystemForCopy.isEmpty()) {
+                            copyNextSystemAndShowPopup(currentSystemForCopy);
+                        }
                     } else {
                         System.err.println("⚠️ Aucune route Stratum trouvée");
                     }
@@ -1408,9 +1519,47 @@ public class NavRouteComponent implements Initializable {
             updateRouteDisplay(route);
         }
 
-        // Afficher un popup de confirmation
+        // Afficher un popup de confirmation à la position de la souris
         Stage stage = (Stage) routeSystemsPane.getScene().getWindow();
-        popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(), stage);
+        showSystemCopiedPopup(systemName, event.getSceneX(), event.getSceneY(), stage);
+    }
+
+    /**
+     * Affiche le popup "System copied" pour un système donné
+     * @param systemName Le nom du système copié
+     * @param x La position X (en coordonnées de scène) - si < 0, calcule automatiquement depuis la route
+     * @param y La position Y (en coordonnées de scène) - si < 0, calcule automatiquement depuis la route
+     * @param stage La fenêtre où afficher le popup
+     */
+    private void showSystemCopiedPopup(String systemName, double x, double y, Stage stage) {
+        if (systemName == null || systemName.isEmpty() || stage == null) {
+            return;
+        }
+
+        double popupX = x;
+        double popupY = y;
+
+        // Si les coordonnées ne sont pas fournies, calculer depuis la route
+        if (x < 0 || y < 0) {
+            NavRoute route = navRouteRegistry.getCurrentRoute();
+            if (route != null && routeSystemsPane != null && routeSystemsPane.getScene() != null) {
+                double systemX = calculateSystemXPosition(route, systemName);
+                if (systemX >= 0) {
+                    // Convertir les coordonnées locales en coordonnées de scène
+                    javafx.geometry.Bounds bounds = routeSystemsPane.localToScene(routeSystemsPane.getBoundsInLocal());
+                    popupX = bounds.getMinX() + systemX;
+                    popupY = bounds.getMinY() + LINE_HEIGHT / 2;
+                } else {
+                    // Si on ne peut pas calculer la position, utiliser le centre
+                    popupX = routeSystemsPane.getWidth() / 2;
+                    popupY = routeSystemsPane.getHeight() / 2;
+                }
+            } else {
+                return; // Pas de route ou pas de pane, on ne peut pas afficher le popup
+            }
+        }
+
+        popupManager.showPopup(localizationService.getString("system.copied"), popupX, popupY, stage);
     }
 
     /**
