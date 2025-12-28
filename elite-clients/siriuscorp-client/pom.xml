@@ -5,12 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>be.mirooz.elitedangerous</groupId>
-        <artifactId>elite-warboard-parent</artifactId>
+        <artifactId>elite-clients</artifactId>
         <version>1.3.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>be.mirooz.elitedangerous.lib</groupId>
-    <artifactId>edtools-client</artifactId>
+    <artifactId>siriuscorp-client</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -19,18 +18,25 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.17.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-            <version>3.2.2</version>
+            <groupId>be.mirooz.elitedangerous.lib</groupId>
+            <artifactId>elite-commons</artifactId>
+            <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
+        </dependency>
+
     </dependencies>
+
 </project>

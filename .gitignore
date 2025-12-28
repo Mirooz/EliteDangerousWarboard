@@ -1,11 +1,10 @@
 /.idea/
-/target/
 /.flatpak-builder/
 /build-dir/
 /repo/
-/analytics-backend/target/
 /analytics-backend/src/main/resources/.env
 /analytics-backend/.env
-/siriuscorp-client/target/
-/ardent-api-client/target/
-/analytics-backend-client/target/
+
+# Ignore all target directories
+**/target/
+/elite-clients/ardent-api-client/target/
