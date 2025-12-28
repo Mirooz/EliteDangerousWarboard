@@ -464,7 +464,7 @@ public class NavRouteComponent implements Initializable {
             }
 
             // Recharger la route avec le système actuel
-            loadStratumRoute();
+            loadStratumRoute(false);
         }
     }
 
@@ -614,7 +614,7 @@ public class NavRouteComponent implements Initializable {
             } else {
                 // Appeler le backend pour obtenir la route Stratum
                 // Ne pas utiliser l'ancien GUID sauf si la checkbox est cochée
-                loadStratumRoute();
+                loadStratumRoute(true);
             }
         } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
             // Réinitialiser les systèmes visités pour la nouvelle route
@@ -649,7 +649,7 @@ public class NavRouteComponent implements Initializable {
                             popupY,
                             stage,
                             -1, // Largeur automatique basée sur le texte
-                            4000 // Durée de 4 secondes
+                            3000 // Durée de 4 secondes
                     );
                 }
             });
@@ -785,7 +785,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Charge la route depuis Spansh pour le mode Stratum Undiscovered
      */
-    private void loadStratumRoute() {
+    private void loadStratumRoute(boolean loadPopup) {
         // Afficher l'indicateur de chargement
         setLoadingVisible(true);
 
@@ -864,7 +864,8 @@ public class NavRouteComponent implements Initializable {
                         System.err.println("⚠️ Aucune route Stratum trouvée");
                     }
                 });
-                ShowLoadPopup();
+                if (loadPopup)
+                    ShowLoadPopup();
 
             } catch (Exception e) {
                 System.err.println("❌ Erreur lors du chargement de la route Stratum: " + e.getMessage());
