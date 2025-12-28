@@ -37,13 +37,9 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
-import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -104,7 +100,6 @@ public class NavRouteComponent implements Initializable {
     private Label remainingJumpsLabel;
 
     private ComboBox<ExplorationMode> modeComboBox; // Référence au ComboBox pour les mises à jour de traduction
-    private Timeline reloadTimer; // Timeline pour le timer du bouton reload
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
     private final NavRouteTargetRegistry navRouteTargetRegistry = NavRouteTargetRegistry.getInstance();
@@ -329,18 +324,9 @@ public class NavRouteComponent implements Initializable {
 
             // Visibilité selon le mode
             updateReloadButtonVisibility();
-
-            // Initialiser le service de timer
-            initializeReloadTimer();
         }
     }
 
-    /**
-     * Initialise le timer pour le bouton reload (1 minute)
-     */
-    private void initializeReloadTimer() {
-        // Le timer sera créé dynamiquement dans startReloadTimer()
-    }
 
     /**
      * Met à jour le tooltip du bouton de rechargement
@@ -422,8 +408,10 @@ public class NavRouteComponent implements Initializable {
     @FXML
     public void onReloadButtonClicked() {
         if (currentMode != null && currentMode.requiresSpanshApi()) {
-            // Démarrer le timer de 1 minute
-            startReloadTimer();
+            // Désactiver le bouton pendant la requête
+            if (reloadButton != null) {
+                reloadButton.setDisable(true);
+            }
 
             // Effacer le GUID sauvegardé pour forcer une nouvelle recherche avec le système actuel
             String modeKey = "spansh.guid." + currentMode.name();
@@ -431,57 +419,6 @@ public class NavRouteComponent implements Initializable {
 
             // Recharger la route avec le système actuel
             loadSpanshRoute(false);
-        }
-    }
-
-    /**
-     * Démarre le timer de 1 minute pour le bouton reload
-     */
-    private void startReloadTimer() {
-        if (reloadButton == null) {
-            return;
-        }
-
-        // Arrêter le timer s'il est déjà en cours
-        if (reloadTimer != null && reloadTimer.getStatus() == javafx.animation.Animation.Status.RUNNING) {
-            reloadTimer.stop();
-        }
-
-        // Désactiver le bouton
-        reloadButton.setDisable(true);
-
-        // Créer un compteur atomique pour le temps restant (en secondes)
-        AtomicInteger remainingSeconds = new AtomicInteger(60);
-
-        // Mettre à jour le texte du bouton initial
-        updateReloadButtonText(remainingSeconds.get());
-
-        // Créer une Timeline qui se déclenche toutes les secondes
-        reloadTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            int remaining = remainingSeconds.decrementAndGet();
-            if (remaining > 0) {
-                updateReloadButtonText(remaining);
-            } else {
-                // Timer terminé, réactiver le bouton
-                reloadButton.setDisable(false);
-                reloadButton.setText(localizationService.getString("nav.route.reload.button"));
-                reloadTimer.stop();
-            }
-        }));
-
-        // Répéter 60 fois (60 secondes)
-        reloadTimer.setCycleCount(60);
-
-        // Démarrer le timer
-        reloadTimer.play();
-    }
-
-    /**
-     * Met à jour le texte du bouton reload avec le temps restant
-     */
-    private void updateReloadButtonText(int seconds) {
-        if (reloadButton != null) {
-            reloadButton.setText(seconds + " sec");
         }
     }
 
@@ -754,6 +691,9 @@ public class NavRouteComponent implements Initializable {
                     Platform.runLater(() -> {
                         System.err.println("⚠️ Le mode actuel ne nécessite pas l'API Spansh");
                         setLoadingVisible(false);
+                        if (reloadButton != null) {
+                            reloadButton.setDisable(false);
+                        }
                     });
                     return;
                 }
@@ -764,6 +704,9 @@ public class NavRouteComponent implements Initializable {
                     Platform.runLater(() -> {
                         System.err.println("⚠️ Impossible de charger la route " + currentMode.name() + " : système actuel inconnu");
                         setLoadingVisible(false);
+                        if (reloadButton != null) {
+                            reloadButton.setDisable(false);
+                        }
                     });
                     return;
                 }
@@ -812,6 +755,9 @@ public class NavRouteComponent implements Initializable {
                             Platform.runLater(() -> {
                                 System.err.println("⚠️ Impossible de charger la route " + currentMode.name() + " : portée de saut inconnue");
                                 setLoadingVisible(false);
+                                if (reloadButton != null) {
+                                    reloadButton.setDisable(false);
+                                }
                             });
                             return;
                         }
@@ -883,6 +829,10 @@ public class NavRouteComponent implements Initializable {
                 // Mettre à jour le registre sur le thread JavaFX
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
+                    // Réactiver le bouton
+                    if (reloadButton != null) {
+                        reloadButton.setDisable(false);
+                    }
                     if (spanshRoute != null && spanshRoute.getRoute() != null && !spanshRoute.getRoute().isEmpty()) {
                         // Sauvegarder la route dans le registre pour le mode actuel
                         navRouteRegistry.setRouteForMode(spanshRoute, currentMode);
@@ -912,6 +862,10 @@ public class NavRouteComponent implements Initializable {
                 e.printStackTrace();
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
+                    // Réactiver le bouton en cas d'erreur
+                    if (reloadButton != null) {
+                        reloadButton.setDisable(false);
+                    }
                     updateRouteDisplay(null);
                     // En cas d'erreur, la route reste dans le registre (si elle existait)
                     // On ne fait rien, l'utilisateur peut recharger manuellement
