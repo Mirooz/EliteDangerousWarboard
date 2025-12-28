@@ -625,6 +625,11 @@ public class NavRouteComponent implements Initializable {
                 // Afficher la route Stratum existante
                 Platform.runLater(() -> {
                     updateRouteDisplay(stratumRoute);
+
+                    ShowLoadPopup();
+                    // Afficher un popup pour indiquer que la route précédente a été rechargée
+                    // Positionner le popup à côté de la combobox
+
                 });
             } else {
                 // Appeler le backend pour obtenir la route Stratum
@@ -646,6 +651,28 @@ public class NavRouteComponent implements Initializable {
                 // Toujours recharger le fichier NavRoute.json pour avoir les données les plus récentes
                 be.mirooz.elitedangerous.dashboard.service.NavRouteService.getInstance().loadAndStoreNavRoute();
             }
+        }
+    }
+
+    private void ShowLoadPopup() {
+        if (saveGuidCheckBox.isSelected()){
+            Platform.runLater(() -> {
+                if (saveGuidCheckBox != null && saveGuidCheckBox.getScene() != null) {
+                    Stage stage = (Stage) saveGuidCheckBox.getScene().getWindow();
+                    // Obtenir les coordonnées de la combobox dans la scène
+                    javafx.geometry.Bounds bounds = saveGuidCheckBox.localToScene(saveGuidCheckBox.getBoundsInLocal());
+                    double popupX = bounds.getMaxX() + 10; // 10 pixels à droite de la combobox
+                    double popupY = bounds.getMinY() + bounds.getHeight() / 2; // Centré verticalement sur la combobox
+                    popupManager.showPopup(
+                            localizationService.getString("nav.route.previous_route_reloaded"),
+                            popupX,
+                            popupY,
+                            stage,
+                            -1, // Largeur automatique basée sur le texte
+                            4000 // Durée de 4 secondes
+                    );
+                }
+            });
         }
     }
 
@@ -726,6 +753,7 @@ public class NavRouteComponent implements Initializable {
                         System.err.println("⚠️ Aucune route Stratum trouvée");
                     }
                 });
+                ShowLoadPopup();
 
             } catch (Exception e) {
                 System.err.println("❌ Erreur lors du chargement de la route Stratum: " + e.getMessage());
@@ -1321,6 +1349,9 @@ public class NavRouteComponent implements Initializable {
 
         // Tooltip au survol pour afficher le nom du système
         String tooltipText = system.getSystemName();
+        if (isVisited) {
+            tooltipText += " (" + localizationService.getString("nav.route.visited") + ")";
+        }
         if (system.getDistanceFromPrevious() > 0) {
             tooltipText += " (" + String.format(localizationService.getString("nav.route.distance.format"), system.getDistanceFromPrevious()) + ")";
         }

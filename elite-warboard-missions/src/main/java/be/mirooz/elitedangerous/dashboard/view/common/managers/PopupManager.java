@@ -46,6 +46,14 @@ public class PopupManager {
         new PopUpComponent(message, x, y, container);
     }
 
+    public void showPopup(String message, double x, double y, Window window, double width, long durationMs) {
+        StackPane container = containers.get(window);
+        if (container == null) {
+            throw new IllegalStateException("Pas de container enregistré pour cette fenêtre !");
+        }
+        new PopUpComponent(message, x, y, container, false, width, durationMs);
+    }
+
     public void showWarningPopup(String message, double x, double y, Window window) {
         StackPane container = containers.get(window);
         if (container == null) {

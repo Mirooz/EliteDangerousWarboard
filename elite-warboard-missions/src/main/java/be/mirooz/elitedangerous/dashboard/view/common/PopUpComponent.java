@@ -17,6 +17,10 @@ public class PopUpComponent extends VBox {
     }
 
     public PopUpComponent(String message, double xPos, double yPos, StackPane popupContainer, boolean isWarning) {
+        this(message, xPos, yPos, popupContainer, isWarning, -1, -1);
+    }
+
+    public PopUpComponent(String message, double xPos, double yPos, StackPane popupContainer, boolean isWarning, double customWidth, long customDurationMs) {
         super();
         // Styles du conteneur
         if (isWarning) {
@@ -27,10 +31,17 @@ public class PopUpComponent extends VBox {
             this.setMaxSize(500, 100); // Plus de hauteur pour le multiligne
         } else {
             this.getStyleClass().add("system-copied-popup");
-            // Taille compacte pour les messages normaux
-            this.setMinSize(120, 40);
-            this.setPrefSize(120, 40);
-            this.setMaxSize(120, 40);
+            // Taille adaptative au texte si customWidth <= 0, sinon taille fixe
+            if (customWidth > 0) {
+                this.setMinSize(customWidth, 40);
+                this.setPrefSize(customWidth, 40);
+                this.setMaxSize(customWidth, 40);
+            } else {
+                // Taille automatique basée sur le contenu
+                this.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
+                this.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
+                this.setMaxSize(USE_PREF_SIZE, USE_PREF_SIZE);
+            }
         }
         
         this.setAlignment(Pos.CENTER);
@@ -43,6 +54,12 @@ public class PopUpComponent extends VBox {
         if (isWarning) {
             messageLabel.setWrapText(true);
             messageLabel.setMaxWidth(450); // Largeur maximale pour le retour à la ligne
+        } else if (customWidth > 0) {
+            messageLabel.setWrapText(true);
+            messageLabel.setMaxWidth(customWidth - 32); // Moins le padding
+        } else {
+            // Pas de wrapText ni de maxWidth pour que le texte détermine la taille
+            messageLabel.setWrapText(false);
         }
         this.getChildren().add(messageLabel);
 
@@ -67,8 +84,14 @@ public class PopUpComponent extends VBox {
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
 
-        // Pause visible (plus longue pour les avertissements)
-        PauseTransition pause = new PauseTransition(Duration.millis(isWarning ? 4000 : 1000));
+        // Pause visible (plus longue pour les avertissements ou durée personnalisée)
+        long pauseDuration;
+        if (customDurationMs > 0) {
+            pauseDuration = customDurationMs;
+        } else {
+            pauseDuration = isWarning ? 4000 : 1000;
+        }
+        PauseTransition pause = new PauseTransition(Duration.millis(pauseDuration));
 
         // Animation de disparition
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), this);
