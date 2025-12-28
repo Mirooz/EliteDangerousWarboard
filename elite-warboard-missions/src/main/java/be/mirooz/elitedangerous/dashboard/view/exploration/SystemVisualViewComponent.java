@@ -2607,8 +2607,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     @Override
     public void onBodyFilter(Integer bodyID) {
-        System.out.println("called here " + bodyID);
-
         Platform.runLater(() -> {
             filteredBodyID = bodyID;
             // Rafraîchir la liste des corps avec le nouveau filtre
