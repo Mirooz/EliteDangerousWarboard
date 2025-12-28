@@ -150,4 +150,15 @@ public class AnalyticsService {
     public SpanshRouteResultsResponseDTO getSpanshRouteResultsByJob(String job) throws Exception {
         return analyticsClient.getSpanshRouteResultsByJob(job);
     }
+
+    /**
+     * Récupère les résultats d'une route Spansh via son GUID en utilisant /api/spansh/search/{guid}
+     * Utilisé pour expressway-to-exomastery et road-to-riches lors du rechargement
+     * @param guid Le GUID de la route Spansh
+     * @return SpanshRouteResultsResponseDTO contenant les résultats de la route
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshRouteResultsResponseDTO getSpanshRouteResultsByGuid(String guid) throws Exception {
+        return analyticsClient.getSpanshRouteResultsByGuid(guid);
+    }
 }

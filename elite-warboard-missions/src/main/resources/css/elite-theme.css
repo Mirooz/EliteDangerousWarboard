@@ -3958,8 +3958,8 @@
 }
 
 #modeDescriptionContainer {
-    -fx-max-width: 300px;
-    -fx-pref-width: 300px;
+    -fx-max-width: 200px;
+    -fx-pref-width: 200px;
 }
 
 .nav-route-remaining-jumps {

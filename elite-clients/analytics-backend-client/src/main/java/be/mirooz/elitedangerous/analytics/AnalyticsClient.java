@@ -646,6 +646,47 @@ public class AnalyticsClient {
             throw e;
         }
     }
+
+    /**
+     * Récupère les résultats d'une route Spansh via son GUID en utilisant /api/spansh/route/{guid}
+     * Utilisé pour expressway-to-exomastery et road-to-riches lors du rechargement
+     * @param guid Le GUID de la route Spansh
+     * @return SpanshRouteResultsResponseDTO contenant les résultats de la route
+     * @throws Exception en cas d'erreur lors de l'appel HTTP
+     */
+    public SpanshRouteResultsResponseDTO getSpanshRouteResultsByGuid(String guid) throws Exception {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/spansh/route/" + guid))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                // Le backend retourne un wrapper SpanshRouteResponseDTO avec searchReference et spanshResponse
+                SpanshRouteResponseDTO routeResponse = objectMapper.readValue(
+                    response.body(), 
+                    SpanshRouteResponseDTO.class
+                );
+                
+                // Extraire le spanshResponse qui contient les résultats
+                if (routeResponse != null && routeResponse.getSpanshResponse() != null) {
+                    return routeResponse.getSpanshResponse();
+                } else {
+                    throw new Exception("Réponse invalide : spanshResponse est null");
+                }
+            } else {
+                throw new Exception("Erreur lors de l'appel à /api/spansh/route/" + guid + ": " 
+                    + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (route, guid: " + guid + "): " + e.getMessage());
+            throw e;
+        }
+    }
     
     /**
      * Récupère les résultats d'une recherche Spansh via son GUID
@@ -662,8 +703,8 @@ public class AnalyticsClient {
 
     /**
      * Récupère les résultats d'une recherche Spansh via son GUID et l'endpoint spécifique
-     * Appelle l'endpoint GET /api/spansh/{endpoint}/{guid} du backend analytics
-     * @param endpoint Le nom de l'endpoint (ex: "stratum-undiscovered", "expressway-to-exomastery", "road-to-riches")
+     * Appelle l'endpoint GET /api/spansh/search/{guid} du backend analytics
+     * @param endpoint Le nom de l'endpoint (ex: "stratum-undiscovered", "expressway-to-exomastery", "road-to-riches") - non utilisé dans l'URL mais conservé pour compatibilité
      * @param guid Le GUID de la recherche Spansh
      * @return SpanshSearchResponseDTO contenant la réponse de l'API
      * @throws Exception en cas d'erreur lors de l'appel HTTP
@@ -671,7 +712,7 @@ public class AnalyticsClient {
     public SpanshSearchResponseDTO getSpanshSearchByGuidAndEndpoint(String endpoint, String guid) throws Exception {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/api/spansh/" + endpoint + "/" + guid))
+                    .uri(URI.create(baseUrl + "/api/spansh/search/" + guid))
                     .header("Accept", "application/json")
                     .GET()
                     .timeout(Duration.ofSeconds(30))
@@ -688,7 +729,7 @@ public class AnalyticsClient {
                 
                 return responseDTO;
             } else {
-                throw new Exception("Erreur lors de l'appel à /api/spansh/" + endpoint + "/" + guid + ": " 
+                throw new Exception("Erreur lors de l'appel à /api/spansh/search/" + guid + ": " 
                     + response.statusCode() + " - " + response.body());
             }
         } catch (Exception e) {

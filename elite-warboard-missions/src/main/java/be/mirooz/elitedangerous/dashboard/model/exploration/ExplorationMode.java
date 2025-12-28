@@ -14,7 +14,7 @@ public enum ExplorationMode {
     ),
     STRATUM_UNDISCOVERED(
         "Stratum Undiscovered",
-        "Find undiscovered systems with potential stratum bodies",
+        "Find undiscovered Stratum Tectonicas",
         "stratum-undiscovered"
     ),
     EXPRESSWAY_TO_EXOMASTERY(

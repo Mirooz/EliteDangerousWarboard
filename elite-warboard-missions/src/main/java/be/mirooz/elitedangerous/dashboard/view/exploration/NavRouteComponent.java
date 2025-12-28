@@ -23,7 +23,6 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
@@ -105,7 +104,6 @@ public class NavRouteComponent implements Initializable {
     private Label remainingJumpsLabel;
 
     private ComboBox<ExplorationMode> modeComboBox; // Référence au ComboBox pour les mises à jour de traduction
-    private CheckBox saveGuidCheckBox; // Checkbox pour sauvegarder le GUID
     private Timeline reloadTimer; // Timeline pour le timer du bouton reload
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
@@ -319,9 +317,6 @@ public class NavRouteComponent implements Initializable {
 
         // Initialiser le bouton d'information Stratum
         initializeStratumInfoButton();
-
-        // Initialiser la checkbox pour sauvegarder le GUID
-        initializeSaveGuidCheckBox();
     }
 
     /**
@@ -380,51 +375,6 @@ public class NavRouteComponent implements Initializable {
         }
     }
 
-    /**
-     * Initialise la checkbox pour sauvegarder le GUID
-     */
-    private void initializeSaveGuidCheckBox() {
-        // Créer la checkbox dynamiquement
-        saveGuidCheckBox = new CheckBox();
-        saveGuidCheckBox.getStyleClass().add("nav-route-save-guid-checkbox");
-
-        // Charger l'état depuis les préférences
-        String checkboxKey = "spansh.save.guid." + currentMode.name();
-        String savedStateStr = preferencesService.getPreference(checkboxKey, "false");
-        boolean savedState = Boolean.parseBoolean(savedStateStr);
-        saveGuidCheckBox.setSelected(savedState);
-
-        // Écouter les changements pour sauvegarder
-        // Utiliser currentMode dynamiquement pour toujours utiliser la bonne clé
-        saveGuidCheckBox.selectedProperty().addListener((obs, oldValue, newValue) -> {
-            // Utiliser le mode actuel pour la clé de préférence
-            String currentCheckboxKey = "spansh.save.guid." + currentMode.name();
-            preferencesService.setPreference(currentCheckboxKey, String.valueOf(newValue));
-            // Ne pas recharger automatiquement les données lors du clic sur la checkbox
-        });
-
-        // Mettre à jour la visibilité
-        updateSaveGuidCheckBoxVisibility();
-
-        // Ajouter la checkbox dans le conteneur de description (VBox) juste en dessous de la description
-        if (modeDescriptionContainer != null) {
-            // Vérifier si la checkbox n'est pas déjà ajoutée
-            if (!modeDescriptionContainer.getChildren().contains(saveGuidCheckBox)) {
-                modeDescriptionContainer.getChildren().add(saveGuidCheckBox);
-            }
-        }
-    }
-
-    /**
-     * Met à jour la visibilité de la checkbox selon le mode
-     */
-    private void updateSaveGuidCheckBoxVisibility() {
-        if (saveGuidCheckBox != null) {
-            boolean visible = currentMode != null && currentMode.requiresSpanshApi();
-            saveGuidCheckBox.setVisible(visible);
-            saveGuidCheckBox.setManaged(visible);
-        }
-    }
 
     /**
      * Met à jour le tooltip du bouton d'information selon le mode
@@ -476,11 +426,8 @@ public class NavRouteComponent implements Initializable {
             startReloadTimer();
 
             // Effacer le GUID sauvegardé pour forcer une nouvelle recherche avec le système actuel
-            // (sauf si la checkbox est cochée)
-            if (saveGuidCheckBox == null || !saveGuidCheckBox.isSelected()) {
-                String modeKey = "spansh.guid." + currentMode.name();
-                preferencesService.setPreference(modeKey, "");
-            }
+            String modeKey = "spansh.guid." + currentMode.name();
+            preferencesService.setPreference(modeKey, "");
 
             // Recharger la route avec le système actuel
             loadSpanshRoute(false);
@@ -603,7 +550,6 @@ public class NavRouteComponent implements Initializable {
         // Mettre à jour la visibilité des boutons
         updateReloadButtonVisibility();
         updateStratumInfoButtonVisibility();
-        updateSaveGuidCheckBoxVisibility();
         
         // Mettre à jour le tooltip du bouton d'information selon le nouveau mode
         updateStratumInfoButtonTooltip();
@@ -612,18 +558,10 @@ public class NavRouteComponent implements Initializable {
             // Ne PAS réinitialiser les systèmes visités - on les maintient même lors du rechargement
             // visitedSystems.clear(); // Commenté pour maintenir les systèmes visités
             
-            // Charger l'état de la checkbox depuis les préférences pour le nouveau mode
-            if (saveGuidCheckBox != null) {
-                String checkboxKey = "spansh.save.guid." + newMode.name();
-                String savedStateStr = preferencesService.getPreference(checkboxKey, "false");
-                boolean savedState = Boolean.parseBoolean(savedStateStr);
-                saveGuidCheckBox.setSelected(savedState);
-            }
-            
             // Charger la route depuis le registre (si elle existe déjà)
             NavRoute spanshRoute = navRouteRegistry.getRouteForMode(newMode);
-            if (spanshRoute != null && saveGuidCheckBox.isSelected()) {
-                // Afficher la route existante
+            if (spanshRoute != null) {
+                // Afficher la route existante (toujours sauvegardée par défaut)
                 Platform.runLater(() -> {
                     updateRouteDisplay(spanshRoute);
                     ShowLoadPopup();
@@ -635,7 +573,6 @@ public class NavRouteComponent implements Initializable {
                 });
             } else {
                 // Appeler le backend pour obtenir la route
-                // Ne pas utiliser l'ancien GUID sauf si la checkbox est cochée
                 loadSpanshRoute(true);
             }
         } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
@@ -657,25 +594,23 @@ public class NavRouteComponent implements Initializable {
     }
 
     private void ShowLoadPopup() {
-        if (saveGuidCheckBox.isSelected()){
-            Platform.runLater(() -> {
-                if (saveGuidCheckBox != null && saveGuidCheckBox.getScene() != null) {
-                    Stage stage = (Stage) saveGuidCheckBox.getScene().getWindow();
-                    // Obtenir les coordonnées de la combobox dans la scène
-                    javafx.geometry.Bounds bounds = saveGuidCheckBox.localToScene(saveGuidCheckBox.getBoundsInLocal());
-                    double popupX = bounds.getMaxX() + 10; // 10 pixels à droite de la combobox
-                    double popupY = bounds.getMinY() + bounds.getHeight() / 2; // Centré verticalement sur la combobox
-                    popupManager.showPopup(
-                            localizationService.getString("nav.route.previous_route_reloaded"),
-                            popupX,
-                            popupY,
-                            stage,
-                            -1, // Largeur automatique basée sur le texte
-                            3000 // Durée de 4 secondes
-                    );
-                }
-            });
-        }
+        Platform.runLater(() -> {
+            if (modeComboBox != null && modeComboBox.getScene() != null) {
+                Stage stage = (Stage) modeComboBox.getScene().getWindow();
+                // Obtenir les coordonnées de la combobox dans la scène
+                javafx.geometry.Bounds bounds = modeComboBox.localToScene(modeComboBox.getBoundsInLocal());
+                double popupX = bounds.getMaxX() + 10; // 10 pixels à droite de la combobox
+                double popupY = bounds.getMinY() + bounds.getHeight() / 2; // Centré verticalement sur la combobox
+                popupManager.showPopup(
+                        localizationService.getString("nav.route.previous_route_reloaded"),
+                        popupX,
+                        popupY,
+                        stage,
+                        -1, // Largeur automatique basée sur le texte
+                        3000 // Durée de 3 secondes
+                );
+            }
+        });
     }
 
     /**
@@ -837,13 +772,9 @@ public class NavRouteComponent implements Initializable {
                 // UNIQUEMENT si la checkbox est cochée
                 String modeKey = "spansh.guid." + currentMode.name();
                 String savedGuid = null;
-                boolean useSavedGuid = false;
-
-                // Vérifier si la checkbox est cochée
-                if (saveGuidCheckBox != null && saveGuidCheckBox.isSelected()) {
-                    savedGuid = preferencesService.getPreference(modeKey, null);
-                    useSavedGuid = (savedGuid != null && !savedGuid.isEmpty());
-                }
+                // Toujours utiliser le GUID sauvegardé s'il existe (sauvegarde par défaut)
+                savedGuid = preferencesService.getPreference(modeKey, null);
+                boolean useSavedGuid = (savedGuid != null && !savedGuid.isEmpty());
 
                 String endpoint = currentMode.getSpanshEndpoint();
                 boolean requiresMaxJumpRange = currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY 
@@ -857,8 +788,8 @@ public class NavRouteComponent implements Initializable {
                     System.out.println("📋 Utilisation du GUID sauvegardé pour le mode " + currentMode.name() + ": " + savedGuid);
                     
                     if (requiresMaxJumpRange) {
-                        // Pour les routes, utiliser getSpanshRouteResultsByJob avec le GUID sauvegardé
-                        SpanshRouteResultsResponseDTO routeResults = analyticsService.getSpanshRouteResultsByJob(savedGuid);
+                        // Pour les routes (expressway-to-exomastery et road-to-riches), utiliser /api/spansh/search/{guid}
+                        SpanshRouteResultsResponseDTO routeResults = analyticsService.getSpanshRouteResultsByGuid(savedGuid);
                         spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
                         savedJobGuid = savedGuid;
                     } else {
@@ -1805,12 +1736,6 @@ public class NavRouteComponent implements Initializable {
         if (reloadButton != null && !reloadButton.isDisable()) {
             reloadButton.setText(localizationService.getString("nav.route.reload.button"));
             updateReloadButtonTooltip();
-        }
-
-        // Mettre à jour la checkbox
-        if (saveGuidCheckBox != null) {
-            String checkboxText = localizationService.getString("nav.route.save.guid.checkbox");
-            saveGuidCheckBox.setText(checkboxText);
         }
 
         // Mettre à jour le tooltip du bouton Stratum
