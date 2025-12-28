@@ -732,6 +732,7 @@ public class NavRouteComponent implements Initializable {
                 e.printStackTrace();
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
+                    updateRouteDisplay(null);
                     // En cas d'erreur, la route Stratum reste dans le registre (si elle existait)
                     // On ne fait rien, l'utilisateur peut recharger manuellement
                 });
