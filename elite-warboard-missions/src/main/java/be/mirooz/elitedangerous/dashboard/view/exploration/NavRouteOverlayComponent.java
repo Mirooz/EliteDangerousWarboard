@@ -38,7 +38,7 @@ public class NavRouteOverlayComponent {
 
     public static final double MIN_OPACITY = 0.01;
     public static final int MIN_WIDTH_OVERLAY = 600;
-    public static final int MIN_HEIGHT_OVERLAY = 90;
+    public static final int MIN_HEIGHT_OVERLAY = 100;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
