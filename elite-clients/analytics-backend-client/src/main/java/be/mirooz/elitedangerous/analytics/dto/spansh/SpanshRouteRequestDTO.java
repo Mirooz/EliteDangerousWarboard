@@ -20,5 +20,15 @@ public class SpanshRouteRequestDTO {
      * Nom du système de départ
      */
     private String systemName;
+    
+    /**
+     * Nom du système de destination (optionnel)
+     */
+    private String destinationSystem;
+    
+    /**
+     * Nombre maximum de systèmes dans la route (par défaut : 10)
+     */
+    private Integer maxSystems;
 }
 

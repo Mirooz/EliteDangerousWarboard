@@ -20,8 +20,15 @@
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
         <HBox fx:id="modeSelectorContainer" spacing="10" alignment="CENTER_LEFT" styleClass="nav-route-mode-selector"/>
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
-        <VBox fx:id="modeDescriptionContainer" spacing="0" HBox.hgrow="NEVER">
+        <VBox fx:id="modeDescriptionContainer" spacing="4" HBox.hgrow="NEVER">
             <Label fx:id="modeDescriptionLabel" styleClass="nav-route-mode-description" wrapText="true"/>
+            <!-- Champs pour destination et max systems (visibles uniquement pour expressway et road to riches) -->
+            <HBox fx:id="routeParamsContainer" spacing="4" alignment="CENTER_LEFT" visible="false" managed="false">
+                <Label text="dest." styleClass="nav-route-param-label" minWidth="35" prefWidth="35"/>
+                <TextField fx:id="destinationSystemField" promptText="Optional" prefWidth="95" maxWidth="95" minWidth="70"/>
+                <Label text="max:" styleClass="nav-route-param-label" minWidth="30" prefWidth="30"/>
+                <TextField fx:id="maxSystemsField" promptText="10" prefWidth="42" maxWidth="42" minWidth="35"/>
+            </HBox>
         </VBox>
         <Button fx:id="stratumInfoButton" styleClass="nav-route-info-button" visible="false" managed="false" 
                 minWidth="20" maxWidth="20" minHeight="20" maxHeight="20">

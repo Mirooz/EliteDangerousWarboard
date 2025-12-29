@@ -27,6 +27,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -100,6 +101,15 @@ public class NavRouteComponent implements Initializable {
     @FXML
     private Label remainingJumpsLabel;
 
+    @FXML
+    private HBox routeParamsContainer;
+
+    @FXML
+    private TextField destinationSystemField;
+
+    @FXML
+    private TextField maxSystemsField;
+
     private ComboBox<ExplorationMode> modeComboBox; // Référence au ComboBox pour les mises à jour de traduction
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
@@ -128,6 +138,12 @@ public class NavRouteComponent implements Initializable {
 
         // Initialiser le sélecteur de mode
         initializeModeSelector();
+        
+        // Initialiser les champs de paramètres de route
+        initializeRouteParams();
+        
+        // Initialiser la visibilité des champs de paramètres selon le mode actuel
+        updateRouteParamsVisibility();
 
         // Écouter les changements de route
         navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
@@ -404,6 +420,33 @@ public class NavRouteComponent implements Initializable {
     }
 
     /**
+     * Initialise les champs de paramètres de route
+     */
+    private void initializeRouteParams() {
+        if (maxSystemsField != null) {
+            maxSystemsField.setText("10"); // Valeur par défaut
+            // Valider que seule une valeur numérique peut être saisie
+            maxSystemsField.textProperty().addListener((obs, oldValue, newValue) -> {
+                if (newValue != null && !newValue.isEmpty() && !newValue.matches("\\d*")) {
+                    maxSystemsField.setText(oldValue);
+                }
+            });
+        }
+    }
+
+    /**
+     * Met à jour la visibilité des champs de paramètres de route selon le mode
+     */
+    private void updateRouteParamsVisibility() {
+        if (routeParamsContainer != null) {
+            boolean visible = currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY 
+                || currentMode == ExplorationMode.ROAD_TO_RICHES;
+            routeParamsContainer.setVisible(visible);
+            routeParamsContainer.setManaged(visible);
+        }
+    }
+
+    /**
      * Action du bouton de rechargement
      */
     @FXML
@@ -488,6 +531,7 @@ public class NavRouteComponent implements Initializable {
         // Mettre à jour la visibilité des boutons
         updateReloadButtonVisibility();
         updateStratumInfoButtonVisibility();
+        updateRouteParamsVisibility();
         
         // Mettre à jour le tooltip du bouton d'information selon le nouveau mode
         updateStratumInfoButtonTooltip();
@@ -543,8 +587,8 @@ public class NavRouteComponent implements Initializable {
                 Stage stage = (Stage) modeComboBox.getScene().getWindow();
                 // Obtenir les coordonnées de la combobox dans la scène
                 javafx.geometry.Bounds bounds = modeComboBox.localToScene(modeComboBox.getBoundsInLocal());
-                double popupX = bounds.getMaxX() + 10; // 10 pixels à droite de la combobox
-                double popupY = bounds.getMinY() + bounds.getHeight() / 2; // Centré verticalement sur la combobox
+                double popupX = bounds.getMinX(); // Aligné à gauche de la combobox
+                double popupY = bounds.getMaxY() + 5; // Juste en dessous de la combobox avec un petit espacement
                 popupManager.showPopup(
                         localizationService.getString("nav.route.previous_route_reloaded"),
                         popupX,
@@ -784,8 +828,37 @@ public class NavRouteComponent implements Initializable {
                         }
                         
                         // Pour les routes : POST retourne un wrapper avec searchReference et spanshResponse
-                        SpanshRouteRequestDTO routeRequestDTO = new SpanshRouteRequestDTO(maxJumpRange, currentSystem);
-                        System.out.println("📤 Envoi de la requête route : maxJumpRange=" + maxJumpRange + ", systemName=" + currentSystem);
+                        // Récupérer les paramètres optionnels depuis l'UI
+                        String destinationSystem = null;
+                        Integer maxSystems = 10; // Valeur par défaut
+                        
+                        if (destinationSystemField != null && destinationSystemField.getText() != null 
+                            && !destinationSystemField.getText().trim().isEmpty()) {
+                            destinationSystem = destinationSystemField.getText().trim();
+                        }
+                        
+                        if (maxSystemsField != null && maxSystemsField.getText() != null 
+                            && !maxSystemsField.getText().trim().isEmpty()) {
+                            try {
+                                maxSystems = Integer.parseInt(maxSystemsField.getText().trim());
+                                if (maxSystems <= 0) {
+                                    maxSystems = 10; // Valeur par défaut si invalide
+                                }
+                            } catch (NumberFormatException e) {
+                                maxSystems = 10; // Valeur par défaut si parsing échoue
+                            }
+                        }
+                        
+                        SpanshRouteRequestDTO routeRequestDTO = new SpanshRouteRequestDTO(
+                            maxJumpRange, 
+                            currentSystem, 
+                            destinationSystem, 
+                            maxSystems
+                        );
+                        System.out.println("📤 Envoi de la requête route : maxJumpRange=" + maxJumpRange 
+                            + ", systemName=" + currentSystem 
+                            + ", destinationSystem=" + (destinationSystem != null ? destinationSystem : "null")
+                            + ", maxSystems=" + maxSystems);
                         
                         SpanshRouteResponseDTO routeResponse = analyticsService.searchSpanshRouteByEndpoint(endpoint, routeRequestDTO);
                         

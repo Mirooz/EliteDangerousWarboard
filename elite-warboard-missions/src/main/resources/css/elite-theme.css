@@ -3956,8 +3956,8 @@
 }
 
 #modeDescriptionContainer {
-    -fx-max-width: 200px;
-    -fx-pref-width: 200px;
+    -fx-max-width: 220px;
+    -fx-pref-width: 220px;
 }
 
 .nav-route-remaining-jumps {
@@ -4074,6 +4074,34 @@
 
 .nav-route-save-guid-checkbox:selected .mark {
     -fx-background-color: -fx-elite-dark;
+}
+
+.nav-route-param-label {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+    -fx-padding: 0 3 0 0;
+    -fx-min-width: 30px;
+}
+
+#routeParamsContainer .text-field {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 10px;
+    -fx-padding: 2px 4px;
+}
+
+#routeParamsContainer .text-field:focused {
+    -fx-border-color: -fx-elite-blue;
+    -fx-background-color: rgba(0, 150, 255, 0.1);
+}
+
+#routeParamsContainer .text-field:hover {
+    -fx-border-color: -fx-elite-blue;
 }
 
 .nav-route-save-guid-checkbox:hover .box {
