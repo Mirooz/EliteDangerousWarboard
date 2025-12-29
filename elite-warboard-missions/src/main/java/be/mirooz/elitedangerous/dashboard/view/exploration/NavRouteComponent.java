@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
+import be.mirooz.elitedangerous.analytics.SpanshGuidExpiredException;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteRequestDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponse;
@@ -738,18 +739,30 @@ public class NavRouteComponent implements Initializable {
                     // Si on a un GUID et que la checkbox est cochée, faire un GET (reprise en cours de route)
                     System.out.println("📋 Utilisation du GUID sauvegardé pour le mode " + currentMode.name() + ": " + savedGuid);
                     
-                    if (requiresMaxJumpRange) {
-                        // Pour les routes (expressway-to-exomastery et road-to-riches), utiliser /api/spansh/search/{guid}
-                        SpanshRouteResultsResponseDTO routeResults = analyticsService.getSpanshRouteResultsByGuid(savedGuid);
-                        spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
-                        savedJobGuid = savedGuid;
-                    } else {
-                        // Pour les recherches, utiliser getSpanshSearchByGuidAndEndpoint
-                        SpanshSearchResponseDTO responseDTO = analyticsService.getSpanshSearchByGuidAndEndpoint(endpoint, savedGuid);
-                        spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, false);
+                    try {
+                        if (requiresMaxJumpRange) {
+                            // Pour les routes (expressway-to-exomastery et road-to-riches), utiliser /api/spansh/search/{guid}
+                            SpanshRouteResultsResponseDTO routeResults = analyticsService.getSpanshRouteResultsByGuid(savedGuid);
+                            spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
+                            savedJobGuid = savedGuid;
+                        } else {
+                            // Pour les recherches, utiliser getSpanshSearchByGuidAndEndpoint
+                            SpanshSearchResponseDTO responseDTO = analyticsService.getSpanshSearchByGuidAndEndpoint(endpoint, savedGuid);
+                            spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, false);
+                        }
+                    } catch (SpanshGuidExpiredException e) {
+                        // Le GUID a expiré, réinitialiser et faire une nouvelle demande
+                        System.out.println("⚠️ GUID expiré, réinitialisation et nouvelle demande pour le mode " + currentMode.name());
+                        preferencesService.removePreference(modeKey); // Effacer le GUID invalide
+                        useSavedGuid = false; // Forcer une nouvelle demande
+                        savedGuid = null; // Réinitialiser le GUID
+                        // Le code continuera dans le bloc if (!useSavedGuid) ci-dessous pour faire une nouvelle demande POST
                     }
-                } else {
-                    // Sinon, faire un POST normal (nouveau call)
+                }
+                
+                // Si useSavedGuid est false (soit initialement, soit après expiration du GUID), faire une nouvelle demande POST
+                if (!useSavedGuid) {
+                    // Faire un POST normal (nouveau call)
                     System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name() + " (endpoint: " + endpoint + ")");
                     
                     if (requiresMaxJumpRange) {

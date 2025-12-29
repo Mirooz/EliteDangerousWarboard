@@ -77,7 +77,20 @@ public class PreferencesService {
      * Définit une préférence
      */
     public void setPreference(String key, String value) {
-        preferences.setProperty(key, value);
+        if (value == null) {
+            // Si la valeur est null, supprimer la préférence
+            preferences.remove(key);
+        } else {
+            preferences.setProperty(key, value);
+        }
+        savePreferences();
+    }
+
+    /**
+     * Supprime une préférence
+     */
+    public void removePreference(String key) {
+        preferences.remove(key);
         savePreferences();
     }
 

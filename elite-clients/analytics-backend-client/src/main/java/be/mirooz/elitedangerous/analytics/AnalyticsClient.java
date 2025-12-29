@@ -678,10 +678,24 @@ public class AnalyticsClient {
                 } else {
                     throw new Exception("Réponse invalide : spanshResponse est null");
                 }
+            } else if (response.statusCode() == 500) {
+                // Vérifier si c'est l'erreur spécifique indiquant que le GUID a expiré
+                String responseBody = response.body();
+                if (responseBody != null && responseBody.contains("\"searchReference\":null") 
+                    && responseBody.contains("\"spanshResponse\":null")) {
+                    System.err.println("⚠️ GUID Spansh expiré ou invalide (guid: " + guid + "), réinitialisation nécessaire");
+                    throw new SpanshGuidExpiredException("Le GUID Spansh a expiré ou n'est plus valide. Une nouvelle demande est nécessaire.");
+                } else {
+                    throw new Exception("Erreur lors de l'appel à /api/spansh/route/" + guid + ": " 
+                        + response.statusCode() + " - " + responseBody);
+                }
             } else {
                 throw new Exception("Erreur lors de l'appel à /api/spansh/route/" + guid + ": " 
                     + response.statusCode() + " - " + response.body());
             }
+        } catch (SpanshGuidExpiredException e) {
+            // Répercuter l'exception spécifique
+            throw e;
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (route, guid: " + guid + "): " + e.getMessage());
             throw e;
