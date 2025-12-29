@@ -37,7 +37,7 @@ public class NavRouteOverlayComponent {
 
     public static final double MIN_OPACITY = 0.01;
     public static final int MIN_WIDTH_OVERLAY = 600;
-    public static final int MIN_HEIGHT_OVERLAY = 150;
+    public static final int MIN_HEIGHT_OVERLAY = 90;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -59,6 +59,7 @@ public class NavRouteOverlayComponent {
     private StackPane stackPane;
     private VBox overlayContainer;
     private javafx.scene.layout.Pane routeSystemsPane;
+    private javafx.scene.control.ScrollPane scrollPane;
     private NavRouteOverlayController overlayController;
     private Runnable onOverlayStateChanged;
     private NavRouteComponent navRouteComponent;
