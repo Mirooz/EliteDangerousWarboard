@@ -86,6 +86,9 @@ public class NavRouteOverlayComponent {
                 });
             }
         });
+        
+        // Écouter les changements de lastCopiedSystemName pour mettre à jour l'overlay
+        // Cela se fait via l'écoute des changements de route qui se déclenche après updateRouteDisplay
     }
 
     /**
@@ -134,8 +137,9 @@ public class NavRouteOverlayComponent {
 
     /**
      * Met à jour le contenu de l'overlay avec la route actuelle
+     * Méthode publique pour permettre la mise à jour depuis NavRouteComponent
      */
-    private void updateOverlayContent() {
+    public void updateOverlayContent() {
         if (routeSystemsPane == null || navRouteComponent == null) {
             return;
         }
@@ -347,14 +351,15 @@ public class NavRouteOverlayComponent {
             }
 
             // Rendre le contenu interne transparent aux événements de souris pour permettre le déplacement
+            // SAUF le routeSystemsPane qui doit rester interactif pour les clics sur les cercles
             // Le VBox principal (overlayContainer) reste interactif pour détecter la souris
-            if (routeSystemsPane != null) {
-                routeSystemsPane.setMouseTransparent(true);
-            }
+            // Note: routeSystemsPane n'est PAS rendu transparent pour permettre les clics sur les cercles
             if (scrollPane != null) {
-                // Rendre le ScrollPane transparent aux événements sauf pour la scrollbar
-                scrollPane.setMouseTransparent(true);
-                scrollPane.setPickOnBounds(false);
+                // Le ScrollPane doit permettre les événements de souris pour son contenu (routeSystemsPane)
+                // mais ne doit pas intercepter les événements pour le déplacement
+                // On le laisse non-transparent pour permettre les clics sur les cercles
+                scrollPane.setMouseTransparent(false);
+                scrollPane.setPickOnBounds(true);
             }
             
             // S'assurer que le VBox principal peut recevoir les événements de souris

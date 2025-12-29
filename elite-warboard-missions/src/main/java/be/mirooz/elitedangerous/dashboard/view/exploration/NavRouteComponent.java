@@ -1872,6 +1872,11 @@ public class NavRouteComponent implements Initializable {
         if (route != null) {
             updateRouteDisplay(route);
         }
+        
+        // Mettre à jour l'overlay si il est ouvert
+        if (navRouteOverlayComponent != null && navRouteOverlayComponent.isShowing()) {
+            navRouteOverlayComponent.updateOverlayContent();
+        }
 
         // Afficher un popup de confirmation à la position de la souris
         Stage stage = (Stage) routeSystemsPane.getScene().getWindow();
