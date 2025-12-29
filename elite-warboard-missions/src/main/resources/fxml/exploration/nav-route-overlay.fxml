@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.exploration.NavRouteOverlayController"
+      styleClass="nav-route-overlay-panel" spacing="0">
+    
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+    
+    <!-- Pane pour la représentation graphique des systèmes -->
+    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" styleClass="nav-route-overlay-scroll">
+        <Pane fx:id="routeSystemsPane" styleClass="nav-route-systems-pane"
+              minHeight="70" 
+              prefHeight="70"
+              maxHeight="70"/>
+    </ScrollPane>
+    
+</VBox>
+

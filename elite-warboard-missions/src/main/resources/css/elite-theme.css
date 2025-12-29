@@ -3982,6 +3982,19 @@
     -fx-pref-height: 70px;
 }
 
+.nav-route-overlay-panel {
+    -fx-background-color: transparent;
+}
+
+.nav-route-overlay-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.nav-route-overlay-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
 .nav-route-scoop-indicator {
     -fx-cursor: hand;
 }

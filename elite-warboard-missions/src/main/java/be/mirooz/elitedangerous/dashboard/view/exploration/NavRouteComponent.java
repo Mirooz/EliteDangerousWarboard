@@ -110,7 +110,11 @@ public class NavRouteComponent implements Initializable {
     @FXML
     private TextField maxSystemsField;
 
+    @FXML
+    private javafx.scene.control.Button overlayButton;
+
     private ComboBox<ExplorationMode> modeComboBox; // Référence au ComboBox pour les mises à jour de traduction
+    private NavRouteOverlayComponent navRouteOverlayComponent;
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
     private final NavRouteTargetRegistry navRouteTargetRegistry = NavRouteTargetRegistry.getInstance();
@@ -144,6 +148,14 @@ public class NavRouteComponent implements Initializable {
         
         // Initialiser la visibilité des champs de paramètres selon le mode actuel
         updateRouteParamsVisibility();
+
+        // Initialiser l'overlay component
+        navRouteOverlayComponent = new NavRouteOverlayComponent();
+        navRouteOverlayComponent.setNavRouteComponent(this); // Passer la référence pour dessiner les boules
+        navRouteOverlayComponent.setOnOverlayStateChanged(this::updateOverlayButtonText);
+        
+        // Mettre à jour le texte du bouton overlay
+        updateOverlayButtonText();
 
         // Écouter les changements de route
         navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
@@ -443,6 +455,44 @@ public class NavRouteComponent implements Initializable {
                 || currentMode == ExplorationMode.ROAD_TO_RICHES;
             routeParamsContainer.setVisible(visible);
             routeParamsContainer.setManaged(visible);
+        }
+    }
+
+    /**
+     * Affiche ou ferme l'overlay de la route de navigation
+     */
+    @FXML
+    public void showNavRouteOverlay() {
+        if (navRouteOverlayComponent != null) {
+            navRouteOverlayComponent.showOverlay();
+            updateOverlayButtonText();
+        }
+    }
+
+    /**
+     * Met à jour le texte du bouton overlay selon l'état de la fenêtre
+     */
+    private void updateOverlayButtonText() {
+        if (overlayButton != null && navRouteOverlayComponent != null) {
+            boolean isOverlayShowing = navRouteOverlayComponent.isShowing();
+            String text;
+            String icon;
+
+            if (isOverlayShowing) {
+                text = localizationService.getString("nav.route.overlay_close");
+                if (text == null || text.startsWith("nav.route.")) {
+                    text = "Fermer";
+                }
+                icon = "✖";
+            } else {
+                text = localizationService.getString("nav.route.overlay_open");
+                if (text == null || text.startsWith("nav.route.")) {
+                    text = "Overlay";
+                }
+                icon = "🗔";
+            }
+
+            overlayButton.setText(icon + " " + text);
         }
     }
 
@@ -1273,6 +1323,139 @@ public class NavRouteComponent implements Initializable {
     }
 
     /**
+     * Dessine les boules de la route dans un Pane donné (méthode publique pour l'overlay)
+     * @param targetPane Le Pane où dessiner les boules
+     * @param route La route à afficher
+     * @param availableWidth La largeur disponible pour le dessin
+     */
+    public void drawRouteSystems(javafx.scene.layout.Pane targetPane, NavRoute route, double availableWidth) {
+        if (targetPane == null) {
+            return;
+        }
+        
+        // Vider le conteneur
+        targetPane.getChildren().clear();
+
+        if (route == null || route.getRoute() == null || route.getRoute().isEmpty()) {
+            return;
+        }
+
+        int systemCount = route.getRoute().size();
+        if (systemCount == 0) {
+            return;
+        }
+
+        // Obtenir le système actuel
+        String currentSystemName = commanderStatus.getCurrentStarSystem();
+
+        // Trouver l'index du système actuel dans la route
+        int currentSystemIndex = -1;
+        for (int i = 0; i < systemCount; i++) {
+            if (route.getRoute().get(i).getSystemName().equals(currentSystemName)) {
+                currentSystemIndex = i;
+                break;
+            }
+        }
+
+        // Calculer la distance totale de la route
+        double totalDistance = 0.0;
+        for (int i = 1; i < systemCount; i++) {
+            totalDistance += route.getRoute().get(i).getDistanceFromPrevious();
+        }
+
+        // Si pas de distance ou distance nulle, utiliser un espacement uniforme
+        double[] spacings = new double[systemCount - 1];
+        if (totalDistance <= 0 || systemCount <= 1) {
+            // Espacement uniforme
+            double uniformSpacing = systemCount <= 1 ? MAX_SPACING :
+                Math.max(MIN_SPACING, Math.min(MAX_SPACING, (availableWidth - PADDING_X * 2) / (systemCount - 1)));
+            for (int i = 0; i < systemCount - 1; i++) {
+                spacings[i] = uniformSpacing;
+            }
+        } else {
+            // Calculer les espacements proportionnels aux distances
+            double scaleFactor = (availableWidth - PADDING_X * 2) / totalDistance;
+
+            // Appliquer des limites min/max pour chaque espacement
+            for (int i = 0; i < systemCount - 1; i++) {
+                double distance = route.getRoute().get(i + 1).getDistanceFromPrevious();
+                double proportionalSpacing = distance * scaleFactor;
+                spacings[i] = Math.max(MIN_SPACING, Math.min(MAX_SPACING, proportionalSpacing));
+            }
+
+            // Ajuster si la somme dépasse la largeur disponible
+            double totalSpacing = 0;
+            for (double spacing : spacings) {
+                totalSpacing += spacing;
+            }
+
+            if (totalSpacing > availableWidth - PADDING_X * 2) {
+                double adjustmentFactor = (availableWidth - PADDING_X * 2) / totalSpacing;
+                for (int i = 0; i < spacings.length; i++) {
+                    spacings[i] *= adjustmentFactor;
+                    if (spacings[i] < MIN_SPACING) {
+                        spacings[i] = MIN_SPACING;
+                    }
+                }
+            }
+        }
+
+        // Calculer la largeur totale nécessaire
+        double totalWidth = PADDING_X * 2;
+        for (double spacing : spacings) {
+            totalWidth += spacing;
+        }
+        targetPane.setPrefWidth(totalWidth);
+        targetPane.setMinHeight(LINE_HEIGHT);
+        targetPane.setPrefHeight(LINE_HEIGHT);
+
+        double centerY = LINE_HEIGHT / 2;
+
+        // Calculer la taille des cercles en fonction du nombre de systèmes
+        double circleRadius = calculateCircleRadius(systemCount, false);
+        double currentCircleRadius = calculateCircleRadius(systemCount, true);
+
+        // Dessiner les systèmes et les lignes
+        double currentX = PADDING_X;
+        for (int i = 0; i < systemCount; i++) {
+            RouteSystem system = route.getRoute().get(i);
+            double x = currentX;
+
+            boolean isCurrent = (i == currentSystemIndex);
+            boolean isVisited = visitedSystems.contains(system.getSystemName()) ||
+                               (currentSystemIndex >= 0 && i < currentSystemIndex);
+
+            // Dessiner la ligne vers le système suivant (sauf pour le dernier)
+            if (i < systemCount - 1) {
+                RouteSystem nextSystem = route.getRoute().get(i + 1);
+                double nextX = currentX + spacings[i];
+                boolean hasBoost = isBoostStar(system.getStarClass());
+                Line line = createLine(x, centerY, nextX, centerY, nextSystem, isVisited, hasBoost);
+                targetPane.getChildren().add(line);
+                currentX = nextX;
+            }
+
+            // Dessiner le cercle pour le système
+            double radius = isCurrent ? currentCircleRadius : circleRadius;
+            boolean isLastCopied = system.getSystemName().equals(lastCopiedSystemName);
+            
+            if (isLastCopied) {
+                Circle copiedIndicator = createCopiedIndicator(x, centerY, radius);
+                targetPane.getChildren().add(copiedIndicator);
+            }
+            
+            Circle circle = createCircle(x, centerY, system, isCurrent, isVisited, radius, isLastCopied);
+            targetPane.getChildren().add(circle);
+
+            // Ajouter l'indicateur scoopable si applicable
+            if (isScoopable(system.getStarClass())) {
+                Text scoopIndicator = createScoopIndicator(x, centerY, radius);
+                targetPane.getChildren().add(scoopIndicator);
+            }
+        }
+    }
+
+    /**
      * Met à jour l'affichage de la route
      */
     private void updateRouteDisplay(NavRoute route) {
@@ -1468,7 +1651,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Calcule la taille du cercle en fonction du nombre de systèmes
      */
-    private double calculateCircleRadius(int systemCount, boolean isCurrent) {
+    public double calculateCircleRadius(int systemCount, boolean isCurrent) {
         if (systemCount <= SYSTEM_COUNT_THRESHOLD) {
             // Nombre de systèmes normal, utiliser la taille de base
             return isCurrent ? CIRCLE_CURRENT_RADIUS_BASE : CIRCLE_RADIUS_BASE;
@@ -1488,7 +1671,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Vérifie si un système est scoopable (KGBFOAM)
      */
-    private boolean isScoopable(String starClass) {
+    public boolean isScoopable(String starClass) {
         if (starClass == null || starClass.isEmpty()) {
             return false;
         }
@@ -1500,7 +1683,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Vérifie si un système a une étoile à neutrons ou naine blanche (boost)
      */
-    private boolean isBoostStar(String starClass) {
+    public boolean isBoostStar(String starClass) {
         if (starClass == null || starClass.isEmpty()) {
             return false;
         }
@@ -1512,7 +1695,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Crée un indicateur visuel pour les systèmes scoopables
      */
-    private Text createScoopIndicator(double x, double y, double circleRadius) {
+    public Text createScoopIndicator(double x, double y, double circleRadius) {
         Text indicator = new Text("⛽");
         // Ajuster la taille de la police en fonction de la taille du cercle
         double fontSize = Math.max(8, circleRadius * 0.8);
@@ -1533,7 +1716,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Crée une ligne entre deux systèmes
      */
-    private Line createLine(double startX, double startY, double endX, double endY, RouteSystem system, boolean isVisited, boolean hasBoost) {
+    public Line createLine(double startX, double startY, double endX, double endY, RouteSystem system, boolean isVisited, boolean hasBoost) {
         Line line = new Line(startX, startY, endX, endY);
 
         if (hasBoost) {
@@ -1587,7 +1770,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Crée un indicateur visuel autour du dernier système copié
      */
-    private Circle createCopiedIndicator(double x, double y, double circleRadius) {
+    public Circle createCopiedIndicator(double x, double y, double circleRadius) {
         // Créer un cercle plus grand autour du cercle du système
         double indicatorRadius = circleRadius + 6; // 6 pixels de plus que le cercle
         Circle indicator = new Circle(x, y, indicatorRadius);
@@ -1607,7 +1790,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Crée un cercle pour représenter un système
      */
-    private Circle createCircle(double x, double y, RouteSystem system, boolean isCurrent, boolean isVisited, double radius, boolean isLastCopied) {
+    public Circle createCircle(double x, double y, RouteSystem system, boolean isCurrent, boolean isVisited, double radius, boolean isLastCopied) {
         Circle circle = new Circle(x, y, radius);
 
         if (isCurrent) {
