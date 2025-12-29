@@ -63,6 +63,7 @@ public class NavRouteOverlayComponent {
     private Runnable onOverlayStateChanged;
     private NavRouteComponent navRouteComponent;
     private Rectangle backgroundRectangle;
+    private boolean wasOpenBeforeOnFoot = false; // Pour savoir si l'overlay était ouvert avant d'être "on foot"
 
     public NavRouteOverlayComponent() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -95,6 +96,14 @@ public class NavRouteOverlayComponent {
      * Affiche l'overlay pour la route de navigation
      */
     public void showOverlay() {
+        showOverlay(false);
+    }
+    
+    /**
+     * Affiche l'overlay pour la route de navigation
+     * @param withBordered true pour afficher le cadre orange, false sinon
+     */
+    public void showOverlay(boolean withBordered) {
         // Si la fenêtre est déjà ouverte, on la ferme
         if (overlayStage != null && overlayStage.isShowing()) {
             saveOverlayPreferences();
@@ -106,10 +115,31 @@ public class NavRouteOverlayComponent {
             return;
         }
 
-        createOverlayStage();
+        createOverlayStage(withBordered);
         if (onOverlayStateChanged != null) {
             onOverlayStateChanged.run();
         }
+    }
+    
+    /**
+     * Affiche l'overlay sans le cadre orange (utilisé après être revenu de "on foot")
+     */
+    public void showOverlayWithoutBordered() {
+        showOverlay(false);
+    }
+    
+    /**
+     * Définit si l'overlay était ouvert avant d'être "on foot"
+     */
+    public void setWasOpenBeforeOnFoot(boolean wasOpen) {
+        this.wasOpenBeforeOnFoot = wasOpen;
+    }
+    
+    /**
+     * Vérifie si l'overlay était ouvert avant d'être "on foot"
+     */
+    public boolean wasOpenBeforeOnFoot() {
+        return wasOpenBeforeOnFoot;
     }
 
     /**
@@ -189,8 +219,9 @@ public class NavRouteOverlayComponent {
 
     /**
      * Crée la fenêtre overlay
+     * @param withBordered true pour afficher le cadre orange, false sinon
      */
-    private void createOverlayStage() {
+    private void createOverlayStage(boolean withBordered) {
         // Création de la fenêtre overlay
         overlayStage = new Stage();
         overlayStage.initStyle(StageStyle.TRANSPARENT);
@@ -214,10 +245,9 @@ public class NavRouteOverlayComponent {
 
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-        stackPane.getStyleClass().addAll("overlay-root", "overlay-root-bordered");
-        stackPane.setOnMouseExited(event -> {
-            stackPane.getStyleClass().remove("overlay-root-bordered");
-        });
+        stackPane.getStyleClass().add("overlay-root");
+        
+        // Le cadre orange sera géré dans setupInteractions() pour éviter les conflits
 
         // Enregistrer le StackPane comme container pour les popups
         popupManager.registerContainer(overlayStage, stackPane);
@@ -446,8 +476,8 @@ public class NavRouteOverlayComponent {
     private void setupInteractions() {
         Scene scene = overlayStage.getScene();
 
-        // Gestion du curseur et de la visibilité des contrôles sur le StackPane
-        stackPane.setOnMouseMoved(e -> {
+        // Gestion du curseur et de la visibilité des contrôles sur la scène
+        scene.setOnMouseMoved(e -> {
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
@@ -465,16 +495,22 @@ public class NavRouteOverlayComponent {
             }
         });
 
-        // Masquer les contrôles quand la souris quitte le StackPane
-        stackPane.setOnMouseExited(e -> {
+        // Masquer les contrôles et retirer le cadre orange quand la souris quitte la scène
+        scene.setOnMouseExited(e -> {
             if (resizeHandle != null) resizeHandle.setOpacity(0.0);
             if (opacitySlider != null) opacitySlider.setOpacity(0.0);
+            // Retirer le cadre orange quand la souris sort
+            stackPane.getStyleClass().remove("overlay-root-bordered");
         });
 
-        // Afficher les contrôles quand la souris entre dans le StackPane
-        stackPane.setOnMouseEntered(e -> {
+        // Afficher les contrôles et ajouter le cadre orange quand la souris entre dans la scène
+        scene.setOnMouseEntered(e -> {
             if (resizeHandle != null) resizeHandle.setOpacity(0.8);
             if (opacitySlider != null) opacitySlider.setOpacity(0.8);
+            // Ajouter le cadre orange quand la souris entre
+            if (!stackPane.getStyleClass().contains("overlay-root-bordered")) {
+                stackPane.getStyleClass().add("overlay-root-bordered");
+            }
         });
     }
     

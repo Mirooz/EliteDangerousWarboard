@@ -17,6 +17,9 @@ import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteTa
 import be.mirooz.elitedangerous.dashboard.service.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.DashboardService;
+import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -48,7 +51,7 @@ import java.util.stream.Collectors;
  * Composant pour afficher la route de navigation dans le panel d'exploration
  * Représentation graphique horizontale avec des boules (cercles) et des lignes
  */
-public class NavRouteComponent implements Initializable {
+public class NavRouteComponent implements Initializable, IBatchListener {
 
     private static final double CIRCLE_RADIUS_BASE = 12.0; // Taille de base
     private static final double CIRCLE_CURRENT_RADIUS_BASE = 16.0; // Taille de base pour le système actuel
@@ -156,6 +159,9 @@ public class NavRouteComponent implements Initializable {
         
         // Mettre à jour le texte du bouton overlay
         updateOverlayButtonText();
+        
+        // Enregistrer le composant auprès du DashboardService pour les notifications de batch
+        DashboardService.getInstance().addBatchListener(this);
 
         // Écouter les changements de route
         navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
@@ -204,6 +210,46 @@ public class NavRouteComponent implements Initializable {
             });
         };
         statusComponent.getCurrentStarSystem().addListener(currentSystemListener);
+    }
+    
+    @Override
+    public void onBatchStart() {
+        // Nettoyer les listeners lors du démarrage du batch
+        ExplorationRefreshNotificationService.getInstance().removeOnFootStateListener(this::handleOnFootStateChanged);
+    }
+    
+    @Override
+    public void onBatchEnd() {
+        ExplorationRefreshNotificationService.getInstance().addOnFootStateListener(this::handleOnFootStateChanged);
+    }
+    
+    /**
+     * Gère le changement d'état "à pied" pour fermer/rouvrir l'overlay
+     */
+    private void handleOnFootStateChanged(boolean isOnFoot) {
+        Platform.runLater(() -> {
+            if (navRouteOverlayComponent == null) {
+                return;
+            }
+            
+            if (isOnFoot) {
+                // Si on est à pied, fermer l'overlay s'il est ouvert
+                if (navRouteOverlayComponent.isShowing()) {
+                    navRouteOverlayComponent.setWasOpenBeforeOnFoot(true);
+                    navRouteOverlayComponent.closeOverlay();
+                } else {
+                    navRouteOverlayComponent.setWasOpenBeforeOnFoot(false);
+                }
+            } else {
+                // Si on n'est plus à pied, rouvrir l'overlay s'il était ouvert avant
+                if (navRouteOverlayComponent.wasOpenBeforeOnFoot()) {
+                    navRouteOverlayComponent.showOverlayWithoutBordered();
+                    navRouteOverlayComponent.setWasOpenBeforeOnFoot(false);
+                }
+            }
+            
+            updateOverlayButtonText();
+        });
 
         // Écouter les changements de largeur du conteneur pour recalculer l'espacement
         if (navRouteContainer != null) {
