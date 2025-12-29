@@ -21,6 +21,7 @@ import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNo
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
@@ -51,7 +52,7 @@ import java.util.stream.Collectors;
  * Composant pour afficher la route de navigation dans le panel d'exploration
  * Représentation graphique horizontale avec des boules (cercles) et des lignes
  */
-public class NavRouteComponent implements Initializable, IBatchListener {
+public class NavRouteComponent implements Initializable {
 
     private static final double CIRCLE_RADIUS_BASE = 12.0; // Taille de base
     private static final double CIRCLE_CURRENT_RADIUS_BASE = 16.0; // Taille de base pour le système actuel
@@ -159,9 +160,6 @@ public class NavRouteComponent implements Initializable, IBatchListener {
         
         // Mettre à jour le texte du bouton overlay
         updateOverlayButtonText();
-        
-        // Enregistrer le composant auprès du DashboardService pour les notifications de batch
-        DashboardService.getInstance().addBatchListener(this);
 
         // Écouter les changements de route
         navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
@@ -210,18 +208,15 @@ public class NavRouteComponent implements Initializable, IBatchListener {
             });
         };
         statusComponent.getCurrentStarSystem().addListener(currentSystemListener);
+        navRouteTargetRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
+            Platform.runLater(() -> {
+                updateRemainingJumpsLabel(newValue.intValue());
+            });
+        });
+        ExplorationRefreshNotificationService.getInstance().addOnFootStateListener(this::handleOnFootStateChanged);        // Écouter les changements de RemainingJumpsInRoute
+
     }
-    
-    @Override
-    public void onBatchStart() {
-        // Nettoyer les listeners lors du démarrage du batch
-        ExplorationRefreshNotificationService.getInstance().removeOnFootStateListener(this::handleOnFootStateChanged);
-    }
-    
-    @Override
-    public void onBatchEnd() {
-        ExplorationRefreshNotificationService.getInstance().addOnFootStateListener(this::handleOnFootStateChanged);
-    }
+
     
     /**
      * Gère le changement d'état "à pied" pour fermer/rouvrir l'overlay
@@ -264,15 +259,13 @@ public class NavRouteComponent implements Initializable, IBatchListener {
             navRouteContainer.widthProperty().addListener(widthListener);
         }
 
-        // Écouter les changements de RemainingJumpsInRoute
-        navRouteTargetRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
-            Platform.runLater(() -> {
-                updateRemainingJumpsLabel(newValue.intValue());
-            });
-        });
+
 
         // Initialiser le label avec la valeur actuelle
-        updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
+        // Utiliser Platform.runLater pour s'assurer que le label est bien injecté
+        Platform.runLater(() -> {
+            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
+        });
 
         // S'abonner au service de notification pour le refresh de la route
         NavRouteNotificationService.getInstance().addListener(this::refreshRouteDisplay);
@@ -318,6 +311,8 @@ public class NavRouteComponent implements Initializable, IBatchListener {
                 // Même si pas de route, mettre à jour l'affichage pour rafraîchir les infos Free Exploration
                 updateRouteDisplay(null);
             }
+            // Toujours mettre à jour le label des remaining jumps lors du rafraîchissement
+            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
         });
     }
 
@@ -1971,16 +1966,20 @@ public class NavRouteComponent implements Initializable, IBatchListener {
      * Met à jour le label affichant le nombre de sauts restants
      */
     private void updateRemainingJumpsLabel(int remainingJumps) {
-        if (remainingJumpsLabel != null) {
+        if (remainingJumpsLabel != null && !DashboardContext.getInstance().isBatchLoading()) {
             if (remainingJumps >= 0) {
                 remainingJumpsLabel.setText(localizationService.getString("nav.route.remaining_jumps", remainingJumps));
                 remainingJumpsLabel.setVisible(true);
                 remainingJumpsLabel.setManaged(true);
+                System.out.println("✅ Remaining jumps label mis à jour: " + remainingJumps + " (visible: " + remainingJumpsLabel.isVisible() + ", managed: " + remainingJumpsLabel.isManaged() + ")");
             } else {
                 remainingJumpsLabel.setText("");
                 remainingJumpsLabel.setVisible(false);
                 remainingJumpsLabel.setManaged(false);
+                System.out.println("❌ Remaining jumps label masqué (remainingJumps: " + remainingJumps + ")");
             }
+        } else {
+            System.out.println("⚠️ remainingJumpsLabel est null!");
         }
     }
 
@@ -2013,6 +2012,12 @@ public class NavRouteComponent implements Initializable, IBatchListener {
             modeComboBox.setValue(currentValue);
         }
 
+        // Mettre à jour le label des remaining jumps avec la nouvelle langue
+        if (remainingJumpsLabel != null) {
+            int remainingJumps = navRouteTargetRegistry.getRemainingJumpsInRoute();
+            updateRemainingJumpsLabel(remainingJumps);
+        }
+
         // Mettre à jour le bouton Reload
         if (reloadButton != null && !reloadButton.isDisable()) {
             reloadButton.setText(localizationService.getString("nav.route.reload.button"));
@@ -2021,9 +2026,6 @@ public class NavRouteComponent implements Initializable, IBatchListener {
 
         // Mettre à jour le tooltip du bouton Stratum
         updateStratumInfoButtonTooltip();
-
-        // Mettre à jour le label des sauts restants
-        updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
 
         // Mettre à jour la description du mode
         if (modeDescriptionLabel != null) {

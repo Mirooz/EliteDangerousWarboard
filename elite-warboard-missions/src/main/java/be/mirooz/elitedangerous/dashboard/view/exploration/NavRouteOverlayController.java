@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
 import java.net.URL;
@@ -14,6 +15,9 @@ public class NavRouteOverlayController implements Initializable {
 
     @FXML
     private Pane routeSystemsPane;
+    
+    @FXML
+    private Label remainingJumpsLabel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -22,6 +26,10 @@ public class NavRouteOverlayController implements Initializable {
 
     public Pane getRouteSystemsPane() {
         return routeSystemsPane;
+    }
+    
+    public Label getRemainingJumpsLabel() {
+        return remainingJumpsLabel;
     }
 }
 

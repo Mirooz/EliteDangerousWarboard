@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.listeners;
 
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -146,12 +148,14 @@ public class ExplorationRefreshNotificationService {
      * Notifie tous les listeners qu'il y a eu un changement d'état "à pied"
      */
     public void notifyOnFootStateChanged(boolean isOnFoot) {
-        for (OnFootStateListener listener : onFootStateListeners) {
-            try {
-                listener.onOnFootStateChanged(isOnFoot);
-            } catch (Exception e) {
-                System.err.println("❌ Erreur lors de la notification de changement d'état 'à pied': " + e.getMessage());
-                e.printStackTrace();
+        if (DashboardContext.getInstance().isBatchLoading() == false) {
+            for (OnFootStateListener listener : onFootStateListeners) {
+                try {
+                    listener.onOnFootStateChanged(isOnFoot);
+                } catch (Exception e) {
+                    System.err.println("❌ Erreur lors de la notification de changement d'état 'à pied': " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
         }
     }

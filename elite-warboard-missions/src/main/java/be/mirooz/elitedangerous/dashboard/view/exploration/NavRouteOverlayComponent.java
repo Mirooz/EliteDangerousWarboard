@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteTargetRegistry;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -42,6 +43,7 @@ public class NavRouteOverlayComponent {
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
+    private final NavRouteTargetRegistry navRouteTargetRegistry = NavRouteTargetRegistry.getInstance();
 
     // Clés pour les préférences de l'overlay
     private static final String NAV_ROUTE_OVERLAY_WIDTH_KEY = "nav_route_overlay.width";
@@ -85,6 +87,15 @@ public class NavRouteOverlayComponent {
             if (overlayStage != null && overlayStage.isShowing()) {
                 Platform.runLater(() -> {
                     updateOverlayContent();
+                });
+            }
+        });
+        
+        // Écouter les changements de RemainingJumpsInRoute pour mettre à jour le label
+        navRouteTargetRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
+            if (overlayStage != null && overlayStage.isShowing()) {
+                Platform.runLater(() -> {
+                    updateRemainingJumpsLabel(newValue.intValue());
                 });
             }
         });
@@ -163,6 +174,8 @@ public class NavRouteOverlayComponent {
     private void refreshOverlayContent() {
         if (overlayStage != null && overlayStage.isShowing()) {
             updateOverlayContent();
+            // Mettre à jour le label des remaining jumps avec la nouvelle langue
+            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
         }
     }
 
@@ -444,6 +457,9 @@ public class NavRouteOverlayComponent {
             
             // Dessiner les boules initiales
             updateOverlayContent();
+            
+            // Initialiser le label des remaining jumps avec la valeur actuelle
+            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du chargement de l'overlay de route: " + e.getMessage());
             e.printStackTrace();
@@ -605,6 +621,26 @@ public class NavRouteOverlayComponent {
 
         overlayStage.setX(finalX);
         overlayStage.setY(finalY);
+    }
+
+    /**
+     * Met à jour le label affichant le nombre de sauts restants
+     */
+    private void updateRemainingJumpsLabel(int remainingJumps) {
+        if (overlayController != null) {
+            Label remainingJumpsLabel = overlayController.getRemainingJumpsLabel();
+            if (remainingJumpsLabel != null) {
+                if (remainingJumps >= 0) {
+                    remainingJumpsLabel.setText(localizationService.getString("nav.route.remaining_jumps", remainingJumps));
+                    remainingJumpsLabel.setVisible(true);
+                    remainingJumpsLabel.setManaged(true);
+                } else {
+                    remainingJumpsLabel.setText("");
+                    remainingJumpsLabel.setVisible(false);
+                    remainingJumpsLabel.setManaged(false);
+                }
+            }
+        }
     }
 
     /**

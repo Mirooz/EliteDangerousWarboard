@@ -41,7 +41,7 @@
                 onAction="#onReloadButtonClicked" text="Reload">
         </Button>
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
-        <Label fx:id="remainingJumpsLabel" text="" styleClass="nav-route-remaining-jumps"/>
+        <Label fx:id="remainingJumpsLabel" text="" styleClass="nav-route-remaining-jumps" visible="true" managed="true"/>
     </HBox>
     
     <!-- Pane pour la représentation graphique des systèmes avec indicateur de chargement -->
