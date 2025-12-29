@@ -1803,8 +1803,6 @@
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
     -fx-effect: dropshadow(gaussian, rgba(0, 174, 239, 0.5), 15, 0, 0, 3);
-    -fx-max-height: none;
-    -fx-pref-height: auto;
 }
 
 .version-notification-message {
