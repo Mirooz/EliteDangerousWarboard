@@ -1140,12 +1140,9 @@ public class NavRouteComponent implements Initializable {
         List<RouteSystem> routeSystems = new ArrayList<>();
         double[] previousPosition = null;
 
-        // Trier les systèmes par nombre de sauts (jumps) pour avoir l'ordre correct
-        List<SpanshRouteResultsResponseDTO.SystemResult> sortedSystems = new ArrayList<>(routeResults.result);
-        sortedSystems.sort(Comparator.comparingInt(s -> s.jumps));
-
-        // Ajouter tous les systèmes de la route (le premier est le système de référence)
-        for (SpanshRouteResultsResponseDTO.SystemResult systemResult : sortedSystems) {
+        // Conserver l'ordre des systèmes tel que reçu dans le JSON (pas de tri)
+        // Ajouter tous les systèmes de la route dans l'ordre du JSON
+        for (SpanshRouteResultsResponseDTO.SystemResult systemResult : routeResults.result) {
             if (systemResult.name == null || systemResult.name.isEmpty()) {
                 System.out.println("⏭️ Système ignoré (nom vide)");
                 continue;
