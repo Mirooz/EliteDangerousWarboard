@@ -1687,6 +1687,11 @@ public class NavRouteComponent implements Initializable {
                 }
             }
         }
+        
+        // Mettre à jour l'overlay si il est ouvert
+        if (navRouteOverlayComponent != null && navRouteOverlayComponent.isShowing()) {
+            navRouteOverlayComponent.updateOverlayContent();
+        }
     }
 
     /**
