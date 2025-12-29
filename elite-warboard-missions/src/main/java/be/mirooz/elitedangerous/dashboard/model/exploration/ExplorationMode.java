@@ -12,11 +12,6 @@ public enum ExplorationMode {
         "Explore freely without specific constraints",
         null
     ),
-    STRATUM_UNDISCOVERED(
-        "Stratum Undiscovered",
-        "Find undiscovered Stratum Tectonicas",
-        "stratum-undiscovered"
-    ),
     EXPRESSWAY_TO_EXOMASTERY(
         "Expressway to Exomastery",
         "Find systems for exobiology exploration",
@@ -26,6 +21,11 @@ public enum ExplorationMode {
         "Road to Riches",
         "Find valuable exploration targets",
         "road-to-riches"
+    ),
+    STRATUM_UNDISCOVERED(
+        "Stratum Undiscovered",
+        "Find undiscovered Stratum Tectonicas",
+        "stratum-undiscovered"
     );
 
     private final String displayName;
