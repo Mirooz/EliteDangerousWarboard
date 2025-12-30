@@ -1983,7 +1983,7 @@ public class NavRouteComponent implements Initializable {
                 remainingJumpsLabel.setText(localizationService.getString("nav.route.remaining_jumps", remainingJumps));
                 remainingJumpsLabel.setVisible(true);
                 remainingJumpsLabel.setManaged(true);
-                System.out.println("✅ Remaining jumps label mis à jour: " + remainingJumps + " (visible: " + remainingJumpsLabel.isVisible() + ", managed: " + remainingJumpsLabel.isManaged() + ")");
+               // System.out.println("✅ Remaining jumps label mis à jour: " + remainingJumps + " (visible: " + remainingJumpsLabel.isVisible() + ", managed: " + remainingJumpsLabel.isManaged() + ")");
             } else {
                 remainingJumpsLabel.setText("");
                 remainingJumpsLabel.setVisible(false);
