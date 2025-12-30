@@ -208,13 +208,51 @@ public class NavRouteComponent implements Initializable {
             });
         };
         statusComponent.getCurrentStarSystem().addListener(currentSystemListener);
+        
+        // Écouter les changements de RemainingJumpsInRoute
         navRouteTargetRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
             Platform.runLater(() -> {
                 updateRemainingJumpsLabel(newValue.intValue());
             });
         });
-        ExplorationRefreshNotificationService.getInstance().addOnFootStateListener(this::handleOnFootStateChanged);        // Écouter les changements de RemainingJumpsInRoute
+        
+        // Écouter les changements de largeur du conteneur pour recalculer l'espacement
+        if (navRouteContainer != null) {
+            widthListener = (obs, oldWidth, newWidth) -> {
+                Platform.runLater(() -> {
+                    NavRoute route = navRouteRegistry.getCurrentRoute();
+                    if (route != null) {
+                        updateRouteDisplay(route);
+                    }
+                });
+            };
+            navRouteContainer.widthProperty().addListener(widthListener);
+        }
 
+        // Initialiser le label avec la valeur actuelle
+        // Utiliser Platform.runLater pour s'assurer que le label est bien injecté
+        Platform.runLater(() -> {
+            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
+        });
+
+        // S'abonner au service de notification pour le refresh de la route
+        NavRouteNotificationService.getInstance().addListener(this::refreshRouteDisplay);
+
+        // Écouter les changements de langue
+        localizationService.addLanguageChangeListener(locale -> {
+            Platform.runLater(() -> {
+                updateTranslations();
+            });
+        });
+
+        // Initialiser les traductions
+        updateTranslations();
+
+        // Afficher la route actuelle si elle existe
+        updateRouteDisplay(navRouteRegistry.getCurrentRoute());
+        
+        // Écouter les changements d'état "à pied"
+        ExplorationRefreshNotificationService.getInstance().addOnFootStateListener(this::handleOnFootStateChanged);
     }
 
     
@@ -244,47 +282,6 @@ public class NavRouteComponent implements Initializable {
             }
             
             updateOverlayButtonText();
-        });
-
-        // Écouter les changements de largeur du conteneur pour recalculer l'espacement
-        if (navRouteContainer != null) {
-            widthListener = (obs, oldWidth, newWidth) -> {
-                Platform.runLater(() -> {
-                    NavRoute route = navRouteRegistry.getCurrentRoute();
-                    if (route != null) {
-                        updateRouteDisplay(route);
-                    }
-                });
-            };
-            navRouteContainer.widthProperty().addListener(widthListener);
-        }
-
-
-
-        // Initialiser le label avec la valeur actuelle
-        // Utiliser Platform.runLater pour s'assurer que le label est bien injecté
-        Platform.runLater(() -> {
-            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
-        });
-
-        // S'abonner au service de notification pour le refresh de la route
-        NavRouteNotificationService.getInstance().addListener(this::refreshRouteDisplay);
-
-        // Écouter les changements de langue
-        localizationService.addLanguageChangeListener(locale -> {
-            Platform.runLater(() -> {
-                updateTranslations();
-            });
-        });
-
-        // Initialiser les traductions
-        Platform.runLater(() -> {
-            updateTranslations();
-        });
-
-        // Afficher la route actuelle si elle existe
-        Platform.runLater(() -> {
-            updateRouteDisplay(navRouteRegistry.getCurrentRoute());
         });
     }
 
