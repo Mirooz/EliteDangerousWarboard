@@ -278,10 +278,14 @@ public class NavRouteComponent implements Initializable {
         });
 
         // Initialiser les traductions
-        updateTranslations();
+        Platform.runLater(() -> {
+            updateTranslations();
+        });
 
         // Afficher la route actuelle si elle existe
-        updateRouteDisplay(navRouteRegistry.getCurrentRoute());
+        Platform.runLater(() -> {
+            updateRouteDisplay(navRouteRegistry.getCurrentRoute());
+        });
     }
 
     /**
@@ -1964,7 +1968,13 @@ public class NavRouteComponent implements Initializable {
             }
         }
 
-        popupManager.showPopup(localizationService.getString("system.copied"), popupX, popupY, stage);
+        // Vérifier si la fenêtre est enregistrée dans le PopupManager avant d'afficher le popup
+        try {
+            popupManager.showPopup(localizationService.getString("system.copied"), popupX, popupY, stage);
+        } catch (IllegalStateException e) {
+            // La fenêtre n'est pas enregistrée, on ignore simplement l'affichage du popup
+            System.out.println("⚠️ Impossible d'afficher le popup 'System copied' : fenêtre non enregistrée dans PopupManager");
+        }
     }
 
     /**
