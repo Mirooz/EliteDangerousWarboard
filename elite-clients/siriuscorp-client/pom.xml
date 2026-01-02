@@ -6,7 +6,7 @@
     <parent>
         <groupId>be.mirooz.elitedangerous</groupId>
         <artifactId>elite-clients</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.3.0</version>
     </parent>
 
     <artifactId>siriuscorp-client</artifactId>
