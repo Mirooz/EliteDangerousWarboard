@@ -328,10 +328,33 @@ public class PlaneteDetail extends ACelesteBody {
         }
 
 
-        // -- 6) Trier par probabilité décroissante --
-        finalList.sort(Comparator.comparingDouble(SpeciesProbability::getProbability).reversed());
+        // -- 6) Trier par probabilité décroissante, en groupant les espèces avec le même nom --
+        // Grouper par nom (getName()) pour les espèces équivalentes
+        Map<String, List<SpeciesProbability>> groupedByName = finalList.stream()
+                .collect(Collectors.groupingBy(sp -> sp.getBioSpecies().getName()));
+        
+        // Trier chaque groupe par probabilité décroissante
+        groupedByName.values().forEach(group -> 
+            group.sort(Comparator.comparingDouble(SpeciesProbability::getProbability).reversed())
+        );
+        
+        // Trier les groupes par la probabilité maximale de chaque groupe (du plus probable au moins probable)
+        List<SpeciesProbability> sortedFinalList = groupedByName.values().stream()
+                .sorted((group1, group2) -> {
+                    double max1 = group1.stream()
+                            .mapToDouble(SpeciesProbability::getProbability)
+                            .max()
+                            .orElse(0.0);
+                    double max2 = group2.stream()
+                            .mapToDouble(SpeciesProbability::getProbability)
+                            .max()
+                            .orElse(0.0);
+                    return Double.compare(max2, max1); // Décroissant
+                })
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
 
-        return finalList;
+        return sortedFinalList;
     }
 
 
