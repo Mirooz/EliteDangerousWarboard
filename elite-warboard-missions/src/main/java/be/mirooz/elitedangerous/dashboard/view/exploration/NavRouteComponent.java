@@ -945,7 +945,8 @@ public class NavRouteComponent implements Initializable {
                             maxJumpRange, 
                             currentSystem, 
                             destinationSystem, 
-                            maxSystems
+                            maxSystems,
+                            commanderStatus.getCommanderName()
                         );
                         System.out.println("📤 Envoi de la requête route : maxJumpRange=" + maxJumpRange 
                             + ", systemName=" + currentSystem 
@@ -991,7 +992,10 @@ public class NavRouteComponent implements Initializable {
                         }
                     } else {
                         // Pour stratum-undiscovered, utiliser le DTO simple
-                        SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(currentSystem);
+                        SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(
+                            currentSystem,
+                            commanderStatus.getCommanderName()
+                        );
                         SpanshSearchResponseDTO responseDTO = analyticsService.searchSpanshByEndpoint(endpoint, requestDTO);
                         spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, true);
                         

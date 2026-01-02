@@ -16,5 +16,10 @@ public class SpanshSearchRequestDTO {
      * Exemple: "Col 173 Sector GC-L d8-16", "Sol"
      */
     private String referenceSystem;
+    
+    /**
+     * Nom du commandant
+     */
+    private String commandername;
 }
 

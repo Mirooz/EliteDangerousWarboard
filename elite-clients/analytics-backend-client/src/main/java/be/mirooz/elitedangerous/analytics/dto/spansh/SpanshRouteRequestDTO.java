@@ -30,5 +30,10 @@ public class SpanshRouteRequestDTO {
      * Nombre maximum de systèmes dans la route (par défaut : 10)
      */
     private Integer maxSystems;
+    
+    /**
+     * Nom du commandant
+     */
+    private String commandername;
 }
 
