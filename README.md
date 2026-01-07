@@ -28,6 +28,17 @@
 <img src="elite-warboard-missions/src/main/resources/images/miningpanel.png" alt="Mining Panel" style="max-width: 1200px;">
 
 ### 🌌 **Exploration Panel**
+- **🆕 Navigation Route System** : Complete navigation route management with multiple exploration modes
+  - **Free Exploration** : Display and track your current navigation route from Elite Dangerous
+  - **Stratum Undiscovered** : Find undiscovered Stratum Tectonicas using Spansh API
+  - **Expressway to Exomastery** : Find systems for exobiology exploration with customizable parameters
+  - **Road to Riches** : Discover valuable exploration targets with route planning
+  - **Visual route display** : Interactive horizontal route visualization with system circles and distance-based spacing
+  - **Remaining jumps tracking** : Real-time display of remaining jumps in your navigation route
+  - **System status indicators** : Visual markers for current system, visited systems, scoopable stars, and boost stars
+  - **Route overlay** : Detachable overlay window for navigation route display on your game screen
+  - **Automatic system copying** : One-click system name copying to clipboard for easy navigation
+  - **Route persistence** : Save and restore routes per exploration mode
 - **System visual view** : Interactive orrery view showing all celestial bodies in the current system
 - **Celestial body tracking** : Track all scanned planets, moons, and stars with detailed information
 - **Exobiology tracking** : Monitor organic species detection and collection with X/Y counters
@@ -75,12 +86,38 @@
 <img src="elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png" alt="Mining Overlay" style="max-width: 1200px;">
 
 ### **Exploration Interface**
+
+- **🆕 Navigation Route Management** : Complete navigation route system integrated in the exploration panel
+  - **Multiple exploration modes** : Switch between Free Exploration, Stratum Undiscovered, Expressway to Exomastery, and Road to Riches
+  - **Visual route display** : Horizontal route visualization with system circles connected by lines
+    - Distance-based spacing between systems for accurate route representation
+    - Current system highlighted with larger circle
+    - Visited systems marked with different visual style
+    - Scoopable star indicators (⛽) for fuel scooping opportunities
+    - Boost star indicators for neutron stars and white dwarfs
+    - Last copied system highlighted for easy reference
+  - **Remaining jumps counter** : Real-time display of remaining jumps in your navigation route (from FSDTarget events)
+  - **Route overlay window** : Detachable overlay that can be positioned on your game screen
+    - Draggable and resizable overlay window
+    - Adjustable opacity with slider control
+    - Synchronized with main panel updates
+    - Auto-hides when going on foot, reopens when returning to ship
+  - **System interaction** : Click on any system circle to copy its name to clipboard
+  - **Route parameters** : Configure destination system and max systems for Expressway and Road to Riches modes
+  - **Route reload** : Manual route refresh for Spansh API-based modes
+  - **Mode-specific routes** : Each exploration mode maintains its own route and visited systems
+  - **Spansh API integration** : Automatic route generation using Spansh API for specialized exploration modes
+
+
+<img src="elite-warboard-missions/src/main/resources/images/readme/nav.png" alt="Probability Calculation" style="max-width: 1200px;">
+
 - **Exobiology probability calculation** : Advanced probability calculations based on big data from [Canonn Bioforge](https://bioforge.canonn.tech/)
   - Uses histogram data from thousands of scanned planets to predict species appearance
   - Calculates probabilities based on multiple factors: body type, atmosphere, volcanism, temperature, gravity, and pressure
   - Geometric mean probability calculation combined with global species rarity correction
   - Displays species probabilities for each planet based on detected biological signals
-  - Filters species with probability < 1% to show only likely candidates
+  - Filters species with probability < 5% to show only likely candidates
+  - **Improved species sorting** : Species grouped by name with probability-based ordering within groups
 
 <img src="elite-warboard-missions/src/main/resources/images/readme/overlayexplo.png" alt="Probability Calculation" style="max-width: 1200px;">
 
@@ -184,8 +221,9 @@ The application is available in **English and French** with complete interface t
 - **Jackson** : JSON journal file analysis
 - **Lombok** : Boilerplate code reduction
 - **EdTools API** : Massacre system search and hotspot detection
-- **Ardent API** : market information
-- **SiriusCorp API** : Conflict zone search and
+- **Ardent API** : Market information
+- **SiriusCorp API** : Conflict zone search
+- **Spansh API** : Navigation route generation for exploration modes (Stratum Undiscovered, Expressway to Exomastery, Road to Riches)
 - **Canonn Bioforge** : Big data exobiology species probability calculations based on [bioforge.canonn.tech](https://bioforge.canonn.tech/)
 - **Inno Setup** : Installer creation with embedded runtime
 - **jpackage** : Installer creation with embedded runtime
@@ -256,6 +294,9 @@ The application automatically processes these Elite Dangerous events:
 - `ApproachBody` : Monitors body approach events and filters bodies with uncollected exobiology
 - `LeaveBody` : Tracks body departure events
 - `Embark` / `Disembark` : Monitors on-foot state changes for biological analysis
+- `NavRoute` : Tracks navigation route changes and loads route from NavRoute.json file
+- `NavRouteClear` : Handles navigation route clearing events
+- `FSDTarget` : Tracks Frame Shift Drive target information including remaining jumps in route
 
 ### **Ship Events**
 - `Loadout` : Updates ship configuration and cargo capacity
@@ -319,6 +360,32 @@ mvn exec:java
 ```
 
 ## 📝 Changelog
+
+### Version 1.3.0
+
+#### 🆕 Navigation Route System (Main Feature)
+- ✅ **Navigation Route Panel** : Complete navigation route management system integrated in exploration panel
+- ✅ **Multiple Exploration Modes** : Support for Free Exploration, Stratum Undiscovered, Expressway to Exomastery, and Road to Riches
+- ✅ **Visual Route Display** : Interactive horizontal route visualization with system circles and distance-based spacing
+- ✅ **Remaining Jumps Tracking** : Real-time display of remaining jumps in navigation route from FSDTarget events
+- ✅ **Route Overlay Window** : Detachable, draggable, and resizable overlay for navigation route display
+  - Adjustable opacity with slider control
+  - Auto-hide when going on foot, auto-reopen when returning to ship
+  - Synchronized updates with main panel
+- ✅ **System Status Indicators** : Visual markers for current system, visited systems, scoopable stars, and boost stars
+- ✅ **One-Click System Copying** : Click any system circle to copy name to clipboard
+- ✅ **Route Parameters Configuration** : Configure destination system and max systems for Expressway and Road to Riches
+- ✅ **Spansh API Integration** : Automatic route generation using Spansh API for specialized exploration modes
+- ✅ **Route Persistence** : Save and restore routes per exploration mode with visited systems tracking
+- ✅ **Mode-Specific Routes** : Each exploration mode maintains its own route and visited systems state
+
+#### Exploration Improvements
+- ✅ **Enhanced Species Probability Sorting** : Species grouped by name with probability-based ordering (most probable first, grouped by equivalent names)
+
+#### Technical Improvements
+- ✅ **Memory Leak Fixes** : Fixed listener accumulation issues that could cause OutOfMemoryError
+- ✅ **Thread Safety** : Improved JavaFX thread safety for UI updates from background threads
+- ✅ **Error Handling** : Better error handling for popup display when windows are not registered
 
 ### Version 1.2.0
 
@@ -404,6 +471,11 @@ If you encounter issues:
 - **Maximize profits** by choosing the best selling locations
 
 ### **For Explorers**
+- **🆕 Plan navigation routes** with multiple exploration modes (Free Exploration, Stratum Undiscovered, Expressway to Exomastery, Road to Riches)
+- **🆕 Visualize navigation routes** with interactive route display showing all systems, distances, and status
+- **🆕 Track remaining jumps** in real-time with remaining jumps counter
+- **🆕 Use route overlay** with detachable overlay window for navigation route on your game screen
+- **🆕 Find exploration targets** using Spansh API integration for specialized exploration routes
 - **Track all scanned systems** with complete celestial body information
 - **Monitor exobiology collection** with visual indicators showing collection progress (X/Y species)
 - **Navigate efficiently** with real-time radar compass showing sample positions and distances
