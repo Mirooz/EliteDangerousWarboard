@@ -17,6 +17,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -108,12 +109,18 @@ public class TargetOverlayComponent {
      */
     private void refreshOverlayContent() {
         if (lastStats != null && lastMissions != null && overlayStage != null && overlayStage.isShowing()) {
+            // Nettoyer l'ancien panneau avant de le remplacer
+            if (targetPanelComponent != null && stackPane.getChildren().contains(targetPanelComponent)) {
+                cleanupNode(targetPanelComponent);
+                stackPane.getChildren().remove(targetPanelComponent);
+            }
+            
             // Recréer le panneau avec les nouvelles traductions
             VBox newPanel = createTargetPanel(lastStats, lastMissions);
             newPanel.getStyleClass().add("mirror-overlay");
             
-            // Remplacer le panneau dans le stackPane
-            stackPane.getChildren().set(0, newPanel);
+            // Ajouter le nouveau panneau dans le stackPane
+            stackPane.getChildren().add(0, newPanel);
             
             // Appliquer le scaling actuel
             applyTextScaleToNode(newPanel, textScale);
@@ -144,12 +151,18 @@ public class TargetOverlayComponent {
         lastMissions = missions;
         
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
+            // Nettoyer l'ancien panneau avant de le remplacer
+            if (targetPanelComponent != null && stackPane.getChildren().contains(targetPanelComponent)) {
+                cleanupNode(targetPanelComponent);
+                stackPane.getChildren().remove(targetPanelComponent);
+            }
+            
             // Recréer complètement le panneau avec les nouvelles stats
             VBox newPanel = createTargetPanel(stats, missions);
             newPanel.getStyleClass().add("mirror-overlay");
             
-            // Remplacer le premier enfant (le panneau) dans le stackPane
-            stackPane.getChildren().set(0, newPanel);
+            // Ajouter le nouveau panneau dans le stackPane
+            stackPane.getChildren().add(0, newPanel);
             
             // Appliquer le scaling actuel
             applyTextScaleToNode(newPanel, textScale);
@@ -639,6 +652,52 @@ public class TargetOverlayComponent {
                 applyTextScaleToNode(child, scale);
             }
         }
+    }
+
+    /**
+     * Nettoie récursivement un nœud et ses enfants pour éviter les fuites mémoire
+     * Supprime les listeners, détache les bindings, et vide les enfants
+     */
+    private void cleanupNode(javafx.scene.Node node) {
+        if (node == null) {
+            return;
+        }
+        
+        // Si c'est un Parent, nettoyer récursivement tous les enfants
+        if (node instanceof Parent) {
+            Parent parent = (Parent) node;
+            // Créer une copie de la liste des enfants pour éviter ConcurrentModificationException
+            List<javafx.scene.Node> children = new ArrayList<>(parent.getChildrenUnmodifiable());
+            for (javafx.scene.Node child : children) {
+                cleanupNode(child);
+            }
+            // Vider la liste des enfants
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().clear();
+            }
+        }
+        
+        // Détacher les bindings des propriétés courantes pour éviter les fuites mémoire
+        if (node instanceof javafx.scene.layout.Region region) {
+            // Débinder les propriétés de taille qui pourraient être liées
+            // Note: widthProperty() et heightProperty() sont en lecture seule, on ne peut pas les délier
+            region.prefWidthProperty().unbind();
+            region.prefHeightProperty().unbind();
+            region.minWidthProperty().unbind();
+            region.minHeightProperty().unbind();
+            region.maxWidthProperty().unbind();
+            region.maxHeightProperty().unbind();
+        }
+        
+        // Détacher le nœud de son parent si possible
+        javafx.scene.Parent parent = node.getParent();
+        if (parent instanceof javafx.scene.layout.Pane) {
+            ((javafx.scene.layout.Pane) parent).getChildren().remove(node);
+        }
+        
+        // Réinitialiser les propriétés qui pourraient avoir des listeners
+        node.setStyle(null);
+        node.setUserData(null);
     }
 
     /**

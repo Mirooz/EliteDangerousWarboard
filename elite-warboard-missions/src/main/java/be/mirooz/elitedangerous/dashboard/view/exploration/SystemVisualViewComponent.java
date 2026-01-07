@@ -2523,12 +2523,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 overlayRadarPane.setStyle("-fx-background-color: transparent;");
                 
                 // Faire en sorte que le radar prenne la largeur du container
-                // Utiliser un listener pour mettre à jour la largeur quand le container change
-                container.widthProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal.doubleValue() > 0) {
-                        overlayRadarPane.setPrefWidth(newVal.doubleValue() - 10); // -10 pour le padding
-                    }
-                });
+                // Utiliser un binding au lieu d'un listener pour éviter les fuites mémoire
+                // Le binding sera automatiquement nettoyé quand le container sera détaché
+                overlayRadarPane.prefWidthProperty().bind(
+                    container.widthProperty().subtract(10) // -10 pour le padding
+                );
                 
                 container.getChildren().add(overlayRadarPane);
             }

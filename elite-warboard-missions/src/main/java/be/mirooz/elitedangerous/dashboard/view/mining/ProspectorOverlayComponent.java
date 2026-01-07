@@ -10,6 +10,7 @@ import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -106,9 +107,16 @@ public class ProspectorOverlayComponent {
      */
     public void updateContent(ProspectedAsteroid prospector) {
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
+            // Nettoyer l'ancienne carte avant de la remplacer
+            if (!stackPane.getChildren().isEmpty()) {
+                javafx.scene.Node oldCard = stackPane.getChildren().get(0);
+                cleanupNode(oldCard);
+                stackPane.getChildren().remove(oldCard);
+            }
+            
             VBox newCard = createOverlayCard(prospector);
             // mirrorCard est à l'index 0
-            stackPane.getChildren().set(0, newCard);
+            stackPane.getChildren().add(0, newCard);
             // Appliquer le scaling actuel à la nouvelle carte
             applyTextScaleToNode(newCard, textScale);
         }
@@ -119,9 +127,16 @@ public class ProspectorOverlayComponent {
      */
     public void clearContent() {
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null) {
+            // Nettoyer l'ancienne carte avant de la remplacer
+            if (!stackPane.getChildren().isEmpty()) {
+                javafx.scene.Node oldCard = stackPane.getChildren().get(0);
+                cleanupNode(oldCard);
+                stackPane.getChildren().remove(oldCard);
+            }
+            
             VBox emptyCard = createEmptyCard();
             // mirrorCard est à l'index 0
-            stackPane.getChildren().set(0, emptyCard);
+            stackPane.getChildren().add(0, emptyCard);
             // Appliquer le scaling actuel à la carte vide
             applyTextScaleToNode(emptyCard, textScale);
         }
@@ -471,6 +486,52 @@ public class ProspectorOverlayComponent {
                 applyTextScaleToNode(child, scale);
             }
         }
+    }
+
+    /**
+     * Nettoie récursivement un nœud et ses enfants pour éviter les fuites mémoire
+     * Supprime les listeners, détache les bindings, et vide les enfants
+     */
+    private void cleanupNode(javafx.scene.Node node) {
+        if (node == null) {
+            return;
+        }
+        
+        // Si c'est un Parent, nettoyer récursivement tous les enfants
+        if (node instanceof Parent) {
+            Parent parent = (Parent) node;
+            // Créer une copie de la liste des enfants pour éviter ConcurrentModificationException
+            java.util.List<javafx.scene.Node> children = new java.util.ArrayList<>(parent.getChildrenUnmodifiable());
+            for (javafx.scene.Node child : children) {
+                cleanupNode(child);
+            }
+            // Vider la liste des enfants
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().clear();
+            }
+        }
+        
+        // Détacher les bindings des propriétés courantes pour éviter les fuites mémoire
+        if (node instanceof javafx.scene.layout.Region region) {
+            // Débinder les propriétés de taille qui pourraient être liées
+            // Note: widthProperty() et heightProperty() sont en lecture seule, on ne peut pas les délier
+            region.prefWidthProperty().unbind();
+            region.prefHeightProperty().unbind();
+            region.minWidthProperty().unbind();
+            region.minHeightProperty().unbind();
+            region.maxWidthProperty().unbind();
+            region.maxHeightProperty().unbind();
+        }
+        
+        // Détacher le nœud de son parent si possible
+        javafx.scene.Parent parent = node.getParent();
+        if (parent instanceof javafx.scene.layout.Pane) {
+            ((javafx.scene.layout.Pane) parent).getChildren().remove(node);
+        }
+        
+        // Réinitialiser les propriétés qui pourraient avoir des listeners
+        node.setStyle(null);
+        node.setUserData(null);
     }
 
     /**

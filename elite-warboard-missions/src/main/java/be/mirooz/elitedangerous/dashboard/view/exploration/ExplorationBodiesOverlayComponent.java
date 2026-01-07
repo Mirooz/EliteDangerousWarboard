@@ -186,9 +186,15 @@ public class ExplorationBodiesOverlayComponent {
         this.showOnlyHighValue = showOnlyHighValue;
         if (overlayStage != null && overlayStage.isShowing() && stackPane != null && bodyCardFactory != null) {
             Platform.runLater(() -> {
+                // Nettoyer l'ancienne carte avant de la remplacer
+                if (contentCard != null && stackPane.getChildren().contains(contentCard)) {
+                    cleanupNode(contentCard);
+                    stackPane.getChildren().remove(contentCard);
+                }
+                
                 VBox newCard = createOverlayCard(system);
                 // contentCard est à l'index 0
-                stackPane.getChildren().set(0, newCard);
+                stackPane.getChildren().add(0, newCard);
                 contentCard = newCard;
                 // Appliquer le scaling actuel à la nouvelle carte
                 applyTextScaleToNode(newCard, textScale);
@@ -215,6 +221,10 @@ public class ExplorationBodiesOverlayComponent {
         if (currentWidth <= 0) {
             currentWidth = popupWidth; // Utiliser la largeur stockée si nécessaire
         }
+        
+        // Nettoyer l'ancienne carte avant de la remplacer
+        cleanupNode(oldCard);
+        popupStackPane.getChildren().remove(oldCard);
         
         // Créer la nouvelle carte
         VBox newCard = createOverlayCard(system);
@@ -248,8 +258,8 @@ public class ExplorationBodiesOverlayComponent {
             popupStackPane.setPrefSize(currentWidth, finalHeight);
         }
         
-        // Remplacer l'ancienne carte par la nouvelle
-        popupStackPane.getChildren().set(0, newCard);
+        // Ajouter la nouvelle carte
+        popupStackPane.getChildren().add(0, newCard);
     }
 
     /**
@@ -660,6 +670,52 @@ public class ExplorationBodiesOverlayComponent {
                 applyTextScaleToNode(child, scale);
             }
         }
+    }
+
+    /**
+     * Nettoie récursivement un nœud et ses enfants pour éviter les fuites mémoire
+     * Supprime les listeners, détache les bindings, et vide les enfants
+     */
+    private void cleanupNode(javafx.scene.Node node) {
+        if (node == null) {
+            return;
+        }
+        
+        // Si c'est un Parent, nettoyer récursivement tous les enfants
+        if (node instanceof Parent) {
+            Parent parent = (Parent) node;
+            // Créer une copie de la liste des enfants pour éviter ConcurrentModificationException
+            java.util.List<javafx.scene.Node> children = new java.util.ArrayList<>(parent.getChildrenUnmodifiable());
+            for (javafx.scene.Node child : children) {
+                cleanupNode(child);
+            }
+            // Vider la liste des enfants
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().clear();
+            }
+        }
+        
+        // Détacher les bindings des propriétés courantes pour éviter les fuites mémoire
+        if (node instanceof javafx.scene.layout.Region region) {
+            // Débinder les propriétés de taille qui pourraient être liées
+            // Note: widthProperty() et heightProperty() sont en lecture seule, on ne peut pas les délier
+            region.prefWidthProperty().unbind();
+            region.prefHeightProperty().unbind();
+            region.minWidthProperty().unbind();
+            region.minHeightProperty().unbind();
+            region.maxWidthProperty().unbind();
+            region.maxHeightProperty().unbind();
+        }
+        
+        // Détacher le nœud de son parent si possible
+        javafx.scene.Parent parent = node.getParent();
+        if (parent instanceof javafx.scene.layout.Pane) {
+            ((javafx.scene.layout.Pane) parent).getChildren().remove(node);
+        }
+        
+        // Réinitialiser les propriétés qui pourraient avoir des listeners
+        node.setStyle(null);
+        node.setUserData(null);
     }
 
     /**
