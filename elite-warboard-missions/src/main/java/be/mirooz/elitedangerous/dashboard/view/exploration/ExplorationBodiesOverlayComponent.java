@@ -325,7 +325,6 @@ public class ExplorationBodiesOverlayComponent {
      */
     public void showPopup(SystemVisited system) {
         this.currentSystem = system;
-        this.showOnlyHighValue = showOnlyHighValue;
 
         // Si le popup est déjà ouvert, on le ferme
         if (overlayPopup != null && overlayPopup.isShowing()) {

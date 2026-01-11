@@ -503,6 +503,18 @@ public class RadarComponent {
     }
     
     /**
+     * Force la mise à jour du radar (utile après l'ajout à un nouveau parent)
+     */
+    public void forceUpdate() {
+        if (radarContainer != null && radarContainer.isVisible()) {
+            Platform.runLater(() -> {
+                updateRadar();
+                updateClipping();
+            });
+        }
+    }
+    
+    /**
      * Retourne l'instance actuelle du RadarComponent (peut être null)
      */
     public static RadarComponent getInstance() {
