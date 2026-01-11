@@ -361,6 +361,11 @@ mvn exec:java
 
 ## 📝 Changelog
 
+### Version 1.3.1
+
+#### Fix
+- ✅ Resolved Java heap memory issue that could lead to OutOfMemoryError
+
 ### Version 1.3.0
 
 #### 🆕 Navigation Route System (Main Feature)
