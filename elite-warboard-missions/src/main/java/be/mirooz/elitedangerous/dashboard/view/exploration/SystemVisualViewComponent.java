@@ -21,6 +21,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
@@ -57,6 +58,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private Label systemBodiesLabel;
 
     private RadarComponent radarComponent;
+    private RadarComponent overlayRadarComponent; // Cache pour le RadarComponent de l'overlay
     @FXML
     private CheckBox showOnlyHighValueBodiesCheckBox;
     @FXML
@@ -2508,19 +2510,43 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         container.setPadding(new javafx.geometry.Insets(5));
         
         // Ajouter le radar s'il est visible dans le panel de gauche
+        // Toujours vérifier l'état actuel du radar principal pour s'assurer qu'on crée le bon radar
         if (radarComponent != null && radarComponent.getRadarPane() != null) {
             Pane radarPane = radarComponent.getRadarPane();
             if (radarPane.isVisible()) {
-                // Créer un nouveau RadarComponent pour l'overlay
-                // (un Node JavaFX ne peut avoir qu'un seul parent, donc on ne peut pas réutiliser le même)
-                // Note: Le constructeur ne remplace pas l'instance statique si elle existe déjà,
-                // donc l'instance principale reste accessible via getInstance()
-                RadarComponent overlayRadar = new RadarComponent();
-                overlayRadar.showRadar();
-                Pane overlayRadarPane = overlayRadar.getRadarPane();
+                // Vérifier si le radar de l'overlay existe et est valide
+                // Si le radarPane de l'overlay est null ou n'a pas de parent valide, le recréer
+                boolean needNewRadar = false;
+                if (overlayRadarComponent == null) {
+                    needNewRadar = true;
+                } else {
+                    Pane existingPane = overlayRadarComponent.getRadarPane();
+                    if (existingPane == null || existingPane.getParent() == null) {
+                        needNewRadar = true;
+                    }
+                }
+                
+                // Recréer le radar si nécessaire (après une transition on foot par exemple)
+                if (needNewRadar) {
+                    overlayRadarComponent = new RadarComponent();
+                }
+                
+                // Toujours s'assurer que le radar de l'overlay est visible et initialisé
+                overlayRadarComponent.showRadar();
+                
+                Pane overlayRadarPane = overlayRadarComponent.getRadarPane();
+                
+                // Détacher le radar de son ancien parent s'il en a un
+                Parent oldParent = overlayRadarPane.getParent();
+                if (oldParent instanceof Pane) {
+                    ((Pane) oldParent).getChildren().remove(overlayRadarPane);
+                }
                 
                 // Retirer le cadre noir (fond et bordure) dans l'overlay/popup
                 overlayRadarPane.setStyle("-fx-background-color: transparent;");
+                
+                // Débinder l'ancien binding s'il existe
+                overlayRadarPane.prefWidthProperty().unbind();
                 
                 // Faire en sorte que le radar prenne la largeur du container
                 // Utiliser un binding au lieu d'un listener pour éviter les fuites mémoire
@@ -2529,7 +2555,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     container.widthProperty().subtract(10) // -10 pour le padding
                 );
                 
+                // S'assurer que le radar est visible avant de l'ajouter
+                overlayRadarPane.setVisible(true);
+                overlayRadarPane.setManaged(true);
+                
+                // S'assurer que le radar a une hauteur minimale pour être visible
+                overlayRadarPane.setPrefHeight(200);
+                overlayRadarPane.setMinHeight(200);
+                overlayRadarPane.setMaxHeight(200);
+                
                 container.getChildren().add(overlayRadarPane);
+                
+                // Forcer la mise à jour du radar après l'ajout pour s'assurer qu'il est dessiné
+                Platform.runLater(() -> {
+                    overlayRadarComponent.forceUpdate();
+                });
             }
         }
         
