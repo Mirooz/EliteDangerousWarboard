@@ -32,6 +32,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -305,7 +306,10 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
     private Map<TargetType, CibleStats> getFactionStats() {
         MissionType currentType = dashboardContext.getCurrentTypeFilter();
-        List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+        // Créer une copie de la collection pour éviter ConcurrentModificationException
+        // si la map est modifiée pendant l'itération
+        Map<String, Mission> globalMissionMap = missionsRegistry.getGlobalMissionMap();
+        List<Mission> targetMissions = new ArrayList<>(globalMissionMap.values()).stream()
                 .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
                 .filter(mission -> currentType == null || currentType.equals(mission.getType()))
                 .collect(Collectors.toList());
