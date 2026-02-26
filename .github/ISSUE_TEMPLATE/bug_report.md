@@ -2,8 +2,6 @@
 name: Bug report
 description: Report a bug or unexpected behavior
 title: "[Bug] "
-labels:
-  - bug
 ---
 
 ## Describe the bug
