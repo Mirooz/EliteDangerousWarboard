@@ -1,5 +1,7 @@
 # Elite Dangerous Warboard
 
+> **Repository structure:** The root contains [community standard files](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-community-profiles) (README, LICENSE, Code of conduct, Contributing, Security) and this multi-module Maven project: `elite-warboard-missions` (main app), `elite-commons`, `elite-clients`, `journal-analyzer`, `bioforge-biodatas`. See [Project Structure](#-project-structure) below for details.
+
 ## Description
 
 **Elite Warboard** is a comprehensive companion application designed to optimize your Elite Dangerous gaming experience. The application analyzes game journal files in real-time to provide detailed insights into your missions, combat activities, mining operations, and exploration. Whether you're focused on massacre missions, conflict zones, mining expeditions, or deep space exploration, this dashboard helps you track progress, find opportunities, and maximize your earnings.
