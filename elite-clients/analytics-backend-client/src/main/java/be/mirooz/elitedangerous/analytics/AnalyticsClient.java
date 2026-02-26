@@ -511,17 +511,6 @@ public class AnalyticsClient {
         }
     }
     
-    /**
-     * Appelle l'endpoint /api/spansh/search du backend analytics avec un DTO
-     * @param searchRequestDTO Le DTO de requête de recherche Spansh (contient uniquement le système de référence)
-     * @return SpanshSearchResponseDTO contenant la réponse de l'API
-     * @throws Exception en cas d'erreur lors de l'appel HTTP
-     * @deprecated Utiliser searchSpanshByEndpoint à la place
-     */
-    @Deprecated
-    public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequestDTO searchRequestDTO) throws Exception {
-        return searchSpanshByEndpoint("search", searchRequestDTO);
-    }
 
     /**
      * Appelle un endpoint Spansh spécifique du backend analytics avec un DTO
@@ -701,19 +690,7 @@ public class AnalyticsClient {
             throw e;
         }
     }
-    
-    /**
-     * Récupère les résultats d'une recherche Spansh via son GUID
-     * Appelle l'endpoint GET /api/spansh/search/{guid} du backend analytics
-     * @param guid Le GUID de la recherche Spansh
-     * @return SpanshSearchResponseDTO contenant la réponse de l'API
-     * @throws Exception en cas d'erreur lors de l'appel HTTP
-     * @deprecated Utiliser getSpanshSearchByGuidAndEndpoint à la place
-     */
-    @Deprecated
-    public SpanshSearchResponseDTO getSpanshSearchByGuid(String guid) throws Exception {
-        return getSpanshSearchByGuidAndEndpoint("search", guid);
-    }
+
 
     /**
      * Récupère les résultats d'une recherche Spansh via son GUID et l'endpoint spécifique
@@ -742,9 +719,22 @@ public class AnalyticsClient {
                 );
                 
                 return responseDTO;
-            } else {
-                throw new Exception("Erreur lors de l'appel à /api/spansh/search/" + guid + ": " 
-                    + response.statusCode() + " - " + response.body());
+            }
+            else if (response.statusCode() == 500) {
+                // Vérifier si c'est l'erreur spécifique indiquant que le GUID a expiré
+                String responseBody = response.body();
+                if (responseBody != null && responseBody.contains("\"searchReference\":null")
+                        && responseBody.contains("\"spanshResponse\":null")) {
+                    System.err.println("⚠️ GUID Spansh expiré ou invalide (guid: " + guid + "), réinitialisation nécessaire");
+                    throw new SpanshGuidExpiredException("Le GUID Spansh a expiré ou n'est plus valide. Une nouvelle demande est nécessaire.");
+                } else {
+                    throw new Exception("Erreur lors de l'appel à /api/spansh/route/" + guid + ": "
+                            + response.statusCode() + " - " + responseBody);
+                }
+            }
+            else {
+                throw new Exception("Erreur lors de l'appel à /api/spansh/search/" + guid + ": "
+                        + response.statusCode() + " - " + response.body());
             }
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics pour Spansh (" + endpoint + ", GUID: " + guid + "): " + e.getMessage());

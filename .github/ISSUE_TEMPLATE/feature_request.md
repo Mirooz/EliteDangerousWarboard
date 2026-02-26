@@ -2,8 +2,8 @@
 name: Feature request
 description: Suggest a new feature or improvement
 title: "[Feature] "
-labels: enhancement
-assignees: ""
+labels:
+  - enhancement
 ---
 
 ## Is your feature request related to a problem?
