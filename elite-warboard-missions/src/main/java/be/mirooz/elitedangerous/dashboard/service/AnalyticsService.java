@@ -76,26 +76,7 @@ public class AnalyticsService {
     public boolean isNewerVersion(String currentVersion, String latestVersion) {
         return analyticsClient.isNewerVersion(currentVersion, latestVersion);
     }
-    
-    /**
-     * Appelle l'endpoint /api/spansh/search du backend analytics
-     * @param searchRequest La requête de recherche Spansh
-     * @return SpanshSearchResponseDTO contenant la réponse de l'API
-     * @throws Exception en cas d'erreur lors de l'appel HTTP
-     */
-    public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequest searchRequest) throws Exception {
-        return analyticsClient.searchSpansh(searchRequest);
-    }
-    
-    /**
-     * Appelle l'endpoint /api/spansh/search du backend analytics avec un DTO
-     * @param searchRequestDTO Le DTO de requête de recherche Spansh (contient uniquement le système de référence)
-     * @return SpanshSearchResponseDTO contenant la réponse de l'API
-     * @throws Exception en cas d'erreur lors de l'appel HTTP
-     */
-    public SpanshSearchResponseDTO searchSpansh(SpanshSearchRequestDTO searchRequestDTO) throws Exception {
-        return analyticsClient.searchSpansh(searchRequestDTO);
-    }
+
     
     /**
      * Récupère les résultats d'une recherche Spansh via son GUID
@@ -106,7 +87,7 @@ public class AnalyticsService {
      */
     @Deprecated
     public SpanshSearchResponseDTO getSpanshSearchByGuid(String guid) throws Exception {
-        return analyticsClient.getSpanshSearchByGuid(guid);
+        return analyticsClient.getSpanshSearchByGuidAndEndpoint("search",guid);
     }
 
     /**
