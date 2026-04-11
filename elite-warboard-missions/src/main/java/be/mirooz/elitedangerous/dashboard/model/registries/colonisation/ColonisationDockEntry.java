@@ -1,19 +1,26 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.colonisation;
 
-import lombok.Value;
+import lombok.Data;
 
 /**
- * Amarrage sur un site de colonisation (Docked avec StationName contenant $EXT_PANEL_ColonisationShip).
+ * Site de colonisation identifié par {@link #marketId} : infos Docked + sous-objet {@link #construction}
+ * rempli à chaque {@code ColonisationConstructionDepot} de même MarketID.
  */
-@Value
+@Data
 public class ColonisationDockEntry {
-    String timestamp;
-    String stationNameRaw;
-    String siteNameLocalised;
-    String stationType;
-    String starSystem;
-    long systemAddress;
-    long marketId;
-    String stationFactionName;
-    double distFromStarLs;
+
+    private long marketId;
+
+    /** Événement Docked (station colonisation) */
+    private String dockTimestamp;
+    private String stationNameRaw;
+    private String siteNameLocalised;
+    private String stationType;
+    private String starSystem;
+    private long systemAddress;
+    private String stationFactionName;
+    private double distFromStarLs;
+
+    /** Dernier ColonisationConstructionDepot reçu pour ce MarketID */
+    private ColonisationConstruction construction;
 }

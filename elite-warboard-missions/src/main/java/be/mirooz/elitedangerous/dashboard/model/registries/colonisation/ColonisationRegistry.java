@@ -24,8 +24,7 @@ public class ColonisationRegistry {
 
     private volatile long constructionMarketId;
     private volatile double constructionProgress;
-    private volatile boolean constructionComplete;
-    private volatile boolean constructionFailed;
+    private volatile ConstructionStatus constructionStatus = ConstructionStatus.IN_PROGRESS;
 
     @Getter(AccessLevel.NONE)
     private volatile List<ConstructionResource> constructionResources = List.of();
@@ -46,12 +45,11 @@ public class ColonisationRegistry {
     }
 
     @Synchronized
-    public void updateConstructionDepot(long marketId, double progress, boolean complete,
-                                        boolean failed, List<ConstructionResource> resources) {
+    public void updateConstructionDepot(long marketId, double progress, ConstructionStatus status,
+                                        List<ConstructionResource> resources) {
         this.constructionMarketId = marketId;
         this.constructionProgress = progress;
-        this.constructionComplete = complete;
-        this.constructionFailed = failed;
+        this.constructionStatus = status != null ? status : ConstructionStatus.IN_PROGRESS;
         this.constructionResources = resources == null ? List.of() : List.copyOf(resources);
     }
 

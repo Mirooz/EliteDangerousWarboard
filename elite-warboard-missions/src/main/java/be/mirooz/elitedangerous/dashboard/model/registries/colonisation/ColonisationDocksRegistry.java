@@ -6,40 +6,59 @@ import lombok.Synchronized;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Historique des amarrages sur des stations / sites de colonisation (sans limite de taille).
+ * Entrées {@link ColonisationDockEntry} par MarketID (dock + {@link ColonisationConstruction}).
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ColonisationDocksRegistry {
 
     private static final ColonisationDocksRegistry INSTANCE = new ColonisationDocksRegistry();
 
-    private final List<ColonisationDockEntry> docks = new ArrayList<>();
+    private final Map<Long, ColonisationDockEntry> entriesByMarketId = new LinkedHashMap<>();
 
     public static ColonisationDocksRegistry getInstance() {
         return INSTANCE;
     }
 
-    @Synchronized
-    public void record(ColonisationDockEntry entry) {
-        if (entry == null) {
-            return;
-        }
-        docks.add(entry);
-    }
-
-    @Synchronized
-    public List<ColonisationDockEntry> getDocks() {
-        return Collections.unmodifiableList(new ArrayList<>(docks));
-    }
-
     /**
-     * Réinitialise l'historique (tests ou rechargement de session).
+     * Enregistre l’entrée dock uniquement si aucune entrée n’existe déjà pour ce {@link ColonisationDockEntry#getMarketId()}.
+     *
+     * @return {@code true} si l’entrée a été ajoutée
      */
     @Synchronized
+    public boolean addDockIfAbsent(ColonisationDockEntry dockEntry) {
+        if (dockEntry == null) {
+            return false;
+        }
+        long id = dockEntry.getMarketId();
+        if (entriesByMarketId.containsKey(id)) {
+            return false;
+        }
+        entriesByMarketId.put(id, dockEntry);
+        return true;
+    }
+
+    @Synchronized
+    public void updateConstruction(long marketId, ColonisationConstruction construction) {
+        ColonisationDockEntry entry = entriesByMarketId.computeIfAbsent(marketId, k -> {
+            ColonisationDockEntry e = new ColonisationDockEntry();
+            e.setMarketId(marketId);
+            return e;
+        });
+        entry.setConstruction(construction);
+    }
+
+    @Synchronized
+    public List<ColonisationDockEntry> getDockEntries() {
+        return Collections.unmodifiableList(new ArrayList<>(entriesByMarketId.values()));
+    }
+
+    @Synchronized
     public void clear() {
-        docks.clear();
+        entriesByMarketId.clear();
     }
 }
