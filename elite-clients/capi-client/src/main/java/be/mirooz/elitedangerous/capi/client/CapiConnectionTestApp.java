@@ -2,6 +2,9 @@ package be.mirooz.elitedangerous.capi.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Petite app console pour tester la connexion CAPI.
  *
@@ -14,9 +17,10 @@ public class CapiConnectionTestApp {
 
     public static void main(String[] args) {
         String token = resolveToken(args);
-        boolean fleetCarrierMode = hasArg(args, "--fleetcarrier");
-        boolean marketMode = hasArg(args, "--market");
-        String endpoint = resolveEndpoint(args, fleetCarrierMode, marketMode);
+        boolean fleetCarrierMode = hasAnyArg(args, "--fleetcarrier", "--fleetmarket", "-fleetmarket");
+        boolean marketMode = hasAnyArg(args, "--market", "-market");
+        boolean journalMode = hasAnyArg(args, "--journal", "-journal");
+        String endpoint = resolveEndpoint(args, fleetCarrierMode, marketMode, journalMode);
 
         if (token == null || token.isBlank()) {
             System.err.println("Token manquant. Passe --token=... ou ELITE_CAPI_ACCESS_TOKEN.");
@@ -26,18 +30,30 @@ public class CapiConnectionTestApp {
 
         FrontierCapiClient client = new FrontierCapiClient();
         try {
-            JsonNode response = fleetCarrierMode
-                    ? client.getFleetCarrier(token)
-                    : client.getJson(endpoint, token);
-            System.out.println("Connexion CAPI OK");
-            System.out.println("Endpoint: " + endpoint);
-            if (fleetCarrierMode) {
-                printFleetCarrierSummary(response);
-            } else if (marketMode) {
-                printMarketSummary(response);
+            if (fleetCarrierMode && marketMode) {
+                JsonNode fleetCarrierResponse = client.getFleetCarrier(token);
+                JsonNode marketResponse = client.getJson("/market", token);
+                System.out.println("Connexion CAPI OK");
+                System.out.println("Endpoints: /fleetcarrier + /market");
+                printFleetCarrierSummary(fleetCarrierResponse);
+                System.out.println();
+                printMarketSummary(marketResponse);
             } else {
-                System.out.println("Reponse (extrait):");
-                System.out.println(response.toPrettyString());
+                JsonNode response = fleetCarrierMode
+                        ? client.getFleetCarrier(token)
+                        : client.getJson(endpoint, token);
+                System.out.println("Connexion CAPI OK");
+                System.out.println("Endpoint: " + endpoint);
+                if (fleetCarrierMode) {
+                    printFleetCarrierSummary(response);
+                } else if (marketMode) {
+                    printMarketSummary(response);
+                } else if (journalMode) {
+                    printJournalSummary(response);
+                } else {
+                    System.out.println("Reponse (extrait):");
+                    System.out.println(response.toPrettyString());
+                }
             }
         } catch (Exception e) {
             System.err.println("Echec connexion CAPI: " + e.getMessage());
@@ -54,12 +70,15 @@ public class CapiConnectionTestApp {
         return System.getenv("ELITE_CAPI_ACCESS_TOKEN");
     }
 
-    private static String resolveEndpoint(String[] args, boolean fleetCarrierMode, boolean marketMode) {
+    private static String resolveEndpoint(String[] args, boolean fleetCarrierMode, boolean marketMode, boolean journalMode) {
         if (fleetCarrierMode) {
             return "/fleetcarrier";
         }
         if (marketMode) {
             return "/market";
+        }
+        if (journalMode) {
+            return resolveJournalEndpoint(args);
         }
         for (String arg : args) {
             if (arg != null && arg.startsWith("--endpoint=")) {
@@ -69,6 +88,27 @@ public class CapiConnectionTestApp {
         return "/profile";
     }
 
+    private static String resolveJournalEndpoint(String[] args) {
+        String year = readOptionValue(args, "--year=");
+        String month = readOptionValue(args, "--month=");
+        String day = readOptionValue(args, "--day=");
+
+        if (year == null || year.isBlank()) {
+            return "/journal";
+        }
+
+        StringBuilder endpoint = new StringBuilder("/journal").append("/").append(year);
+        if (month == null || month.isBlank()) {
+            return endpoint.toString();
+        }
+        endpoint.append("/").append(month);
+        if (day == null || day.isBlank()) {
+            return endpoint.toString();
+        }
+        endpoint.append("/").append(day);
+        return endpoint.toString();
+    }
+
     private static boolean hasArg(String[] args, String key) {
         for (String arg : args) {
             if (key.equals(arg)) {
@@ -76,6 +116,24 @@ public class CapiConnectionTestApp {
             }
         }
         return false;
+    }
+
+    private static boolean hasAnyArg(String[] args, String... keys) {
+        for (String key : keys) {
+            if (hasArg(args, key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String readOptionValue(String[] args, String keyPrefix) {
+        for (String arg : args) {
+            if (arg != null && arg.startsWith(keyPrefix)) {
+                return arg.substring(keyPrefix.length());
+            }
+        }
+        return null;
     }
 
     private static void printFleetCarrierSummary(JsonNode fleetCarrier) {
@@ -93,9 +151,10 @@ public class CapiConnectionTestApp {
         System.out.println("- stock cargo (entrees): " + (cargo.isArray() ? cargo.size() : 0));
         System.out.println("- market sales (entrees): " + (sales.isArray() ? sales.size() : 0));
         System.out.println("- market purchases (entrees): " + (purchases.isArray() ? purchases.size() : 0));
+        printFleetCarrierCargoGrouped(cargo);
+        printFleetCarrierOrdersDetail("market sales", sales);
+        printFleetCarrierOrdersDetail("market purchases", purchases);
         System.out.println();
-        System.out.println("Extrait cargo:");
-        System.out.println(cargo.toPrettyString());
         System.out.println("Extrait market orders:");
         System.out.println(orders.toPrettyString());
     }
@@ -131,6 +190,138 @@ public class CapiConnectionTestApp {
                         + " demand=" + c.path("demand").asText("0"));
             }
         }
+    }
+
+    private static void printFleetCarrierOrdersDetail(String label, JsonNode entries) {
+        System.out.println();
+        System.out.println("Detail " + label + ":");
+        if (!entries.isArray() || entries.isEmpty()) {
+            System.out.println("  - aucune entree");
+            return;
+        }
+
+        for (JsonNode entry : entries) {
+            String name = firstNonBlank(
+                    entry.path("name").asText(""),
+                    entry.path("symbol").asText(""),
+                    entry.path("commodity").asText(""),
+                    "N/A");
+            String price = firstNonBlank(
+                    entry.path("price").asText(""),
+                    entry.path("salePrice").asText(""),
+                    entry.path("buyPrice").asText(""),
+                    "0");
+            String stock = firstNonBlank(
+                    entry.path("stock").asText(""),
+                    entry.path("units").asText(""),
+                    "0");
+            String demand = firstNonBlank(entry.path("demand").asText(""), "0");
+
+            System.out.println("  - " + name
+                    + " | price=" + price
+                    + " stock=" + stock
+                    + " demand=" + demand);
+        }
+    }
+
+    private static void printJournalSummary(JsonNode journal) {
+        System.out.println("Journal:");
+        if (journal == null || journal.isMissingNode() || journal.isNull()) {
+            System.out.println("- reponse vide");
+            return;
+        }
+
+        JsonNode entries = journal.path("entries");
+        if (!entries.isArray()) {
+            entries = journal;
+        }
+
+        if (!entries.isArray()) {
+            System.out.println("- format inattendu, dump brut:");
+            System.out.println(journal.toPrettyString());
+            return;
+        }
+
+        System.out.println("- nombre d'entrees: " + entries.size());
+        int limit = Math.min(15, entries.size());
+        if (limit == 0) {
+            System.out.println("- aucune entree");
+            return;
+        }
+
+        System.out.println("Dernieres entrees:");
+        for (int i = entries.size() - 1; i >= entries.size() - limit; i--) {
+            JsonNode entry = entries.get(i);
+            String event = firstNonBlank(entry.path("event").asText(""), entry.path("type").asText(""), "N/A");
+            String timestamp = firstNonBlank(entry.path("timestamp").asText(""), entry.path("date").asText(""), "N/A");
+            System.out.println("  - " + timestamp + " | " + event);
+        }
+    }
+
+    private static void printFleetCarrierCargoGrouped(JsonNode cargoEntries) {
+        System.out.println();
+        System.out.println("Detail cargo groupe par commodity:");
+        if (!cargoEntries.isArray() || cargoEntries.isEmpty()) {
+            System.out.println("  - aucune entree");
+            return;
+        }
+
+        Map<String, CargoAggregate> aggregates = new LinkedHashMap<>();
+        for (JsonNode entry : cargoEntries) {
+            String commodityName = firstNonBlank(
+                    entry.path("commodityName").asText(""),
+                    entry.path("name").asText(""),
+                    entry.path("symbol").asText(""),
+                    entry.path("commodity").asText(""),
+                    "N/A");
+            long quantity = firstLong(entry, "qty", "stock", "units", "count");
+            long value = firstLong(entry, "value", "totalValue", "price");
+
+            CargoAggregate aggregate = aggregates.computeIfAbsent(commodityName, key -> new CargoAggregate());
+            aggregate.quantity += quantity;
+            aggregate.value += value;
+        }
+
+        for (Map.Entry<String, CargoAggregate> aggregateEntry : aggregates.entrySet()) {
+            CargoAggregate aggregate = aggregateEntry.getValue();
+            System.out.println("  - " + aggregateEntry.getKey()
+                    + " | qty=" + aggregate.quantity
+                    + " value=" + aggregate.value);
+        }
+    }
+
+    private static String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return "";
+    }
+
+    private static long firstLong(JsonNode node, String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            JsonNode value = node.path(fieldName);
+            if (value.isNumber()) {
+                return value.asLong();
+            }
+            if (value.isTextual()) {
+                String text = value.asText("");
+                if (!text.isBlank()) {
+                    try {
+                        return Long.parseLong(text);
+                    } catch (NumberFormatException ignored) {
+                        // Keep trying fallback field names.
+                    }
+                }
+            }
+        }
+        return 0L;
+    }
+
+    private static final class CargoAggregate {
+        private long quantity;
+        private long value;
     }
 
     private static int fieldCount(JsonNode node) {
