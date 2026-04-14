@@ -79,6 +79,11 @@
             <artifactId>analytics-backend-client</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous</groupId>
+            <artifactId>capi-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- JavaFX Controls -->
         <dependency>
             <groupId>org.openjfx</groupId>
