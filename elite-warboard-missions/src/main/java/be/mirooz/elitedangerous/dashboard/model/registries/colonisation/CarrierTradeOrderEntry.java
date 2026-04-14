@@ -10,5 +10,7 @@ public class CarrierTradeOrderEntry {
     boolean blackMarket;
     String commodityLocalised;
     int purchaseOrder;
+    int saleOrder;
+    boolean cancelTrade;
     long price;
 }
