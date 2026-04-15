@@ -4,22 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Properties;
 
 /**
- * Client minimal pour Frontier CAPI.
- * Utilise OAuth2 Bearer token et impose un User-Agent compatible EDCD.
+ * HTTP JSON : {@code capi.base-url} + {@code capi.path-prefix} + endpoint. Config uniquement via {@code capi-client-*.properties}.
  */
 public class FrontierCapiClient {
 
-    private static final String DEFAULT_BASE_URL = "https://companion.orerve.net";
-    private static final String DEFAULT_USER_AGENT = "EDCD-EliteWarboard-1.3.2";
+    private static final Duration CONNECT = Duration.ofSeconds(10);
+    private static final Duration REQUEST = Duration.ofSeconds(20);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -27,107 +25,70 @@ public class FrontierCapiClient {
     private final String userAgent;
 
     public FrontierCapiClient() {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
+        this.httpClient = HttpClient.newBuilder().connectTimeout(CONNECT).build();
         this.objectMapper = new ObjectMapper();
-        this.baseUrl = loadBaseUrl();
-        this.userAgent = loadUserAgent();
+        this.baseUrl = require("capi.base-url");
+        this.userAgent = require("capi.user-agent");
     }
 
-    /**
-     * Récupère le profil commandant via CAPI /profile.
-     */
-    public JsonNode getProfile(String accessToken) throws IOException {
-        return getJson("/profile", accessToken);
+    public JsonNode getJson(String endpoint) throws IOException {
+        return getJson(endpoint, null);
     }
 
-    /**
-     * Récupère les informations Fleet Carrier via CAPI /fleetcarrier.
-     */
-    public JsonNode getFleetCarrier(String accessToken) throws IOException {
-        return getJson("/fleetcarrier", accessToken);
-    }
-
-    /**
-     * Appel GET CAPI générique (retour JSON).
-     * Exemple endpoint: "/market", "/shipyard", "/profile".
-     */
     public JsonNode getJson(String endpoint, String accessToken) throws IOException {
-        validateToken(accessToken);
-        String resolvedEndpoint = endpoint.startsWith("/") ? endpoint : "/" + endpoint;
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + resolvedEndpoint))
+        String url = baseUrl + endpoint;
+        HttpRequest.Builder b = HttpRequest.newBuilder()
+                .uri(URI.create(url))
                 .header("Accept", "application/json")
-                .header("Authorization", "Bearer " + accessToken)
                 .header("User-Agent", userAgent)
                 .GET()
-                .timeout(Duration.ofSeconds(20))
-                .build();
+                .timeout(REQUEST);
+        if (accessToken != null && !accessToken.isBlank()) {
+            b.header("Authorization", "Bearer " + accessToken.trim());
+        }
+        HttpResponse<String> response = send(b.build());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return objectMapper.readTree(response.body());
+        }
+        throw new IOException("CAPI GET "  + endpoint + " : HTTP " + response.statusCode() + " - " + response.body());
+    }
 
+    public String postJson(String endpoint, String jsonBody) throws IOException {
+        String url = baseUrl + endpoint;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json; charset=utf-8")
+                .header("Accept", "application/json")
+                .header("User-Agent", userAgent)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                .timeout(REQUEST)
+                .build();
+        HttpResponse<String> response = send(request);
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IOException("POST " + endpoint + " : HTTP " + response.statusCode() + " - " + response.body());
+        }
+        return response.body();
+    }
+
+    public String absoluteUrl(String endpoint) {
+        return baseUrl + endpoint;
+    }
+
+    private HttpResponse<String> send(HttpRequest request) throws IOException {
         try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                return objectMapper.readTree(response.body());
-            }
-            throw new IOException("Erreur CAPI GET " + resolvedEndpoint + " : HTTP " + response.statusCode()
-                    + " - " + response.body());
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Appel CAPI interrompu", e);
+            throw new IOException("Requete HTTP interrompue", e);
         }
     }
 
-    private void validateToken(String accessToken) {
-        if (accessToken == null || accessToken.isBlank()) {
-            throw new IllegalArgumentException("accessToken est obligatoire pour appeler CAPI");
+    private static String require(String key) {
+        String v = CapiBundledProperties.get(key);
+        if (v == null) {
+            throw new IllegalStateException("Propriete obligatoire manquante : " + key + " dans capi-client-"
+                    + System.getProperty("app.profile", "dev") + ".properties");
         }
-    }
-
-    private String loadBaseUrl() {
-        String systemProperty = System.getProperty("elite.capi.base-url");
-        if (isNotBlank(systemProperty)) {
-            return systemProperty;
-        }
-        String environment = System.getenv("ELITE_CAPI_BASE_URL");
-        if (isNotBlank(environment)) {
-            return environment;
-        }
-        String fileValue = loadFromProperties("capi.base-url");
-        return isNotBlank(fileValue) ? fileValue : DEFAULT_BASE_URL;
-    }
-
-    private String loadUserAgent() {
-        String systemProperty = System.getProperty("elite.capi.user-agent");
-        if (isNotBlank(systemProperty)) {
-            return systemProperty;
-        }
-        String environment = System.getenv("ELITE_CAPI_USER_AGENT");
-        if (isNotBlank(environment)) {
-            return environment;
-        }
-        String fileValue = loadFromProperties("capi.user-agent");
-        return isNotBlank(fileValue) ? fileValue : DEFAULT_USER_AGENT;
-    }
-
-    private String loadFromProperties(String key) {
-        String profile = System.getProperty("app.profile", "dev");
-        String fileName = "/capi-client-" + profile + ".properties";
-        try (InputStream inputStream = getClass().getResourceAsStream(fileName)) {
-            if (inputStream == null) {
-                return null;
-            }
-            Properties properties = new Properties();
-            properties.load(inputStream);
-            return properties.getProperty(key);
-        } catch (Exception e) {
-            System.err.println("Erreur lecture " + fileName + ": " + e.getMessage());
-            return null;
-        }
-    }
-
-    private boolean isNotBlank(String value) {
-        return value != null && !value.isBlank();
+        return v;
     }
 }

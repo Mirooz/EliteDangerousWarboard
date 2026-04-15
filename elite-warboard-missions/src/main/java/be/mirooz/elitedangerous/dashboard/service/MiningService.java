@@ -7,6 +7,7 @@ import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderShip.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
+import be.mirooz.elitedangerous.dashboard.service.webservice.ArdentApiService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.ardentapi.model.CommodityMaxSell;
 

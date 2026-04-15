@@ -1,9 +1,7 @@
-package be.mirooz.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.service.webservice;
 
 import be.mirooz.elitedangerous.analytics.AnalyticsClient;
-import be.mirooz.elitedangerous.analytics.SpanshGuidExpiredException;
 import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequest;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
 import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteRequestDTO;

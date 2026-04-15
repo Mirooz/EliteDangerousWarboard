@@ -23,6 +23,12 @@ public class CommanderStatus {
     private Boolean isOnline;
     private boolean isOnFoot = false;
 
+    /** Depuis LoadGame / Fileheader (en-tête EDDN). */
+    private String gameVersion;
+    private String gameBuild;
+    private Boolean horizons;
+    private Boolean odyssey;
+
     private CommanderShip ship;
 
     public void setShip(CommanderShip ship) {
@@ -64,5 +70,21 @@ public class CommanderStatus {
 
     public boolean isOnFoot() {
         return isOnFoot;
+    }
+
+    public void setGameVersion(String gameVersion) {
+        this.gameVersion = gameVersion;
+    }
+
+    public void setGameBuild(String gameBuild) {
+        this.gameBuild = gameBuild;
+    }
+
+    public void setHorizons(Boolean horizons) {
+        this.horizons = horizons;
+    }
+
+    public void setOdyssey(Boolean odyssey) {
+        this.odyssey = odyssey;
     }
 }

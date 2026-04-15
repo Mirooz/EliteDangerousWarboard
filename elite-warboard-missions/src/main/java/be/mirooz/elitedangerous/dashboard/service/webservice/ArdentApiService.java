@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service;
+package be.mirooz.elitedangerous.dashboard.service.webservice;
 
 import be.mirooz.ardentapi.client.ArdentApiClient;
 import be.mirooz.ardentapi.model.CommodityMaxSell;
