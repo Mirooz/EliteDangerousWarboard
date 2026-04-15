@@ -55,7 +55,7 @@ public final class CapiClient {
         return response;
     }
     public String relayMarketUrl() {
-        return CapiBundledProperties.get("capi.relay.market-url", "http://localhost:8080/api/capi/market");
+        return baseUrl +"/market";
     }
 
     private void handleMarketResponse(JsonNode response) {
