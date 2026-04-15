@@ -1,85 +1,43 @@
 package be.mirooz.elitedangerous.capi.client;
 
+import be.mirooz.elitedangerous.capi.client.relay.CapiClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.time.Instant;
 
 /**
- * App console : un GET {@code /market} via {@link FrontierCapiClient} (config {@code capi-client-*.properties}).
+ * App console : simulation d'un event journal {@code Market} et appel de
+ * {@code CapiApiService.sendMarketDatas(event)}.
  * <p>
- * Lancement : {@code mvn -pl elite-clients/capi-client exec:java}
+ * Lancement recommandé (classpath contenant warboard) :
+ * {@code mvn -pl elite-warboard-missions exec:java -Dexec.mainClass=be.mirooz.elitedangerous.capi.client.CapiHttpTestApp}
  * <br>
- * Profil : {@code mvn -pl elite-clients/capi-client exec:java -Dapp.profile=prod}
- * <p>
- * Option : {@code --token=JWT} (Bearer, optionnel).
+ * Profil : ajouter {@code -Dapp.profile=prod}
  */
 public final class CapiHttpTestApp {
 
-    private static final String ENDPOINT = "/market";
+    public static void main(String[] args) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
 
-    public static void main(String[] args) {
-        if (hasHelp(args)) {
-            printHelp();
-            return;
-        }
+        ObjectNode root = mapper.createObjectNode();
+        root.put("fid", "F2290564");
+        root.put("commanderName", "Mirooz");
 
-        String token = argValue(args, "--token=");
+        ObjectNode event = mapper.createObjectNode();
+        event.put("timestamp", "2026-04-14T12:21:28Z");
+        event.put("event", "Market");
+        event.put("MarketID", 3714426624L);
+        event.put("StationName", "G2W-8HB");
+        event.put("StationType", "FleetCarrier");
+        event.put("CarrierDockingAccess", "all");
+        event.put("StarSystem", "Cemiess");
 
-        FrontierCapiClient client = new FrontierCapiClient();
-        System.out.println("Base (effective) : requêtes sur " + describeBase(client));
-
-        try {
-            JsonNode body = token.isBlank()
-                    ? client.getJson(ENDPOINT)
-                    : client.getJson(ENDPOINT, token);
-            System.out.println();
-            System.out.println("=== GET " + ENDPOINT + " ===");
-            System.out.println(body.toPrettyString());
-        } catch (IOException e) {
-            System.err.println("Echec GET " + ENDPOINT + " : " + e.getMessage());
-            System.exit(2);
-        }
-    }
-
-    private static String describeBase(FrontierCapiClient client) {
-        try {
-            return client.absoluteUrl("/");
-        } catch (Exception e) {
-            return "(voir capi.base-url dans capi-client-*.properties)";
-        }
-    }
-
-    private static boolean hasHelp(String[] args) {
-        for (String a : args) {
-            if ("--help".equals(a) || "-h".equals(a)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void printHelp() {
-        System.out.println("""
-                CapiHttpTestApp — GET /market (JSON) via backend (properties embarquées).
-
-                mvn -pl elite-clients/capi-client exec:java
-                mvn -pl elite-clients/capi-client exec:java -Dexec.args="--token=xxx"
-
-                Options :
-                  --token=JWT    Authorization Bearer (optionnel, ex. Frontier direct).
-                  -h, --help     Aide.
-                """);
-    }
-
-    private static String argValue(String[] args, String prefix) {
-        for (String a : args) {
-            if (a != null && a.startsWith(prefix)) {
-                return a.substring(prefix.length()).trim();
-            }
-        }
-        return "";
-    }
-
-    private CapiHttpTestApp() {
+        root.set("event", event);
+        JsonNode response = CapiClient.getInstance().sendMarket(root);
+        System.out.println(response);
     }
 }
