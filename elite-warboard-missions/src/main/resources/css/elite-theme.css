@@ -404,6 +404,10 @@
     -fx-pref-width: 80px;
     -fx-alignment: CENTER;
 }
+
+.cargo-stat-number-wide {
+    -fx-pref-width: 140px;
+}
 .cargo-stat-price-number {
     -fx-text-fill: -fx-elite-green;
     -fx-font-size: 18px;
