@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -44,6 +47,9 @@ public class CarrierStatus {
     private final Map<String, CarrierTradeOrderEntry> marketByCommodity = new LinkedHashMap<>();
     private final Map<String, Integer> stocksByCommodity = new LinkedHashMap<>();
 
+    /** Dernière activité journal (ordre / achat-vente marché carrier) — pour éviter un sync CAPI redondant. */
+    private volatile Instant lastModifiedTime;
+
     private CarrierStatus() {
     }
 
@@ -79,10 +85,12 @@ public class CarrierStatus {
         if (entry.isCancelTrade()) {
             marketByCommodity.remove(commodityKey);
             stocksByCommodity.remove(commodityKey);
+            markLastModifiedFromJournal(entry.getTimestamp());
             return;
         }
 
         marketByCommodity.put(commodityKey, entry);
+        markLastModifiedFromJournal(entry.getTimestamp());
     }
 
     /**
@@ -202,7 +210,7 @@ public class CarrierStatus {
         }
     }
 
-    public void applyMarketStockDelta(String commodity, String commodityLocalised, int delta) {
+    public void applyMarketStockDelta(String commodity, String commodityLocalised, int delta, String eventTimestamp) {
         if (delta == 0) {
             return;
         }
@@ -214,6 +222,33 @@ public class CarrierStatus {
             stocksByCommodity.remove(commodityKey);
         } else {
             stocksByCommodity.put(commodityKey, next);
+        }
+        markLastModifiedFromJournal(eventTimestamp);
+    }
+
+    /**
+     * Vrai si une mise à jour locale (journal) du carrier a eu lieu il y a moins de {@code maxAge}.
+     */
+    public boolean hasRecentJournalCarrierActivity(Duration maxAge) {
+        Instant t = lastModifiedTime;
+        if (t == null) {
+            return false;
+        }
+        return !t.isBefore(Instant.now().minus(maxAge));
+    }
+
+    private void markLastModifiedFromJournal(String journalIsoTimestamp) {
+        lastModifiedTime = parseJournalInstant(journalIsoTimestamp);
+    }
+
+    private static Instant parseJournalInstant(String journalIsoTimestamp) {
+        if (journalIsoTimestamp == null || journalIsoTimestamp.isBlank()) {
+            return Instant.now();
+        }
+        try {
+            return Instant.parse(journalIsoTimestamp);
+        } catch (DateTimeException e) {
+            return Instant.now();
         }
     }
 

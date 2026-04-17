@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEn
 import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +44,13 @@ public class CarrierTradeService {
         carrierStatus.recordTradeOrder(entry);
     }
 
-    public synchronized void applyMarketStockDelta(String commodity, String commodityLocalised, int delta) {
-        carrierStatus.applyMarketStockDelta(commodity, commodityLocalised, delta);
+    public synchronized void applyMarketStockDelta(
+            String commodity, String commodityLocalised, int delta, String eventTimestamp) {
+        carrierStatus.applyMarketStockDelta(commodity, commodityLocalised, delta, eventTimestamp);
+    }
+
+    public synchronized boolean hasRecentJournalCarrierActivity(Duration maxAge) {
+        return carrierStatus.hasRecentJournalCarrierActivity(maxAge);
     }
 
     public synchronized void applyFleetCarrierCapiSnapshot(JsonNode capiDataNode) {

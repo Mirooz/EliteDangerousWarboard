@@ -59,7 +59,7 @@ public class MarketSellHandler implements JournalEventHandler {
             }
 
             // Vente au marché du carrier => le stock du carrier augmente.
-            carrierTradeService.applyMarketStockDelta(type, typeLocalised, count);
+            carrierTradeService.applyMarketStockDelta(type, typeLocalised, count, timestamp);
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement MarketSell: " + e.getMessage());
         }

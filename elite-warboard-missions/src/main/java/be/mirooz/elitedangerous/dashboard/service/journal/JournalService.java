@@ -7,6 +7,7 @@ import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
+import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -36,6 +37,7 @@ public class JournalService {
 
     private static final String JOURNAL_PREFIX = "Journal.";
     private static final String CARGO_FILE = "Cargo.json";
+    private static final Duration SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN = Duration.ofMinutes(20);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
@@ -78,7 +80,9 @@ public class JournalService {
             List<Mission> missions = parseAllJournalFiles();
 
             // Données fleet CAPI : après tout le chargement journal (ordres, stocks journal, etc.)
-            if (profileOk) {
+            if (profileOk
+                    && !CarrierTradeService.getInstance()
+                            .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
                 CapiApiService.getInstance().fetchFleetCarrierData();
             }
 

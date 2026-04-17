@@ -22,8 +22,9 @@ public class MarketBuyHandler implements JournalEventHandler {
                 return;
             }
 
+            String timestamp = event.path("timestamp").asText("");
             // Achat au marché du carrier => le stock du carrier diminue.
-            carrierTradeService.applyMarketStockDelta(type, typeLocalised, -Math.max(count, 0));
+            carrierTradeService.applyMarketStockDelta(type, typeLocalised, -Math.max(count, 0), timestamp);
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement MarketBuy: " + e.getMessage());
         }
