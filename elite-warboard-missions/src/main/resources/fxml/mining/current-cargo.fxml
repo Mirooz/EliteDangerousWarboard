@@ -22,7 +22,7 @@
         <!-- Cargo au milieu avec barre de progression -->
         <VBox alignment="CENTER" spacing="5" HBox.hgrow="ALWAYS" prefWidth="260">
             <ProgressBar fx:id="cargoProgressBar" styleClass="progress-bar" prefWidth="190"/>
-            <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number cargo-stat-number-wide"/>
+            <Label fx:id="cargoUsedLabel" text="0/0" styleClass="cargo-stat-number,cargo-stat-number-wide"/>
         </VBox>
         
         <!-- Crédits estimés à droite -->
