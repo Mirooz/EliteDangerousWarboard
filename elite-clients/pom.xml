@@ -18,9 +18,8 @@
     <description>Module parent contenant tous les clients API</description>
     
     <modules>
-        <module>analytics-backend-client</module>
         <module>ardent-api-client</module>
-        <module>capi-client</module>
+        <module>elite-backend-client</module>
         <module>edtools-client</module>
         <module>siriuscorp-client</module>
     </modules>

@@ -1,12 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice;
 
-import be.mirooz.elitedangerous.analytics.AnalyticsClient;
-import be.mirooz.elitedangerous.analytics.dto.LatestVersionResponse;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteRequestDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResponseDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResultsResponseDTO;
+import be.mirooz.elitedangerous.backend.analytics.AnalyticsClient;
+import be.mirooz.elitedangerous.backend.analytics.dto.LatestVersionResponse;
+import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshSearchRequestDTO;
+import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshSearchResponseDTO;
+import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshRouteRequestDTO;
+import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshRouteResponseDTO;
+import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshRouteResultsResponseDTO;
 
 /**
  * Service pour gérer les analytics de l'application.

@@ -1,12 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
-import be.mirooz.elitedangerous.analytics.SpanshGuidExpiredException;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchRequestDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteRequestDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponse;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshSearchResponseDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResponseDTO;
-import be.mirooz.elitedangerous.analytics.dto.spansh.SpanshRouteResultsResponseDTO;
+import be.mirooz.elitedangerous.backend.analytics.SpanshGuidExpiredException;
+import be.mirooz.elitedangerous.backend.analytics.dto.spansh.*;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;

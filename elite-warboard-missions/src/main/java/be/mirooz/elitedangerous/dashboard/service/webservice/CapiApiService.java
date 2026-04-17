@@ -1,10 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice;
 
-import be.mirooz.elitedangerous.capi.client.CapiClient;
-import be.mirooz.elitedangerous.capi.client.UnauthorizedException;
-import be.mirooz.elitedangerous.capi.generated.model.CapiApiResponse;
-import be.mirooz.elitedangerous.capi.generated.model.CapiMarketEvent;
-import be.mirooz.elitedangerous.capi.generated.model.CapiMarketProxyRequest;
+import be.mirooz.elitedangerous.backend.capi.CapiFacade;
+import be.mirooz.elitedangerous.backend.capi.UnauthorizedException;
+import be.mirooz.elitedangerous.backend.generated.model.CapiApiResponse;
+import be.mirooz.elitedangerous.backend.generated.model.CapiMarketEvent;
+import be.mirooz.elitedangerous.backend.generated.model.CapiMarketProxyRequest;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,7 +19,7 @@ public final class CapiApiService {
 
     private static final CapiApiService INSTANCE = new CapiApiService();
 
-    private final CapiClient capiClient = CapiClient.getInstance();
+    private final CapiFacade capiFacade = CapiFacade.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private CapiApiService() {}
@@ -42,7 +42,7 @@ public final class CapiApiService {
                     .fid(s.getFID())
                     .commanderName(s.getCommanderName())
                     .event(event);
-            CapiApiResponse response = capiClient.postMarket(payload);
+            CapiApiResponse response = capiFacade.postMarket(payload);
             handleSuccess(response);
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getResponse());

@@ -1,5 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.backend.ardentbackend.ArdentBackendApiFacade;
+import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsCrosscheckRequest;
+import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsCrosscheckResponse;
 import be.mirooz.elitedangerous.biologic.BodyType;
 import be.mirooz.elitedangerous.biologic.StarType;
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
@@ -21,6 +24,7 @@ import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailSer
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Platform;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
