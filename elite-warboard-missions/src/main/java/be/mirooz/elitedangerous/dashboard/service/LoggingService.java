@@ -43,7 +43,7 @@ public class LoggingService {
     public void initialize() {
         try {
             // Créer le dossier des préférences s'il n'existe pas
-            Path preferencesDir = Paths.get(System.getProperty("user.home"), ".elite-wardboard");
+            Path preferencesDir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
             Files.createDirectories(preferencesDir);
 
             // Supprimer les anciens fichiers de log pour ne garder que le dernier

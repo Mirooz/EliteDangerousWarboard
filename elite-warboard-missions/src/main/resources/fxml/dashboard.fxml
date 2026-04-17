@@ -33,6 +33,12 @@
                             </HBox>
                         </VBox>
                         <Region HBox.hgrow="ALWAYS"/>
+                        <ImageView fx:id="donateButtonImage"
+                                   fitHeight="58"
+                                   preserveRatio="true"
+                                   smooth="true"
+                                   styleClass="donate-button-image"
+                                   onMouseClicked="#openDonateLink"/>
                         <Label fx:id="statusLabel" styleClass="status-label"/>
                         <Button fx:id="configButton" mnemonicParsing="false" onAction="#openConfigDialog"
                                 styleClass="config-button" text="⚙"/>

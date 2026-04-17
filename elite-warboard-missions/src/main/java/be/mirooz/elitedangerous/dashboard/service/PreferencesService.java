@@ -16,7 +16,7 @@ public class PreferencesService {
 
     private PreferencesService() {
         this.preferences = new Properties();
-        this.preferencesFile = Paths.get(System.getProperty("user.home"), ".elite-wardboard", "preferences.properties");
+        this.preferencesFile = Paths.get(System.getProperty("user.home"), ".elite-warboard", "preferences.properties");
         loadPreferences();
     }
 
@@ -130,7 +130,7 @@ public class PreferencesService {
      * Récupère le nombre de jours pour la lecture des journaux
      */
     public int getJournalDays() {
-        String daysStr = preferences.getProperty("journal.days", "60");
+        String daysStr = preferences.getProperty("journal.days", "180");
         try {
             return Integer.parseInt(daysStr);
         } catch (NumberFormatException e) {

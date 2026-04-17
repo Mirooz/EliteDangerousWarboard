@@ -28,11 +28,15 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.CacheHint;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
 
+import java.awt.Desktop;
+import java.net.URI;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -46,6 +50,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     public Label appSubtitleLabel;
     public Label statusLabel;
     public Button configButton;
+    public ImageView donateButtonImage;
     @FXML
     private TabPane mainTabPane;
     
@@ -104,6 +109,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         loadComponents();
         loadMissions();
         initializeTabImages();
+        loadDonateButtonImage();
         popupManager.attachToContainer(popupContainer);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Arrêt global : arrêt des services de journal...");
@@ -292,6 +298,11 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         appTitleLabel.setText(localizationService.getString("header.app.title"));
         appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
         updateStatusLabel();
+        if (donateButtonImage != null) {
+            donateButtonImage.setPickOnBounds(true);
+            donateButtonImage.setPreserveRatio(true);
+            Tooltip.install(donateButtonImage, new Tooltip(localizationService.getString("config.donate.button")));
+        }
         
         // Mettre à jour les traductions des labels commander/system/station
         if (commanderHeaderLabel != null) {
@@ -359,6 +370,41 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             statusLabel.setText(localizationService.getString("commander.online"));
         } else {
             statusLabel.setText(localizationService.getString("commander.offline"));
+        }
+    }
+
+    private void loadDonateButtonImage() {
+        try {
+            Image donateImage = new Image(
+                    getClass().getResourceAsStream("/images/donate.png"),
+                    0,
+                    48,
+                    true,
+                    true
+            );
+            donateButtonImage.setImage(donateImage);
+            donateButtonImage.setFitHeight(48);
+            donateButtonImage.setPreserveRatio(true);
+            donateButtonImage.setSmooth(true);
+            donateButtonImage.setCache(true);
+            donateButtonImage.setCacheHint(CacheHint.QUALITY);
+        } catch (Exception e) {
+            System.err.println("Erreur chargement image donate: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void openDonateLink(MouseEvent event) {
+        try {
+            URI uri = new URI("https://www.paypal.com/donate/?hosted_button_id=2GSWMTWB4SHA2");
+            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                desktop.browse(uri);
+            } else {
+                System.err.println("Impossible d'ouvrir le navigateur pour le lien de don");
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur ouverture lien donate: " + e.getMessage());
         }
     }
 
