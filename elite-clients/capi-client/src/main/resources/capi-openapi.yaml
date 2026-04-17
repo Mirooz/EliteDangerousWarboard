@@ -1,0 +1,365 @@
+---
+openapi: 3.0.3
+info:
+  title: analytics-backend-api API
+  version: 1.3.4-SNAPSHOT
+paths:
+  /api/analytics/health:
+    get:
+      tags:
+      - Analytics Controller
+      responses:
+        "200":
+          description: OK
+  /api/analytics/sessions/start:
+    post:
+      tags:
+      - Analytics Controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartSessionRequest'
+      responses:
+        "200":
+          description: OK
+  /api/analytics/sessions/{sessionId}/end:
+    post:
+      tags:
+      - Analytics Controller
+      parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndSessionRequest'
+      responses:
+        "200":
+          description: OK
+  /api/analytics/version/latest:
+    get:
+      tags:
+      - Analytics Controller
+      responses:
+        "200":
+          description: OK
+  /api/ardent/commodities/maxsell:
+    post:
+      tags:
+      - Ardent Api Controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommodityMarketQueryRequest'
+      responses:
+        "200":
+          description: OK
+  /api/ardent/commodities/nearby/buy:
+    post:
+      tags:
+      - Ardent Api Controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NearbyExportsCrosscheckRequest'
+      responses:
+        "200":
+          description: OK
+  /api/capi/callback:
+    get:
+      tags:
+      - Capi Controller
+      summary: Callback OAuth Frontier (HTML)
+      parameters:
+      - name: code
+        in: query
+        schema:
+          type: string
+      - name: state
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/html:
+              schema:
+                type: string
+  /api/capi/fleetcarrier:
+    post:
+      tags:
+      - Capi Controller
+      summary: Proxy CAPI données fleet carrier
+      description: "Réponses JSON : enveloppe CapiApiResponse (200, 401 ou 502)."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapiFleetCarrierProxyRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapiApiResponse'
+  /api/capi/fleetcarrier/market:
+    post:
+      tags:
+      - Capi Controller
+      summary: Met en file une publication market fleet carrier différée
+      description: "Réponses JSON : enveloppe CapiApiResponse (202 ou 400)."
+      parameters:
+      - name: delay
+        in: query
+        schema:
+          format: int32
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapiFleetCarrierProxyRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapiApiResponse'
+  /api/capi/login:
+    get:
+      tags:
+      - Capi Controller
+      summary: URL de login Frontier pour un fid
+      description: "Réponses JSON : enveloppe CapiApiResponse (200 ou 400)."
+      parameters:
+      - name: fid
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapiApiResponse'
+  /api/capi/market:
+    post:
+      tags:
+      - Capi Controller
+      summary: Proxy CAPI marché + publication EDDN
+      description: "Réponses JSON : enveloppe CapiApiResponse (200, 401, 409 ou 502\
+        \ selon le cas)."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapiMarketProxyRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapiApiResponse'
+  /api/spansh/expressway-to-exomastery:
+    post:
+      tags:
+      - Spansh Controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpanshRouteRequestDTO'
+      responses:
+        "200":
+          description: OK
+  /api/spansh/road-to-riches:
+    post:
+      tags:
+      - Spansh Controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpanshRouteRequestDTO'
+      responses:
+        "200":
+          description: OK
+  /api/spansh/route/{guid}:
+    get:
+      tags:
+      - Spansh Controller
+      parameters:
+      - name: guid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/spansh/search/{guid}:
+    get:
+      tags:
+      - Spansh Controller
+      parameters:
+      - name: guid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/spansh/stratum-undiscovered:
+    post:
+      tags:
+      - Spansh Controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpanshSearchRequestDTO'
+      responses:
+        "200":
+          description: OK
+components:
+  schemas:
+    CapiApiErrorBody:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: {}
+    CapiApiResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data: {}
+        error:
+          $ref: '#/components/schemas/CapiApiErrorBody'
+    CapiFleetCarrierProxyRequest:
+      required:
+      - fid
+      - commanderName
+      type: object
+      properties:
+        fid:
+          pattern: \S
+          type: string
+        commanderName:
+          pattern: \S
+          type: string
+        language:
+          type: string
+    CapiMarketEvent:
+      required:
+      - event
+      - MarketID
+      type: object
+      properties:
+        timestamp:
+          type: string
+        event:
+          pattern: (?i)^Market$
+          type: string
+        MarketID:
+          format: int64
+          type: integer
+        StationName:
+          type: string
+        StationType:
+          type: string
+        CarrierDockingAccess:
+          type: string
+        StarSystem:
+          type: string
+    CapiMarketProxyRequest:
+      required:
+      - fid
+      - commanderName
+      - event
+      type: object
+      properties:
+        fid:
+          pattern: \S
+          type: string
+        commanderName:
+          pattern: \S
+          type: string
+        event:
+          $ref: '#/components/schemas/CapiMarketEvent'
+    CommodityMarketQueryRequest:
+      type: object
+      properties:
+        commodityNames:
+          type: array
+          items:
+            type: string
+    EndSessionRequest:
+      type: object
+      properties:
+        panelTimes:
+          type: object
+          additionalProperties:
+            format: int64
+            type: integer
+    NearbyExportsCrosscheckRequest:
+      type: object
+      properties:
+        systemName:
+          type: string
+        commodityNames:
+          type: array
+          items:
+            type: string
+        avoidPlanetaryLanding:
+          type: boolean
+    SpanshRouteRequestDTO:
+      type: object
+      properties:
+        commandername:
+          type: string
+        maxJumpRange:
+          format: double
+          type: number
+        systemName:
+          type: string
+        destinationSystem:
+          type: string
+        maxSystems:
+          format: int32
+          type: integer
+    SpanshSearchRequestDTO:
+      type: object
+      properties:
+        commandername:
+          type: string
+        referenceSystem:
+          type: string
+    StartSessionRequest:
+      type: object
+      properties:
+        commanderName:
+          type: string
+        appVersion:
+          type: string
+        operatingSystem:
+          type: string
