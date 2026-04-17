@@ -27,10 +27,13 @@ import java.util.Map;
 public final class CapiApiService {
 
     private static final CapiApiService INSTANCE = new CapiApiService();
+    private static final long MARKET_MIN_INTERVAL_MS = 1000L;
 
     private final CapiFacade capiFacade = CapiFacade.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Object marketRateLimitLock = new Object();
     private boolean authPromptVisible = false;
+    private long lastMarketSendAtMs = 0L;
 
     private CapiApiService() {}
 
@@ -40,6 +43,9 @@ public final class CapiApiService {
 
     public void sendMarketDatas(JsonNode journalMarketEvent) {
         if (DashboardContext.getInstance().isBatchLoading()) {
+            return;
+        }
+        if (!canSendMarketNow()) {
             return;
         }
         try {
@@ -58,6 +64,17 @@ public final class CapiApiService {
             handleFrontierAuth(e.getResponse());
         } catch (IOException e) {
             System.err.println("Market send error: " + e.getMessage());
+        }
+    }
+
+    private boolean canSendMarketNow() {
+        long now = System.currentTimeMillis();
+        synchronized (marketRateLimitLock) {
+            if (now - lastMarketSendAtMs < MARKET_MIN_INTERVAL_MS) {
+                return false;
+            }
+            lastMarketSendAtMs = now;
+            return true;
         }
     }
 
