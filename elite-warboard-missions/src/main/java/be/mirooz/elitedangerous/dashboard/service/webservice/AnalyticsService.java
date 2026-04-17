@@ -15,14 +15,16 @@ import be.mirooz.elitedangerous.backend.spansh.SpanshFacade;
  * Utilise le module analytics-backend-client pour communiquer avec le backend.
  */
 public class AnalyticsService {
-    
+
     private static final AnalyticsService INSTANCE = new AnalyticsService();
+    private final CapiApiService capiApiService;
     private final AnalyticsClient analyticsClient;
     private final SpanshFacade spanshFacade;
     
     private AnalyticsService() {
         this.analyticsClient = AnalyticsClient.getInstance();
         this.spanshFacade = SpanshFacade.getInstance();
+        this.capiApiService = CapiApiService.getInstance();
     }
     
     public static AnalyticsService getInstance() {
@@ -33,6 +35,7 @@ public class AnalyticsService {
      * Démarre une session analytics pour un commandant
      */
     public void startSession(String commanderName) {
+        capiApiService.checkCapiAuthentication();
         analyticsClient.startSession(commanderName);
     }
     

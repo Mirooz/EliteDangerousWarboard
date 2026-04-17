@@ -78,7 +78,7 @@ public final class CapiApiService {
         }
     }
 
-    public void showStartupAuthenticationPromptIfNeeded() {
+    public void checkCapiAuthentication() {
         new Thread(() -> {
             try {
                 CommanderStatus status = CommanderStatus.getInstance();
@@ -94,7 +94,7 @@ public final class CapiApiService {
                     promptAuthenticationApproval();
                 }
             } catch (IOException e) {
-                System.err.println("CAPI profile check failed at startup: " + e.getMessage());
+                System.err.println("CAPI profile check failed: " + e.getMessage());
                 promptAuthenticationApproval();
             }
         }, "capi-profile-check").start();

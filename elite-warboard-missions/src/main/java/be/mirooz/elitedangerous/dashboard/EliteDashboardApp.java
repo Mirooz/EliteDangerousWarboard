@@ -7,7 +7,6 @@ import be.mirooz.elitedangerous.dashboard.service.LoggingService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
-import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Application;
@@ -124,9 +123,6 @@ public class EliteDashboardApp extends Application {
             });
 
             stage.show();
-
-            // Demande d'approbation CAPI au démarrage (une seule fois tant que non authentifié)
-            Platform.runLater(() -> CapiApiService.getInstance().showStartupAuthenticationPromptIfNeeded());
 
             // Initialiser et démarrer le service de toggle de fenêtre
             windowToggleService.initialize(stage, comboBox, rootPane);
