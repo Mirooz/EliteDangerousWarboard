@@ -198,6 +198,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CapiApiResponse'
+  /api/capi/profile:
+    get:
+      tags:
+      - Capi Controller
+      summary: Vérifie token CAPI et récupère le profil Frontier
+      description: "Réponses JSON : enveloppe CapiApiResponse (200, 400, 401 ou 502)."
+      parameters:
+      - name: commanderName
+        in: query
+        schema:
+          type: string
+      - name: fid
+        in: query
+        schema:
+          type: string
+      - name: language
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapiApiResponse'
   /api/spansh/expressway-to-exomastery:
     post:
       tags:

@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.view.common;
 
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.NotificationStackManager;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -23,9 +24,11 @@ public class VersionUpdateNotificationComponent extends VBox {
     
     private final String downloadUrl;
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final VBox notificationStack;
     
-    public VersionUpdateNotificationComponent(String latestVersion, String downloadUrl, StackPane container) {
+    public VersionUpdateNotificationComponent(String latestVersion, String releaseBody, String downloadUrl, StackPane container) {
         this.downloadUrl = downloadUrl;
+        this.notificationStack = NotificationStackManager.getInstance().getOrCreateStack(container);
         
         // Style du conteneur principal
         this.getStyleClass().add("version-update-notification");
@@ -44,6 +47,13 @@ public class VersionUpdateNotificationComponent extends VBox {
         Label messageLabel = new Label(message);
         messageLabel.getStyleClass().add("version-notification-message");
         messageLabel.setWrapText(true);
+
+        String detailMessage = (releaseBody != null && !releaseBody.isBlank())
+                ? releaseBody
+                : localizationService.getString("version.notification.message");
+        Label detailLabel = new Label(detailMessage);
+        detailLabel.getStyleClass().add("version-notification-detail");
+        detailLabel.setWrapText(true);
         
         // Bouton Download avec traduction
         Button downloadButton = new Button(localizationService.getString("version.download_now"));
@@ -51,26 +61,21 @@ public class VersionUpdateNotificationComponent extends VBox {
         downloadButton.setCursor(Cursor.HAND);
         downloadButton.setOnAction(e -> openDownloadUrl());
         
-        // Bouton Close
-        Button closeButton = new Button("✕");
-        closeButton.getStyleClass().add("version-close-button");
-        closeButton.setCursor(Cursor.HAND);
-        closeButton.setOnAction(e -> closeNotification(container));
+        Button hideButton = new Button(localizationService.getString("common.hide"));
+        hideButton.getStyleClass().add("version-hide-button");
+        hideButton.setCursor(Cursor.HAND);
+        hideButton.setOnAction(e -> closeNotification());
         
         // Conteneur pour les boutons
         HBox buttonsContainer = new HBox(8);
         buttonsContainer.setAlignment(Pos.CENTER_LEFT);
-        buttonsContainer.getChildren().addAll(downloadButton, closeButton);
+        buttonsContainer.getChildren().addAll(downloadButton, hideButton);
         
         // Ajouter les éléments
-        this.getChildren().addAll(messageLabel, buttonsContainer);
-        
-        // Positionner en haut à droite, mais descendre un peu pour ne pas bloquer le bouton de configuration
-        StackPane.setAlignment(this, Pos.TOP_RIGHT);
-        StackPane.setMargin(this, new Insets(60, 20, 0, 0)); // 60px du haut pour laisser de l'espace au bouton config
+        this.getChildren().addAll(messageLabel, detailLabel, buttonsContainer);
         
         // Ajouter au conteneur
-        container.getChildren().add(this);
+        notificationStack.getChildren().add(this);
         
         // Animation d'apparition
         FadeTransition fadeIn = new FadeTransition(Duration.millis(300), this);
@@ -97,11 +102,11 @@ public class VersionUpdateNotificationComponent extends VBox {
     /**
      * Ferme la notification avec animation
      */
-    private void closeNotification(StackPane container) {
+    private void closeNotification() {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), this);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
-        fadeOut.setOnFinished(e -> container.getChildren().remove(this));
+        fadeOut.setOnFinished(e -> notificationStack.getChildren().remove(this));
         fadeOut.play();
     }
 }
