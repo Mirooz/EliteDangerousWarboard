@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard;
 
-import be.mirooz.elitedangerous.backend.analytics.dto.LatestVersionResponse;
+import be.mirooz.elitedangerous.backend.generated.model.LatestVersionResponse;
 import be.mirooz.elitedangerous.dashboard.view.common.VersionUpdateNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;

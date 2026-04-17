@@ -1,29 +1,27 @@
 package be.mirooz.elitedangerous.backend.capi;
 
 import be.mirooz.elitedangerous.backend.BackendBundledProperties;
+import be.mirooz.elitedangerous.backend.generated.ApiClient;
+import be.mirooz.elitedangerous.backend.generated.ApiException;
+import be.mirooz.elitedangerous.backend.generated.api.CapiControllerApi;
 import be.mirooz.elitedangerous.backend.generated.model.CapiApiResponse;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketProxyRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.*;
-import java.time.Duration;
 
 public final class CapiFacade {
 
     private static final CapiFacade INSTANCE = new CapiFacade();
 
-    private final HttpClient httpClient;
+    private final CapiControllerApi capiApi;
     private final ObjectMapper mapper = new ObjectMapper();
-    private final String baseUrl;
 
     private CapiFacade() {
-        this.baseUrl = require("backend.base-url");
-
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
+        String baseUrl = BackendBundledProperties.get("backend.base-url", "http://localhost:8080");
+        ApiClient apiClient = new ApiClient();
+        apiClient.updateBaseUri(baseUrl);
+        this.capiApi = new CapiControllerApi(apiClient);
     }
 
     public static CapiFacade getInstance() {
@@ -32,35 +30,13 @@ public final class CapiFacade {
 
     public CapiApiResponse postMarket(CapiMarketProxyRequest request) throws IOException {
         try {
-            String json = mapper.writeValueAsString(request);
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/api/capi/market"))
-                    .timeout(Duration.ofSeconds(20))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-            int status = response.statusCode();
-            String body = response.body();
-
-            CapiApiResponse apiResponse = parse(body);
-
-            if (status == 401) {
-                throw new UnauthorizedException(apiResponse);
+            return capiApi.apiCapiMarketPost(request);
+        } catch (ApiException e) {
+            if (e.getCode() == 401) {
+                CapiApiResponse response = parse(e.getResponseBody());
+                throw new UnauthorizedException(response);
             }
-
-            if (status < 200 || status >= 300) {
-                throw new IOException("HTTP " + status + " - " + body);
-            }
-
-            return apiResponse;
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException("Request interrupted", e);
+            throw new IOException("CAPI backend market call failed: HTTP " + e.getCode() + " - " + e.getMessage(), e);
         }
     }
 
@@ -69,13 +45,5 @@ public final class CapiFacade {
             return new CapiApiResponse();
         }
         return mapper.readValue(body, CapiApiResponse.class);
-    }
-
-    private static String require(String key) {
-        String value = BackendBundledProperties.get(key);
-        if (value == null) {
-            throw new IllegalStateException("Missing property: " + key);
-        }
-        return value.trim();
     }
 }

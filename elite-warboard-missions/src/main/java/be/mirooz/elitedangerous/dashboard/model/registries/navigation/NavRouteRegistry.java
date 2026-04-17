@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.navigation;
 
-import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
+import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

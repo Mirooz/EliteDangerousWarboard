@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
+import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;

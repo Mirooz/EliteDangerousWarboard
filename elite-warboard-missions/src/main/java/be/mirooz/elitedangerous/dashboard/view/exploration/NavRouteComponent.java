@@ -1,9 +1,17 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
-import be.mirooz.elitedangerous.backend.analytics.SpanshGuidExpiredException;
-import be.mirooz.elitedangerous.backend.analytics.dto.spansh.*;
+import be.mirooz.elitedangerous.backend.spansh.SpanshGuidExpiredException;
+import be.mirooz.elitedangerous.backend.generated.model.BodyResult;
+import be.mirooz.elitedangerous.backend.generated.model.Parent;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteResponseDTO;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteResultsResponse;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponse;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponseDTO;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteRequestDTO;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchRequestDTO;
+import be.mirooz.elitedangerous.backend.generated.model.SystemResult;
 import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
+import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
@@ -823,7 +831,7 @@ public class NavRouteComponent implements Initializable {
         new Thread(() -> {
             try {
                 // Vérifier que le mode actuel nécessite l'API Spansh
-                if (currentMode == null || !currentMode.requiresSpanshApi() || currentMode.getSpanshEndpoint() == null) {
+                if (currentMode == null || !currentMode.requiresSpanshApi()) {
                     Platform.runLater(() -> {
                         System.err.println("⚠️ Le mode actuel ne nécessite pas l'API Spansh");
                         setLoadingVisible(false);
@@ -857,7 +865,6 @@ public class NavRouteComponent implements Initializable {
                 // Variable pour savoir si on doit afficher le popup (uniquement si on recharge une route existante)
                 final boolean shouldShowPopup = useSavedGuid;
 
-                String endpoint = currentMode.getSpanshEndpoint();
                 boolean requiresMaxJumpRange = currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY 
                     || currentMode == ExplorationMode.ROAD_TO_RICHES;
 
@@ -871,12 +878,12 @@ public class NavRouteComponent implements Initializable {
                     try {
                         if (requiresMaxJumpRange) {
                             // Pour les routes (expressway-to-exomastery et road-to-riches), utiliser /api/spansh/search/{guid}
-                            SpanshRouteResultsResponseDTO routeResults = analyticsService.getSpanshRouteResultsByGuid(savedGuid);
+                            SpanshRouteResultsResponse routeResults = analyticsService.getSpanshRouteResultsByGuid(savedGuid);
                             spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
                             savedJobGuid = savedGuid;
                         } else {
-                            // Pour les recherches, utiliser getSpanshSearchByGuidAndEndpoint
-                            SpanshSearchResponseDTO responseDTO = analyticsService.getSpanshSearchByGuidAndEndpoint(endpoint, savedGuid);
+                            // Pour les recherches, utiliser getSpanshSearchByGuidAndMode
+                            SpanshSearchResponseDTO responseDTO = analyticsService.getSpanshSearchByGuidAndMode(currentMode, savedGuid);
                             spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, false);
                         }
                     } catch (SpanshGuidExpiredException e) {
@@ -892,7 +899,7 @@ public class NavRouteComponent implements Initializable {
                 // Si useSavedGuid est false (soit initialement, soit après expiration du GUID), faire une nouvelle demande POST
                 if (!useSavedGuid) {
                     // Faire un POST normal (nouveau call)
-                    System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name() + " (endpoint: " + endpoint + ")");
+                    System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name());
                     
                     if (requiresMaxJumpRange) {
                         // Récupérer la portée maximale de saut depuis le vaisseau
@@ -934,37 +941,36 @@ public class NavRouteComponent implements Initializable {
                             }
                         }
                         
-                        SpanshRouteRequestDTO routeRequestDTO = new SpanshRouteRequestDTO(
-                            maxJumpRange, 
-                            currentSystem, 
-                            destinationSystem, 
-                            maxSystems,
-                            commanderStatus.getCommanderName()
-                        );
+                        SpanshRouteRequestDTO routeRequestDTO = new SpanshRouteRequestDTO()
+                            .maxJumpRange(maxJumpRange)
+                            .systemName(currentSystem)
+                            .destinationSystem(destinationSystem)
+                            .maxSystems(maxSystems)
+                            .commandername(commanderStatus.getCommanderName());
                         System.out.println("📤 Envoi de la requête route : maxJumpRange=" + maxJumpRange 
                             + ", systemName=" + currentSystem 
                             + ", destinationSystem=" + (destinationSystem != null ? destinationSystem : "null")
                             + ", maxSystems=" + maxSystems);
                         
-                        SpanshRouteResponseDTO routeResponse = analyticsService.searchSpanshRouteByEndpoint(endpoint, routeRequestDTO);
+                        SpanshRouteResponseDTO routeResponse = analyticsService.searchSpanshRoute(currentMode, routeRequestDTO);
                         
                         if (routeResponse != null && routeResponse.getSpanshResponse() != null) {
-                            SpanshRouteResultsResponseDTO routeResults = routeResponse.getSpanshResponse();
+                            SpanshRouteResultsResponse routeResults = routeResponse.getSpanshResponse();
                             
-                            System.out.println("📊 Résultats de route reçus : " + (routeResults.result != null ? routeResults.result.size() : 0) + " systèmes");
-                            System.out.println("📊 État de la route : " + routeResults.state + ", Statut : " + routeResults.status);
+                            System.out.println("📊 Résultats de route reçus : " + (routeResults.getResult() != null ? routeResults.getResult().size() : 0) + " systèmes");
+                            System.out.println("📊 État de la route : " + routeResults.getState() + ", Statut : " + routeResults.getStatus());
                             
                             // Sauvegarder le searchReference ou le job
                             if (routeResponse.getSearchReference() != null && !routeResponse.getSearchReference().isEmpty()) {
                                 savedJobGuid = routeResponse.getSearchReference();
                                 System.out.println("💾 SearchReference reçu : " + savedJobGuid);
-                            } else if (routeResults.job != null && !routeResults.job.isEmpty()) {
-                                savedJobGuid = routeResults.job;
+                            } else if (routeResults.getJob() != null && !routeResults.getJob().isEmpty()) {
+                                savedJobGuid = routeResults.getJob();
                                 System.out.println("💾 Job reçu : " + savedJobGuid);
                             }
                             
-                            if (routeResults.result != null && !routeResults.result.isEmpty()) {
-                                System.out.println("📋 Premier système : " + routeResults.result.get(0).name);
+                            if (routeResults.getResult() != null && !routeResults.getResult().isEmpty()) {
+                                System.out.println("📋 Premier système : " + routeResults.getResult().get(0).getName());
                             }
                             
                             spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
@@ -985,11 +991,10 @@ public class NavRouteComponent implements Initializable {
                         }
                     } else {
                         // Pour stratum-undiscovered, utiliser le DTO simple
-                        SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO(
-                            currentSystem,
-                            commanderStatus.getCommanderName()
-                        );
-                        SpanshSearchResponseDTO responseDTO = analyticsService.searchSpanshByEndpoint(endpoint, requestDTO);
+                        SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO()
+                            .referenceSystem(currentSystem)
+                            .commandername(commanderStatus.getCommanderName());
+                        SpanshSearchResponseDTO responseDTO = analyticsService.searchSpansh(currentMode, requestDTO);
                         spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, true);
                         
                         // Sauvegarder le GUID reçu
@@ -1089,7 +1094,7 @@ public class NavRouteComponent implements Initializable {
         }
 
         SpanshSearchResponse spanshResponse = responseDTO.getSpanshResponse();
-        if (spanshResponse.results == null || spanshResponse.results.isEmpty()) {
+        if (spanshResponse.getResults() == null || spanshResponse.getResults().isEmpty()) {
             return null;
         }
 
@@ -1099,16 +1104,16 @@ public class NavRouteComponent implements Initializable {
         List<RouteSystem> routeSystems = new ArrayList<>();
 
         // Grouper les résultats par système pour éviter les doublons et collecter toutes les infos
-        Map<String, List<SpanshSearchResponse.BodyResult>> systemsMap = spanshResponse.results.stream()
-            .collect(Collectors.groupingBy(result -> result.system_name));
+        Map<String, List<BodyResult>> systemsMap = spanshResponse.getResults().stream()
+            .collect(Collectors.groupingBy(BodyResult::getSystemName));
 
         // Créer une map pour stocker la classe d'étoile principale de chaque système
         Map<String, String> systemStarClassMap = new HashMap<>();
 
         // Pour chaque système, trouver l'étoile principale
-        for (Map.Entry<String, List<SpanshSearchResponse.BodyResult>> entry : systemsMap.entrySet()) {
+        for (Map.Entry<String, List<BodyResult>> entry : systemsMap.entrySet()) {
             String systemName = entry.getKey();
-            List<SpanshSearchResponse.BodyResult> systemResults = entry.getValue();
+            List<BodyResult> systemResults = entry.getValue();
 
             // Chercher l'étoile principale dans les résultats du système
             String starClass = findMainStarClass(systemResults);
@@ -1118,9 +1123,9 @@ public class NavRouteComponent implements Initializable {
         }
 
         // Trier les systèmes par distance (prendre le premier résultat de chaque système pour la distance)
-        List<SpanshSearchResponse.BodyResult> sortedResults = systemsMap.values().stream()
+        List<BodyResult> sortedResults = systemsMap.values().stream()
             .map(results -> results.get(0)) // Prendre le premier résultat de chaque système
-            .sorted(Comparator.comparingDouble(result -> result.distance))
+            .sorted(Comparator.comparingDouble(result -> result.getDistance() != null ? result.getDistance() : 0.0d))
             .collect(Collectors.toList());
 
         // Déterminer le système de référence à utiliser
@@ -1128,14 +1133,14 @@ public class NavRouteComponent implements Initializable {
         double[] referencePosition = null;
         long referenceId64 = 0;
 
-        if (!isNewCall && spanshResponse.reference != null && spanshResponse.reference.name != null) {
+        if (!isNewCall && spanshResponse.getReference() != null && spanshResponse.getReference().getName() != null) {
             // Lors d'un rechargement avec GUID, utiliser le système de référence depuis la réponse
-            referenceSystemName = spanshResponse.reference.name;
-            referenceId64 = spanshResponse.reference.id64;
+            referenceSystemName = spanshResponse.getReference().getName();
+            referenceId64 = spanshResponse.getReference().getId64() != null ? spanshResponse.getReference().getId64() : 0L;
             referencePosition = new double[]{
-                spanshResponse.reference.x,
-                spanshResponse.reference.y,
-                spanshResponse.reference.z
+                spanshResponse.getReference().getX() != null ? spanshResponse.getReference().getX() : 0.0d,
+                spanshResponse.getReference().getY() != null ? spanshResponse.getReference().getY() : 0.0d,
+                spanshResponse.getReference().getZ() != null ? spanshResponse.getReference().getZ() : 0.0d
             };
         }
 
@@ -1155,25 +1160,25 @@ public class NavRouteComponent implements Initializable {
         routeSystems.add(referenceSystem);
 
         // Ajouter les systèmes de la réponse Spansh (en excluant le système de référence s'il est présent)
-        for (SpanshSearchResponse.BodyResult result : sortedResults) {
+        for (BodyResult result : sortedResults) {
             // Ne pas ajouter le système de référence s'il est déjà dans la route
-            if (result.system_name.equals(referenceSystemName)) {
+            if (result.getSystemName().equals(referenceSystemName)) {
                 continue;
             }
 
             RouteSystem routeSystem = new RouteSystem();
-            routeSystem.setSystemName(result.system_name);
-            routeSystem.setSystemAddress(result.system_id64);
+            routeSystem.setSystemName(result.getSystemName());
+            routeSystem.setSystemAddress(result.getSystemId64() != null ? result.getSystemId64() : 0L);
 
             // Récupérer la classe d'étoile depuis la map
-            String starClass = systemStarClassMap.get(result.system_name);
+            String starClass = systemStarClassMap.get(result.getSystemName());
             routeSystem.setStarClass(starClass != null ? starClass : "");
 
             // Position du système
             double[] starPos = new double[]{
-                result.system_x,
-                result.system_y,
-                result.system_z
+                result.getSystemX() != null ? result.getSystemX() : 0.0d,
+                result.getSystemY() != null ? result.getSystemY() : 0.0d,
+                result.getSystemZ() != null ? result.getSystemZ() : 0.0d
             };
             routeSystem.setStarPos(starPos);
 
@@ -1184,7 +1189,7 @@ public class NavRouteComponent implements Initializable {
                 distance = calculateDistance(previousPosition, starPos);
             } else {
                 // Si pas de position précédente, utiliser la distance depuis Spansh
-                distance = result.distance;
+                distance = result.getDistance() != null ? result.getDistance() : 0.0d;
             }
             routeSystem.setDistanceFromPrevious(distance);
 
@@ -1205,23 +1210,23 @@ public class NavRouteComponent implements Initializable {
      * @param routeResults La réponse de résultats de route Spansh
      * @param currentSystemName Le système de référence (système actuel lors du call)
      */
-    private NavRoute buildRouteFromSpanshRouteResults(SpanshRouteResultsResponseDTO routeResults, String currentSystemName) {
+    private NavRoute buildRouteFromSpanshRouteResults(SpanshRouteResultsResponse routeResults, String currentSystemName) {
         if (routeResults == null) {
             System.err.println("❌ buildRouteFromSpanshRouteResults: routeResults est null");
             return null;
         }
         
-        if (routeResults.result == null) {
+        if (routeResults.getResult() == null) {
             System.err.println("❌ buildRouteFromSpanshRouteResults: result est null");
             return null;
         }
         
-        if (routeResults.result.isEmpty()) {
+        if (routeResults.getResult().isEmpty()) {
             System.err.println("❌ buildRouteFromSpanshRouteResults: result est vide");
             return null;
         }
 
-        System.out.println("🔧 Construction de la route depuis " + routeResults.result.size() + " systèmes (système de référence: " + currentSystemName + ")");
+        System.out.println("🔧 Construction de la route depuis " + routeResults.getResult().size() + " systèmes (système de référence: " + currentSystemName + ")");
 
         NavRoute route = new NavRoute();
         route.setTimestamp(java.time.Instant.now().toString());
@@ -1231,18 +1236,18 @@ public class NavRouteComponent implements Initializable {
 
         // Conserver l'ordre des systèmes tel que reçu dans le JSON (pas de tri)
         // Ajouter tous les systèmes de la route dans l'ordre du JSON
-        for (SpanshRouteResultsResponseDTO.SystemResult systemResult : routeResults.result) {
-            if (systemResult.name == null || systemResult.name.isEmpty()) {
+        for (SystemResult systemResult : routeResults.getResult()) {
+            if (systemResult.getName() == null || systemResult.getName().isEmpty()) {
                 System.out.println("⏭️ Système ignoré (nom vide)");
                 continue;
             }
 
             RouteSystem routeSystem = new RouteSystem();
-            routeSystem.setSystemName(systemResult.name);
+            routeSystem.setSystemName(systemResult.getName());
             
             // Convertir id64 en long si possible
             try {
-                long systemId64 = Long.parseLong(systemResult.id64);
+                long systemId64 = Long.parseLong(systemResult.getId64());
                 routeSystem.setSystemAddress(systemId64);
             } catch (NumberFormatException e) {
                 // Si la conversion échoue, utiliser 0
@@ -1254,9 +1259,9 @@ public class NavRouteComponent implements Initializable {
 
             // Position du système
             double[] starPos = new double[]{
-                systemResult.x,
-                systemResult.y,
-                systemResult.z
+                systemResult.getX() != null ? systemResult.getX() : 0.0d,
+                systemResult.getY() != null ? systemResult.getY() : 0.0d,
+                systemResult.getZ() != null ? systemResult.getZ() : 0.0d
             };
             routeSystem.setStarPos(starPos);
 
@@ -1283,26 +1288,26 @@ public class NavRouteComponent implements Initializable {
      * Trouve la classe de l'étoile principale d'un système à partir des résultats Spansh
      * Cherche dans les parents des bodies pour trouver l'étoile principale
      */
-    private String findMainStarClass(List<SpanshSearchResponse.BodyResult> systemResults) {
+    private String findMainStarClass(List<BodyResult> systemResults) {
         if (systemResults == null || systemResults.isEmpty()) {
             return null;
         }
 
         // Chercher d'abord si un body est une étoile principale (is_main_star = true)
-        for (SpanshSearchResponse.BodyResult result : systemResults) {
-            if (result.is_main_star != null && result.is_main_star && "Star".equals(result.type)) {
+        for (BodyResult result : systemResults) {
+            if (result.getIsMainStar() != null && result.getIsMainStar() && "Star".equals(result.getType())) {
                 // Extraire la première lettre du subtype (ex: "K (Yellow-Orange) Star" -> "K")
-                return extractStarClassFromSubtype(result.subtype);
+                return extractStarClassFromSubtype(result.getSubtype());
             }
         }
 
         // Sinon, chercher dans les parents pour trouver une étoile principale
-        for (SpanshSearchResponse.BodyResult result : systemResults) {
-            if (result.parents != null && !result.parents.isEmpty()) {
-                for (SpanshSearchResponse.Parent parent : result.parents) {
-                    if ("Star".equals(parent.type)) {
+        for (BodyResult result : systemResults) {
+            if (result.getParents() != null && !result.getParents().isEmpty()) {
+                for (Parent parent : result.getParents()) {
+                    if ("Star".equals(parent.getType())) {
                         // Extraire la première lettre du subtype
-                        return extractStarClassFromSubtype(parent.subtype);
+                        return extractStarClassFromSubtype(parent.getSubtype());
                     }
                 }
             }

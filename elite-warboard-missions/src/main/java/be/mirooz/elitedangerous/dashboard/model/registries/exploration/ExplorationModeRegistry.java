@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
-import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
+import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 
 /**
  * Registry pour stocker le mode d'exploration actuel.

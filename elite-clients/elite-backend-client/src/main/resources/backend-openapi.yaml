@@ -11,6 +11,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsHealthResponse'
   /api/analytics/sessions/start:
     post:
       tags:
@@ -23,6 +27,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartSessionResponse'
   /api/analytics/sessions/{sessionId}/end:
     post:
       tags:
@@ -42,6 +50,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndSessionResponse'
   /api/analytics/version/latest:
     get:
       tags:
@@ -49,6 +61,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestVersionResponse'
   /api/ardent/commodities/maxsell:
     post:
       tags:
@@ -186,6 +202,8 @@ paths:
     post:
       tags:
       - Spansh Controller
+      summary: Route Expressway to Exomastery (déprécié)
+      description: Utiliser POST /api/spansh/routes/exobiology à la place.
       requestBody:
         content:
           application/json:
@@ -194,10 +212,17 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshRouteResponseDTO'
+      deprecated: true
   /api/spansh/road-to-riches:
     post:
       tags:
       - Spansh Controller
+      summary: Route Road to Riches (déprécié)
+      description: Utiliser POST /api/spansh/routes/riches à la place.
       requestBody:
         content:
           application/json:
@@ -206,10 +231,17 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshRouteResponseDTO'
+      deprecated: true
   /api/spansh/route/{guid}:
     get:
       tags:
       - Spansh Controller
+      summary: Résultats de route Spansh par GUID (déprécié)
+      description: "Utiliser GET /api/spansh/routes/{guid} à la place."
       parameters:
       - name: guid
         in: path
@@ -219,10 +251,69 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshRouteResponseDTO'
+      deprecated: true
+  /api/spansh/routes/exobiology:
+    post:
+      tags:
+      - Spansh Controller
+      summary: Route Expressway to Exomastery (exobiologie)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpanshRouteRequestDTO'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshRouteResponseDTO'
+  /api/spansh/routes/riches:
+    post:
+      tags:
+      - Spansh Controller
+      summary: Route Road to Riches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpanshRouteRequestDTO'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshRouteResponseDTO'
+  /api/spansh/routes/{guid}:
+    get:
+      tags:
+      - Spansh Controller
+      summary: Résultats de route Spansh par GUID
+      parameters:
+      - name: guid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshRouteResponseDTO'
   /api/spansh/search/{guid}:
     get:
       tags:
       - Spansh Controller
+      summary: Résultats de recherche Spansh par GUID (déprécié)
+      description: "Utiliser GET /api/spansh/searches/{guid} à la place."
       parameters:
       - name: guid
         in: path
@@ -232,10 +323,16 @@ paths:
       responses:
         "200":
           description: OK
-  /api/spansh/stratum-undiscovered:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshSearchResponseDTO'
+      deprecated: true
+  /api/spansh/searches/stratum:
     post:
       tags:
       - Spansh Controller
+      summary: Recherche Stratum Undiscovered
       requestBody:
         content:
           application/json:
@@ -244,8 +341,56 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshSearchResponseDTO'
+  /api/spansh/searches/{guid}:
+    get:
+      tags:
+      - Spansh Controller
+      summary: Résultats de recherche Spansh par GUID
+      parameters:
+      - name: guid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshSearchResponseDTO'
+  /api/spansh/stratum-undiscovered:
+    post:
+      tags:
+      - Spansh Controller
+      summary: Recherche Stratum Undiscovered (déprécié)
+      description: Utiliser POST /api/spansh/searches/stratum à la place.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpanshSearchRequestDTO'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshSearchResponseDTO'
+      deprecated: true
 components:
   schemas:
+    AnalyticsHealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        service:
+          type: string
     ArdentCommodityNearbyExport:
       type: object
       properties:
@@ -307,6 +452,157 @@ components:
         distance:
           format: int32
           type: integer
+    AtmosphereComposition:
+      type: object
+      properties:
+        name:
+          type: string
+        share:
+          format: double
+          type: number
+    BodyResult:
+      type: object
+      properties:
+        arg_of_periapsis:
+          format: double
+          type: number
+        atmosphere:
+          type: string
+        atmosphere_composition:
+          type: array
+          items:
+            $ref: '#/components/schemas/AtmosphereComposition'
+        axis_tilt:
+          format: double
+          type: number
+        body_id:
+          format: int32
+          type: integer
+        distance:
+          format: double
+          type: number
+        distance_to_arrival:
+          format: double
+          type: number
+        earth_masses:
+          format: double
+          type: number
+        estimated_mapping_value:
+          format: int32
+          type: integer
+        estimated_scan_value:
+          format: int32
+          type: integer
+        gravity:
+          format: double
+          type: number
+        id:
+          type: string
+        id64:
+          format: int64
+          type: integer
+        is_landable:
+          type: boolean
+        is_main_star:
+          type: boolean
+        is_rotational_period_tidally_locked:
+          type: boolean
+        name:
+          type: string
+        orbital_eccentricity:
+          format: double
+          type: number
+        orbital_inclination:
+          format: double
+          type: number
+        orbital_period:
+          format: double
+          type: number
+        orbital_synchronicity:
+          format: double
+          type: number
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parent'
+        radius:
+          format: double
+          type: number
+        rotational_period:
+          format: double
+          type: number
+        semi_major_axis:
+          format: double
+          type: number
+        solid_composition:
+          type: array
+          items:
+            $ref: '#/components/schemas/SolidComposition'
+        subtype:
+          type: string
+        surface_pressure:
+          format: double
+          type: number
+        surface_temperature:
+          format: double
+          type: number
+        system_id64:
+          format: int64
+          type: integer
+        system_name:
+          type: string
+        system_region:
+          type: string
+        system_x:
+          format: double
+          type: number
+        system_y:
+          format: double
+          type: number
+        system_z:
+          format: double
+          type: number
+        terraforming_state:
+          type: string
+        type:
+          type: string
+        updated_at:
+          $ref: '#/components/schemas/OffsetDateTime'
+        volcanism_type:
+          type: string
+    BodyResult1:
+      type: object
+      properties:
+        distance_to_arrival:
+          format: double
+          type: number
+        estimated_mapping_value:
+          format: int32
+          type: integer
+        estimated_scan_value:
+          format: int32
+          type: integer
+        id:
+          format: int64
+          type: integer
+        id64:
+          format: int64
+          type: integer
+        is_terraformable:
+          type: boolean
+        landmark_value:
+          format: int32
+          type: integer
+        landmarks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Landmark'
+        name:
+          type: string
+        subtype:
+          type: string
+        type:
+          type: string
     CapiApiErrorBody:
       type: object
       properties:
@@ -408,10 +704,47 @@ components:
           additionalProperties:
             format: int64
             type: integer
+    EndSessionResponse:
+      type: object
+      properties:
+        sessionId:
+          format: int64
+          type: integer
+        durationSeconds:
+          format: int64
+          type: integer
+        message:
+          type: string
     Instant:
       format: date-time
       type: string
       example: 2022-03-10T16:15:50Z
+    Landmark:
+      type: object
+      properties:
+        count:
+          format: int32
+          type: integer
+        subtype:
+          type: string
+        type:
+          type: string
+        value:
+          format: int32
+          type: integer
+    LatestVersionResponse:
+      type: object
+      properties:
+        tagName:
+          type: string
+        name:
+          type: string
+        publishedAt:
+          type: string
+        htmlUrl:
+          type: string
+        body:
+          type: string
     MatchedCommodityNearbyExport:
       type: object
       properties:
@@ -482,6 +815,89 @@ components:
           type: array
           items:
             type: string
+    OffsetDateTime:
+      format: date-time
+      type: string
+      example: 2022-03-10T12:15:50-04:00
+    Parent:
+      type: object
+      properties:
+        id64:
+          format: int64
+          type: integer
+        subtype:
+          type: string
+        type:
+          type: string
+    Reference:
+      type: object
+      properties:
+        id64:
+          format: int64
+          type: integer
+        name:
+          type: string
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+        z:
+          format: double
+          type: number
+    RouteParameters:
+      type: object
+      properties:
+        avoid_thargoids:
+          format: int32
+          type: integer
+        loop:
+          type: string
+        max_distance:
+          type: string
+        max_results:
+          type: string
+        min_value:
+          type: string
+        radius:
+          type: string
+        range:
+          type: string
+        source:
+          type: string
+        use_mapping_value:
+          type: string
+    SolidComposition:
+      type: object
+      properties:
+        name:
+          type: string
+        share:
+          format: double
+          type: number
+    SpanshComparisonFilter:
+      type: object
+      properties:
+        comparison:
+          type: string
+        value:
+          type: array
+          items: {}
+    SpanshFilter:
+      type: object
+      properties:
+        value:
+          type: array
+          items:
+            type: string
+    SpanshRangeFilter:
+      type: object
+      properties:
+        min:
+          type: string
+        max:
+          type: string
     SpanshRouteRequestDTO:
       type: object
       properties:
@@ -497,12 +913,108 @@ components:
         maxSystems:
           format: int32
           type: integer
+    SpanshRouteResponseDTO:
+      type: object
+      properties:
+        searchReference:
+          type: string
+        spanshResponse:
+          $ref: '#/components/schemas/SpanshRouteResultsResponse'
+        message:
+          type: string
+    SpanshRouteResultsResponse:
+      type: object
+      properties:
+        job:
+          type: string
+        parameters:
+          $ref: '#/components/schemas/RouteParameters'
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/SystemResult'
+        state:
+          type: string
+        status:
+          type: string
+    SpanshSearchFilters:
+      type: object
+      properties:
+        atmosphere:
+          $ref: '#/components/schemas/SpanshFilter'
+        distance:
+          $ref: '#/components/schemas/SpanshRangeFilter'
+        distance_to_arrival:
+          $ref: '#/components/schemas/SpanshComparisonFilter'
+        gravity:
+          $ref: '#/components/schemas/SpanshComparisonFilter'
+        subtype:
+          $ref: '#/components/schemas/SpanshFilter'
+        updated_at:
+          $ref: '#/components/schemas/SpanshComparisonFilter'
     SpanshSearchRequestDTO:
       type: object
       properties:
         commandername:
           type: string
         referenceSystem:
+          type: string
+    SpanshSearchResponse:
+      type: object
+      properties:
+        count:
+          format: int32
+          type: integer
+        from:
+          format: int32
+          type: integer
+        reference:
+          $ref: '#/components/schemas/Reference'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BodyResult'
+        search_reference:
+          type: string
+        search:
+          $ref: '#/components/schemas/SpanshSearchSaveResponse'
+    SpanshSearchResponseDTO:
+      type: object
+      properties:
+        searchReference:
+          type: string
+        spanshResponse:
+          $ref: '#/components/schemas/SpanshSearchResponse'
+        message:
+          type: string
+    SpanshSearchSaveResponse:
+      type: object
+      properties:
+        filters:
+          $ref: '#/components/schemas/SpanshSearchFilters'
+        page:
+          format: int32
+          type: integer
+        reference_system:
+          type: string
+        reference_system_details:
+          $ref: '#/components/schemas/Reference'
+        size:
+          format: int32
+          type: integer
+        sort:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpanshSort'
+    SpanshSort:
+      type: object
+      properties:
+        distance:
+          $ref: '#/components/schemas/SpanshSortDirection'
+    SpanshSortDirection:
+      type: object
+      properties:
+        direction:
           type: string
     StartSessionRequest:
       type: object
@@ -513,3 +1025,34 @@ components:
           type: string
         operatingSystem:
           type: string
+    StartSessionResponse:
+      type: object
+      properties:
+        sessionId:
+          format: int64
+          type: integer
+        message:
+          type: string
+    SystemResult:
+      type: object
+      properties:
+        bodies:
+          type: array
+          items:
+            $ref: '#/components/schemas/BodyResult1'
+        id64:
+          type: string
+        jumps:
+          format: int32
+          type: integer
+        name:
+          type: string
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+        z:
+          format: double
+          type: number

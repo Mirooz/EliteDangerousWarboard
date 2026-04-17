@@ -1,12 +1,14 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice;
 
 import be.mirooz.elitedangerous.backend.analytics.AnalyticsClient;
-import be.mirooz.elitedangerous.backend.analytics.dto.LatestVersionResponse;
-import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshSearchRequestDTO;
-import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshSearchResponseDTO;
-import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshRouteRequestDTO;
-import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshRouteResponseDTO;
-import be.mirooz.elitedangerous.backend.analytics.dto.spansh.SpanshRouteResultsResponseDTO;
+import be.mirooz.elitedangerous.backend.generated.model.LatestVersionResponse;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponseDTO;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteResponseDTO;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteResultsResponse;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteRequestDTO;
+import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchRequestDTO;
+import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
+import be.mirooz.elitedangerous.backend.spansh.SpanshFacade;
 
 /**
  * Service pour gérer les analytics de l'application.
@@ -16,9 +18,11 @@ public class AnalyticsService {
     
     private static final AnalyticsService INSTANCE = new AnalyticsService();
     private final AnalyticsClient analyticsClient;
+    private final SpanshFacade spanshFacade;
     
     private AnalyticsService() {
         this.analyticsClient = AnalyticsClient.getInstance();
+        this.spanshFacade = SpanshFacade.getInstance();
     }
     
     public static AnalyticsService getInstance() {
@@ -85,7 +89,7 @@ public class AnalyticsService {
      */
     @Deprecated
     public SpanshSearchResponseDTO getSpanshSearchByGuid(String guid) throws Exception {
-        return analyticsClient.getSpanshSearchByGuidAndEndpoint("search",guid);
+        return spanshFacade.getSpanshSearchByGuid(guid);
     }
 
     /**
@@ -95,8 +99,8 @@ public class AnalyticsService {
      * @return SpanshSearchResponseDTO contenant la réponse de l'API
      * @throws Exception en cas d'erreur lors de l'appel HTTP
      */
-    public SpanshSearchResponseDTO searchSpanshByEndpoint(String endpoint, SpanshSearchRequestDTO searchRequestDTO) throws Exception {
-        return analyticsClient.searchSpanshByEndpoint(endpoint, searchRequestDTO);
+    public SpanshSearchResponseDTO searchSpansh(ExplorationMode mode, SpanshSearchRequestDTO searchRequestDTO) throws Exception {
+        return spanshFacade.searchSpansh(mode, searchRequestDTO);
     }
 
     /**
@@ -106,8 +110,8 @@ public class AnalyticsService {
      * @return SpanshSearchResponseDTO contenant la réponse de l'API
      * @throws Exception en cas d'erreur lors de l'appel HTTP
      */
-    public SpanshSearchResponseDTO getSpanshSearchByGuidAndEndpoint(String endpoint, String guid) throws Exception {
-        return analyticsClient.getSpanshSearchByGuidAndEndpoint(endpoint, guid);
+    public SpanshSearchResponseDTO getSpanshSearchByGuidAndMode(ExplorationMode mode, String guid) throws Exception {
+        return spanshFacade.getSpanshSearchByGuid(guid);
     }
 
     /**
@@ -117,8 +121,8 @@ public class AnalyticsService {
      * @return SpanshRouteResponseDTO contenant searchReference et spanshResponse avec les résultats
      * @throws Exception en cas d'erreur lors de l'appel HTTP
      */
-    public SpanshRouteResponseDTO searchSpanshRouteByEndpoint(String endpoint, SpanshRouteRequestDTO routeRequestDTO) throws Exception {
-        return analyticsClient.searchSpanshRouteByEndpoint(endpoint, routeRequestDTO);
+    public SpanshRouteResponseDTO searchSpanshRoute(ExplorationMode mode, SpanshRouteRequestDTO routeRequestDTO) throws Exception {
+        return spanshFacade.searchSpanshRoute(mode, routeRequestDTO);
     }
 
     /**
@@ -127,8 +131,8 @@ public class AnalyticsService {
      * @return SpanshRouteResultsResponseDTO contenant les résultats de la route
      * @throws Exception en cas d'erreur lors de l'appel HTTP
      */
-    public SpanshRouteResultsResponseDTO getSpanshRouteResultsByJob(String job) throws Exception {
-        return analyticsClient.getSpanshRouteResultsByJob(job);
+    public SpanshRouteResultsResponse getSpanshRouteResultsByJob(String job) throws Exception {
+        return spanshFacade.getSpanshRouteResultsByJob(job);
     }
 
     /**
@@ -138,7 +142,7 @@ public class AnalyticsService {
      * @return SpanshRouteResultsResponseDTO contenant les résultats de la route
      * @throws Exception en cas d'erreur lors de l'appel HTTP
      */
-    public SpanshRouteResultsResponseDTO getSpanshRouteResultsByGuid(String guid) throws Exception {
-        return analyticsClient.getSpanshRouteResultsByGuid(guid);
+    public SpanshRouteResultsResponse getSpanshRouteResultsByGuid(String guid) throws Exception {
+        return spanshFacade.getSpanshRouteResultsByGuid(guid);
     }
 }

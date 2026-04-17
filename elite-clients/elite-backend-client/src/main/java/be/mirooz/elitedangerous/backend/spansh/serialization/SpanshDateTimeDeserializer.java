@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.backend.analytics.dto.spansh;
+package be.mirooz.elitedangerous.backend.spansh.serialization;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -10,11 +10,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 
 /**
- * Désérialiseur personnalisé pour OffsetDateTime qui gère le format de date de l'API Spansh.
- * L'API Spansh retourne des dates au format "2021-10-19 15:08:58Z" (avec un espace)
- * au lieu du format ISO-8601 standard "2021-10-19T15:08:58Z" (avec un T).
+ * Deserializer pour les dates Spansh.
+ * Gère le format "yyyy-MM-dd HH:mm:ssZ" en plus de l'ISO-8601 standard.
  */
-public class SpanshOffsetDateTimeDeserializer extends JsonDeserializer<OffsetDateTime> {
+public class SpanshDateTimeDeserializer extends JsonDeserializer<OffsetDateTime> {
 
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd HH:mm:ss")
@@ -27,22 +26,16 @@ public class SpanshOffsetDateTimeDeserializer extends JsonDeserializer<OffsetDat
         if (dateString == null || dateString.isEmpty()) {
             return null;
         }
-        
-        // Remplacer l'espace par 'T' si nécessaire pour le format ISO-8601
-        // Sinon, utiliser le format personnalisé
+
         try {
-            // Essayer d'abord le format standard ISO-8601
             return OffsetDateTime.parse(dateString);
         } catch (Exception e) {
-            // Si ça échoue, essayer avec le format Spansh (espace au lieu de T)
             String normalizedDate = dateString.replaceFirst(" ", "T");
             try {
                 return OffsetDateTime.parse(normalizedDate);
             } catch (Exception e2) {
-                // Si ça échoue encore, utiliser le formatter personnalisé
                 return OffsetDateTime.parse(dateString, FORMATTER);
             }
         }
     }
 }
-

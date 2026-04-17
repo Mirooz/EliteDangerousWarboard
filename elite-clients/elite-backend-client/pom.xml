@@ -29,23 +29,7 @@
     <!-- ========================= -->
     <dependencies>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webflux</artifactId>
-            <version>6.1.14</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>6.1.14</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty-http</artifactId>
-            <version>1.1.23</version>
-        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -115,28 +99,22 @@
                         </goals>
                         <configuration>
                             <inputSpec>${openapi.resolved.input}</inputSpec>
-
                             <generatorName>java</generatorName>
                             <library>native</library>
-
                             <output>${project.build.directory}/generated-sources/backend-openapi</output>
-
                             <apiPackage>be.mirooz.elitedangerous.backend.generated.api</apiPackage>
                             <modelPackage>be.mirooz.elitedangerous.backend.generated.model</modelPackage>
                             <invokerPackage>be.mirooz.elitedangerous.backend.generated</invokerPackage>
-
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
                             <generateApiDocumentation>false</generateApiDocumentation>
                             <generateModelDocumentation>false</generateModelDocumentation>
-
                             <configOptions>
                                 <dateLibrary>java8</dateLibrary>
                                 <useJakartaEe>true</useJakartaEe>
                                 <hideGenerationTimestamp>true</hideGenerationTimestamp>
                                 <openApiNullable>false</openApiNullable>
                             </configOptions>
-
                         </configuration>
                     </execution>
                 </executions>

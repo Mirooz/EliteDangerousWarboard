@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
-import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationMode;
+import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
