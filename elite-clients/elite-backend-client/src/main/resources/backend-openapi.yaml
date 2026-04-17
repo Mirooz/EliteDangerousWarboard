@@ -124,7 +124,7 @@ paths:
       tags:
       - Capi Controller
       summary: Proxy CAPI données fleet carrier
-      description: "Réponses JSON : enveloppe CapiApiResponse (200, 401 ou 502)."
+      description: "Réponses JSON : DTO CapiFleetCarrierDto (200, 401 ou 502)."
       requestBody:
         content:
           application/json:
@@ -136,13 +136,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CapiApiResponse'
+                $ref: '#/components/schemas/CapiFleetCarrierDto'
   /api/capi/fleetcarrier/market:
     post:
       tags:
       - Capi Controller
       summary: Met en file une publication market fleet carrier différée
-      description: "Réponses JSON : enveloppe CapiApiResponse (202 ou 400)."
+      description: "Réponses JSON : DTO CapiFleetCarrierMarketQueuedDto (202 ou 400)."
       parameters:
       - name: delay
         in: query
@@ -160,13 +160,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CapiApiResponse'
+                $ref: '#/components/schemas/CapiFleetCarrierMarketQueuedDto'
   /api/capi/login:
     get:
       tags:
       - Capi Controller
       summary: URL de login Frontier pour un fid
-      description: "Réponses JSON : enveloppe CapiApiResponse (200 ou 400)."
+      description: "Réponses JSON : DTO CapiLoginDto (200 ou 400)."
       parameters:
       - name: fid
         in: query
@@ -178,14 +178,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CapiApiResponse'
+                $ref: '#/components/schemas/CapiLoginDto'
   /api/capi/market:
     post:
       tags:
       - Capi Controller
       summary: Proxy CAPI marché + publication EDDN
-      description: "Réponses JSON : enveloppe CapiApiResponse (200, 401, 409 ou 502\
-        \ selon le cas)."
+      description: "Réponses JSON : DTO CapiMarketDto (200, 401, 409 ou 502 selon\
+        \ le cas)."
       requestBody:
         content:
           application/json:
@@ -197,13 +197,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CapiApiResponse'
+                $ref: '#/components/schemas/CapiMarketDto'
   /api/capi/profile:
     get:
       tags:
       - Capi Controller
       summary: Vérifie token CAPI et récupère le profil Frontier
-      description: "Réponses JSON : enveloppe CapiApiResponse (200, 400, 401 ou 502)."
+      description: "Réponses JSON : DTO CapiProfileDto (200, 400, 401 ou 502)."
       parameters:
       - name: commanderName
         in: query
@@ -223,7 +223,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CapiApiResponse'
+                $ref: '#/components/schemas/CapiProfileDto'
   /api/spansh/expressway-to-exomastery:
     post:
       tags:
@@ -639,14 +639,436 @@ components:
         details:
           type: object
           additionalProperties: {}
-    CapiApiResponse:
+    CapiFcBartenderFinances:
+      type: object
+      properties:
+        microresourcesTotalValue:
+          format: int64
+          type: integer
+        allTimeProfit:
+          format: int64
+          type: integer
+        microresourcesForSale:
+          format: int32
+          type: integer
+        microresourcesPurchaseOrders:
+          format: int32
+          type: integer
+        balanceAllocForPurchaseOrders:
+          format: int64
+          type: integer
+        profitHistory:
+          type: array
+          items:
+            format: int64
+            type: integer
+    CapiFcCapacity:
+      type: object
+      properties:
+        shipPacks:
+          format: int32
+          type: integer
+        modulePacks:
+          format: int32
+          type: integer
+        cargoForSale:
+          format: int32
+          type: integer
+        cargoNotForSale:
+          format: int32
+          type: integer
+        cargoSpaceReserved:
+          format: int32
+          type: integer
+        crew:
+          format: int32
+          type: integer
+        freeSpace:
+          format: int32
+          type: integer
+        microresourceCapacityTotal:
+          format: int32
+          type: integer
+        microresourceCapacityFree:
+          format: int32
+          type: integer
+        microresourceCapacityUsed:
+          format: int32
+          type: integer
+        microresourceCapacityReserved:
+          format: int32
+          type: integer
+        squadronBankTotal:
+          format: int32
+          type: integer
+    CapiFcCargoItem:
+      type: object
+      properties:
+        commodity:
+          type: string
+        originSystem:
+          type: string
+        mission:
+          type: boolean
+        qty:
+          format: int32
+          type: integer
+        value:
+          format: int64
+          type: integer
+        stolen:
+          type: boolean
+        locName:
+          type: string
+    CapiFcCarrierLocker:
+      type: object
+      properties:
+        assets:
+          type: array
+          items: {}
+        goods:
+          type: array
+          items: {}
+        data:
+          type: array
+          items: {}
+    CapiFcCommodityPurchase:
+      type: object
+      properties:
+        name:
+          type: string
+        total:
+          format: int32
+          type: integer
+        outstanding:
+          format: int32
+          type: integer
+        price:
+          format: int32
+          type: integer
+        blackmarket:
+          type: boolean
+    CapiFcCommoditySale:
+      type: object
+      properties:
+        name:
+          type: string
+        stock:
+          format: int32
+          type: integer
+        price:
+          format: int32
+          type: integer
+        blackmarket:
+          type: boolean
+    CapiFcEconomyNode:
+      type: object
+      properties:
+        name:
+          type: string
+        proportion:
+          format: double
+          type: number
+    CapiFcFinance:
+      type: object
+      properties:
+        bankBalance:
+          format: int64
+          type: integer
+        bankReservedBalance:
+          format: int64
+          type: integer
+        taxation:
+          format: int32
+          type: integer
+        service_taxation:
+          type: object
+          additionalProperties:
+            format: int32
+            type: integer
+        numServices:
+          format: int32
+          type: integer
+        numOptionalServices:
+          format: int32
+          type: integer
+        debtThreshold:
+          format: int64
+          type: integer
+        maintenance:
+          format: int64
+          type: integer
+        maintenanceToDate:
+          format: int64
+          type: integer
+        coreCost:
+          format: int64
+          type: integer
+        servicesCost:
+          format: int64
+          type: integer
+        servicesCostToDate:
+          format: int64
+          type: integer
+        jumpsCost:
+          format: int64
+          type: integer
+        numJumps:
+          format: int32
+          type: integer
+        bartender:
+          $ref: '#/components/schemas/CapiFcBartenderFinances'
+    CapiFcItinerary:
+      type: object
+      properties:
+        completed:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapiFcItineraryVisit'
+        totalDistanceJumpedLY:
+          format: int32
+          type: integer
+        currentJump: {}
+    CapiFcItineraryVisit:
+      type: object
+      properties:
+        departureTime:
+          type: string
+        arrivalTime:
+          type: string
+        state:
+          type: string
+        visitDurationSeconds:
+          format: int64
+          type: integer
+        starsystem:
+          type: string
+    CapiFcMarketCommodity:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+        categoryname:
+          type: string
+        name:
+          type: string
+        stock:
+          format: int32
+          type: integer
+        buyPrice:
+          format: int32
+          type: integer
+        sellPrice:
+          format: int32
+          type: integer
+        demand:
+          format: int32
+          type: integer
+        legality:
+          type: string
+        meanPrice:
+          format: int32
+          type: integer
+        demandBracket:
+          format: int32
+          type: integer
+        stockBracket:
+          format: int32
+          type: integer
+        locName:
+          type: string
+    CapiFcMarketFinances:
+      type: object
+      properties:
+        cargoTotalValue:
+          format: int64
+          type: integer
+        allTimeProfit:
+          format: int64
+          type: integer
+        numCommodsForSale:
+          format: int32
+          type: integer
+        numCommodsPurchaseOrders:
+          format: int32
+          type: integer
+        balanceAllocForPurchaseOrders:
+          format: int64
+          type: integer
+    CapiFcName:
+      type: object
+      properties:
+        callsign:
+          type: string
+        vanityName:
+          type: string
+        filteredVanityName:
+          type: string
+    CapiFcOnFootMicroResources:
+      type: object
+      properties:
+        sales:
+          type: array
+          items: {}
+        purchases:
+          type: array
+          items: {}
+    CapiFcOrderCommodities:
+      type: object
+      properties:
+        sales:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapiFcCommoditySale'
+        purchases:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapiFcCommodityPurchase'
+    CapiFcOrders:
+      type: object
+      properties:
+        commodities:
+          $ref: '#/components/schemas/CapiFcOrderCommodities'
+        onfootmicroresources:
+          $ref: '#/components/schemas/CapiFcOnFootMicroResources'
+    CapiFcReputation:
+      type: object
+      properties:
+        majorFaction:
+          type: string
+        score:
+          format: int32
+          type: integer
+    CapiFcShips:
+      type: object
+      properties:
+        shipyard_list:
+          type: array
+          items: {}
+        discount_list:
+          type: array
+          items: {}
+    CapiFcStationMarket:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+        name:
+          type: string
+        outpostType:
+          type: string
+        imported:
+          type: array
+          items: {}
+        exported:
+          type: array
+          items: {}
+        services:
+          type: object
+          additionalProperties:
+            type: string
+        economies:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CapiFcEconomyNode'
+        prohibited:
+          type: object
+          additionalProperties:
+            type: string
+        commodities:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapiFcMarketCommodity'
+    CapiFleetCarrierDto:
       type: object
       properties:
         status:
           type: string
-        data: {}
+        data:
+          $ref: '#/components/schemas/CapiFleetCarrierProxyResponse'
         error:
           $ref: '#/components/schemas/CapiApiErrorBody'
+    CapiFleetCarrierMarketQueuedDto:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/CapiFleetCarrierMarketQueuedResponse'
+        error:
+          $ref: '#/components/schemas/CapiApiErrorBody'
+    CapiFleetCarrierMarketQueuedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        queueId:
+          format: int64
+          type: integer
+        fid:
+          type: string
+        delayMinutes:
+          format: int32
+          type: integer
+        createdAt:
+          $ref: '#/components/schemas/LocalDateTime'
+        processAfter:
+          $ref: '#/components/schemas/LocalDateTime'
+    CapiFleetCarrierPayload:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/CapiFcName'
+        currentStarSystem:
+          type: string
+        balance:
+          format: int64
+          type: integer
+        fuel:
+          format: int32
+          type: integer
+        state:
+          type: string
+        theme:
+          type: string
+        dockingAccess:
+          type: string
+        notoriousAccess:
+          type: boolean
+        capacity:
+          $ref: '#/components/schemas/CapiFcCapacity'
+        itinerary:
+          $ref: '#/components/schemas/CapiFcItinerary'
+        marketFinances:
+          $ref: '#/components/schemas/CapiFcMarketFinances'
+        blackmarketFinances:
+          $ref: '#/components/schemas/CapiFcMarketFinances'
+        finance:
+          $ref: '#/components/schemas/CapiFcFinance'
+        servicesCrew:
+          type: array
+          items: {}
+        cargo:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapiFcCargoItem'
+        orders:
+          $ref: '#/components/schemas/CapiFcOrders'
+        carrierLocker:
+          $ref: '#/components/schemas/CapiFcCarrierLocker'
+        reputation:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapiFcReputation'
+        market:
+          $ref: '#/components/schemas/CapiFcStationMarket'
+        ships:
+          $ref: '#/components/schemas/CapiFcShips'
+        modules:
+          type: array
+          items: {}
     CapiFleetCarrierProxyRequest:
       required:
       - fid
@@ -661,6 +1083,42 @@ components:
           type: string
         language:
           type: string
+    CapiFleetCarrierProxyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        fid:
+          type: string
+        fleetcarrier:
+          $ref: '#/components/schemas/CapiFleetCarrierPayload'
+    CapiLoginDto:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/CapiLoginRedirectResponse'
+        error:
+          $ref: '#/components/schemas/CapiApiErrorBody'
+    CapiLoginRedirectResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        fid:
+          type: string
+        loginUrl:
+          type: string
+    CapiMarketDto:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/CapiMarketProxyResponse'
+        error:
+          $ref: '#/components/schemas/CapiApiErrorBody'
     CapiMarketEvent:
       required:
       - event
@@ -698,6 +1156,37 @@ components:
           type: string
         event:
           $ref: '#/components/schemas/CapiMarketEvent'
+    CapiMarketProxyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        marketId:
+          format: int64
+          type: integer
+        fid:
+          type: string
+        eddnStatus:
+          type: string
+        reason:
+          type: string
+    CapiProfileDto:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/CapiProfileProxyResponse'
+        error:
+          $ref: '#/components/schemas/CapiApiErrorBody'
+    CapiProfileProxyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        fid:
+          type: string
+        profile: {}
     CommodityMarketDao:
       type: object
       properties:
@@ -771,6 +1260,10 @@ components:
           type: string
         body:
           type: string
+    LocalDateTime:
+      format: date-time
+      type: string
+      example: 2022-03-10T12:15:50
     MatchedCommodityNearbyExport:
       type: object
       properties:

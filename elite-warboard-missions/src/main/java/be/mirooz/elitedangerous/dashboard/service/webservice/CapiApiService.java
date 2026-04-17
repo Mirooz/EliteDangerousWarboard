@@ -2,9 +2,13 @@ package be.mirooz.elitedangerous.dashboard.service.webservice;
 
 import be.mirooz.elitedangerous.backend.capi.CapiFacade;
 import be.mirooz.elitedangerous.backend.capi.UnauthorizedException;
-import be.mirooz.elitedangerous.backend.generated.model.CapiApiResponse;
+import be.mirooz.elitedangerous.backend.generated.model.CapiApiErrorBody;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierDto;
+import be.mirooz.elitedangerous.backend.generated.model.CapiLoginDto;
+import be.mirooz.elitedangerous.backend.generated.model.CapiMarketDto;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketEvent;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketProxyRequest;
+import be.mirooz.elitedangerous.backend.generated.model.CapiProfileDto;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
@@ -59,10 +63,10 @@ public final class CapiApiService {
                     .fid(s.getFID())
                     .commanderName(s.getCommanderName())
                     .event(event);
-            CapiApiResponse response = capiFacade.postMarket(payload);
+            CapiMarketDto response = capiFacade.postMarket(payload);
             handleSuccess(response);
         } catch (UnauthorizedException e) {
-            handleFrontierAuth(e.getResponse());
+            handleFrontierAuth(e.getError());
         } catch (IOException e) {
             System.err.println("Market send error: " + e.getMessage());
         }
@@ -83,18 +87,19 @@ public final class CapiApiService {
         try {
             CommanderStatus status = CommanderStatus.getInstance();
             String language = getCurrentLanguage();
-            CapiApiResponse profileResponse = capiFacade.fetchProfile(
+            CapiProfileDto profileResponse = capiFacade.fetchProfile(
                     status.getCommanderName(),
                     status.getFID(),
                     language
             );
-            boolean profileOk = isProfileResponseOk(profileResponse);
+            boolean profileOk = profileResponse != null
+                    && isOauthApproved(profileResponse.getStatus(), profileResponse.getError());
             if (!profileOk) {
                 promptAuthenticationApproval();
             }
             return profileOk;
         } catch (UnauthorizedException e) {
-            handleFrontierAuth(e.getResponse());
+            handleFrontierAuth(e.getError());
             return false;
         } catch (IOException e) {
             System.err.println("CAPI profile check failed: " + e.getMessage());
@@ -107,12 +112,13 @@ public final class CapiApiService {
         try {
             CommanderStatus status = CommanderStatus.getInstance();
             String language = getCurrentLanguage();
-            CapiApiResponse fleetCarrierResponse = capiFacade.fetchFleetCarrier(
+            CapiFleetCarrierDto fleetCarrierResponse = capiFacade.fetchFleetCarrier(
                     status.getCommanderName(),
                     status.getFID(),
                     language
             );
-            if (!isProfileResponseOk(fleetCarrierResponse)) {
+            if (fleetCarrierResponse == null
+                    || !isOauthApproved(fleetCarrierResponse.getStatus(), fleetCarrierResponse.getError())) {
                 return;
             }
             JsonNode dataNode = objectMapper.valueToTree(fleetCarrierResponse.getData());
@@ -120,7 +126,7 @@ public final class CapiApiService {
             carrierTrade.applyFleetCarrierCapiSnapshot(dataNode);
             System.out.println("CAPI fleet carrier synced: " + carrierTrade.getCarrierStatus());
         } catch (UnauthorizedException e) {
-            handleFrontierAuth(e.getResponse());
+            handleFrontierAuth(e.getError());
         } catch (IOException e) {
             System.err.println("CAPI fleet carrier fetch failed: " + e.getMessage());
         }
@@ -136,7 +142,7 @@ public final class CapiApiService {
     // SUCCESS
     // =========================
 
-    private void handleSuccess(CapiApiResponse r) {
+    private void handleSuccess(CapiMarketDto r) {
         if (r == null) {
             System.err.println("CAPI market: réponse vide");
             return;
@@ -153,13 +159,13 @@ public final class CapiApiService {
     // AUTH
     // =========================
 
-    private void handleFrontierAuth(CapiApiResponse response) {
-        if (response == null || response.getError() == null) {
+    private void handleFrontierAuth(CapiApiErrorBody error) {
+        if (error == null) {
             System.err.println("CAPI market: réponse auth vide");
             return;
         }
 
-        Map<String, Object> details = response.getError().getDetails();
+        Map<String, Object> details = error.getDetails();
         if (details == null) {
             System.err.println("CAPI market: détails auth absents");
             return;
@@ -168,7 +174,7 @@ public final class CapiApiService {
         String action = (String) details.get("action");
 
         if ("authenticate_frontier".equalsIgnoreCase(action)) {
-            String errorMessage = response.getError().getMessage();
+            String errorMessage = error.getMessage();
 
             if (errorMessage != null && !errorMessage.isBlank()) {
                 System.err.println("CAPI market: " + errorMessage);
@@ -178,7 +184,7 @@ public final class CapiApiService {
             return;
         }
 
-        System.err.println("CAPI market: réponse auth inattendue " + response);
+        System.err.println("CAPI market: réponse auth inattendue " + error);
     }
 
     // =========================
@@ -259,26 +265,25 @@ public final class CapiApiService {
         }
 
         try {
-            CapiApiResponse response = capiFacade.requestAuthentication(fid);
+            CapiLoginDto response = capiFacade.requestAuthentication(fid);
             String loginUrl = extractLoginUrl(response);
             openBrowser(loginUrl);
         } catch (UnauthorizedException e) {
-            handleFrontierAuth(e.getResponse());
+            handleFrontierAuth(e.getError());
         } catch (IOException e) {
             System.err.println("CAPI market: erreur requestAuthentication: " + e.getMessage());
         }
     }
 
-    private String extractLoginUrl(CapiApiResponse response) {
+    private String extractLoginUrl(CapiLoginDto response) {
         if (response == null) {
             return null;
         }
 
-        Object data = response.getData();
-        if (data instanceof Map<?, ?> dataMap) {
-            Object loginUrl = dataMap.get("loginUrl");
-            if (loginUrl instanceof String loginUrlString) {
-                return loginUrlString;
+        if (response.getData() != null && response.getData().getLoginUrl() != null) {
+            String url = response.getData().getLoginUrl();
+            if (!url.isBlank()) {
+                return url;
             }
         }
 
@@ -309,13 +314,10 @@ public final class CapiApiService {
         }
     }
 
-    private boolean isProfileResponseOk(CapiApiResponse response) {
-        if (response == null) {
-            return false;
-        }
-        String status = response.getStatus();
+    /** Réponse CAPI considérée valide côté OAuth (profil, fleet carrier, etc.). */
+    private static boolean isOauthApproved(String status, CapiApiErrorBody error) {
         return status != null
                 && ("success".equalsIgnoreCase(status) || "ok".equalsIgnoreCase(status))
-                && response.getError() == null;
+                && error == null;
     }
 }

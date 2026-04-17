@@ -4,9 +4,14 @@ import be.mirooz.elitedangerous.backend.BackendBundledProperties;
 import be.mirooz.elitedangerous.backend.generated.ApiClient;
 import be.mirooz.elitedangerous.backend.generated.ApiException;
 import be.mirooz.elitedangerous.backend.generated.api.CapiControllerApi;
-import be.mirooz.elitedangerous.backend.generated.model.CapiApiResponse;
+import be.mirooz.elitedangerous.backend.generated.model.CapiApiErrorBody;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierDto;
 import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierProxyRequest;
+import be.mirooz.elitedangerous.backend.generated.model.CapiLoginDto;
+import be.mirooz.elitedangerous.backend.generated.model.CapiMarketDto;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketProxyRequest;
+import be.mirooz.elitedangerous.backend.generated.model.CapiProfileDto;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -29,34 +34,34 @@ public final class CapiFacade {
         return INSTANCE;
     }
 
-    public CapiApiResponse postMarket(CapiMarketProxyRequest request) throws IOException {
+    public CapiMarketDto postMarket(CapiMarketProxyRequest request) throws IOException {
         try {
             return capiApi.apiCapiMarketPost(request);
         } catch (ApiException e) {
             handleApiException(e, "market");
-            return new CapiApiResponse();
+            throw new AssertionError("unreachable");
         }
     }
 
-    public CapiApiResponse requestAuthentication(String fid) throws IOException {
+    public CapiLoginDto requestAuthentication(String fid) throws IOException {
         try {
             return capiApi.apiCapiLoginGet(fid);
         } catch (ApiException e) {
             handleApiException(e, "login");
-            return new CapiApiResponse();
+            throw new AssertionError("unreachable");
         }
     }
 
-    public CapiApiResponse fetchProfile(String commanderName, String fid, String language) throws IOException {
+    public CapiProfileDto fetchProfile(String commanderName, String fid, String language) throws IOException {
         try {
             return capiApi.apiCapiProfileGet(commanderName, fid, language);
         } catch (ApiException e) {
             handleApiException(e, "profile");
-            return new CapiApiResponse();
+            throw new AssertionError("unreachable");
         }
     }
 
-    public CapiApiResponse fetchFleetCarrier(String commanderName, String fid, String language) throws IOException {
+    public CapiFleetCarrierDto fetchFleetCarrier(String commanderName, String fid, String language) throws IOException {
         try {
             CapiFleetCarrierProxyRequest request = new CapiFleetCarrierProxyRequest()
                     .commanderName(commanderName)
@@ -65,14 +70,14 @@ public final class CapiFacade {
             return capiApi.apiCapiFleetcarrierPost(request);
         } catch (ApiException e) {
             handleApiException(e, "fleet carrier");
-            return new CapiApiResponse();
+            throw new AssertionError("unreachable");
         }
     }
 
     private void handleApiException(ApiException e, String operation) throws IOException {
         if (e.getCode() == 401) {
-            CapiApiResponse response = parse(e.getResponseBody());
-            throw new UnauthorizedException(response);
+            CapiApiErrorBody error = parseUnauthorizedError(e.getResponseBody());
+            throw new UnauthorizedException(error);
         }
         throw new IOException(
                 "CAPI backend " + operation + " call failed: HTTP " + e.getCode() + " - " + e.getMessage(),
@@ -80,10 +85,15 @@ public final class CapiFacade {
         );
     }
 
-    private CapiApiResponse parse(String body) throws IOException {
+    private CapiApiErrorBody parseUnauthorizedError(String body) throws IOException {
         if (body == null || body.isBlank()) {
-            return new CapiApiResponse();
+            return null;
         }
-        return mapper.readValue(body, CapiApiResponse.class);
+        JsonNode root = mapper.readTree(body);
+        JsonNode errNode = root.get("error");
+        if (errNode == null || errNode.isNull()) {
+            return null;
+        }
+        return mapper.treeToValue(errNode, CapiApiErrorBody.class);
     }
 }

@@ -1,24 +1,15 @@
 package be.mirooz.elitedangerous.backend.capi;
 
-
-import be.mirooz.elitedangerous.backend.generated.model.CapiApiResponse;
+import be.mirooz.elitedangerous.backend.generated.model.CapiApiErrorBody;
 import lombok.Getter;
 
 @Getter
 public class UnauthorizedException extends RuntimeException {
 
-    private final CapiApiResponse response;
+    private final CapiApiErrorBody error;
 
-    public UnauthorizedException(CapiApiResponse response) {
+    public UnauthorizedException(CapiApiErrorBody error) {
         super("Unauthorized (401)");
-        this.response = response;
-    }
-
-    public Object getData() {
-        return response.getData();
-    }
-
-    public String getStatus() {
-        return response.getStatus();
+        this.error = error;
     }
 }
