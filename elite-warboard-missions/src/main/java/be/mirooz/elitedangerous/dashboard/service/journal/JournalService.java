@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service.journal;
 
 import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;

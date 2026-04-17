@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.registries.colonisation;
+package be.mirooz.elitedangerous.dashboard.model.colonisation;
 
 /**
  * État de chantier dérivé des booléens {@code ConstructionComplete} / {@code ConstructionFailed} du journal.

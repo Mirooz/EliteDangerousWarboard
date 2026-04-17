@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.commander;
+package be.mirooz.elitedangerous.dashboard.model.registries.commander;
 
 import be.mirooz.elitedangerous.dashboard.view.common.CommanderStatusComponent;
 import lombok.Getter;

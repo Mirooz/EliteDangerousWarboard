@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedBountyShip;
 import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedConflictShip;

@@ -1,8 +1,8 @@
 package be.mirooz.elitedangerous.dashboard;
 
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.ColonisationConstructionDepotHandler;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationConstruction;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationDockEntry;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstruction;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
 import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationDocksRegistry;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationDockService;
 import com.fasterxml.jackson.databind.JsonNode;

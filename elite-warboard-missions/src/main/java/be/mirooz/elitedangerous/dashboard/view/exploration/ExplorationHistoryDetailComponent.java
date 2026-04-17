@@ -2,7 +2,7 @@ package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationData;

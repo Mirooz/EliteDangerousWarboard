@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.registries.colonisation;
+package be.mirooz.elitedangerous.dashboard.model.colonisation;
 
 import lombok.Value;
 
@@ -8,9 +8,13 @@ public class CarrierTradeOrderEntry {
     long carrierId;
     String carrierType;
     boolean blackMarket;
+    /** Identifiant journal {@code Commodity} (ex. {@code cmmcomposite}). */
+    String commodity;
+    /** Libellé {@code Commodity_Localised}. */
     String commodityLocalised;
     int purchaseOrder;
     int saleOrder;
     boolean cancelTrade;
     long price;
+    int stock;
 }

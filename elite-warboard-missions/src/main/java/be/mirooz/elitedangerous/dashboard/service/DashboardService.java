@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
@@ -16,7 +18,6 @@ import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailSer
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Platform;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +73,6 @@ public class DashboardService {
             } finally {
                 listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
                 DashboardContext.getInstance().refreshUI();
-
-                PlaneteRegistry.getInstance().getAllPlanetes();
             }
         }).start();
     }

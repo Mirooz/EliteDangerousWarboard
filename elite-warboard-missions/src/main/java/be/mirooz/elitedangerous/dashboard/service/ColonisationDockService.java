@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationDockEntry;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
 import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationDocksRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 

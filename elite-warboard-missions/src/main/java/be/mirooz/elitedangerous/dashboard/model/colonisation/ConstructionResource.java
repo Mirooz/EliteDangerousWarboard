@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.model.registries.colonisation;
+package be.mirooz.elitedangerous.dashboard.model.colonisation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Value;

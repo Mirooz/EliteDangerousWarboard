@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.colonisation;
 
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResource;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,10 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationConstruction;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstruction;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResource;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationDocksRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ConstructionResource;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ConstructionStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;

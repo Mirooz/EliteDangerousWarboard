@@ -5,7 +5,7 @@ import be.mirooz.elitedangerous.backend.capi.UnauthorizedException;
 import be.mirooz.elitedangerous.backend.generated.model.CapiApiResponse;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketEvent;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketProxyRequest;
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;

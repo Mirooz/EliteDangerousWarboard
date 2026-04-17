@@ -1,12 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.CarrierTradeOrderEntry;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.CarrierTradeOrderRegistry;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
+import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class CarrierTradeOrderHandler implements JournalEventHandler {
 
-    private final CarrierTradeOrderRegistry carrierTradeOrderRegistry = CarrierTradeOrderRegistry.getInstance();
+    private final CarrierTradeService carrierTradeService = CarrierTradeService.getInstance();
 
     @Override
     public String getEventType() {
@@ -20,20 +20,32 @@ public class CarrierTradeOrderHandler implements JournalEventHandler {
             long carrierId = jsonNode.path("CarrierID").asLong();
             String carrierType = jsonNode.path("CarrierType").asText("");
             boolean blackMarket = jsonNode.path("BlackMarket").asBoolean(false);
-            String commodity = jsonNode.path("Commodity_Localised").asText(jsonNode.path("Commodity").asText(""));
+            String commodity = jsonNode.path("Commodity").asText("");
+            String commodityLocalised = jsonNode.path("Commodity_Localised").asText("");
+            if (commodityLocalised.isBlank() && !commodity.isBlank()) {
+                commodityLocalised = commodity;
+            }
             int purchaseOrder = jsonNode.path("PurchaseOrder").asInt(0);
             int saleOrder = jsonNode.path("SaleOrder").asInt(0);
             boolean cancelTrade = jsonNode.path("CancelTrade").asBoolean(false);
             long price = jsonNode.path("Price").asLong();
+            int stock = jsonNode.has("Stock")
+                    ? jsonNode.path("Stock").asInt(0)
+                    : jsonNode.path("TotalStock").asInt(0);
 
-            carrierTradeOrderRegistry.record(new CarrierTradeOrderEntry(
-                    timestamp, carrierId, carrierType, blackMarket, commodity, purchaseOrder, saleOrder, cancelTrade, price));
+            if (!carrierTradeService.isOwnCarrier(carrierId)) {
+                return;
+            }
 
-            System.out.println("CarrierTradeOrder: " + commodity
+            carrierTradeService.recordTradeOrder(new CarrierTradeOrderEntry(
+                    timestamp, carrierId, carrierType, blackMarket, commodity, commodityLocalised,
+                    purchaseOrder, saleOrder, cancelTrade, price, stock));
+
+            System.out.println("CarrierTradeOrder: " + commodityLocalised + " (" + commodity + ")"
                     + " (PurchaseOrder=" + purchaseOrder
                     + ", SaleOrder=" + saleOrder
                     + ", CancelTrade=" + cancelTrade + ")"
-                    + " @ " + price + " cr (CarrierID=" + carrierId + ")");
+                    + " @ " + price + " cr, stock=" + stock + " (CarrierID=" + carrierId + ")");
         } catch (Exception e) {
             System.err.println("Erreur lors du traitement de CarrierTradeOrder: " + e.getMessage());
         }

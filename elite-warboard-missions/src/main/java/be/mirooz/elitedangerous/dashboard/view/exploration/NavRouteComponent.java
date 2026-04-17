@@ -10,7 +10,7 @@ import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponseDTO;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteRequestDTO;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchRequestDTO;
 import be.mirooz.elitedangerous.backend.generated.model.SystemResult;
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;

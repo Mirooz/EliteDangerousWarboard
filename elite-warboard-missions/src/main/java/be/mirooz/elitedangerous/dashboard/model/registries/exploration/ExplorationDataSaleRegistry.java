@@ -1,7 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;

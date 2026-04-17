@@ -1,12 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.view.combat;
 
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.EdToolsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.NotSelectableListView;
-import be.mirooz.elitedangerous.dashboard.view.combat.SystemCardComponent;
-import be.mirooz.elitedangerous.dashboard.view.combat.ConflictCardComponent;
 import be.mirooz.elitedangerous.dashboard.service.SiriuscorpService;
 import be.mirooz.elitedangerous.lib.edtools.model.MassacreSystem;
 import be.mirooz.elitedangerous.siriuscorp.model.ConflictSystem;

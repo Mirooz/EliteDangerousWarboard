@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -25,6 +26,7 @@ import static be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity
 public class MarketSellHandler implements JournalEventHandler {
 
     CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    CarrierTradeService carrierTradeService = CarrierTradeService.getInstance();
 
     @Override
     public void handle(JsonNode event) {
@@ -51,6 +53,13 @@ public class MarketSellHandler implements JournalEventHandler {
                     commanderStatus.getShip().removeCommodity(commodity, count);
                 }
             });
+
+            if (!carrierTradeService.isOwnCarrier(marketId)) {
+                return;
+            }
+
+            // Vente au marché du carrier => le stock du carrier augmente.
+            carrierTradeService.applyMarketStockDelta(type, typeLocalised, count);
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement MarketSell: " + e.getMessage());
         }

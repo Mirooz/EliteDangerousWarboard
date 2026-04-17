@@ -1,9 +1,8 @@
-package be.mirooz.elitedangerous.dashboard.model.commander;
+package be.mirooz.elitedangerous.dashboard.model.registries.commander;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.HashMap;
 import java.util.Map;
