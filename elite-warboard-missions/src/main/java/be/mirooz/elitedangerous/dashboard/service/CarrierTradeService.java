@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierStatus;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,10 @@ public class CarrierTradeService {
 
     public synchronized void applyMarketStockDelta(String commodity, String commodityLocalised, int delta) {
         carrierStatus.applyMarketStockDelta(commodity, commodityLocalised, delta);
+    }
+
+    public synchronized void applyFleetCarrierCapiSnapshot(JsonNode capiDataNode) {
+        carrierStatus.applyCapiFleetCarrierPayload(capiDataNode);
     }
 
     /**

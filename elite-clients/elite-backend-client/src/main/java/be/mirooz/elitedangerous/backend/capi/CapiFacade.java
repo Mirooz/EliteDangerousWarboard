@@ -5,12 +5,11 @@ import be.mirooz.elitedangerous.backend.generated.ApiClient;
 import be.mirooz.elitedangerous.backend.generated.ApiException;
 import be.mirooz.elitedangerous.backend.generated.api.CapiControllerApi;
 import be.mirooz.elitedangerous.backend.generated.model.CapiApiResponse;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierProxyRequest;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketProxyRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public final class CapiFacade {
 
@@ -34,11 +33,8 @@ public final class CapiFacade {
         try {
             return capiApi.apiCapiMarketPost(request);
         } catch (ApiException e) {
-            if (e.getCode() == 401) {
-                CapiApiResponse response = parse(e.getResponseBody());
-                throw new UnauthorizedException(response);
-            }
-            throw new IOException("CAPI backend market call failed: HTTP " + e.getCode() + " - " + e.getMessage(), e);
+            handleApiException(e, "market");
+            return new CapiApiResponse();
         }
     }
 
@@ -46,37 +42,42 @@ public final class CapiFacade {
         try {
             return capiApi.apiCapiLoginGet(fid);
         } catch (ApiException e) {
-            throw new IOException("CAPI backend login call failed: HTTP " + e.getCode() + " - " + e.getMessage(), e);
+            handleApiException(e, "login");
+            return new CapiApiResponse();
         }
     }
 
     public CapiApiResponse fetchProfile(String commanderName, String fid, String language) throws IOException {
         try {
-            Method profileMethod = capiApi.getClass().getMethod(
-                    "apiCapiProfileGet",
-                    String.class,
-                    String.class,
-                    String.class
-            );
-            Object result = profileMethod.invoke(capiApi, commanderName, fid, language);
-            if (result instanceof CapiApiResponse response) {
-                return response;
-            }
+            return capiApi.apiCapiProfileGet(commanderName, fid, language);
+        } catch (ApiException e) {
+            handleApiException(e, "profile");
             return new CapiApiResponse();
-        } catch (NoSuchMethodException e) {
-            throw new IOException("CAPI backend profile call unavailable (apiCapiProfileGet missing)", e);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ApiException apiException) {
-                throw new IOException(
-                        "CAPI backend profile call failed: HTTP " + apiException.getCode() + " - " + apiException.getMessage(),
-                        apiException
-                );
-            }
-            throw new IOException("CAPI backend profile call failed", cause != null ? cause : e);
-        } catch (IllegalAccessException e) {
-            throw new IOException("CAPI backend profile call access error", e);
         }
+    }
+
+    public CapiApiResponse fetchFleetCarrier(String commanderName, String fid, String language) throws IOException {
+        try {
+            CapiFleetCarrierProxyRequest request = new CapiFleetCarrierProxyRequest()
+                    .commanderName(commanderName)
+                    .fid(fid)
+                    .language(language);
+            return capiApi.apiCapiFleetcarrierPost(request);
+        } catch (ApiException e) {
+            handleApiException(e, "fleet carrier");
+            return new CapiApiResponse();
+        }
+    }
+
+    private void handleApiException(ApiException e, String operation) throws IOException {
+        if (e.getCode() == 401) {
+            CapiApiResponse response = parse(e.getResponseBody());
+            throw new UnauthorizedException(response);
+        }
+        throw new IOException(
+                "CAPI backend " + operation + " call failed: HTTP " + e.getCode() + " - " + e.getMessage(),
+                e
+        );
     }
 
     private CapiApiResponse parse(String body) throws IOException {

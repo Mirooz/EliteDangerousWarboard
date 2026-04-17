@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -71,10 +72,17 @@ public class JournalService {
                 commanderName = "Unknown";
             }
             // Récupérer la version de l'application depuis le pom.xml parent
-            analyticsService.startSession(commanderName);
+            boolean profileOk = analyticsService.startSession(commanderName);
 
             // Utiliser la nouvelle méthode qui traite tous les fichiers et met à jour les missions
-            return parseAllJournalFiles();
+            List<Mission> missions = parseAllJournalFiles();
+
+            // Données fleet CAPI : après tout le chargement journal (ordres, stocks journal, etc.)
+            if (profileOk) {
+                CapiApiService.getInstance().fetchFleetCarrierData();
+            }
+
+            return missions;
         } catch (Exception e) {
             System.err.println("Erreur lors de la lecture des journaux: " + e.getMessage());
             e.printStackTrace();

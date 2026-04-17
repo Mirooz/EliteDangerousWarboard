@@ -32,11 +32,14 @@ public class AnalyticsService {
     }
     
     /**
-     * Démarre une session analytics pour un commandant
+     * Démarre une session analytics pour un commandant.
+     *
+     * @return {@code true} si le contrôle profil CAPI est OK (authentification Frontier valide).
      */
-    public void startSession(String commanderName) {
-        capiApiService.checkCapiAuthentication();
+    public boolean startSession(String commanderName) {
+        boolean profileOk = capiApiService.checkCapiAuthentication();
         analyticsClient.startSession(commanderName);
+        return profileOk;
     }
     
     /**
