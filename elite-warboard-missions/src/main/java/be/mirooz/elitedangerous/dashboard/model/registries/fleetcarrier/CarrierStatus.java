@@ -1,6 +1,7 @@
-package be.mirooz.elitedangerous.dashboard.model.fleetcarrier;
+package be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier;
 
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
+import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierPosition;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.ToString;

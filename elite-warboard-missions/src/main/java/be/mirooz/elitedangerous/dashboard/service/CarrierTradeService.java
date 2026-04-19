@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
-import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.Duration;
