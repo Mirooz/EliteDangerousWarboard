@@ -1,10 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstruction;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationJournalContext;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResource;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationDocksRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.List;
 public class ColonisationConstructionDepotHandler implements JournalEventHandler {
 
     private final ColonisationRegistry colonisationRegistry = ColonisationRegistry.getInstance();
-    private final ColonisationDocksRegistry colonisationDocksRegistry = ColonisationDocksRegistry.getInstance();
+    private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
 
     @Override
     public String getEventType() {
@@ -24,6 +25,7 @@ public class ColonisationConstructionDepotHandler implements JournalEventHandler
     public void handle(JsonNode jsonNode) {
         try {
             String timestamp = jsonNode.path("timestamp").asText("");
+            String starSystem = ColonisationJournalContext.resolveStarSystem(jsonNode, commanderStatus);
             long marketId = jsonNode.path("MarketID").asLong();
             double progress = jsonNode.path("ConstructionProgress").asDouble();
             ConstructionStatus status = ConstructionStatus.fromJournalBooleans(
@@ -38,13 +40,12 @@ public class ColonisationConstructionDepotHandler implements JournalEventHandler
                 }
             }
 
-            colonisationRegistry.updateConstructionDepot(marketId, progress, status, resources);
-
             ColonisationConstruction construction = new ColonisationConstruction(
                     timestamp, progress, status, List.copyOf(resources));
-            colonisationDocksRegistry.updateConstruction(marketId, construction);
+            colonisationRegistry.applyConstructionDepot(marketId, construction, starSystem);
 
             System.out.println("Colonisation: dépôt de construction MarketID=" + marketId
+                    + (starSystem.isEmpty() ? "" : " (« " + starSystem + " »)")
                     + ", progression=" + progress + ", ressources=" + resources.size() + " lignes");
         } catch (Exception e) {
             System.err.println("Erreur lors du traitement de ColonisationConstructionDepot: " + e.getMessage());

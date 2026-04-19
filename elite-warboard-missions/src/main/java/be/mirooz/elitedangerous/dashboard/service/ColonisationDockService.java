@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationDocksRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -15,7 +15,7 @@ public class ColonisationDockService {
 
     private static final ColonisationDockService INSTANCE = new ColonisationDockService();
 
-    private final ColonisationDocksRegistry registry = ColonisationDocksRegistry.getInstance();
+    private final ColonisationRegistry registry = ColonisationRegistry.getInstance();
 
     private ColonisationDockService() {
     }
