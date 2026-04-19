@@ -81,6 +81,11 @@ public class ColonisationRegistry {
     }
 
     @Synchronized
+    public ColonisationDockEntry getCurrentConstructionSite() {
+        return currentConstruction;
+    }
+
+    @Synchronized
     public ColonisationConstruction getCurrentConstruction() {
         return currentConstruction != null ? currentConstruction.getConstruction() : null;
     }
