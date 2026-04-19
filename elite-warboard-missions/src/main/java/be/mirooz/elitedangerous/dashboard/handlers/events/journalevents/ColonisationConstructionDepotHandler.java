@@ -4,8 +4,8 @@ import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstru
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationJournalContext;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResource;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class ColonisationConstructionDepotHandler implements JournalEventHandler {
 
-    private final ColonisationRegistry colonisationRegistry = ColonisationRegistry.getInstance();
+    private final ColonisationService colonisationService = ColonisationService.getInstance();
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
 
     @Override
@@ -42,7 +42,7 @@ public class ColonisationConstructionDepotHandler implements JournalEventHandler
 
             ColonisationConstruction construction = new ColonisationConstruction(
                     timestamp, progress, status, List.copyOf(resources));
-            colonisationRegistry.applyConstructionDepot(marketId, construction, starSystem);
+            colonisationService.applyConstructionDepot(marketId, construction, starSystem);
 
             System.out.println("Colonisation: dépôt de construction MarketID=" + marketId
                     + (starSystem.isEmpty() ? "" : " (« " + starSystem + " »)")

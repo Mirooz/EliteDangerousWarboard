@@ -1,7 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.colonisation;
 
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationArchitectSystem;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstruction;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResourceRemaining;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Synchronized;
@@ -23,6 +25,12 @@ public class ColonisationRegistry {
     /** Clé = nom de système journal ; ordre = première activité colonisation sur ce système. */
     private final LinkedHashMap<String, ColonisationArchitectSystem> architectByStarSystem = new LinkedHashMap<>();
 
+    /**
+     * Site (même instance que dans {@link ColonisationArchitectSystem}) dont la {@link ColonisationDockEntry#getConstruction()}
+     * est considérée comme chantier courant ; mis à jour quand le journal pousse un nouveau dépôt sur ce {@code MarketID}.
+     */
+    private ColonisationDockEntry currentConstruction;
+
     public static ColonisationRegistry getInstance() {
         return INSTANCE;
     }
@@ -34,13 +42,10 @@ public class ColonisationRegistry {
         return architectByStarSystem.computeIfAbsent(starSystem, ColonisationArchitectSystem::new);
     }
 
-    /**
-     * Enregistre le système comme projet architecte (balise déployée) et met à jour l’adresse système si fournie.
-     */
+    /** Enregistre le système comme projet architecte (balise déployée). */
     @Synchronized
     public void recordArchitectBeaconDeployed(String starSystem) {
         ensureArchitectSystem(starSystem);
-
     }
 
     /** Liste ordonnée des systèmes architecte (noms). */
@@ -65,6 +70,45 @@ public class ColonisationRegistry {
             return;
         }
         sys.applyConstructionForMarket(marketId, construction, starSystem);
+    }
+
+    /**
+     * Pointe le chantier courant sur le site de ce {@code MarketID} (référence partagée avec la map interne).
+     */
+    @Synchronized
+    public void setCurrentConstructionByMarketId(long marketId) {
+        currentConstruction = findDockEntryByMarketId(marketId);
+    }
+
+    @Synchronized
+    public ColonisationConstruction getCurrentConstruction() {
+        return currentConstruction != null ? currentConstruction.getConstruction() : null;
+    }
+
+    /**
+     * Ressources du chantier courant avec quantités restantes à livrer.
+     */
+    @Synchronized
+    public List<ConstructionResourceRemaining> getActualConstruction() {
+        ColonisationConstruction c = currentConstruction != null ? currentConstruction.getConstruction() : null;
+        if (c == null || c.getResourcesRequired() == null) {
+            return List.of();
+        }
+        List<ConstructionResourceRemaining> out = new ArrayList<>();
+        for (var row : c.getResourcesRequired()) {
+            out.add(ConstructionResourceRemaining.from(row));
+        }
+        return Collections.unmodifiableList(out);
+    }
+
+    private ColonisationDockEntry findDockEntryByMarketId(long marketId) {
+        for (ColonisationArchitectSystem s : architectByStarSystem.values()) {
+            ColonisationDockEntry e = s.getSiteByMarketId(marketId);
+            if (e != null) {
+                return e;
+            }
+        }
+        return null;
     }
 
     /**
@@ -98,5 +142,6 @@ public class ColonisationRegistry {
     @Synchronized
     public void clear() {
         architectByStarSystem.clear();
+        currentConstruction = null;
     }
 }

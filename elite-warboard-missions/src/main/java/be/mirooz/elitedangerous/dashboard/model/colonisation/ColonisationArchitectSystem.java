@@ -1,9 +1,7 @@
-package be.mirooz.elitedangerous.dashboard.model.registries.colonisation;
+package be.mirooz.elitedangerous.dashboard.model.colonisation;
 
-import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstruction;
-import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
-import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +12,7 @@ import java.util.Map;
 /**
  * Un système stellaire où le commandant suit la colonisation (architecte), avec les sites par {@link ColonisationDockEntry#getMarketId()}.
  */
+@ToString
 public class ColonisationArchitectSystem {
 
     @Getter
@@ -37,7 +36,7 @@ public class ColonisationArchitectSystem {
     /**
      * @return {@code true} si l’entrée dock a été ajoutée pour ce {@code MarketID}
      */
-    boolean addDockIfAbsent(ColonisationDockEntry dockEntry) {
+    public boolean addDockIfAbsent(ColonisationDockEntry dockEntry) {
         if (dockEntry == null) {
             return false;
         }
@@ -50,7 +49,7 @@ public class ColonisationArchitectSystem {
         return true;
     }
 
-    void applyConstructionForMarket(long marketId, ColonisationConstruction construction, String starSystemResolved) {
+    public void applyConstructionForMarket(long marketId, ColonisationConstruction construction, String starSystemResolved) {
         ColonisationDockEntry entry = sitesByMarketId.computeIfAbsent(marketId, k -> {
             ColonisationDockEntry e = new ColonisationDockEntry();
             e.setMarketId(marketId);
@@ -60,6 +59,10 @@ public class ColonisationArchitectSystem {
         if (starSystemResolved != null && !starSystemResolved.isBlank()) {
             entry.setStarSystem(starSystemResolved);
         }
+    }
+
+    public ColonisationDockEntry getSiteByMarketId(long marketId) {
+        return sitesByMarketId.get(marketId);
     }
 
     /** Tous les sites connus pour ce système (ordre d’insertion des {@code MarketID}). */

@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -73,6 +74,9 @@ public class DashboardService {
             } finally {
                 listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
                 DashboardContext.getInstance().refreshUI();
+                System.out.println(ColonisationRegistry.getInstance().getArchitectSystems());
+                ColonisationService.getInstance().setCurrentConstructionByMarketId(3952110594L);
+                System.out.println(ColonisationRegistry.getInstance().getCurrentConstruction());
             }
         }).start();
     }

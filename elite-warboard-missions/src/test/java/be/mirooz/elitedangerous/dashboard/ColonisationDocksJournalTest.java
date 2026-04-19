@@ -3,8 +3,7 @@ package be.mirooz.elitedangerous.dashboard;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.ColonisationConstructionDepotHandler;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstruction;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
-import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
-import be.mirooz.elitedangerous.dashboard.service.ColonisationDockService;
+import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assumptions;
@@ -23,13 +22,12 @@ class ColonisationDocksJournalTest {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final ColonisationDockService colonisationDockService = ColonisationDockService.getInstance();
+    private final ColonisationService colonisationService = ColonisationService.getInstance();
     private final ColonisationConstructionDepotHandler constructionDepotHandler = new ColonisationConstructionDepotHandler();
-    private final ColonisationRegistry registry = ColonisationRegistry.getInstance();
 
     @BeforeEach
     void resetRegistry() {
-        registry.clear();
+        colonisationService.clear();
     }
 
     @Test
@@ -45,8 +43,8 @@ class ColonisationDocksJournalTest {
                     .forEach(this::parseJournalFile);
         }
 
-        System.out.println("=== ColonisationDockEntry (" + registry.getDockEntries().size() + " MarketID) ===");
-        for (ColonisationDockEntry e : registry.getDockEntries()) {
+        System.out.println("=== ColonisationDockEntry (" + colonisationService.getDockEntries().size() + " MarketID) ===");
+        for (ColonisationDockEntry e : colonisationService.getDockEntries()) {
             System.out.println(formatEntry(e));
         }
     }
@@ -61,7 +59,7 @@ class ColonisationDocksJournalTest {
                 JsonNode node = MAPPER.readTree(t);
                 String event = node.path("event").asText();
                 if ("Docked".equals(event)) {
-                    colonisationDockService.handleDocked(node);
+                    colonisationService.handleDocked(node);
                 } else if ("ColonisationConstructionDepot".equals(event)) {
                     constructionDepotHandler.handle(node);
                 }
