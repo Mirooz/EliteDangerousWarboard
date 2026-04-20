@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="be.mirooz.elitedangerous.dashboard.view.colonisation.EdColoniseSearchDialogController">
+
+    <VBox spacing="16.0" styleClass="dialog-content">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="dialog-header">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label fx:id="dialogTitleLabel" styleClass="dialog-title"/>
+                <Label fx:id="dialogSubtitleLabel" styleClass="dialog-subtitle" wrapText="true"/>
+            </VBox>
+        </HBox>
+
+        <Label fx:id="descriptionLabel" styleClass="tab-description" wrapText="true" maxWidth="860"/>
+
+        <HBox spacing="20.0" alignment="CENTER_LEFT" styleClass="config-panel">
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label fx:id="minLandablesLabel" styleClass="config-label"/>
+                <Spinner fx:id="minLandablesSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="90"
+                         styleClass="config-spinner"/>
+            </HBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label fx:id="minRingsLabel" styleClass="config-label"/>
+                <Spinner fx:id="minRingsSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="90"
+                         styleClass="config-spinner"/>
+            </HBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label fx:id="maxDistanceSolLabel" styleClass="config-label"/>
+                <Spinner fx:id="maxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="110"
+                         styleClass="config-spinner"/>
+            </HBox>
+        </HBox>
+
+        <HBox spacing="12.0" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearch" styleClass="elite-button"/>
+            <Button fx:id="closeButton" mnemonicParsing="false" onAction="#onClose" styleClass="elite-nav-button"/>
+        </HBox>
+
+        <StackPane VBox.vgrow="ALWAYS" minHeight="280">
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                        styleClass="colonisation-architect-scroll,colonisation-detail-scroll">
+                <VBox fx:id="resultsBox" spacing="10.0">
+                    <padding>
+                        <Insets top="4.0" right="4.0" bottom="8.0" left="4.0"/>
+                    </padding>
+                </VBox>
+            </ScrollPane>
+            <ProgressIndicator fx:id="loadingIndicator" maxWidth="80" maxHeight="80" visible="false"/>
+        </StackPane>
+
+        <Label fx:id="errorLabel" styleClass="footer-text" wrapText="true" maxWidth="860" visible="false" managed="false"/>
+    </VBox>
+
+    <StackPane fx:id="dialogPopupLayer" pickOnBounds="false" mouseTransparent="true"/>
+</StackPane>

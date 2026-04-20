@@ -73,6 +73,7 @@
             </VBox>
         </VBox>
         <VBox spacing="8.0" minWidth="300.0" maxWidth="520.0" prefWidth="480.0" styleClass="colonisation-column,colonisation-detail-column" VBox.vgrow="ALWAYS">
+            <Button fx:id="findColonisableSystemsButton" maxWidth="Infinity" mnemonicParsing="false" styleClass="elite-nav-button"/>
             <Label fx:id="constructionDetailTitleLabel" styleClass="mining-title"/>
             <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-detail-actions">
                 <Button fx:id="buildStationButton" styleClass="elite-nav-button"/>

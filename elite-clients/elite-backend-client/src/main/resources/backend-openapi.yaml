@@ -224,6 +224,230 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CapiProfileDto'
+  /api/edcolonise/star-systems:
+    get:
+      tags:
+      - Ed Colonise Controller
+      summary: Recherche de systèmes (ED Colonise)
+      parameters:
+      - name: factionName
+        in: query
+        schema:
+          type: string
+      - name: hotspotTypes
+        in: query
+        schema:
+          type: string
+      - name: maxAmmoniaWorlds
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxBlackHoles
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxDistanceToSol
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxEarthLikes
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxGasGiants
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxGeologicals
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxHighMetalContents
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxIces
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxLandables
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxMetalRiches
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxNeutronStars
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxOrganics
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxOtherStars
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxRings
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxRocks
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxRockyIces
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxWalkables
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxWaterWorlds
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: maxWhiteDwarves
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minAmmoniaWorlds
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minBlackHoles
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minEarthLikes
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minGasGiants
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minGeologicals
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minHighMetalContents
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minIces
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minLandables
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minMetalRiches
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minNeutronStars
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minOrganics
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minOtherStars
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minRings
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minRocks
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minRockyIces
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minWalkables
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minWaterWorlds
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: minWhiteDwarves
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: pageNo
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: resultsPerPage
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: sortOrder
+        in: query
+        schema:
+          type: string
+      - name: systemName
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdColoniseStarSystemSearchResponse'
   /api/spansh/expressway-to-exomastery:
     post:
       tags:
@@ -1211,6 +1435,157 @@ components:
           type: array
           items:
             type: string
+    EdColoniseColonisedStation:
+      type: object
+      properties:
+        stationID:
+          format: int64
+          type: integer
+        stationName:
+          type: string
+        controllingFaction:
+          type: string
+    EdColoniseColonisedSystemRef:
+      type: object
+      properties:
+        colonisedSystemID:
+          format: int64
+          type: integer
+        systemName:
+          type: string
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdColoniseColonisedStation'
+    EdColonisePlanetaryRing:
+      type: object
+      properties:
+        ringName:
+          type: string
+        ringType:
+          type: string
+        hotspots:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdColoniseRingHotspot'
+    EdColoniseRingHotspot:
+      type: object
+      properties:
+        hotspotType:
+          type: string
+        hotspotCount:
+          format: int32
+          type: integer
+    EdColoniseStarSystemSearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdColoniseStarSystemSearchResult'
+        minFollwingPages:
+          format: int32
+          type: integer
+    EdColoniseStarSystemSearchResult:
+      type: object
+      properties:
+        systemID:
+          format: int64
+          type: integer
+        lastUpdate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        systemName:
+          type: string
+        coordinates:
+          $ref: '#/components/schemas/EdColoniseSystemCoordinates'
+        reserveLevel:
+          type: string
+        systemCounts:
+          $ref: '#/components/schemas/EdColoniseSystemCounts'
+        rings:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdColonisePlanetaryRing'
+        trailblazers: {}
+        distanceToSol:
+          format: int32
+          type: integer
+        landableCount:
+          format: int32
+          type: integer
+        walkableCount:
+          format: int32
+          type: integer
+        colonisedSystems:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdColoniseColonisedSystemRef'
+    EdColoniseSystemCoordinates:
+      type: object
+      properties:
+        coordinateX:
+          format: double
+          type: number
+        coordinateY:
+          format: double
+          type: number
+        coordinateZ:
+          format: double
+          type: number
+    EdColoniseSystemCounts:
+      type: object
+      properties:
+        ringCount:
+          format: int32
+          type: integer
+        icyBodyCount:
+          format: int32
+          type: integer
+        organicCount:
+          format: int32
+          type: integer
+        whiteDwarves:
+          format: int32
+          type: integer
+        gasGiantCount:
+          format: int32
+          type: integer
+        rockBodyCount:
+          format: int32
+          type: integer
+        totalHotspots:
+          format: int32
+          type: integer
+        blackHoleCount:
+          format: int32
+          type: integer
+        earthLikeCount:
+          format: int32
+          type: integer
+        metalRichCount:
+          format: int32
+          type: integer
+        otherStarCount:
+          format: int32
+          type: integer
+        waterWorldCount:
+          format: int32
+          type: integer
+        geologicalsCount:
+          format: int32
+          type: integer
+        neutronStarCount:
+          format: int32
+          type: integer
+        ammoniaWorldCount:
+          format: int32
+          type: integer
+        rockyIceBodyCount:
+          format: int32
+          type: integer
+        highMetalContentCount:
+          format: int32
+          type: integer
     EndSessionRequest:
       type: object
       properties:

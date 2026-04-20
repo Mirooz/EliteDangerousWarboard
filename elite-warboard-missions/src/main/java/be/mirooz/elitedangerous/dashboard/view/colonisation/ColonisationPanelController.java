@@ -18,6 +18,7 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
+import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
@@ -40,6 +41,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
@@ -99,6 +101,8 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private GridPane commanderCargoGrid;
     @FXML
+    private Button findColonisableSystemsButton;
+    @FXML
     private Label constructionDetailTitleLabel;
     @FXML
     private VBox constructionDetailContent;
@@ -144,12 +148,30 @@ public class ColonisationPanelController implements Initializable {
             updateTradeStationButton.setManaged(false);
         }
         setupColonisationSplitPaneArchitectLock();
+        if (findColonisableSystemsButton != null) {
+            findColonisableSystemsButton.setOnAction(e -> openFindColonisableSystemsDialog());
+        }
 
         localizationService.addLanguageChangeListener(locale -> applyLocalizedTexts());
         cargoEventNotificationService.addListener(commanderCargoListener);
         applyLocalizedTexts();
         setupFoldableFleetAndCargoPanels();
         refreshAll();
+    }
+
+    private void openFindColonisableSystemsDialog() {
+        if (findColonisableSystemsButton == null || findColonisableSystemsButton.getScene() == null) {
+            return;
+        }
+        Stage primaryStage = (Stage) findColonisableSystemsButton.getScene().getWindow();
+        DialogComponent dialog = new DialogComponent(
+                "/fxml/colonisation/ed-colonise-search-dialog.fxml",
+                "/css/elite-theme.css",
+                localizationService.getString("colonisation.edcolonise.dialog.windowTitle"),
+                920,
+                720);
+        dialog.init(primaryStage);
+        dialog.showAndWait();
     }
 
     private void setupFoldableFleetAndCargoPanels() {
@@ -192,6 +214,9 @@ public class ColonisationPanelController implements Initializable {
 
     private void applyLocalizedTexts() {
         refreshButton.setText(localizationService.getString("colonisation.refresh"));
+        if (findColonisableSystemsButton != null) {
+            findColonisableSystemsButton.setText(localizationService.getString("colonisation.findColonisable"));
+        }
         buildStationButton.setText(localizationService.getString("colonisation.buildStation"));
         if (updateTradeStationButton != null) {
             updateTradeStationButton.setText(localizationService.getString("colonisation.updateTradeStation"));
