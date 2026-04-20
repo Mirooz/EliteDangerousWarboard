@@ -120,6 +120,8 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private Label constructionDetailTitleLabel;
     @FXML
+    private VBox architectMapContainer;
+    @FXML
     private VBox constructionDetailContent;
     @FXML
     private TabPane colonisationTabPane;
@@ -127,6 +129,12 @@ public class ColonisationPanelController implements Initializable {
     private Tab colonisationSearchTab;
     @FXML
     private Tab architectViewTab;
+    @FXML
+    private TabPane architectCenterTabPane;
+    @FXML
+    private Tab architectSystemViewTab;
+    @FXML
+    private Tab architectCargoFleetTab;
     @FXML
     private Label searchMinLandablesLabel;
     @FXML
@@ -186,12 +194,15 @@ public class ColonisationPanelController implements Initializable {
 
     private boolean adjustingArchitectDivider;
     private boolean architectSplitDividerListenerAttached;
+    private SystemVisualViewComponent architectSystemVisualView;
     private SystemVisualViewComponent searchSystemVisualView;
     private final List<BorderPane> searchResultCards = new ArrayList<>();
     private BorderPane selectedSearchResultCard;
 
     private static final int MAX_DISTANCE_SOL_LY = 2770;
     private static final int MAX_NEIGHBORS_SHOWN = 3;
+    private static final int MAX_FLEET_MARKET_ROWS_COMPACT = 8;
+    private static final int MAX_COMMANDER_CARGO_ROWS_COMPACT = 10;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -203,6 +214,8 @@ public class ColonisationPanelController implements Initializable {
             updateTradeStationButton.setManaged(false);
         }
         setupColonisationSplitPaneArchitectLock();
+        initArchitectCenterTabs();
+        initArchitectVisualPanel();
         initColonisationSearchTab();
 
         localizationService.addLanguageChangeListener(locale -> applyLocalizedTexts());
@@ -230,6 +243,52 @@ public class ColonisationPanelController implements Initializable {
                 searchMapContainer.getChildren().setAll(error);
             }
         }
+    }
+
+    private void initArchitectVisualPanel() {
+        if (architectMapContainer == null) {
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-visual-view.fxml"));
+            Parent content = loader.load();
+            architectSystemVisualView = loader.getController();
+            architectSystemVisualView.setBodiesListPanelVisible(false);
+            architectMapContainer.getChildren().setAll(content);
+            VBox.setVgrow(content, Priority.ALWAYS);
+        } catch (Exception e) {
+            Label error = new Label("Unable to load map view: " + e.getMessage());
+            error.getStyleClass().add("colonisation-detail-placeholder");
+            architectMapContainer.getChildren().setAll(error);
+        }
+    }
+
+    private void initArchitectCenterTabs() {
+        if (architectCenterTabPane == null || architectCargoFleetTab == null) {
+            return;
+        }
+        architectCenterTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab == architectCargoFleetTab) {
+                // En mode Cargo/Fleet, les deux panneaux doivent rester affichés.
+                fleetPanelCollapsed = false;
+                commanderPanelCollapsed = false;
+                applyFleetPanelFoldState();
+                applyCommanderPanelFoldState();
+                if (fleetCollapseButton != null) {
+                    fleetCollapseButton.setDisable(true);
+                }
+                if (commanderCollapseButton != null) {
+                    commanderCollapseButton.setDisable(true);
+                }
+            } else {
+                if (fleetCollapseButton != null) {
+                    fleetCollapseButton.setDisable(false);
+                }
+                if (commanderCollapseButton != null) {
+                    commanderCollapseButton.setDisable(false);
+                }
+            }
+        });
     }
 
     private void setupFoldableFleetAndCargoPanels() {
@@ -277,6 +336,12 @@ public class ColonisationPanelController implements Initializable {
         }
         if (architectViewTab != null) {
             architectViewTab.setText("Architect View");
+        }
+        if (architectSystemViewTab != null) {
+            architectSystemViewTab.setText("System View");
+        }
+        if (architectCargoFleetTab != null) {
+            architectCargoFleetTab.setText("Cargo & Fleet");
         }
         if (searchNeighborsTitleLabel != null) {
             searchNeighborsTitleLabel.setText(localizationService.getString("colonisation.edcolonise.neighbors.title"));
@@ -520,6 +585,7 @@ public class ColonisationPanelController implements Initializable {
         constructionDetailContent.getChildren().clear();
         constructionDetailTitleLabel.setText(localizationService.getString("colonisation.detail.title"));
         if (selectedConstructionRow == null) {
+            clearArchitectVisualPanel();
             Label ph = new Label(localizationService.getString("colonisation.detail.placeholder"));
             ph.getStyleClass().add("colonisation-detail-placeholder");
             ph.setWrapText(true);
@@ -529,12 +595,14 @@ public class ColonisationPanelController implements Initializable {
         }
         ColonisationDockEntry dock = findDockEntry(selectedConstructionRow.getMarketId());
         if (dock == null) {
+            clearArchitectVisualPanel();
             Label ph = new Label(localizationService.getString("colonisation.detail.placeholder"));
             ph.getStyleClass().add("colonisation-detail-placeholder");
             ph.setWrapText(true);
             constructionDetailContent.getChildren().add(ph);
             return;
         }
+        loadArchitectVisualForSelectedSystem(dock.getStarSystem());
 
         String headline = firstNonBlank(dock.getSiteNameLocalised(), dock.getStationNameRaw(), "—");
         constructionDetailTitleLabel.setText(headline);
@@ -564,6 +632,33 @@ public class ColonisationPanelController implements Initializable {
         } else {
             clearSuggestedBuyStations();
         }
+    }
+
+    private void clearArchitectVisualPanel() {
+        if (architectSystemVisualView != null) {
+            architectSystemVisualView.displaySystem(null);
+        }
+    }
+
+    private void loadArchitectVisualForSelectedSystem(String starSystem) {
+        if (architectSystemVisualView == null || starSystem == null || starSystem.isBlank()) {
+            clearArchitectVisualPanel();
+            return;
+        }
+        Thread t = new Thread(() -> {
+            try {
+                var visited = edsmService.fetchSystemVisited(starSystem);
+                Platform.runLater(() -> {
+                    if (architectSystemVisualView != null) {
+                        architectSystemVisualView.displaySystem(visited);
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(this::clearArchitectVisualPanel);
+            }
+        }, "ed-colonise-architect-map-load");
+        t.setDaemon(true);
+        t.start();
     }
 
     private void clearSuggestedBuyStations() {
@@ -1303,12 +1398,7 @@ public class ColonisationPanelController implements Initializable {
                 fleetInlineSep(),
                 fleetInlineLabel("colonisation.fleet.system"),
                 fleetInlineValue(cs.getPosition() != null ? cs.getPosition().getStarSystem() : ""));
-        Label bm = new Label(localizationService.getString("colonisation.fleet.blackMarket") + ": "
-                + (cs.isBlackMarket()
-                ? localizationService.getString("colonisation.fleet.yes")
-                : localizationService.getString("colonisation.fleet.no")));
-        bm.getStyleClass().add("colonisation-fleet-inline-dim");
-        fleetSummaryBox.getChildren().addAll(line1, bm);
+        fleetSummaryBox.getChildren().add(line1);
 
         refreshFleetCargoBar(cs);
         refreshFleetMarketGrid(cs);
@@ -1347,6 +1437,12 @@ public class ColonisationPanelController implements Initializable {
             rows.sort(Comparator.comparing(e -> e.getKey().getVisibleName(), String.CASE_INSENSITIVE_ORDER));
             int row = 0;
             for (Entry<ICommodity, Integer> e : rows) {
+                if (row >= MAX_COMMANDER_CARGO_ROWS_COMPACT) {
+                    Label more = new Label("…");
+                    more.getStyleClass().add("colonisation-detail-placeholder");
+                    commanderCargoGrid.add(more, 0, row, 2, 1);
+                    break;
+                }
                 Label name = new Label(e.getKey().getVisibleName());
                 name.getStyleClass().add("colonisation-commander-cargo-name");
                 name.setMaxWidth(Double.MAX_VALUE);
@@ -1422,6 +1518,12 @@ public class ColonisationPanelController implements Initializable {
         }
         int row = 1;
         for (FleetMarketRow r : rows) {
+            if (row > MAX_FLEET_MARKET_ROWS_COMPACT) {
+                Label more = new Label("…");
+                more.getStyleClass().add("cargo-mineral-null-price");
+                fleetMarketGrid.add(more, 0, row, 5, 1);
+                break;
+            }
             Label name = new Label(r.getDisplayName().toUpperCase(Locale.ROOT));
             name.getStyleClass().add("cargo-mineral-name");
             Label stock = new Label(Integer.toString(r.getStock()));
