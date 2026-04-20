@@ -187,6 +187,143 @@
     -fx-font-size: 12px;
 }
 
+/* Onglets colonisation (Search / Architect) : contraste fort actif/inactif */
+.colonisation-panel .colonisation-tab-pane {
+    -fx-background-color: transparent;
+}
+
+.colonisation-panel .colonisation-tab-pane .tab-header-background {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.colonisation-panel .colonisation-tab-pane .tab-header-area {
+    -fx-padding: 0 0 8px 0;
+}
+
+.colonisation-panel .colonisation-tab-pane .tab {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, derive(-fx-elite-gray, -12%), derive(-fx-elite-darker, 6%));
+    -fx-background-insets: 0;
+    -fx-background-radius: 7px 7px 0 0;
+    -fx-border-color: derive(-fx-elite-orange, -30%);
+    -fx-border-width: 1px 1px 0 1px;
+    -fx-border-radius: 7px 7px 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 2, 0.25, 0, 1);
+    -fx-padding: 8px 18px 9px 18px;
+}
+
+.colonisation-panel .colonisation-tab-pane .tab .tab-label {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.colonisation-panel .colonisation-tab-pane .tab:hover {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(255, 107, 0, 0.24), derive(-fx-elite-gray, 2%));
+    -fx-border-color: -fx-elite-cyan;
+    -fx-cursor: hand;
+}
+
+.colonisation-panel .colonisation-tab-pane .tab:selected {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(255, 107, 0, 0.32), rgba(0, 198, 255, 0.16));
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px 2px 0 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 198, 255, 0.35), 8, 0.2, 0, 0);
+}
+
+.colonisation-panel .colonisation-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.colonisation-panel .colonisation-tab-pane .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.colonisation-search-pane {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 1px;
+}
+
+.colonisation-search-filters {
+    -fx-background-color: derive(-fx-elite-darker, 4%);
+    -fx-background-radius: 6px;
+    -fx-border-color: derive(-fx-elite-orange, -20%);
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-padding: 10px;
+}
+
+.colonisation-search-map-pane {
+    -fx-background-color: derive(-fx-elite-darker, 2%);
+    -fx-background-radius: 6px;
+    -fx-border-color: derive(-fx-elite-cyan, -25%);
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card {
+    -fx-border-color: rgba(255, 107, 0, 0.36);
+    -fx-background-color: rgba(16, 20, 24, 0.92);
+    -fx-border-radius: 7px;
+    -fx-background-radius: 7px;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card:hover {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-background-color: rgba(0, 198, 255, 0.10);
+    -fx-cursor: hand;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card-selected {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-background-color: rgba(255, 107, 0, 0.18);
+    -fx-effect: dropshadow(gaussian, rgba(0, 198, 255, 0.30), 10, 0.15, 0, 0);
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-buy-station-name {
+    -fx-text-fill: #ffd089;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-detail-label {
+    -fx-text-fill: #9ddfff;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-system-name {
+    -fx-text-fill: #ffd089;
+    -fx-font-weight: bold;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-distance-value {
+    -fx-text-fill: #7fd7ff;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-bodies-value {
+    -fx-text-fill: #4eff8f;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-ring-bodies-value {
+    -fx-text-fill: #ffb24a;
+}
+
+/* Force couleur sur le nœud texte JavaFX (sinon .colonisation-detail-label .text l'écrase). */
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-system-name .text {
+    -fx-fill: #ffd089;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-distance-value .text {
+    -fx-fill: #7fd7ff;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-bodies-value .text {
+    -fx-fill: #4eff8f;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-ring-bodies-value .text {
+    -fx-fill: #ffb24a;
+}
+
 .colonisation-column {
     -fx-background-color: -fx-elite-gray;
     -fx-padding: 12px;
@@ -1327,22 +1464,26 @@
 }
 
 /* Styles pour la ScrollPane des minéraux */
-.cargo-minerals-scroll {
+.cargo-minerals-scroll,
+.colonisation-fleet-market-scroll {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-control-inner-background: transparent;
 }
 
-.cargo-minerals-scroll:focused {
+.cargo-minerals-scroll:focused,
+.colonisation-fleet-market-scroll:focused {
     -fx-background-color: transparent;
 }
 
-.cargo-minerals-scroll .viewport {
+.cargo-minerals-scroll .viewport,
+.colonisation-fleet-market-scroll .viewport {
     -fx-background-color: transparent;
 }
 
 /* Scrollbar verticale pour le GridPane des minéraux - Style Elite Dangerous */
-.cargo-minerals-scroll .scroll-bar:vertical {
+.cargo-minerals-scroll .scroll-bar:vertical,
+.colonisation-fleet-market-scroll .scroll-bar:vertical {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 0 0 0 1;
@@ -1351,24 +1492,29 @@
     -fx-max-width: 12px;
 }
 
-.cargo-minerals-scroll .scroll-bar:vertical .thumb {
+.cargo-minerals-scroll .scroll-bar:vertical .thumb,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .thumb {
     -fx-background-color: -fx-elite-orange;
     -fx-background-radius: 2px;
     -fx-border-radius: 2px;
     -fx-min-height: 20px;
 }
 
-.cargo-minerals-scroll .scroll-bar:vertical .thumb:hover {
+.cargo-minerals-scroll .scroll-bar:vertical .thumb:hover,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .thumb:hover {
     -fx-background-color: -fx-elite-cyan;
 }
 
-.cargo-minerals-scroll .scroll-bar:vertical .track {
+.cargo-minerals-scroll .scroll-bar:vertical .track,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .track {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: transparent;
 }
 
 .cargo-minerals-scroll .scroll-bar:vertical .increment-button,
-.cargo-minerals-scroll .scroll-bar:vertical .decrement-button {
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-button,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .increment-button,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .decrement-button {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 0 0 1 0;
@@ -1378,18 +1524,22 @@
 }
 
 .cargo-minerals-scroll .scroll-bar:vertical .increment-button:hover,
-.cargo-minerals-scroll .scroll-bar:vertical .decrement-button:hover {
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-button:hover,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .increment-button:hover,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .decrement-button:hover {
     -fx-background-color: -fx-elite-gray;
 }
 
-.cargo-minerals-scroll .scroll-bar:vertical .increment-arrow {
+.cargo-minerals-scroll .scroll-bar:vertical .increment-arrow,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .increment-arrow {
     -fx-background-color: -fx-elite-orange;
     -fx-shape: "M 0 0 L 4 4 L 8 0 Z"; /* flèche vers le bas */
     -fx-pref-width: 8px;
     -fx-pref-height: 4px;
 }
 
-.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow {
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .decrement-arrow {
     -fx-background-color: -fx-elite-orange;
     -fx-shape: "M 0 4 L 4 0 L 8 4 Z"; /* flèche vers le haut */
     -fx-pref-width: 8px;
@@ -1397,12 +1547,15 @@
 }
 
 .cargo-minerals-scroll .scroll-bar:vertical .increment-arrow:hover,
-.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow:hover {
+.cargo-minerals-scroll .scroll-bar:vertical .decrement-arrow:hover,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .increment-arrow:hover,
+.colonisation-fleet-market-scroll .scroll-bar:vertical .decrement-arrow:hover {
     -fx-background-color: -fx-elite-cyan;
 }
 
 /* Masquer la scrollbar horizontale */
-.cargo-minerals-scroll .scroll-bar:horizontal {
+.cargo-minerals-scroll .scroll-bar:horizontal,
+.colonisation-fleet-market-scroll .scroll-bar:horizontal {
     -fx-opacity: 0;
     -fx-pref-height: 0;
     -fx-min-height: 0;

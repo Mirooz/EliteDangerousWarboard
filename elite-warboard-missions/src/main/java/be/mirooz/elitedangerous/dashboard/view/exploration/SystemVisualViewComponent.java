@@ -1126,6 +1126,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (!(body instanceof PlaneteDetail planet)) {
             return;
         }
+        if (isEdsmBody(body)) {
+            // Les corps issus d'EDSM n'affichent pas d'icônes de priorité (mapped/exobio).
+            return;
+        }
 
         // Vérifier quelles icônes afficher
         boolean hasExobio = exobioImage != null && 

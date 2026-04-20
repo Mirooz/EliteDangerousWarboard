@@ -1,5 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.view.colonisation;
 
+import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseBackendApiFacade;
+import be.mirooz.elitedangerous.backend.generated.model.EdColoniseColonisedSystemRef;
+import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSearchResult;
+import be.mirooz.elitedangerous.backend.generated.model.EdColoniseSystemCounts;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.backend.generated.model.MatchedCommodityNearbyExport;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
@@ -14,39 +18,52 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSt
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
+import be.mirooz.elitedangerous.dashboard.service.EdColoniseService;
+import be.mirooz.elitedangerous.dashboard.service.EdsmService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
-import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
+import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -101,13 +118,45 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private GridPane commanderCargoGrid;
     @FXML
-    private Button findColonisableSystemsButton;
-    @FXML
     private Label constructionDetailTitleLabel;
     @FXML
     private VBox constructionDetailContent;
+    @FXML
+    private TabPane colonisationTabPane;
+    @FXML
+    private Tab colonisationSearchTab;
+    @FXML
+    private Tab architectViewTab;
+    @FXML
+    private Label searchMinLandablesLabel;
+    @FXML
+    private Spinner<Integer> searchMinLandablesSpinner;
+    @FXML
+    private Label searchMinRingsLabel;
+    @FXML
+    private Spinner<Integer> searchMinRingsSpinner;
+    @FXML
+    private Label searchMaxDistanceSolLabel;
+    @FXML
+    private Spinner<Integer> searchMaxDistanceSolSpinner;
+    @FXML
+    private Button searchColonisableButton;
+    @FXML
+    private ProgressIndicator searchLoadingIndicator;
+    @FXML
+    private Label searchErrorLabel;
+    @FXML
+    private VBox searchResultsBox;
+    @FXML
+    private VBox searchMapContainer;
+    @FXML
+    private Label searchNeighborsTitleLabel;
+    @FXML
+    private VBox searchNeighborsBox;
 
     private final ColonisationService colonisationService = ColonisationService.getInstance();
+    private final EdColoniseService edColoniseService = EdColoniseService.getInstance();
+    private final EdsmService edsmService = EdsmService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final CarrierTradeService carrierTradeService = CarrierTradeService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -137,6 +186,12 @@ public class ColonisationPanelController implements Initializable {
 
     private boolean adjustingArchitectDivider;
     private boolean architectSplitDividerListenerAttached;
+    private SystemVisualViewComponent searchSystemVisualView;
+    private final List<BorderPane> searchResultCards = new ArrayList<>();
+    private BorderPane selectedSearchResultCard;
+
+    private static final int MAX_DISTANCE_SOL_LY = 2770;
+    private static final int MAX_NEIGHBORS_SHOWN = 3;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -148,9 +203,7 @@ public class ColonisationPanelController implements Initializable {
             updateTradeStationButton.setManaged(false);
         }
         setupColonisationSplitPaneArchitectLock();
-        if (findColonisableSystemsButton != null) {
-            findColonisableSystemsButton.setOnAction(e -> openFindColonisableSystemsDialog());
-        }
+        initColonisationSearchTab();
 
         localizationService.addLanguageChangeListener(locale -> applyLocalizedTexts());
         cargoEventNotificationService.addListener(commanderCargoListener);
@@ -159,19 +212,24 @@ public class ColonisationPanelController implements Initializable {
         refreshAll();
     }
 
-    private void openFindColonisableSystemsDialog() {
-        if (findColonisableSystemsButton == null || findColonisableSystemsButton.getScene() == null) {
-            return;
+    private void initColonisationSearchTab() {
+        if (searchColonisableButton != null) {
+            searchColonisableButton.setOnAction(e -> onSearchColonisableSystems());
         }
-        Stage primaryStage = (Stage) findColonisableSystemsButton.getScene().getWindow();
-        DialogComponent dialog = new DialogComponent(
-                "/fxml/colonisation/ed-colonise-search-dialog.fxml",
-                "/css/elite-theme.css",
-                localizationService.getString("colonisation.edcolonise.dialog.windowTitle"),
-                920,
-                720);
-        dialog.init(primaryStage);
-        dialog.showAndWait();
+        if (searchMapContainer != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-visual-view.fxml"));
+                Parent content = loader.load();
+                searchSystemVisualView = loader.getController();
+                searchSystemVisualView.setBodiesListPanelVisible(false);
+                searchMapContainer.getChildren().setAll(content);
+                VBox.setVgrow(content, Priority.ALWAYS);
+            } catch (Exception e) {
+                Label error = new Label("Unable to load map view: " + e.getMessage());
+                error.getStyleClass().add("colonisation-detail-placeholder");
+                searchMapContainer.getChildren().setAll(error);
+            }
+        }
     }
 
     private void setupFoldableFleetAndCargoPanels() {
@@ -214,8 +272,26 @@ public class ColonisationPanelController implements Initializable {
 
     private void applyLocalizedTexts() {
         refreshButton.setText(localizationService.getString("colonisation.refresh"));
-        if (findColonisableSystemsButton != null) {
-            findColonisableSystemsButton.setText(localizationService.getString("colonisation.findColonisable"));
+        if (colonisationSearchTab != null) {
+            colonisationSearchTab.setText("Find New Colonisable System");
+        }
+        if (architectViewTab != null) {
+            architectViewTab.setText("Architect View");
+        }
+        if (searchNeighborsTitleLabel != null) {
+            searchNeighborsTitleLabel.setText(localizationService.getString("colonisation.edcolonise.neighbors.title"));
+        }
+        if (searchMinLandablesLabel != null) {
+            searchMinLandablesLabel.setText(localizationService.getString("colonisation.edcolonise.field.minLandables"));
+        }
+        if (searchMinRingsLabel != null) {
+            searchMinRingsLabel.setText(localizationService.getString("colonisation.edcolonise.field.minRings"));
+        }
+        if (searchMaxDistanceSolLabel != null) {
+            searchMaxDistanceSolLabel.setText(localizationService.getString("colonisation.edcolonise.field.maxDistanceSol"));
+        }
+        if (searchColonisableButton != null) {
+            searchColonisableButton.setText(localizationService.getString("colonisation.edcolonise.search"));
         }
         buildStationButton.setText(localizationService.getString("colonisation.buildStation"));
         if (updateTradeStationButton != null) {
@@ -532,6 +608,278 @@ public class ColonisationPanelController implements Initializable {
         adjustingArchitectDivider = true;
         colonisationSplitPane.setDividerPositions(ARCHITECT_SPLIT_DIVIDER_LOCK, d1.getPosition());
         adjustingArchitectDivider = false;
+    }
+
+    private void onSearchColonisableSystems() {
+        if (searchErrorLabel != null) {
+            searchErrorLabel.setVisible(false);
+            searchErrorLabel.setManaged(false);
+        }
+        int distLy = Math.min(MAX_DISTANCE_SOL_LY, Math.max(1, searchMaxDistanceSolSpinner.getValue()));
+        if (searchMaxDistanceSolSpinner.getValue() != distLy) {
+            searchMaxDistanceSolSpinner.getValueFactory().setValue(distLy);
+        }
+        EdColoniseBackendApiFacade.SearchParams params = new EdColoniseBackendApiFacade.SearchParams(
+                distLy,
+                Math.max(0, searchMinLandablesSpinner.getValue()),
+                Math.max(0, searchMinRingsSpinner.getValue()));
+        setSearchBusy(true);
+        Thread t = new Thread(() -> {
+            try {
+                var response = edColoniseService.searchColonisableStarSystems(params);
+                List<EdColoniseStarSystemSearchResult> results = response.getResults() != null
+                        ? response.getResults()
+                        : List.of();
+                Platform.runLater(() -> {
+                    renderSearchResults(results);
+                    setSearchBusy(false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    setSearchBusy(false);
+                    searchErrorLabel.setText(localizationService.getString("colonisation.edcolonise.error") + " " + e.getMessage());
+                    searchErrorLabel.setVisible(true);
+                    searchErrorLabel.setManaged(true);
+                });
+            }
+        }, "ed-colonise-tab-search");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void setSearchBusy(boolean busy) {
+        if (searchColonisableButton != null) {
+            searchColonisableButton.setDisable(busy);
+        }
+        if (searchLoadingIndicator != null) {
+            searchLoadingIndicator.setVisible(busy);
+        }
+        if (busy && searchResultsBox != null) {
+            searchResultsBox.getChildren().clear();
+        }
+    }
+
+    private void renderSearchResults(List<EdColoniseStarSystemSearchResult> results) {
+        if (searchResultsBox == null) {
+            return;
+        }
+        searchResultsBox.getChildren().clear();
+        searchResultCards.clear();
+        selectedSearchResultCard = null;
+        if (results == null || results.isEmpty()) {
+            Label empty = new Label(localizationService.getString("colonisation.edcolonise.noResults"));
+            empty.getStyleClass().add("colonisation-detail-placeholder");
+            empty.setWrapText(true);
+            searchResultsBox.getChildren().add(empty);
+            renderSelectedCandidateNeighbors(null);
+            return;
+        }
+        for (EdColoniseStarSystemSearchResult r : results) {
+            BorderPane card = buildSearchResultCard(r);
+            searchResultCards.add(card);
+            searchResultsBox.getChildren().add(card);
+        }
+        onSearchCandidateSelected(results.get(0), searchResultCards.get(0));
+    }
+
+    private BorderPane buildSearchResultCard(EdColoniseStarSystemSearchResult r) {
+        BorderPane card = new BorderPane();
+        card.getStyleClass().addAll("colonisation-buy-station-wrap", "colonisation-search-result-card");
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setOnMouseClicked(e -> onSearchCandidateSelected(r, card));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(8);
+        grid.setVgap(8);
+        grid.setMaxWidth(Double.MAX_VALUE);
+        ColumnConstraints leftCol = new ColumnConstraints();
+        leftCol.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().add(leftCol);
+
+        VBox left = buildSearchLeftColumn(r);
+        GridPane.setVgrow(left, Priority.ALWAYS);
+        grid.add(left, 0, 0);
+        card.setCenter(grid);
+
+        String lastUp = formatColonisationLastUpdate(r.getLastUpdate());
+        if (!lastUp.isBlank()) {
+            HBox bottom = new HBox();
+            bottom.setAlignment(Pos.CENTER_RIGHT);
+            bottom.setPadding(new javafx.geometry.Insets(6, 4, 2, 4));
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            Label last = new Label(localizationService.getString("colonisation.edcolonise.result.lastUpdate", lastUp));
+            last.getStyleClass().add("colonisation-buy-station-meta-dim");
+            last.setWrapText(false);
+            bottom.getChildren().addAll(spacer, last);
+            card.setBottom(bottom);
+        }
+
+        return card;
+    }
+
+    private VBox buildSearchLeftColumn(EdColoniseStarSystemSearchResult r) {
+        VBox col = new VBox(8);
+        col.setMaxWidth(Double.MAX_VALUE);
+
+        String name = r.getSystemName() != null ? r.getSystemName() : "—";
+        Label l = createCopyableNameLabel(name, false);
+        l.getStyleClass().remove("colonisation-buy-station-system");
+        l.getStyleClass().add("colonisation-search-system-name");
+        l.setWrapText(true);
+        col.getChildren().add(l);
+
+        VBox stats = new VBox(4);
+        if (r.getDistanceToSol() != null) {
+            Label d = new Label("Dist Sol: " + r.getDistanceToSol() + " ly");
+            d.getStyleClass().addAll("colonisation-detail-label", "colonisation-search-distance-value");
+            d.setWrapText(true);
+            stats.getChildren().add(d);
+        }
+        Integer bodies = sumPlanetaryBodiesFromSearch(r.getSystemCounts());
+        if (bodies != null) {
+            Label b = new Label("Bodies: " + bodies);
+            b.getStyleClass().addAll("colonisation-detail-label", "colonisation-search-bodies-value");
+            b.setWrapText(true);
+            stats.getChildren().add(b);
+        }
+        Integer ringBodies = ringBodyCountFromSearch(r);
+        if (ringBodies != null) {
+            Label rg = new Label("Ring bodies: " + ringBodies);
+            rg.getStyleClass().addAll("colonisation-detail-label", "colonisation-search-ring-bodies-value");
+            rg.setWrapText(true);
+            stats.getChildren().add(rg);
+        }
+        if (!stats.getChildren().isEmpty()) {
+            col.getChildren().add(stats);
+        }
+        return col;
+    }
+
+    private void onSearchCandidateSelected(EdColoniseStarSystemSearchResult candidate, BorderPane selectedCard) {
+        if (candidate == null || candidate.getSystemName() == null || candidate.getSystemName().isBlank()) {
+            return;
+        }
+        setSelectedSearchResultCard(selectedCard);
+        renderSelectedCandidateNeighbors(candidate);
+        Thread t = new Thread(() -> {
+            try {
+                var visited = edsmService.fetchSystemVisited(candidate.getSystemName());
+                Platform.runLater(() -> {
+                    if (searchSystemVisualView != null) {
+                        searchSystemVisualView.displaySystem(visited);
+                    }
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    if (searchErrorLabel != null) {
+                        searchErrorLabel.setText(localizationService.getString("colonisation.edcolonise.error") + " " + ex.getMessage());
+                        searchErrorLabel.setVisible(true);
+                        searchErrorLabel.setManaged(true);
+                    }
+                });
+            }
+        }, "ed-colonise-map-load");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void setSelectedSearchResultCard(BorderPane selectedCard) {
+        if (selectedSearchResultCard != null) {
+            selectedSearchResultCard.getStyleClass().remove("colonisation-search-result-card-selected");
+        }
+        selectedSearchResultCard = selectedCard;
+        if (selectedSearchResultCard != null && !selectedSearchResultCard.getStyleClass().contains("colonisation-search-result-card-selected")) {
+            selectedSearchResultCard.getStyleClass().add("colonisation-search-result-card-selected");
+        }
+    }
+
+    private void renderSelectedCandidateNeighbors(EdColoniseStarSystemSearchResult candidate) {
+        if (searchNeighborsBox == null) {
+            return;
+        }
+        searchNeighborsBox.getChildren().clear();
+        if (candidate == null || candidate.getColonisedSystems() == null || candidate.getColonisedSystems().isEmpty()) {
+            Label none = new Label(localizationService.getString("colonisation.edcolonise.neighbors.none"));
+            none.getStyleClass().add("colonisation-detail-placeholder");
+            none.setWrapText(true);
+            searchNeighborsBox.getChildren().add(none);
+            return;
+        }
+        for (EdColoniseColonisedSystemRef ref : candidate.getColonisedSystems()) {
+            VBox group = new VBox(4);
+            group.getStyleClass().add("colonisation-buy-station-wrap");
+            String sysName = ref.getSystemName() != null ? ref.getSystemName() : "—";
+            Label sys = createCopyableNameLabel(sysName, false);
+            sys.getStyleClass().remove("colonisation-buy-station-system");
+            sys.getStyleClass().add("colonisation-buy-station-name");
+            group.getChildren().add(sys);
+            if (ref.getStations() == null || ref.getStations().isEmpty()) {
+                Label noStation = new Label("No station");
+                noStation.getStyleClass().add("colonisation-buy-station-meta-dim");
+                group.getChildren().add(noStation);
+            } else {
+                ref.getStations().forEach(st -> {
+                    String stName = st.getStationName() != null ? st.getStationName() : "—";
+                    String faction = st.getControllingFaction() != null && !st.getControllingFaction().isBlank()
+                            ? " (" + st.getControllingFaction() + ")"
+                            : "";
+                    Label stLine = new Label("- " + stName + faction);
+                    stLine.getStyleClass().add("colonisation-detail-label");
+                    stLine.setWrapText(true);
+                    group.getChildren().add(stLine);
+                });
+            }
+            searchNeighborsBox.getChildren().add(group);
+        }
+    }
+
+    private String formatColonisationLastUpdate(OffsetDateTime t) {
+        if (t == null) {
+            return "";
+        }
+        DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                .withLocale(localizationService.getCurrentLocale());
+        return t.atZoneSameInstant(ZoneId.systemDefault()).format(fmt);
+    }
+
+    private static Integer sumPlanetaryBodiesFromSearch(EdColoniseSystemCounts c) {
+        if (c == null) {
+            return null;
+        }
+        int s = 0;
+        boolean any = false;
+        Integer[] parts = {
+                c.getIcyBodyCount(),
+                c.getOrganicCount(),
+                c.getGasGiantCount(),
+                c.getRockBodyCount(),
+                c.getEarthLikeCount(),
+                c.getMetalRichCount(),
+                c.getWaterWorldCount(),
+                c.getGeologicalsCount(),
+                c.getAmmoniaWorldCount(),
+                c.getRockyIceBodyCount(),
+                c.getHighMetalContentCount()
+        };
+        for (Integer v : parts) {
+            if (v != null) {
+                any = true;
+                s += v;
+            }
+        }
+        return any ? s : null;
+    }
+
+    private static Integer ringBodyCountFromSearch(EdColoniseStarSystemSearchResult r) {
+        EdColoniseSystemCounts c = r.getSystemCounts();
+        if (c != null && c.getRingCount() != null) {
+            return c.getRingCount();
+        }
+        if (r.getRings() != null) {
+            return r.getRings().size();
+        }
+        return null;
     }
 
     private boolean isSelectedRowCurrentBuildingSite() {
