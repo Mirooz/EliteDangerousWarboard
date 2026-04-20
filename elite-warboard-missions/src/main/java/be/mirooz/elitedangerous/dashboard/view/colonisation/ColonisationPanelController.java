@@ -851,13 +851,11 @@ public class ColonisationPanelController implements Initializable {
         boolean any = false;
         Integer[] parts = {
                 c.getIcyBodyCount(),
-                c.getOrganicCount(),
                 c.getGasGiantCount(),
                 c.getRockBodyCount(),
                 c.getEarthLikeCount(),
                 c.getMetalRichCount(),
                 c.getWaterWorldCount(),
-                c.getGeologicalsCount(),
                 c.getAmmoniaWorldCount(),
                 c.getRockyIceBodyCount(),
                 c.getHighMetalContentCount()
