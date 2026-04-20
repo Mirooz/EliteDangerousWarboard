@@ -480,7 +480,12 @@ public class PlaneteDetail extends ACelesteBody {
         boolean isFleetCarrierSale = false;
         boolean isOdyssey = true;
         boolean isEfficiencyBonus = efficiencyTargetMap;
-        double kValue = this.terraformable ? planetClass.getTerraformableK() : planetClass.getBaseK();
+        BodyType safePlanetClass = planetClass != null ? planetClass : BodyType.UNKNOWN;
+        int baseK = safePlanetClass.getBaseK();
+        Integer terraformableK = safePlanetClass.getTerraformableK();
+        // Certains types n'ont pas de k terraformable : fallback automatique sur baseK.
+        double kValue = this.terraformable && terraformableK != null ? terraformableK : baseK;
+        double safeMassEm = massEM != null ? massEM : 0d;
         final double q = 0.56591828;
 
         double mappingMultiplier = 1.0;
@@ -495,7 +500,7 @@ public class PlaneteDetail extends ACelesteBody {
             }
         }
 
-        double value = (kValue + kValue * q * Math.pow(massEM, 0.2)) * mappingMultiplier;
+        double value = (kValue + kValue * q * Math.pow(safeMassEm, 0.2)) * mappingMultiplier;
 
         if (mapped) {
             if (isOdyssey) {

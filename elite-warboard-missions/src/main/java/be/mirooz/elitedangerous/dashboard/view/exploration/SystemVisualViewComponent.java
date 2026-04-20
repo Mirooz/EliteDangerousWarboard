@@ -1967,6 +1967,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         
         // Ajouter l'icône mapped si nécessaire (pour les planètes)
         if (body instanceof PlaneteDetail planet) {
+            boolean isEdsmBody = isEdsmBody(body);
             // Vérifier si la planète respecte les conditions pour mapped
             boolean shouldShowMappedIcon = false;
             boolean isMapped = planet.isMapped();
@@ -1976,6 +1977,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             } else if (planet.getPlanetClass() != null) {
                 int baseK = planet.getPlanetClass().getBaseK();
                 shouldShowMappedIcon = planet.isTerraformable() || baseK > 50000;
+            }
+            if (isEdsmBody) {
+                // Sur les données EDSM, on masque les éléments liés à la body value/mapping local.
+                shouldShowMappedIcon = false;
             }
             
             if (shouldShowMappedIcon && mappedImage != null) {
@@ -2351,6 +2356,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Vérifie si un corps est "high value" (contient exobiologie ou est mappable)
      */
     private boolean isHighValueBody(ACelesteBody body) {
+        if (isEdsmBody(body)) {
+            return false;
+        }
         // Vérifier l'exobiologie
         if (body instanceof PlaneteDetail planet) {
             boolean hasExobio = (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
@@ -2368,6 +2376,24 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
         
         return false;
+    }
+
+    private boolean isEdsmBody(ACelesteBody body) {
+        if (body == null || body.getJsonNode() == null) {
+            return false;
+        }
+        return "EDSM".equalsIgnoreCase(body.getJsonNode().path("_source").asText(""));
+    }
+
+    public void setBodiesListPanelVisible(boolean visible) {
+        if (bodiesListPanel == null) {
+            return;
+        }
+        bodiesListPanel.setVisible(visible);
+        bodiesListPanel.setManaged(visible);
+        if (!visible && showOnlyHighValueBodiesCheckBox != null) {
+            showOnlyHighValueBodiesCheckBox.setSelected(false);
+        }
     }
     
     /**

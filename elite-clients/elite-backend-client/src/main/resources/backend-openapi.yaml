@@ -448,6 +448,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EdColoniseStarSystemSearchResponse'
+  /api/edsm/bodies:
+    get:
+      tags:
+      - Edsm Controller
+      summary: Récupère les corps d'un système via EDSM
+      parameters:
+      - name: systemName
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdsmBodiesResponse'
   /api/spansh/expressway-to-exomastery:
     post:
       tags:
@@ -1586,6 +1603,193 @@ components:
         highMetalContentCount:
           format: int32
           type: integer
+    EdsmBeltDto:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        mass:
+          format: double
+          type: number
+        innerRadius:
+          format: double
+          type: number
+        outerRadius:
+          format: double
+          type: number
+    EdsmBodiesResponse:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+        id64:
+          format: int64
+          type: integer
+        name:
+          type: string
+        url:
+          type: string
+        bodyCount:
+          format: int32
+          type: integer
+        bodies:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdsmBodyDto'
+    EdsmBodyDto:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+        id64:
+          format: int64
+          type: integer
+        bodyId:
+          format: int32
+          type: integer
+        name:
+          type: string
+        discovery:
+          $ref: '#/components/schemas/EdsmDiscoveryDto'
+        type:
+          type: string
+        subType:
+          type: string
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdsmParentRefDto'
+        distanceToArrival:
+          format: double
+          type: number
+        isMainStar:
+          type: boolean
+        isScoopable:
+          type: boolean
+        isLandable:
+          type: boolean
+        gravity:
+          format: double
+          type: number
+        earthMasses:
+          format: double
+          type: number
+        radius:
+          format: double
+          type: number
+        surfaceTemperature:
+          format: double
+          type: number
+        surfacePressure:
+          format: double
+          type: number
+        volcanismType:
+          type: string
+        atmosphereType:
+          type: string
+        atmosphereComposition:
+          type: object
+          additionalProperties:
+            format: double
+            type: number
+        solidComposition:
+          type: object
+          additionalProperties:
+            format: double
+            type: number
+        terraformingState:
+          type: string
+        age:
+          format: double
+          type: number
+        spectralClass:
+          type: string
+        luminosity:
+          type: string
+        absoluteMagnitude:
+          format: double
+          type: number
+        solarMasses:
+          format: double
+          type: number
+        solarRadius:
+          format: double
+          type: number
+        orbitalPeriod:
+          format: double
+          type: number
+        semiMajorAxis:
+          format: double
+          type: number
+        orbitalEccentricity:
+          format: double
+          type: number
+        orbitalInclination:
+          format: double
+          type: number
+        argOfPeriapsis:
+          format: double
+          type: number
+        rotationalPeriod:
+          format: double
+          type: number
+        rotationalPeriodTidallyLocked:
+          type: boolean
+        axialTilt:
+          format: double
+          type: number
+        belts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdsmBeltDto'
+        rings:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdsmRingDto'
+        reserveLevel:
+          type: string
+        materials:
+          type: object
+          additionalProperties:
+            format: double
+            type: number
+        updateTime:
+          type: string
+    EdsmDiscoveryDto:
+      type: object
+      properties:
+        commander:
+          type: string
+        date:
+          type: string
+    EdsmParentRefDto:
+      type: object
+      properties:
+        refs:
+          type: object
+          additionalProperties:
+            format: int32
+            type: integer
+    EdsmRingDto:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        mass:
+          format: double
+          type: number
+        innerRadius:
+          format: double
+          type: number
+        outerRadius:
+          format: double
+          type: number
     EndSessionRequest:
       type: object
       properties:

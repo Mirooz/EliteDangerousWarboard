@@ -5,26 +5,24 @@ import be.mirooz.elitedangerous.backend.generated.model.EdColoniseColonisedSyste
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSearchResult;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseSystemCounts;
 import be.mirooz.elitedangerous.dashboard.service.EdColoniseService;
+import be.mirooz.elitedangerous.dashboard.service.EdsmService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -55,11 +53,6 @@ public class EdColoniseSearchDialogController implements Initializable {
     private static final int MAX_DISTANCE_SOL_LY = 2770;
 
     private static final int MAX_NEIGHBORS_SHOWN = 3;
-
-    private static final ObjectMapper DETAIL_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .enable(SerializationFeature.INDENT_OUTPUT);
 
     @FXML
     private Label dialogTitleLabel;
@@ -93,6 +86,7 @@ public class EdColoniseSearchDialogController implements Initializable {
     private StackPane dialogPopupLayer;
 
     private final EdColoniseService edColoniseService = EdColoniseService.getInstance();
+    private final EdsmService edsmService = EdsmService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
@@ -367,29 +361,44 @@ public class EdColoniseSearchDialogController implements Initializable {
     }
 
     private void showDetails(EdColoniseStarSystemSearchResult r) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(localizationService.getString("colonisation.edcolonise.details.title"));
-        String header = r.getSystemName() != null ? r.getSystemName() : "—";
-        alert.setHeaderText(header);
-        TextArea ta = new TextArea(toDetailJson(r));
-        ta.setEditable(false);
-        ta.setWrapText(true);
-        ta.setPrefRowCount(22);
-        ta.setPrefColumnCount(72);
-        ScrollPane sp = new ScrollPane(ta);
-        sp.setFitToWidth(true);
-        sp.setPrefViewportHeight(360);
-        sp.setMaxHeight(420);
-        alert.getDialogPane().setContent(sp);
-        alert.getDialogPane().setMinWidth(520);
-        alert.showAndWait();
+        String systemName = r != null ? r.getSystemName() : null;
+        Thread t = new Thread(() -> {
+            try {
+                var visited = edsmService.fetchSystemVisited(systemName);
+                Platform.runLater(() -> openSystemVisualDetailWindow(visited));
+            } catch (Exception ex) {
+                String message = "EDSM details fetch failed for system '"
+                        + (systemName != null ? systemName : "—")
+                        + "': " + ex.getMessage();
+                System.err.println(message);
+            }
+        }, "edsm-system-details");
+        t.setDaemon(true);
+        t.start();
     }
 
-    private String toDetailJson(EdColoniseStarSystemSearchResult r) {
+    private void openSystemVisualDetailWindow(be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited visited) {
         try {
-            return DETAIL_MAPPER.writeValueAsString(r);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-visual-view.fxml"));
+            Parent content = loader.load();
+            SystemVisualViewComponent controller = loader.getController();
+            controller.setBodiesListPanelVisible(false);
+            controller.displaySystem(visited);
+
+            Scene scene = new Scene(content, 1380, 840);
+            scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
+
+            Stage detailStage = new Stage();
+            detailStage.setTitle(localizationService.getString("colonisation.edcolonise.details.title")
+                    + " - " + (visited != null ? visited.getSystemName() : "—"));
+            detailStage.setScene(scene);
+            detailStage.setResizable(true);
+            if (closeButton != null && closeButton.getScene() != null) {
+                detailStage.initOwner(closeButton.getScene().getWindow());
+            }
+            detailStage.show();
         } catch (Exception ex) {
-            return String.valueOf(r);
+            System.err.println("Unable to open exploration detail window: " + ex.getMessage());
         }
     }
 
