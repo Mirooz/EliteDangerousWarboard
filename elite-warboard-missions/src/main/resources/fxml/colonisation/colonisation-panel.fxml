@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="be.mirooz.elitedangerous.dashboard.view.colonisation.ColonisationPanelController"
+      styleClass="colonisation-panel" spacing="10">
+    <padding>
+        <Insets top="8.0" right="12.0" bottom="12.0" left="12.0"/>
+    </padding>
+    <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-toolbar">
+        <Button fx:id="refreshButton" styleClass="elite-nav-button"/>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+    <SplitPane fx:id="colonisationSplitPane" dividerPositions="0.221,0.64" VBox.vgrow="ALWAYS"
+               styleClass="colonisation-split">
+        <VBox spacing="8.0" minWidth="170.0" maxWidth="374.0" styleClass="colonisation-column">
+            <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                        styleClass="colonisation-architect-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="architectSystemsContainer" spacing="10.0">
+                    <padding>
+                        <Insets bottom="4.0"/>
+                    </padding>
+                </VBox>
+            </ScrollPane>
+        </VBox>
+        <VBox spacing="10.0" styleClass="colonisation-column" VBox.vgrow="ALWAYS" minHeight="160.0">
+            <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="colonisation-panel-fold-header">
+                <Label fx:id="fleetTitleLabel" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="mining-title"/>
+                <Button fx:id="fleetCollapseButton" mnemonicParsing="false" focusTraversable="false"
+                        styleClass="colonisation-panel-fold-button" text="▼"/>
+            </HBox>
+            <VBox fx:id="fleetCollapsibleContent" spacing="6.0" VBox.vgrow="ALWAYS">
+                <VBox fx:id="fleetSummaryBox" spacing="4.0" styleClass="colonisation-fleet-summary-wrap"/>
+                <VBox fx:id="fleetCargoBarBox"/>
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                            styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll" VBox.vgrow="ALWAYS">
+                    <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" minWidth="72.0"/>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="64.0"/>
+                        </columnConstraints>
+                    </GridPane>
+                </ScrollPane>
+            </VBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="colonisation-panel-fold-header">
+                <Label fx:id="commanderCurrentCargoTitleLabel" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="mining-title"/>
+                <Button fx:id="commanderCollapseButton" mnemonicParsing="false" focusTraversable="false"
+                        styleClass="colonisation-panel-fold-button" text="▼"/>
+            </HBox>
+            <VBox fx:id="commanderCollapsibleContent" spacing="0.0" VBox.vgrow="ALWAYS">
+                <VBox spacing="6.0" styleClass="colonisation-buy-station-wrap" VBox.vgrow="ALWAYS">
+                    <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="colonisation-commander-cargo-summary,cargo-info,colonisation-fleet-cargo-info">
+                        <ProgressBar fx:id="commanderCargoProgressBar" styleClass="progress-bar" prefWidth="120.0" prefHeight="8.0" HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="commanderCargoUsedLabel" styleClass="colonisation-commander-cargo-used"/>
+                    </HBox>
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll" VBox.vgrow="ALWAYS">
+                        <GridPane fx:id="commanderCargoGrid" hgap="8.0" vgap="3.0" styleClass="colonisation-commander-cargo-grid">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" minWidth="72.0"/>
+                                <ColumnConstraints hgrow="NEVER" minWidth="36.0" prefWidth="44.0" halignment="RIGHT"/>
+                            </columnConstraints>
+                        </GridPane>
+                    </ScrollPane>
+                </VBox>
+            </VBox>
+        </VBox>
+        <VBox spacing="8.0" minWidth="300.0" maxWidth="520.0" prefWidth="480.0" styleClass="colonisation-column,colonisation-detail-column" VBox.vgrow="ALWAYS">
+            <Label fx:id="constructionDetailTitleLabel" styleClass="mining-title"/>
+            <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-detail-actions">
+                <Button fx:id="buildStationButton" styleClass="elite-nav-button"/>
+                <Button fx:id="updateTradeStationButton" styleClass="elite-nav-button"/>
+            </HBox>
+            <Label fx:id="statusLabel" styleClass="footer-text" wrapText="true" maxWidth="496.0"/>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                        styleClass="colonisation-architect-scroll,colonisation-detail-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="constructionDetailContent" spacing="10.0">
+                    <padding>
+                        <Insets top="4.0" right="4.0" bottom="8.0" left="4.0"/>
+                    </padding>
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </SplitPane>
+</VBox>

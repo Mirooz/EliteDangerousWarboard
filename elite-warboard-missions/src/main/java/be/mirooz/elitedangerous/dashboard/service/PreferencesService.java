@@ -1,9 +1,18 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -14,10 +23,30 @@ public class PreferencesService {
     private final Properties preferences;
     private final Path preferencesFile;
 
+    /** Cache JSON des stations d’achat suggérées (colonisation), à côté de {@code preferences.properties}. */
+    private static final String COLONISATION_SUGGESTED_BUY_STATIONS_FILE = "colonisation-suggested-stations.json";
+
+    private static final ObjectMapper COLONISATION_SUGGESTED_STATIONS_JSON = createColonisationSuggestedStationsMapper();
+
+    private static ObjectMapper createColonisationSuggestedStationsMapper() {
+        ObjectMapper m = new ObjectMapper();
+        m.registerModule(new JavaTimeModule());
+        m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return m;
+    }
+
     private PreferencesService() {
         this.preferences = new Properties();
         this.preferencesFile = Paths.get(System.getProperty("user.home"), ".elite-warboard", "preferences.properties");
         loadPreferences();
+    }
+
+    private Path colonisationSuggestedBuyStationsPath() {
+        Path parent = preferencesFile.getParent();
+        if (parent == null) {
+            return Paths.get(COLONISATION_SUGGESTED_BUY_STATIONS_FILE);
+        }
+        return parent.resolve(COLONISATION_SUGGESTED_BUY_STATIONS_FILE);
     }
 
     public static PreferencesService getInstance() {
@@ -385,6 +414,69 @@ public class PreferencesService {
             return Float.parseFloat(value);
         } catch (NumberFormatException e) {
             return 0;
+        }
+    }
+
+    /**
+     * Enregistre les stations d’achat suggérées pour un chantier ({@code buildingMarketId}) dans
+     * {@code ~/.elite-warboard/colonisation-suggested-stations.json}.
+     */
+    public void persistColonisationSuggestedBuyStations(long buildingMarketId, List<NearbyExportsBestStationResult> stations) {
+        if (buildingMarketId <= 0) {
+            return;
+        }
+        Path file = colonisationSuggestedBuyStationsPath();
+        try {
+            Path parent = file.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            var root = COLONISATION_SUGGESTED_STATIONS_JSON.createObjectNode();
+            root.put("buildingMarketId", buildingMarketId);
+            root.set("stations", COLONISATION_SUGGESTED_STATIONS_JSON.valueToTree(stations != null ? stations : List.of()));
+            COLONISATION_SUGGESTED_STATIONS_JSON.writerWithDefaultPrettyPrinter().writeValue(file.toFile(), root);
+        } catch (IOException e) {
+            System.err.println("Préférences: échec enregistrement stations d'achat colonisation : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Recharge les stations d’achat persistées si le fichier existe et correspond au {@code MarketID} du chantier.
+     *
+     * @return vide si pas de fichier ou market incohérent ; sinon la liste (éventuellement vide).
+     */
+    public Optional<List<NearbyExportsBestStationResult>> loadColonisationSuggestedBuyStationsIfMatches(long buildingMarketId) {
+        if (buildingMarketId <= 0) {
+            return Optional.empty();
+        }
+        Path file = colonisationSuggestedBuyStationsPath();
+        if (!Files.isRegularFile(file)) {
+            return Optional.empty();
+        }
+        try {
+            JsonNode root = COLONISATION_SUGGESTED_STATIONS_JSON.readTree(file.toFile());
+            if (root == null || root.path("buildingMarketId").asLong(0L) != buildingMarketId) {
+                return Optional.empty();
+            }
+            JsonNode arr = root.get("stations");
+            if (arr == null || !arr.isArray()) {
+                return Optional.of(List.of());
+            }
+            List<NearbyExportsBestStationResult> list = COLONISATION_SUGGESTED_STATIONS_JSON.convertValue(
+                    arr, new TypeReference<List<NearbyExportsBestStationResult>>() { });
+            return Optional.of(list != null ? List.copyOf(list) : List.of());
+        } catch (IOException e) {
+            System.err.println("Préférences: échec lecture stations d'achat colonisation : " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    /** Supprime le fichier cache des stations d’achat colonisation (ex. reset chantier). */
+    public void removeColonisationSuggestedBuyStationsFile() {
+        try {
+            Files.deleteIfExists(colonisationSuggestedBuyStationsPath());
+        } catch (IOException e) {
+            System.err.println("Préférences: impossible de supprimer le cache stations d'achat colonisation : " + e.getMessage());
         }
     }
 }

@@ -74,6 +74,14 @@
                         </graphic>
                         <BorderPane fx:id="explorationPane" styleClass="main-content" />
                     </Tab>
+
+                    <!-- Onglet Colonisation & Fleet Carrier -->
+                    <Tab fx:id="colonisationTab" style="-fx-cursor: hand">
+                        <graphic>
+                            <ImageView fx:id="colonisationTabImage" styleClass="tab-image" />
+                        </graphic>
+                        <BorderPane fx:id="colonisationPane" styleClass="main-content" />
+                    </Tab>
                 </TabPane>
             </VBox>
         </StackPane>

@@ -15,6 +15,7 @@ import be.mirooz.elitedangerous.dashboard.view.combat.HeaderController;
 import be.mirooz.elitedangerous.dashboard.view.combat.MissionListController;
 import be.mirooz.elitedangerous.dashboard.view.combat.DestroyedShipsController;
 import be.mirooz.elitedangerous.dashboard.view.mining.MiningController;
+import be.mirooz.elitedangerous.dashboard.view.colonisation.ColonisationPanelController;
 import be.mirooz.elitedangerous.dashboard.view.exploration.ExplorationController;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -24,6 +25,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
@@ -62,6 +64,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     
     @FXML
     private Tab explorationTab;
+
+    @FXML
+    private Tab colonisationTab;
     
     @FXML
     private ImageView missionsTabImage;
@@ -71,6 +76,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     
     @FXML
     private ImageView explorationTabImage;
+
+    @FXML
+    private ImageView colonisationTabImage;
     
     @FXML
     private BorderPane missionsPane;
@@ -82,7 +90,18 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private BorderPane explorationPane;
 
     @FXML
+    private BorderPane colonisationPane;
+
+    @FXML
     private StackPane popupContainer;
+
+    private ColonisationPanelController colonisationPanelController;
+
+    private final ChangeListener<Tab> colonisationTabSelectionListener = (obs, oldTab, newTab) -> {
+        if (newTab == colonisationTab && colonisationPanelController != null) {
+            colonisationPanelController.refreshAll();
+        }
+    };
     
     // Labels pour commander, system, station (déplacés du footer vers le header)
     @FXML
@@ -125,7 +144,8 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         localizationService.addLanguageChangeListener(locale -> updateTranslations());
         
         // Initialiser le TabPane dans le service de bind unifié
-        windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab, explorationTab);
+        windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab, explorationTab, colonisationTab);
+        mainTabPane.getSelectionModel().selectedItemProperty().addListener(colonisationTabSelectionListener);
     }
     
     /**
@@ -155,6 +175,8 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             
             // Charger l'onglet Exploration
             createExplorationPanel();
+
+            createColonisationPanel();
 
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement des composants: " + e.getMessage());
@@ -201,6 +223,13 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         explorationPane.setCenter(explorationPanel);
     }
 
+    private void createColonisationPanel() throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/colonisation/colonisation-panel.fxml"));
+        VBox panel = loader.load();
+        colonisationPanelController = loader.getController();
+        colonisationPane.setCenter(panel);
+    }
+
     private void loadMissions() {
         dashboardService.initActiveMissions();
     }
@@ -233,6 +262,13 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             explorationTabImage.setFitHeight(60);
             explorationTabImage.setPreserveRatio(true);
             explorationTabImage.setSmooth(true);
+
+            Image colonisationTabIcon = loadColonisationTabIcon();
+            colonisationTabImage.setImage(colonisationTabIcon);
+            colonisationTabImage.setFitWidth(60);
+            colonisationTabImage.setFitHeight(60);
+            colonisationTabImage.setPreserveRatio(true);
+            colonisationTabImage.setSmooth(true);
             
             // Configurer les effets élégants
             setupEliteTabEffects();
@@ -251,9 +287,22 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         missionsTabImage.getStyleClass().add("tab-image");
         miningTabImage.getStyleClass().add("tab-image");
         explorationTabImage.getStyleClass().add("tab-image");
+        colonisationTabImage.getStyleClass().add("tab-image");
         
         // Gestion simple de la sélection des onglets
         setupSimpleTabSelection();
+    }
+
+    private static Image loadColonisationTabIcon() {
+        var fleet = DashboardController.class.getResourceAsStream("/images/fleet.png");
+        if (fleet != null) {
+            return new Image(fleet);
+        }
+        var exploration = DashboardController.class.getResourceAsStream("/images/dashboard/exploration.png");
+        if (exploration != null) {
+            return new Image(exploration);
+        }
+        return new Image(DashboardController.class.getResourceAsStream("/images/dashboard/elitewarboard.png"));
     }
     
     /**
@@ -266,6 +315,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             missionsTabImage.getStyleClass().remove("tab-image-selected");
             miningTabImage.getStyleClass().remove("tab-image-selected");
             explorationTabImage.getStyleClass().remove("tab-image-selected");
+            colonisationTabImage.getStyleClass().remove("tab-image-selected");
             
             if (newTab == missionsTab) {
                 // Onglet Missions sélectionné
@@ -279,6 +329,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
                 // Onglet Exploration sélectionné
                 explorationTabImage.getStyleClass().add("tab-image-selected");
                 System.out.println("✅ Exploration sélectionné");
+            } else if (newTab == colonisationTab) {
+                colonisationTabImage.getStyleClass().add("tab-image-selected");
+                System.out.println("✅ Colonisation sélectionné");
             }
         });
         
@@ -286,6 +339,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         missionsTab.setClosable(false);
         miningTab.setClosable(false);
         explorationTab.setClosable(false);
+        colonisationTab.setClosable(false);
         
         // Sélectionner l'onglet Missions par défaut
         mainTabPane.getSelectionModel().select(missionsTab);
@@ -302,6 +356,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             donateButtonImage.setPickOnBounds(true);
             donateButtonImage.setPreserveRatio(true);
             Tooltip.install(donateButtonImage, new Tooltip(localizationService.getString("config.donate.button")));
+        }
+        if (colonisationTab != null) {
+            colonisationTab.setTooltip(new Tooltip(localizationService.getString("colonisation.tab.tooltip")));
         }
         
         // Mettre à jour les traductions des labels commander/system/station

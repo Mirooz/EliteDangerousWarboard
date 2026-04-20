@@ -27,6 +27,9 @@ public class ColonisationService {
     /** Service présent sur les stations / dépôts liés à la colonisation (journal Docked). */
     public static final String COLONISATION_STATION_SERVICE = "colonisationcontribution";
 
+    /** Préférence {@link PreferencesService} : MarketID du site en construction (dossier {@code ~/.elite-warboard}). */
+    public static final String PREF_BUILDING_MARKET_ID = "colonisation.building.marketId";
+
     private static final ColonisationService INSTANCE = new ColonisationService();
 
     private final ColonisationRegistry registry = ColonisationRegistry.getInstance();
@@ -67,6 +70,45 @@ public class ColonisationService {
         registry.setCurrentConstructionByMarketId(marketId);
     }
 
+    /**
+     * Définit le site de construction courant et enregistre son {@code MarketID} dans les préférences utilisateur
+     * (rechargé au prochain démarrage / dès que le dock existe dans le registre).
+     */
+    public void designateBuildingSite(long marketId) {
+        registry.setCurrentConstructionByMarketId(marketId);
+        if (registry.getCurrentConstructionSite() != null) {
+            PreferencesService.getInstance().setPreference(PREF_BUILDING_MARKET_ID, Long.toString(marketId));
+        } else {
+            PreferencesService.getInstance().removePreference(PREF_BUILDING_MARKET_ID);
+        }
+    }
+
+    /**
+     * Si une préférence {@link #PREF_BUILDING_MARKET_ID} existe et qu’un dock correspondant est connu, rétablit le chantier courant.
+     */
+    public void tryRestorePersistedBuildingSite() {
+        String v = PreferencesService.getInstance().getPreference(PREF_BUILDING_MARKET_ID, "").trim();
+        if (v.isEmpty()) {
+            return;
+        }
+        long marketId;
+        try {
+            marketId = Long.parseLong(v);
+        } catch (NumberFormatException e) {
+            PreferencesService.getInstance().removePreference(PREF_BUILDING_MARKET_ID);
+            return;
+        }
+        if (marketId <= 0) {
+            return;
+        }
+        for (ColonisationDockEntry e : getDockEntries()) {
+            if (e != null && e.getMarketId() == marketId) {
+                registry.setCurrentConstructionByMarketId(marketId);
+                return;
+            }
+        }
+    }
+
     public ColonisationConstruction getCurrentConstruction() {
         return registry.getCurrentConstruction();
     }
@@ -93,11 +135,45 @@ public class ColonisationService {
     public List<NearbyExportsBestStationResult> suggestBuyStationsForCurrentConstruction(boolean avoidPlanetaryLanding)
             throws IOException {
         ColonisationDockEntry site = registry.getCurrentConstructionSite();
+        ColonisationConstruction construction = registry.getCurrentConstruction();
+        return suggestBuyStationsInternal(site, construction, avoidPlanetaryLanding);
+    }
+
+    /**
+     * Suggestions d’achat pour le chantier du site donné (système et commodités = ce site).
+     */
+    public List<NearbyExportsBestStationResult> suggestBuyStationsForDock(ColonisationDockEntry site)
+            throws IOException {
+        return suggestBuyStationsForDock(site, false);
+    }
+
+    public List<NearbyExportsBestStationResult> suggestBuyStationsForDock(ColonisationDockEntry site,
+            boolean avoidPlanetaryLanding) throws IOException {
+        if (site == null) {
+            return List.of();
+        }
+        return suggestBuyStationsInternal(site, site.getConstruction(), avoidPlanetaryLanding);
+    }
+
+    /**
+     * Indique si la clé renvoyée par l’API pour une ligne de match correspond à cette ressource chantier.
+     */
+    public boolean resourceMatchesNearbyBuyRequest(ConstructionResource resource, String requestedCommodityName) {
+        if (requestedCommodityName == null || requestedCommodityName.isBlank()) {
+            return false;
+        }
+        String k = commodityNameForNearbyBuy(resource);
+        return !k.isBlank() && k.equalsIgnoreCase(requestedCommodityName.trim());
+    }
+
+    private List<NearbyExportsBestStationResult> suggestBuyStationsInternal(
+            ColonisationDockEntry site,
+            ColonisationConstruction construction,
+            boolean avoidPlanetaryLanding) throws IOException {
         String systemName = resolveConstructionSourceSystem(site);
         if (systemName.isBlank()) {
             return List.of();
         }
-        ColonisationConstruction construction = registry.getCurrentConstruction();
         if (construction == null || construction.getResourcesRequired() == null) {
             return List.of();
         }
@@ -172,6 +248,8 @@ public class ColonisationService {
 
     public void clear() {
         registry.clear();
+        PreferencesService.getInstance().removePreference(PREF_BUILDING_MARKET_ID);
+        PreferencesService.getInstance().removeColonisationSuggestedBuyStationsFile();
     }
 
     /**
@@ -202,6 +280,7 @@ public class ColonisationService {
             System.out.println("Colonisation: amarrage sur « " + snap.getSiteNameLocalised() + " » ("
                     + snap.getStarSystem() + ", MarketID=" + snap.getMarketId() + ")");
         }
+        tryRestorePersistedBuildingSite();
     }
 
     public static boolean hasColonisationStationService(JsonNode dockedEvent) {

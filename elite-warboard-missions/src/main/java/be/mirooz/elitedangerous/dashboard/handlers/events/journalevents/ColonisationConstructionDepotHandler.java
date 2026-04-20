@@ -43,6 +43,7 @@ public class ColonisationConstructionDepotHandler implements JournalEventHandler
             ColonisationConstruction construction = new ColonisationConstruction(
                     timestamp, progress, status, List.copyOf(resources));
             colonisationService.applyConstructionDepot(marketId, construction, starSystem);
+            colonisationService.tryRestorePersistedBuildingSite();
 
             System.out.println("Colonisation: dépôt de construction MarketID=" + marketId
                     + (starSystem.isEmpty() ? "" : " (« " + starSystem + " »)")

@@ -167,6 +167,739 @@
     -fx-spacing: 8;
 }
 
+/* ====== COLONISATION & FLEET CARRIER (aligné mining / exploration) ====== */
+.colonisation-panel {
+    -fx-background-color: -fx-elite-dark;
+    -fx-spacing: 10;
+}
+
+.colonisation-toolbar {
+    -fx-background-color: -fx-elite-darker;
+    -fx-padding: 10px 14px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 2px 0;
+    -fx-spacing: 10;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.colonisation-toolbar .label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+}
+
+.colonisation-column {
+    -fx-background-color: -fx-elite-gray;
+    -fx-padding: 12px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-spacing: 8;
+}
+
+.colonisation-detail-column {
+    -fx-max-width: 520px;
+}
+
+.colonisation-panel .split-pane {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: transparent;
+}
+
+.colonisation-panel .split-pane > .split-pane-divider {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.colonisation-panel .split-pane > .split-pane-divider:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.colonisation-panel .colonisation-split.split-pane {
+    -fx-background-color: -fx-elite-dark;
+    -fx-padding: 0;
+}
+
+.colonisation-panel .table-view {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.colonisation-panel .table-view .placeholder .label {
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.colonisation-panel .table-view .table-row-cell {
+    -fx-background-color: -fx-elite-darker;
+}
+
+.colonisation-panel .table-view .table-row-cell:odd {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.colonisation-panel .table-view .table-row-cell:filled:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.15);
+}
+
+.colonisation-panel .table-view .table-row-cell:filled:selected {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.colonisation-panel .table-view .table-row-cell:filled:selected .text {
+    -fx-fill: -fx-elite-dark;
+}
+
+.colonisation-detail-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+
+.colonisation-detail-label .text {
+    -fx-fill: -fx-elite-text;
+}
+
+/* ScrollPanes colonisation : liste architecte + détail (barres style Elite / mining) */
+.colonisation-architect-scroll,
+.colonisation-detail-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+
+.colonisation-architect-scroll:focused,
+.colonisation-detail-scroll:focused {
+    -fx-background-color: transparent;
+}
+
+.colonisation-architect-scroll .viewport,
+.colonisation-detail-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical,
+.colonisation-detail-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .thumb,
+.colonisation-detail-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .thumb:hover,
+.colonisation-detail-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .track,
+.colonisation-detail-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .increment-button,
+.colonisation-architect-scroll .scroll-bar:vertical .decrement-button,
+.colonisation-detail-scroll .scroll-bar:vertical .increment-button,
+.colonisation-detail-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .increment-button:hover,
+.colonisation-architect-scroll .scroll-bar:vertical .decrement-button:hover,
+.colonisation-detail-scroll .scroll-bar:vertical .increment-button:hover,
+.colonisation-detail-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .increment-arrow,
+.colonisation-detail-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .decrement-arrow,
+.colonisation-detail-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.colonisation-architect-scroll .scroll-bar:vertical .increment-arrow:hover,
+.colonisation-architect-scroll .scroll-bar:vertical .decrement-arrow:hover,
+.colonisation-detail-scroll .scroll-bar:vertical .increment-arrow:hover,
+.colonisation-detail-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.colonisation-architect-scroll .scroll-bar:horizontal,
+.colonisation-detail-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.colonisation-architect-system {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 10px 10px 10px;
+    -fx-spacing: 6px;
+}
+
+.colonisation-architect-system.colonisation-architect-system-expanded {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px;
+}
+
+.colonisation-architect-header {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 10px;
+    -fx-cursor: hand;
+    -fx-padding: 2px 0 4px 0;
+}
+
+.colonisation-architect-header:hover .colonisation-architect-chevron {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.colonisation-architect-chevron {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-min-width: 16px;
+    -fx-pref-width: 16px;
+}
+
+.colonisation-architect-card-title {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-architect-sites {
+    -fx-spacing: 8px;
+    -fx-padding: 4px 0 2px 10px;
+}
+
+.colonisation-construction-card {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: derive(-fx-elite-orange, -25%);
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 10px;
+    -fx-spacing: 4px;
+    -fx-cursor: hand;
+}
+
+.colonisation-construction-card:hover {
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.colonisation-construction-card-selected {
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+    -fx-background-color: derive(-fx-elite-gray, -12%);
+}
+
+.colonisation-construction-card-current {
+    -fx-border-color: derive(-fx-elite-cyan, -10%);
+}
+
+.colonisation-construction-card-title {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-construction-line {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-wrap-text: true;
+}
+
+.colonisation-construction-badge {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 1px 6px;
+    -fx-background-color: rgba(255, 107, 0, 0.12);
+    -fx-background-radius: 3px;
+}
+
+.colonisation-construction-badge.colonisation-construction-badge-building {
+    -fx-text-fill: -fx-elite-green;
+    -fx-background-color: rgba(0, 255, 100, 0.14);
+}
+
+.colonisation-section-subtitle {
+    -fx-text-fill: derive(-fx-elite-orange, 8%);
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 0 2 0;
+}
+
+.colonisation-fleet-summary-wrap {
+    -fx-padding: 0 0 2 0;
+}
+
+.colonisation-fleet-stat-grid {
+    -fx-background-color: derive(-fx-elite-darker, 10%);
+    -fx-background-radius: 6px;
+    -fx-padding: 12px 14px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+}
+
+.colonisation-fleet-k {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+}
+
+.colonisation-fleet-v {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-detail-placeholder {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+    -fx-padding: 8 4;
+}
+
+.colonisation-detail-row {
+    -fx-alignment: TOP_LEFT;
+    -fx-spacing: 8px;
+}
+
+.colonisation-detail-k {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-min-width: 118px;
+    -fx-max-width: 140px;
+}
+
+.colonisation-detail-v {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-detail-resource-card {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: derive(-fx-elite-orange, -22%);
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 10px;
+    -fx-spacing: 3px;
+}
+
+.colonisation-detail-resource-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-detail-resource-meta {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-wrap-text: true;
+}
+
+.colonisation-detail-compact-resources {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-line-spacing: 2px;
+    -fx-wrap-text: true;
+}
+
+.colonisation-detail-construction-inline {
+    -fx-spacing: 16px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 2 0 6 0;
+}
+
+.colonisation-fleet-inline {
+    -fx-hgap: 10px;
+    -fx-vgap: 4px;
+    -fx-padding: 4px 0 2px 0;
+}
+
+.colonisation-fleet-inline .colonisation-fleet-inline-sep {
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.colonisation-fleet-inline-value {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.colonisation-fleet-inline-dim {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+}
+
+.colonisation-panel-fold-header {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 0 2 0;
+}
+
+.colonisation-panel-fold-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 4 0 6;
+    -fx-min-width: 28px;
+    -fx-cursor: hand;
+}
+
+.colonisation-panel-fold-button:hover {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+/* Bandeau stock carrier : rectangle plus compact que le cargo minage */
+.colonisation-fleet-cargo-info {
+    -fx-padding: 8px 10px;
+}
+
+.colonisation-fleet-cargo-info .cargo-stat-number {
+    -fx-font-size: 14px;
+    -fx-pref-width: 56px;
+}
+
+.colonisation-fleet-cargo-info .cargo-stat-label {
+    -fx-font-size: 9px;
+    -fx-pref-width: 56px;
+}
+
+.colonisation-fleet-cargo-info .cargo-stat-number-wide {
+    -fx-font-size: 12px;
+    -fx-pref-width: 110px;
+}
+
+/* Grille marché carrier : texte plus petit */
+.colonisation-fleet-market-grid .cargo-column-header {
+    -fx-font-size: 10px;
+}
+
+.colonisation-fleet-market-grid .cargo-mineral-name {
+    -fx-font-size: 11px;
+}
+
+.colonisation-fleet-market-grid .cargo-mineral-quantity,
+.colonisation-fleet-market-grid .cargo-mineral-unit-price,
+.colonisation-fleet-market-grid .cargo-mineral-station-price,
+.colonisation-fleet-market-grid .cargo-mineral-total-price,
+.colonisation-fleet-market-grid .cargo-mineral-null-price {
+    -fx-font-size: 11px;
+}
+
+/* Cargo commandant : colonne dédiée, encadré comme les blocs station d’achat (colonisation-buy-station-wrap) */
+.colonisation-commander-cargo-summary {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8px;
+}
+
+.colonisation-commander-cargo-used {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.colonisation-commander-cargo-grid {
+    -fx-padding: 2px 0 4px 0;
+}
+
+.colonisation-commander-cargo-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.colonisation-commander-cargo-qty {
+    -fx-text-fill: derive(-fx-elite-orange, 5%);
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.colonisation-detail-actions {
+    -fx-padding: 0 0 4 0;
+    -fx-spacing: 10px;
+}
+
+/* Table marché carrier : stock / achat / vente */
+.colonisation-fleet-market-table.table-view .table-row-cell.colonisation-fleet-row-stock {
+    -fx-background-color: rgba(0, 220, 170, 0.14);
+}
+
+.colonisation-fleet-market-table.table-view .table-row-cell.colonisation-fleet-row-buy {
+    -fx-background-color: rgba(0, 191, 255, 0.10);
+}
+
+.colonisation-fleet-market-table.table-view .table-row-cell.colonisation-fleet-row-sell {
+    -fx-background-color: rgba(255, 140, 0, 0.12);
+}
+
+.colonisation-fleet-cell-stock {
+    -fx-text-fill: derive(-fx-elite-cyan, 8%);
+    -fx-font-weight: bold;
+}
+
+.colonisation-fleet-cell-buy {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-weight: bold;
+}
+
+.colonisation-fleet-cell-sell {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+}
+
+.colonisation-fleet-cell-dim {
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+/* Ressources détail chantier : x/y coloré */
+.colonisation-detail-res-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 1px 0 2px 0;
+}
+
+.colonisation-detail-res-bullet {
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.colonisation-detail-res-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.colonisation-detail-res-sep {
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.colonisation-detail-res-x-partial {
+    -fx-text-fill: derive(-fx-elite-orange, 12%);
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.colonisation-detail-res-x-complete {
+    -fx-text-fill: derive(-fx-elite-cyan, 5%);
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.colonisation-detail-res-slash {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+}
+
+.colonisation-detail-res-y {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+/* Regroupement ressources chantier ↔ station d’achat (compact) */
+.colonisation-buy-station-wrap {
+    -fx-background-color: derive(-fx-elite-darker, 4%);
+    -fx-background-radius: 6px;
+    -fx-border-color: derive(-fx-elite-cyan, -42%);
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-padding: 6px 8px 5px 8px;
+    -fx-spacing: 3px;
+}
+
+.colonisation-buy-station-names-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6px;
+}
+
+.colonisation-buy-station-name {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15.4px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-buy-station-system {
+    -fx-text-fill: derive(-fx-elite-cyan, 5%);
+    -fx-font-size: 15.4px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-buy-copy-target {
+    -fx-cursor: hand;
+}
+
+.colonisation-buy-copy-target:hover {
+    -fx-underline: true;
+}
+
+.colonisation-buy-station-meta-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6px;
+}
+
+.colonisation-buy-station-dot {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12.1px;
+    -fx-padding: 0 2 0 2;
+}
+
+.colonisation-buy-station-meta-dim {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+}
+
+.colonisation-detail-res-num {
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 12px;
+}
+
+.colonisation-buy-ungrouped-hint {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 10px;
+    -fx-padding: 4 0 1 0;
+    -fx-wrap-text: true;
+}
+
+.colonisation-buy-res-market-line {
+    -fx-padding: 0 0 0 0;
+    -fx-spacing: 4px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-row {
+    -fx-padding: 0 0 1 0;
+}
+
+.colonisation-buy-market-inline {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+/* +10 % pour tout le texte des lignes ressource + prix dans l’encadré station d’achat (sans toucher au détail hors encadré) */
+.colonisation-buy-station-wrap .colonisation-detail-res-bullet {
+    -fx-font-size: 13.2px;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-name {
+    -fx-font-size: 13.2px;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-sep {
+    -fx-font-size: 13.2px;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-x-partial {
+    -fx-font-size: 13.2px;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-x-complete {
+    -fx-font-size: 13.2px;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-slash {
+    -fx-font-size: 13.2px;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-y {
+    -fx-font-size: 13.2px;
+}
+
+.colonisation-buy-station-wrap .colonisation-detail-res-num {
+    -fx-font-size: 13.2px;
+}
+
+/* Scrollbars des TableView (même esprit que .mining-history-scroll) */
+.colonisation-panel .table-view .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.colonisation-panel .table-view .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 20px;
+}
+
+.colonisation-panel .table-view .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.colonisation-panel .table-view .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.colonisation-panel .table-view .scroll-bar:horizontal {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1 0 0 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.colonisation-panel .table-view .scroll-bar:horizontal .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-min-width: 20px;
+}
+
+.colonisation-panel .table-view .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.colonisation-panel .table-view .scroll-bar:horizontal .track {
+    -fx-background-color: -fx-elite-darker;
+}
+
 .mining-title-bar {
     -fx-background-color: -fx-elite-darker;
     -fx-padding: 10px 20px;

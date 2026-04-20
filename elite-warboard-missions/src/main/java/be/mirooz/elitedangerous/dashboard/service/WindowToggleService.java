@@ -43,6 +43,7 @@ public class WindowToggleService {
     private Tab missionsTab;
     private Tab miningTab;
     private Tab explorationTab;
+    private Tab colonisationTab;
     private boolean hidden = false;
     private boolean isAnimating = false;
     private double savedWidth = 1200;
@@ -99,11 +100,12 @@ public class WindowToggleService {
     /**
      * Initialise le TabPane pour le changement d'onglet
      */
-    public void initializeTabPane(TabPane tabPane, Tab missionsTab, Tab miningTab, Tab explorationTab) {
+    public void initializeTabPane(TabPane tabPane, Tab missionsTab, Tab miningTab, Tab explorationTab, Tab colonisationTab) {
         this.tabPane = tabPane;
         this.missionsTab = missionsTab;
         this.miningTab = miningTab;
         this.explorationTab = explorationTab;
+        this.colonisationTab = colonisationTab;
 
 
         // Ajouter un listener pour tracker les changements d'onglet
@@ -126,6 +128,8 @@ public class WindowToggleService {
                     currentPanel = "Mining";
                 } else if (newTab == explorationTab) {
                     currentPanel = "Exploration";
+                } else if (newTab == colonisationTab) {
+                    currentPanel = "Colonisation";
                 } else {
                     currentPanel = null;
                 }
@@ -144,6 +148,8 @@ public class WindowToggleService {
             currentPanel = "Mining";
         } else if (selectedTab == explorationTab) {
             currentPanel = "Exploration";
+        } else if (selectedTab == colonisationTab) {
+            currentPanel = "Colonisation";
         }
 
         if (AnalyticsService.getInstance() != null && currentPanel != null) {
@@ -730,21 +736,24 @@ public class WindowToggleService {
             return;
         }
 
-        if (missionsTab == null || miningTab == null || explorationTab == null) {
+        if (missionsTab == null || miningTab == null || explorationTab == null || colonisationTab == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
             return;
         }
 
         Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
         if (selectedTab == missionsTab) {
-            tabPane.getSelectionModel().select(explorationTab);
-            System.out.println("📑 Changement vers onglet Exploration");
+            tabPane.getSelectionModel().select(colonisationTab);
+            System.out.println("📑 Changement vers onglet Colonisation");
         } else if (selectedTab == miningTab) {
             tabPane.getSelectionModel().select(missionsTab);
             System.out.println("📑 Changement vers onglet Missions");
         } else if (selectedTab == explorationTab) {
             tabPane.getSelectionModel().select(miningTab);
             System.out.println("📑 Changement vers onglet Mining");
+        } else if (selectedTab == colonisationTab) {
+            tabPane.getSelectionModel().select(explorationTab);
+            System.out.println("📑 Changement vers onglet Exploration");
         } else {
             tabPane.getSelectionModel().select(missionsTab);
             System.out.println("📑 Sélection de l'onglet Missions (aucun onglet sélectionné)");
@@ -771,7 +780,7 @@ public class WindowToggleService {
             return;
         }
 
-        if (missionsTab == null || miningTab == null || explorationTab == null) {
+        if (missionsTab == null || miningTab == null || explorationTab == null || colonisationTab == null) {
             System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
             return;
         }
@@ -784,6 +793,9 @@ public class WindowToggleService {
             tabPane.getSelectionModel().select(explorationTab);
             System.out.println("📑 Changement vers onglet Exploration");
         } else if (selectedTab == explorationTab) {
+            tabPane.getSelectionModel().select(colonisationTab);
+            System.out.println("📑 Changement vers onglet Colonisation");
+        } else if (selectedTab == colonisationTab) {
             tabPane.getSelectionModel().select(missionsTab);
             System.out.println("📑 Changement vers onglet Missions");
         } else {
