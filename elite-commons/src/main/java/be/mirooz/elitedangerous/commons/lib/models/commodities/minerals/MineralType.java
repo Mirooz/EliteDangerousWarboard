@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities.minerals;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.CommodityCategory;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import lombok.Getter;
@@ -408,6 +409,11 @@ public enum MineralType implements Mineral {
     @Getter
     @Setter
     private String localisedName;
+
+    @Getter
+    @Setter
+    private CommodityCategory inaraCommodityCategory;
+
     private final IntegerProperty price = new SimpleIntegerProperty();
     private boolean trashValue = false;
 

@@ -70,9 +70,13 @@ public interface ICommodity {
     /**
      * Catégorie Inara lorsque la commodité provient du registre Ardent/Inara ; vide pour les enums (minéraux, limpets).
      */
-    default Optional<CommodityCategory> getInaraCommodityCategory() {
-        return Optional.empty();
+    default CommodityCategory getInaraCommodityCategory() {
+        return null;
     }
+    default void setInaraCommodityCategory(CommodityCategory category) {
+
+    }
+
 
     /**
      * Enum représentant les types de commodités disponibles

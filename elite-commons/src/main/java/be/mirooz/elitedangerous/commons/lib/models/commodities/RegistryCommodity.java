@@ -57,8 +57,8 @@ public final class RegistryCommodity implements ICommodity {
     }
 
     @Override
-    public Optional<CommodityCategory> getInaraCommodityCategory() {
-        return Optional.of(inaraCategory);
+    public CommodityCategory getInaraCommodityCategory() {
+        return inaraCategory;
     }
 
     @Override

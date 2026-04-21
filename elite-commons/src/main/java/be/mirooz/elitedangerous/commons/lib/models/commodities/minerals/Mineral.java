@@ -16,6 +16,7 @@ public interface Mineral extends ICommodity {
 
     String getMiningRefinedName();
 
+
     int getPrice();
     IntegerProperty getPriceProperty();
     void setPrice(int price);

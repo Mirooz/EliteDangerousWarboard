@@ -30,24 +30,18 @@ public class ICommodityFactory {
             return Optional.empty();
         }
 
-        String key = cargoJsonName.trim().toLowerCase();
-        Optional<ICommodity> direct =
-                searchInCoreMinerals(key)
-                        .or(() -> searchInLimpets(key))
-                        .or(() -> CommodityLoader.findByCargoJsonName(key));
-        if (direct.isPresent()) {
-            return direct;
-        }
+        String key = cargoJsonName.toLowerCase().trim();
+        Optional<ICommodity> base = CommodityLoader.findByCargoJsonName(key);
 
-        String compact = key.replaceAll("[^a-z0-9]", "");
-        if (compact.isEmpty() || compact.equals(key)) {
-            return Optional.empty();
-        }
-        return searchInCoreMinerals(compact)
-                .or(() -> searchInLimpets(compact))
-                .or(() -> CommodityLoader.findByCargoJsonName(compact));
+        return searchInCoreMinerals(key)
+                .or(() -> base)
+                .or(() -> searchInLimpets(key))
+                .map(result -> {
+                    base.map(ICommodity::getInaraCommodityCategory)
+                            .ifPresent(result::setInaraCommodityCategory);
+                    return result;
+                });
     }
-
     /**
      * Recherche dans les core minerals
      */

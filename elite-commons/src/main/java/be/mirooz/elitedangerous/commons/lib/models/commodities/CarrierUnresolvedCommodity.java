@@ -46,8 +46,8 @@ public final class CarrierUnresolvedCommodity implements ICommodity {
     }
 
     @Override
-    public Optional<CommodityCategory> getInaraCommodityCategory() {
-        return Optional.of(CommodityCategory.UNKNOWN);
+    public CommodityCategory getInaraCommodityCategory() {
+        return CommodityCategory.UNKNOWN;
     }
 
     @Override

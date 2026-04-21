@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSear
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseSystemCounts;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.CarrierCommodityResolver;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommodityKeys;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.CommodityCategory;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.backend.generated.model.MatchedCommodityNearbyExport;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
@@ -2335,7 +2336,17 @@ public class ColonisationPanelController implements Initializable {
             return;
         }
         int row = 1;
+        CommodityCategory lastCategory = null;
         for (FleetMarketRow r : rows) {
+            CommodityCategory cat = fleetMarketRowCategory(r);
+            if (lastCategory != cat) {
+                Label catHead = new Label(fleetCommodityCategoryLabel(cat));
+                catHead.getStyleClass().add("colonisation-fleet-commodity-category");
+                catHead.setMaxWidth(Double.MAX_VALUE);
+                fleetMarketGrid.add(catHead, 0, row, 5, 1);
+                row++;
+                lastCategory = cat;
+            }
             Label name = new Label(r.getDisplayName());
             name.getStyleClass().add("cargo-mineral-name");
             name.setWrapText(true);
@@ -2459,7 +2470,9 @@ public class ColonisationPanelController implements Initializable {
         }
 
         List<FleetMarketRow> out = new ArrayList<>(acc.values());
-        out.sort(Comparator.comparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
+        out.sort(Comparator
+                .comparing(this::fleetMarketRowCategorySortKey, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
         return out;
     }
 
@@ -2486,8 +2499,26 @@ public class ColonisationPanelController implements Initializable {
         // Missing net = manque chantier - stock présent sur le fleet (jamais < 0)
         byCommodity.replaceAll((k, r) -> r.withMissing(Math.max(0, r.getMissing() - Math.max(0, r.getStock()))));
         List<FleetMarketRow> out = new ArrayList<>(byCommodity.values());
-        out.sort(Comparator.comparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
+        out.sort(Comparator
+                .comparing(this::fleetMarketRowCategorySortKey, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
         return out;
+    }
+
+    /** Clé de tri des groupes : libellé {@code colonisation.fleet.commodityCategory.<ENUM>}. */
+    private String fleetMarketRowCategorySortKey(FleetMarketRow r) {
+        return fleetCommodityCategoryLabel(fleetMarketRowCategory(r));
+    }
+
+    private static CommodityCategory fleetMarketRowCategory(FleetMarketRow r) {
+        if (r == null || r.getCommodity() == null) {
+            return CommodityCategory.UNKNOWN;
+        }
+        return r.getCommodity().getInaraCommodityCategory();
+    }
+
+    private String fleetCommodityCategoryLabel(CommodityCategory cat) {
+        return localizationService.getString("colonisation.fleet.commodityCategory." + cat.name());
     }
 
     private Map<String, Integer> buildMissingByCommodity() {
