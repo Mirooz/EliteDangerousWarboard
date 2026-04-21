@@ -102,7 +102,6 @@ public class CarrierStatus {
 
         if (entry.isCancelTrade()) {
             marketByCommodity.remove(commodityKey);
-            stocksByCommodity.remove(commodityKey);
             return;
         }
 
