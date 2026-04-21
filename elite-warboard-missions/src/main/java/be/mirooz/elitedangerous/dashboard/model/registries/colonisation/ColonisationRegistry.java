@@ -64,12 +64,15 @@ public class ColonisationRegistry {
      * Met à jour le chantier pour ce {@code MarketID} dans le bucket du système indiqué.
      */
     @Synchronized
-    public void applyConstructionDepot(long marketId, ColonisationConstruction construction, String starSystem) {
+    public void applyConstructionDepot(long marketId,
+                                       ColonisationConstruction construction,
+                                       String starSystem,
+                                       Long bodyId) {
         ColonisationArchitectSystem sys = ensureArchitectSystem(starSystem);
         if (sys == null) {
             return;
         }
-        sys.applyConstructionForMarket(marketId, construction, starSystem);
+        sys.applyConstructionForMarket(marketId, construction, starSystem, bodyId);
     }
 
     /**

@@ -7,6 +7,8 @@ import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationArchitectMapCaptionLine;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Scan;
@@ -19,12 +21,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.Cursor;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
@@ -36,6 +41,8 @@ import javafx.scene.transform.Scale;
 import java.net.URL;
 import java.util.*;
 import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.LongConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +90,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private final Map<StarType, Image> starImages = new HashMap<>();
     private Image exobioImage;
     private Image mappedImage;
+    /** Icônes chantier colonisation (vue architecte) : alignées sur {@code /images/stations/}. */
+    private Image colonisationStationPortOrbitalImage;
+    private Image colonisationStationPortSurfaceImage;
     private SystemVisited currentSystem;
     private Map<Integer, BodyPosition> bodyPositions = new HashMap<>();
     private Scale zoomTransform;
@@ -94,6 +104,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private static SystemVisualViewComponent instance;
+
+    /** Si non null, clic sur une puce station (carte architecte) → détail (marketId). */
+    private LongConsumer colonisationStationClickHandler;
+    /** Étiquettes chantier colonisation par {@code bodyID} (vue architecte). */
+    private Map<Integer, List<ColonisationArchitectMapCaptionLine>> colonisationBodyCaptionLines = Map.of();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -142,6 +157,22 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             mappedImage = new Image(getClass().getResourceAsStream("/images/exploration/mapped.png"));
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de l'image mapped.png: " + e.getMessage());
+        }
+        try {
+            var o = getClass().getResourceAsStream("/images/stations/port.png");
+            if (o != null) {
+                colonisationStationPortOrbitalImage = new Image(o);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur chargement images/stations/port.png: " + e.getMessage());
+        }
+        try {
+            var s = getClass().getResourceAsStream("/images/stations/planetport.png");
+            if (s != null) {
+                colonisationStationPortSurfaceImage = new Image(s);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur chargement images/stations/planetport.png: " + e.getMessage());
         }
 
         // Charger les images par type de planète
@@ -378,6 +409,28 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         } else {
             clearDisplay();
         }
+    }
+
+    /**
+     * Étiquettes chantiers colonisation sur la carte (nom + statut pour le style). Passer une map vide pour masquer.
+     */
+    public void setColonisationArchitectBodyCaptions(Map<Integer, List<ColonisationArchitectMapCaptionLine>> linesByBodyId) {
+        if (linesByBodyId == null || linesByBodyId.isEmpty()) {
+            this.colonisationBodyCaptionLines = Map.of();
+        } else {
+            Map<Integer, List<ColonisationArchitectMapCaptionLine>> copy = new HashMap<>();
+            for (Map.Entry<Integer, List<ColonisationArchitectMapCaptionLine>> e : linesByBodyId.entrySet()) {
+                copy.put(e.getKey(), List.copyOf(e.getValue()));
+            }
+            this.colonisationBodyCaptionLines = copy;
+        }
+    }
+
+    /**
+     * Clic sur l’étiquette d’une station en chantier (vue architecte). {@code null} désactive.
+     */
+    public void setColonisationArchitectStationClickHandler(LongConsumer handler) {
+        this.colonisationStationClickHandler = handler;
     }
 
     /**
@@ -782,7 +835,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         subMoonX += horizontalSpacing;
                                         maxSubMoonX = Math.max(maxSubMoonX, subMoonX);
                                     }
+                                    for (ACelesteBody subMoon : subMoons) {
+                                        BodyPosition smPos = bodyPositions.get(subMoon.getBodyID());
+                                        if (smPos != null) {
+                                            addColonisationConstructionCaption(
+                                                    subMoon, smPos.x, smPos.y, BodyHierarchyType.SUB_MOON);
+                                        }
+                                    }
                                     maxX = Math.max(maxX, subMoonX);
+                                }
+                                BodyPosition moonPos = bodyPositions.get(moon.getBodyID());
+                                if (moonPos != null) {
+                                    addColonisationConstructionCaption(moon, moonPos.x, moonPos.y, BodyHierarchyType.MOON);
                                 }
 
                                 moonY += moonVerticalSpacing;
@@ -802,6 +866,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 planetX += horizontalSpacing;
                             }
                         }
+                    }
+                    for (ACelesteBody planet : directPlanets) {
+                        BodyPosition pos = bodyPositions.get(planet.getBodyID());
+                        if (pos == null) {
+                            continue;
+                        }
+                        BodyHierarchyType vt = (planet instanceof StarDetail)
+                                ? BodyHierarchyType.STAR
+                                : BodyHierarchyType.PLANET;
+                        addColonisationConstructionCaption(planet, pos.x, pos.y, vt);
                     }
                     maxX = Math.max(maxX, planetX);
                 }
@@ -871,6 +945,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                             
                                             // Ajouter les icônes sous la lune de lune (exobio et mapped)
                                             addPlanetIcons(body, subMoonX, subMoonY);
+                                            addColonisationConstructionCaption(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
                                             
                                             maxX = Math.max(maxX, subMoonX + horizontalSpacing);
                                         }
@@ -1000,7 +1075,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         MOON,      // Lune d'une planète
         SUB_MOON   // Lune de lune
     }
-    
+
     /**
      * Calcule la taille d'un corps céleste selon sa position dans la hiérarchie
      */
@@ -1065,12 +1140,218 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         else if (body instanceof PlaneteDetail)
             planetNode.getStyleClass().add("exploration-visual-planet");
 
-        // Clic → JSON
-        planetNode.setOnMouseClicked(event -> showJsonDialog(body, event));
+        // Clic → JSON (sauf planètes / lunes en vue architecte station : non cliquables)
+        planetNode.setOnMouseClicked(event -> {
+            if (colonisationStationClickHandler != null && body instanceof PlaneteDetail) {
+                event.consume();
+                return;
+            }
+            showJsonDialog(body, event);
+        });
 
         return planetNode;
     }
 
+    /**
+     * Marqueur chantier colonisation (vue architecte) : icônes port orbital / planétaire en haut à droite du corps.
+     */
+    private void addColonisationConstructionCaption(ACelesteBody body, double cx, double cy, BodyHierarchyType hierarchyType) {
+        if (!(body instanceof PlaneteDetail)) {
+            return;
+        }
+        int bodyId = body.getBodyID();
+        List<ColonisationArchitectMapCaptionLine> lines = colonisationBodyCaptionLines.get(bodyId);
+        if (lines == null || lines.isEmpty()) {
+            return;
+        }
+        BodyPosition bodyPos = bodyPositions.get(bodyId);
+        double bodySize = bodyPos != null ? bodyPos.size : getBodySize(hierarchyType);
+        double bodyRadius = bodySize / 2;
+
+        List<Long> orbitalMarketIds = new ArrayList<>();
+        List<Long> surfaceMarketIds = new ArrayList<>();
+        List<String> tooltipParts = new ArrayList<>();
+        for (ColonisationArchitectMapCaptionLine entry : lines) {
+            String nm = entry.siteLabel() != null ? entry.siteLabel().strip() : "";
+            if (!nm.isEmpty()) {
+                tooltipParts.add(nm);
+            }
+            if (entry.surfacePort()) {
+                surfaceMarketIds.add(entry.marketId());
+            } else {
+                orbitalMarketIds.add(entry.marketId());
+            }
+        }
+        if (orbitalMarketIds.isEmpty() && surfaceMarketIds.isEmpty()) {
+            return;
+        }
+
+        HBox row = new HBox(6);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("exploration-visual-colonisation-caption-chip");
+        ConstructionStatus chipStatus = worstColonisationCaptionStatus(lines);
+        row.getStyleClass().add(switch (chipStatus) {
+            case COMPLETE -> "exploration-visual-colonisation-caption-chip-complete";
+            case IN_PROGRESS -> "exploration-visual-colonisation-caption-chip-inprogress";
+            case FAILED -> "exploration-visual-colonisation-caption-chip-failed";
+        });
+
+        if (!orbitalMarketIds.isEmpty()) {
+            row.getChildren().add(buildColonisationPortIconGroup(orbitalMarketIds, false));
+        }
+        if (!surfaceMarketIds.isEmpty()) {
+            row.getChildren().add(buildColonisationPortIconGroup(surfaceMarketIds, true));
+        }
+        if (row.getChildren().isEmpty()) {
+            return;
+        }
+
+        for (Node child : row.getChildren()) {
+            child.setMouseTransparent(true);
+        }
+
+        if (colonisationStationClickHandler != null) {
+            row.getStyleClass().add("exploration-visual-colonisation-caption-chip-interactive");
+            row.setCursor(Cursor.HAND);
+            ContextMenu sitePicker = buildColonisationBodySitesContextMenu(lines);
+            row.setOnMouseClicked(ev -> {
+                ev.consume();
+                if (sitePicker.isShowing()) {
+                    sitePicker.hide();
+                } else {
+                    sitePicker.show(row, Side.RIGHT, 2, 0);
+                }
+            });
+            String tip = localizationService.getString("colonisation.architect.mapChipTooltip");
+            if (!tooltipParts.isEmpty()) {
+                tip = tip + "\n" + String.join("\n", tooltipParts);
+            }
+            Tooltip.install(row, new TooltipComponent(tip));
+        } else if (!tooltipParts.isEmpty()) {
+            Tooltip.install(row, new TooltipComponent(String.join("\n", tooltipParts)));
+        }
+
+        double layH = 24;
+        double pad = 0;
+        double diag = 1;
+        row.setLayoutX(cx + bodyRadius + pad + diag);
+        row.setLayoutY(cy - bodyRadius - pad - layH - diag);
+        bodiesPane.getChildren().add(row);
+    }
+
+    private ContextMenu buildColonisationBodySitesContextMenu(List<ColonisationArchitectMapCaptionLine> lines) {
+        ContextMenu cm = new ContextMenu();
+        cm.setAutoHide(true);
+        cm.getStyleClass().add("colonisation-colony-cascade-popup");
+        String orb = localizationService.getString("colonisation.architect.siteOrbital");
+        String surf = localizationService.getString("colonisation.architect.siteSurface");
+        for (ColonisationArchitectMapCaptionLine line : lines) {
+            Node row = buildColonisationSitePickerMenuRow(line, orb, surf);
+            CustomMenuItem it = new CustomMenuItem(row, true);
+            it.getStyleClass().addAll("colonisation-colony-cascade-menu-item", "colonisation-site-picker-menu-item");
+            it.setMnemonicParsing(false);
+            long mid = line.marketId();
+            it.setOnAction(e -> {
+                if (colonisationStationClickHandler != null) {
+                    colonisationStationClickHandler.accept(mid);
+                }
+                cm.hide();
+            });
+            cm.getItems().add(it);
+        }
+        return cm;
+    }
+
+    /** Une ligne du menu « sites sur ce corps » : pastille port + libellé (survol géré en CSS sur le MenuItem parent). */
+    private Node buildColonisationSitePickerMenuRow(ColonisationArchitectMapCaptionLine line, String orb, String surf) {
+        String name = line.siteLabel() != null ? line.siteLabel().strip() : "";
+        if (name.isEmpty()) {
+            name = "—";
+        }
+        String kind = line.surfacePort() ? surf : orb;
+
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("colonisation-site-picker-row");
+        row.setMaxWidth(Double.MAX_VALUE);
+        row.setCursor(Cursor.HAND);
+
+        StackPane iconWrap = new StackPane();
+        iconWrap.getStyleClass().add("colonisation-site-picker-icon-wrap");
+        iconWrap.setCursor(Cursor.HAND);
+        Image img = line.surfacePort() ? colonisationStationPortSurfaceImage : colonisationStationPortOrbitalImage;
+        if (img != null) {
+            ImageView iv = new ImageView(img);
+            iv.setPreserveRatio(true);
+            iv.setFitHeight(20);
+            iv.setFitWidth(20);
+            iv.setCursor(Cursor.HAND);
+            iconWrap.getChildren().add(iv);
+        } else {
+            Label fb = new Label(line.surfacePort() ? "P" : "O");
+            fb.getStyleClass().add("exploration-visual-colonisation-port-count");
+            fb.setCursor(Cursor.HAND);
+            iconWrap.getChildren().add(fb);
+        }
+
+        Label nameLbl = new Label(name);
+        nameLbl.setMnemonicParsing(false);
+        nameLbl.getStyleClass().add("colonisation-site-picker-name");
+        nameLbl.setCursor(Cursor.HAND);
+        Label kindLbl = new Label(" · " + kind);
+        kindLbl.setMnemonicParsing(false);
+        kindLbl.getStyleClass().add("colonisation-site-picker-kind");
+        kindLbl.setCursor(Cursor.HAND);
+
+        HBox text = new HBox(0);
+        text.setAlignment(Pos.CENTER_LEFT);
+        text.getChildren().addAll(nameLbl, kindLbl);
+        HBox.setHgrow(text, Priority.ALWAYS);
+
+        row.getChildren().addAll(iconWrap, text);
+        return row;
+    }
+
+    private static ConstructionStatus worstColonisationCaptionStatus(List<ColonisationArchitectMapCaptionLine> lines) {
+        ConstructionStatus w = ConstructionStatus.COMPLETE;
+        for (ColonisationArchitectMapCaptionLine l : lines) {
+            if (colonisationCaptionStatusRank(l.status()) > colonisationCaptionStatusRank(w)) {
+                w = l.status();
+            }
+        }
+        return w;
+    }
+
+    private static int colonisationCaptionStatusRank(ConstructionStatus s) {
+        return switch (s) {
+            case FAILED -> 3;
+            case IN_PROGRESS -> 2;
+            case COMPLETE -> 1;
+        };
+    }
+
+    private Node buildColonisationPortIconGroup(List<Long> marketIds, boolean surface) {
+        HBox hb = new HBox(3);
+        hb.setAlignment(Pos.CENTER_LEFT);
+        Image img = surface ? colonisationStationPortSurfaceImage : colonisationStationPortOrbitalImage;
+        if (marketIds.size() > 1) {
+            Label count = new Label(Integer.toString(marketIds.size()));
+            count.getStyleClass().add("exploration-visual-colonisation-port-count");
+            hb.getChildren().add(count);
+        }
+        if (img != null) {
+            ImageView iv = new ImageView(img);
+            iv.setPreserveRatio(true);
+            iv.setFitHeight(20);
+            iv.setFitWidth(20);
+            hb.getChildren().add(iv);
+        } else {
+            Label fb = new Label(surface ? "P" : "O");
+            fb.getStyleClass().add("exploration-visual-colonisation-port-count");
+            hb.getChildren().add(fb);
+        }
+        return hb;
+    }
 
     private Image getImageForBaseBody(ACelesteBody body) {
 
@@ -1309,7 +1590,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         
         // Créer le label
         Label nameLabel = new Label(bodyName);
-        nameLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 11px; -fx-font-weight: bold;");
+        nameLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 15px; -fx-font-weight: bold;");
         
         // Calculer la position : en bas à droite du cercle, mais remonté vers le haut-gauche
         // Pour un cercle, utiliser un angle légèrement supérieur à 45° pour remonter

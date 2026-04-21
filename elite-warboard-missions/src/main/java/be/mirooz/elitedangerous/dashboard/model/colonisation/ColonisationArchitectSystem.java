@@ -49,7 +49,10 @@ public class ColonisationArchitectSystem {
         return true;
     }
 
-    public void applyConstructionForMarket(long marketId, ColonisationConstruction construction, String starSystemResolved) {
+    public void applyConstructionForMarket(long marketId,
+                                           ColonisationConstruction construction,
+                                           String starSystemResolved,
+                                           Long bodyIdResolved) {
         ColonisationDockEntry entry = sitesByMarketId.computeIfAbsent(marketId, k -> {
             ColonisationDockEntry e = new ColonisationDockEntry();
             e.setMarketId(marketId);
@@ -58,6 +61,9 @@ public class ColonisationArchitectSystem {
         entry.setConstruction(construction);
         if (starSystemResolved != null && !starSystemResolved.isBlank()) {
             entry.setStarSystem(starSystemResolved);
+        }
+        if (bodyIdResolved != null && bodyIdResolved >= 0) {
+            entry.setBodyId(bodyIdResolved);
         }
     }
 

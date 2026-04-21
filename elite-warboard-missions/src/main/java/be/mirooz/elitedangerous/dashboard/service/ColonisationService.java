@@ -27,9 +27,6 @@ public class ColonisationService {
     /** Service présent sur les stations / dépôts liés à la colonisation (journal Docked). */
     public static final String COLONISATION_STATION_SERVICE = "colonisationcontribution";
 
-    /** Préférence {@link PreferencesService} : MarketID du site en construction (dossier {@code ~/.elite-warboard}). */
-    public static final String PREF_BUILDING_MARKET_ID = "colonisation.building.marketId";
-
     private static final ColonisationService INSTANCE = new ColonisationService();
 
     private final ColonisationRegistry registry = ColonisationRegistry.getInstance();
@@ -47,8 +44,11 @@ public class ColonisationService {
         registry.recordArchitectBeaconDeployed(starSystem);
     }
 
-    public void applyConstructionDepot(long marketId, ColonisationConstruction construction, String starSystem) {
-        registry.applyConstructionDepot(marketId, construction, starSystem);
+    public void applyConstructionDepot(long marketId,
+                                       ColonisationConstruction construction,
+                                       String starSystem,
+                                       Long bodyId) {
+        registry.applyConstructionDepot(marketId, construction, starSystem, bodyId);
     }
 
     public List<String> getArchitectStarSystems() {
@@ -63,50 +63,14 @@ public class ColonisationService {
         return registry.getDockEntries();
     }
 
-    /**
-     * Sélectionne le chantier courant par {@code MarketID} (référence partagée avec le registre).
-     */
+    /** Sélectionne le chantier courant par {@code MarketID} dans le registre. */
     public void setCurrentConstructionByMarketId(long marketId) {
         registry.setCurrentConstructionByMarketId(marketId);
     }
 
-    /**
-     * Définit le site de construction courant et enregistre son {@code MarketID} dans les préférences utilisateur
-     * (rechargé au prochain démarrage / dès que le dock existe dans le registre).
-     */
+    /** Définit le site de construction courant (même effet que {@link #setCurrentConstructionByMarketId}). */
     public void designateBuildingSite(long marketId) {
-        registry.setCurrentConstructionByMarketId(marketId);
-        if (registry.getCurrentConstructionSite() != null) {
-            PreferencesService.getInstance().setPreference(PREF_BUILDING_MARKET_ID, Long.toString(marketId));
-        } else {
-            PreferencesService.getInstance().removePreference(PREF_BUILDING_MARKET_ID);
-        }
-    }
-
-    /**
-     * Si une préférence {@link #PREF_BUILDING_MARKET_ID} existe et qu’un dock correspondant est connu, rétablit le chantier courant.
-     */
-    public void tryRestorePersistedBuildingSite() {
-        String v = PreferencesService.getInstance().getPreference(PREF_BUILDING_MARKET_ID, "").trim();
-        if (v.isEmpty()) {
-            return;
-        }
-        long marketId;
-        try {
-            marketId = Long.parseLong(v);
-        } catch (NumberFormatException e) {
-            PreferencesService.getInstance().removePreference(PREF_BUILDING_MARKET_ID);
-            return;
-        }
-        if (marketId <= 0) {
-            return;
-        }
-        for (ColonisationDockEntry e : getDockEntries()) {
-            if (e != null && e.getMarketId() == marketId) {
-                registry.setCurrentConstructionByMarketId(marketId);
-                return;
-            }
-        }
+        setCurrentConstructionByMarketId(marketId);
     }
 
     public ColonisationConstruction getCurrentConstruction() {
@@ -248,7 +212,6 @@ public class ColonisationService {
 
     public void clear() {
         registry.clear();
-        PreferencesService.getInstance().removePreference(PREF_BUILDING_MARKET_ID);
         PreferencesService.getInstance().removeColonisationSuggestedBuyStationsFile();
     }
 
@@ -280,7 +243,6 @@ public class ColonisationService {
             System.out.println("Colonisation: amarrage sur « " + snap.getSiteNameLocalised() + " » ("
                     + snap.getStarSystem() + ", MarketID=" + snap.getMarketId() + ")");
         }
-        tryRestorePersistedBuildingSite();
     }
 
     public static boolean hasColonisationStationService(JsonNode dockedEvent) {

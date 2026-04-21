@@ -334,6 +334,52 @@
     -fx-spacing: 8;
 }
 
+.colonisation-architect-system-button {
+    -fx-max-width: infinity;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.colonisation-architect-system-button-selected {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+}
+
+.colonisation-architect-system-button-selected:hover {
+    -fx-background-color: -fx-elite-cyan;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-dark;
+}
+
+.colonisation-architect-system-combo {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-pref-height: 30px;
+    -fx-max-width: 220px;
+}
+
+.colonisation-architect-system-combo:hover {
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.colonisation-architect-system-combo .list-cell {
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.colonisation-architect-system-stats {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-padding: 0 0 0 4px;
+}
+
+.colonisation-architect-system-stats .text {
+    -fx-fill: -fx-elite-text-dim;
+}
+
 .colonisation-detail-column {
     -fx-max-width: 520px;
 }
@@ -600,6 +646,88 @@
     -fx-padding: 6 0 2 0;
 }
 
+/* Bloc stats colonie (structure JSON) — fond gris, texte clair ; hover si structure choisie */
+.colonisation-colony-stat-panel {
+    -fx-background-color: derive(-fx-elite-gray, -6%);
+    -fx-background-radius: 8px;
+    -fx-border-color: derive(-fx-elite-light-gray, -35%);
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 12px 14px 14px 14px;
+    -fx-spacing: 8px;
+}
+.colonisation-colony-stat-panel--filled:hover {
+    -fx-background-color: derive(-fx-elite-gray, 4%);
+    -fx-border-color: derive(-fx-elite-orange, -12%);
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.28), 12, 0.4, 0, 0);
+}
+.colonisation-colony-stat-panel--hint:hover {
+    -fx-background-color: derive(-fx-elite-gray, 2%);
+    -fx-border-color: derive(-fx-elite-light-gray, -22%);
+}
+.colonisation-colony-stat-section-title {
+    -fx-text-fill: rgba(255, 255, 255, 0.96);
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 4 0;
+}
+.colonisation-colony-stat-hint {
+    -fx-text-fill: rgba(220, 225, 235, 0.88);
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+.colonisation-colony-stat-row {
+    -fx-spacing: 12px;
+    -fx-alignment: center-left;
+    -fx-padding: 2 0;
+}
+.colonisation-colony-stat-label {
+    -fx-text-fill: rgba(255, 255, 255, 0.92);
+    -fx-font-size: 13px;
+    -fx-min-width: 210px;
+    -fx-pref-width: 210px;
+    -fx-max-width: 240px;
+    -fx-wrap-text: true;
+}
+.colonisation-colony-stat-value {
+    -fx-text-fill: rgba(255, 255, 255, 0.98);
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.colonisation-colony-stat-value-negative {
+    -fx-text-fill: #ff6b6b;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.colonisation-colony-stat-dim {
+    -fx-text-fill: rgba(200, 208, 220, 0.75);
+    -fx-font-size: 13px;
+}
+.colonisation-colony-cube-earn {
+    -fx-text-fill: #ffb347;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.colonisation-colony-cube-cost {
+    -fx-text-fill: #5ddf8f;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.colonisation-colony-chevron-positive {
+    -fx-text-fill: #3ae07a;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 0 2px;
+}
+.colonisation-colony-chevron-negative {
+    -fx-text-fill: #ff4d4d;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 2px 0 0;
+}
+
 .colonisation-fleet-summary-wrap {
     -fx-padding: 0 0 2 0;
 }
@@ -649,6 +777,146 @@
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-wrap-text: true;
+}
+
+/* Colony : MenuButton cascade — aligné sur .elite-nav-button (ex. Chantier & achats) */
+.colonisation-structure-type-picker .colonisation-colony-cascade {
+    -fx-max-width: infinity;
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 6px 12px 6px 12px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-mark-color: -fx-elite-orange;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.colonisation-structure-type-picker .colonisation-colony-cascade:hover,
+.colonisation-structure-type-picker .colonisation-colony-cascade:showing {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-mark-color: -fx-elite-cyan;
+}
+.colonisation-structure-type-picker .colonisation-colony-cascade > .label {
+    -fx-text-fill: inherit;
+    -fx-wrap-text: true;
+}
+.colonisation-structure-type-picker .colonisation-colony-cascade > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 8px;
+}
+
+/* Popup racine du cascade : même chrome que elite-nav-button */
+.context-menu.colonisation-colony-cascade-popup {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2 0;
+}
+
+/* Menus contextuels génériques (champs texte, etc.) — discret */
+.context-menu {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: derive(-fx-elite-orange, -18%);
+    -fx-border-width: 1px;
+    -fx-padding: 2 0;
+}
+.context-menu .menu-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-padding: 8px 22px 8px 14px;
+}
+.context-menu .menu-item:focused,
+.context-menu .menu-item:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-text-fill: -fx-elite-cyan;
+}
+.context-menu .menu-item:disabled {
+    -fx-opacity: 0.45;
+}
+.context-menu .separator .line {
+    -fx-border-color: derive(-fx-elite-orange, -38%);
+    -fx-padding: 3 0 3 0;
+}
+
+/* Lignes cascade : après les règles .context-menu .menu-item pour garder orange / survol type elite-nav-button */
+.context-menu .menu-item.colonisation-colony-cascade-menu-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8px 22px 8px 14px;
+}
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:not(.colonisation-site-picker-menu-item):focused,
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:not(.colonisation-site-picker-menu-item):hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-text-fill: -fx-elite-cyan;
+}
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:disabled {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -fx-elite-gray;
+    -fx-opacity: 0.55;
+}
+
+/* Menu « choix du site » sur la carte (CustomMenuItem) : survol uniquement sous la souris (pas :focused seul) + curseur main */
+.context-menu .menu-item.colonisation-site-picker-menu-item {
+    -fx-cursor: hand;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:focused {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-elite-orange;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.22);
+    -fx-text-fill: -fx-elite-orange;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:focused:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.22);
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row {
+    -fx-padding: 4px 10px 4px 8px;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-icon-wrap {
+    -fx-padding: 4px 5px;
+    -fx-background-color: rgba(0, 0, 0, 0.45);
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-border-width: 2px;
+    -fx-border-color: derive(-fx-elite-orange, -6%);
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-name {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-kind {
+    -fx-text-fill: derive(-fx-elite-cyan, -8%);
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-cursor: hand;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-icon-wrap {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-effect: dropshadow(gaussian, rgba(0, 210, 255, 0.42), 8, 0.35, 0, 0);
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-name {
+    -fx-text-fill: -fx-elite-cyan;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-kind {
+    -fx-text-fill: derive(-fx-elite-cyan, 12%);
 }
 
 .colonisation-detail-resource-card {
@@ -5199,6 +5467,54 @@
 
 .exploration-visual-planet {
     /* Styles spécifiques pour les planètes si nécessaire */
+}
+
+.exploration-visual-colonisation-caption-stack {
+    -fx-background-color: transparent;
+}
+
+.exploration-visual-colonisation-caption-chip {
+    -fx-background-color: rgba(6, 8, 12, 0.92);
+    -fx-background-radius: 7px;
+    -fx-padding: 3px 8px 4px 8px;
+    -fx-border-radius: 7px;
+    -fx-border-width: 2px;
+    -fx-text-fill: rgba(255, 230, 200, 0.96);
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+}
+
+.exploration-visual-colonisation-port-count {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 1 0 0;
+}
+
+.exploration-visual-colonisation-caption-chip-complete {
+    -fx-border-color: #3dcc7a;
+    -fx-effect: dropshadow(gaussian, rgba(61, 204, 122, 0.35), 4, 0.35, 0, 0);
+}
+
+.exploration-visual-colonisation-caption-chip-inprogress {
+    -fx-border-color: #ff9a3c;
+    -fx-effect: dropshadow(gaussian, rgba(255, 154, 60, 0.35), 4, 0.35, 0, 0);
+}
+
+.exploration-visual-colonisation-caption-chip-inprogress:hover {
+    -fx-border-color: #ffc266;
+    -fx-effect: dropshadow(gaussian, rgba(255, 210, 130, 0.55), 7, 0.45, 0, 0);
+}
+
+/* Toute la pastille (icônes) cliquable / survol vue architecte */
+.exploration-visual-colonisation-caption-chip-interactive:hover {
+    -fx-border-color: #ffc266;
+    -fx-effect: dropshadow(gaussian, rgba(255, 210, 130, 0.55), 7, 0.45, 0, 0);
+}
+
+.exploration-visual-colonisation-caption-chip-failed {
+    -fx-border-color: #ff5c5c;
+    -fx-effect: dropshadow(gaussian, rgba(255, 92, 92, 0.3), 4, 0.35, 0, 0);
 }
 
 .exploration-visual-connection {

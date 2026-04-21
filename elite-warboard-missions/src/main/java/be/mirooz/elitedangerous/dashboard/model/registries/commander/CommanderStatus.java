@@ -18,6 +18,8 @@ public class CommanderStatus {
 
     private String currentStarSystem;
     private String currentStationName;
+    private String currentBodyName;
+    private Long  currentBodyId;
     private String commanderName;
     private String FID;
     private Boolean isOnline;
@@ -47,6 +49,11 @@ public class CommanderStatus {
     public void setCurrentStationName(String value) {
         this.currentStationName = value;
         component.setCurrentStationName(value);
+    }
+
+    public void setCurrentBody(String bodyName, Long bodyId) {
+        this.currentBodyName = bodyName;
+        this.currentBodyId = bodyId;
     }
 
     public void setCommanderName(String value) {

@@ -18,20 +18,16 @@
     <TabPane fx:id="colonisationTabPane" styleClass="colonisation-tab-pane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
             <Tab fx:id="architectViewTab" text="Architect View">
-                <SplitPane fx:id="colonisationSplitPane" dividerPositions="0.221,0.64"
+                <SplitPane fx:id="colonisationSplitPane" dividerPositions="0.62"
                            styleClass="colonisation-split">
-                    <VBox spacing="8.0" minWidth="170.0" maxWidth="374.0" styleClass="colonisation-column">
-                        <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
-                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                                    styleClass="colonisation-architect-scroll" VBox.vgrow="ALWAYS">
-                            <VBox fx:id="architectSystemsContainer" spacing="10.0">
-                                <padding>
-                                    <Insets bottom="4.0"/>
-                                </padding>
-                            </VBox>
-                        </ScrollPane>
-                    </VBox>
                     <VBox spacing="10.0" styleClass="colonisation-column" VBox.vgrow="ALWAYS" minHeight="160.0">
+                        <HBox spacing="10.0" alignment="CENTER_LEFT">
+                            <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
+                            <ComboBox fx:id="architectSystemComboBox" minWidth="120.0" prefWidth="200.0" maxWidth="220.0"
+                                      HBox.hgrow="NEVER" styleClass="colonisation-architect-system-combo"/>
+                            <Label fx:id="architectSystemStatsLabel" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                                   styleClass="colonisation-architect-system-stats"/>
+                        </HBox>
                         <TabPane fx:id="architectCenterTabPane" styleClass="colonisation-tab-pane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
                             <tabs>
                                 <Tab fx:id="architectSystemViewTab" text="System View">

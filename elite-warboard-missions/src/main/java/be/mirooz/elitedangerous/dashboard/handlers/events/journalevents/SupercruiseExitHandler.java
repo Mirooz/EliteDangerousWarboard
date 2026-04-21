@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -17,16 +18,22 @@ import com.fasterxml.jackson.databind.JsonNode;
  * }
  */
 public class SupercruiseExitHandler implements JournalEventHandler {
+    private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
     
     @Override
     public void handle(JsonNode event) {
         try {
-            String timestamp = event.get("timestamp").asText();
-            String starSystem = event.get("StarSystem").asText();
-            String body = event.get("Body").asText();
-            String bodyType = event.get("BodyType").asText();
+            String timestamp = event.path("timestamp").asText();
+            String starSystem = event.path("StarSystem").asText("");
+            String body = event.path("Body").asText("");
+            String bodyType = event.path("BodyType").asText("");
+            Long bodyId = event.has("BodyID") ? event.path("BodyID").asLong() : null;
             
             System.out.printf("🚀 SupercruiseExit: %s - %s (%s) at %s%n", starSystem, body, bodyType, timestamp);
+            if (!starSystem.isBlank()) {
+                commanderStatus.setCurrentStarSystem(starSystem);
+            }
+            commanderStatus.setCurrentBody(body.isBlank() ? null : body, bodyId);
 
             // Si on sort du supercruise vers un anneau planétaire, démarrer une session de minage
             if ("PlanetaryRing".equals(bodyType)) {

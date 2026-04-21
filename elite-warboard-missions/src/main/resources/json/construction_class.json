@@ -1,0 +1,1049 @@
+[
+  {
+    "category": "Orbital",
+    "type": "Starport",
+    "name": "Coriolis",
+    "cost": {
+      "t2": -3
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -2,
+      "techLevel": 2,
+      "wealth": 3,
+      "standardOfLiving": 3,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Starport",
+    "name": "Asteroid Base",
+    "cost": {
+      "t2": -3
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -1,
+      "techLevel": 3,
+      "wealth": 5,
+      "standardOfLiving": -4,
+      "developmentLevel": 7
+    },
+    "economy": {
+      "type": "Extraction"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Starport",
+    "name": "Ocellus",
+    "cost": {
+      "t3": -6
+    },
+    "stats": {
+      "security": -3,
+      "techLevel": 7,
+      "wealth": 8,
+      "standardOfLiving": 5,
+      "developmentLevel": 9
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 5,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Starport",
+    "name": "Orbis",
+    "cost": {
+      "t3": -6
+    },
+    "stats": {
+      "security": -3,
+      "techLevel": 7,
+      "wealth": 8,
+      "standardOfLiving": 5,
+      "developmentLevel": 9
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 5,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Starport",
+    "name": "Dodecahedron",
+    "cost": {
+      "t3": -6
+    },
+    "stats": {
+      "security": -4,
+      "techLevel": 8,
+      "wealth": 9,
+      "standardOfLiving": 7,
+      "developmentLevel": 10
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 8,
+      "maxIncrease": 4
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Outpost",
+    "name": "Commercial",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": -1,
+      "wealth": 3,
+      "standardOfLiving": 5
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Outpost",
+    "name": "Industrial",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "techLevel": 3,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "Industrial"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Outpost",
+    "name": "Criminal",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": -2,
+      "wealth": 3
+    },
+    "economy": {
+      "type": "Contraband"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Outpost",
+    "name": "Civilian",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": -1,
+      "wealth": 1,
+      "standardOfLiving": 2,
+      "developmentLevel": 1
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Outpost",
+    "name": "Scientific",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "techLevel": 3
+    },
+    "economy": {
+      "type": "High Tech"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Outpost",
+    "name": "Military",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": 2
+    },
+    "economy": {
+      "type": "Military"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Satellite",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "wealth": 1,
+      "standardOfLiving": 2,
+      "developmentLevel": 1
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Comm Station",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": 1,
+      "techLevel": 3
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Space Farm",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "standardOfLiving": 5,
+      "developmentLevel": 1
+    },
+    "economy": {
+      "type": "*Agricultural"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Pirate Base",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": -4,
+      "wealth": 4
+    },
+    "economy": {
+      "type": "*Contraband"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Mining Outpost",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "wealth": 4,
+      "standardOfLiving": -2
+    },
+    "economy": {
+      "type": "*Extraction"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Relay Station",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": 1,
+      "developmentLevel": 1
+    },
+    "economy": {
+      "type": "*High Tech"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Military",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": 7
+    },
+    "economy": {
+      "type": "*Military"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Security Station",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": 9,
+      "standardOfLiving": 3,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "*Military"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Government",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": 2,
+      "standardOfLiving": 7,
+      "developmentLevel": 3
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Medical",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "techLevel": 3,
+      "standardOfLiving": 5
+    },
+    "economy": {
+      "type": "*High Tech"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Research Station",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "techLevel": 8,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "*High Tech"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Tourist",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -3,
+      "wealth": 6,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "*Tourism"
+    }
+  },
+  {
+    "category": "Orbital",
+    "type": "Installation",
+    "name": "Space Bar",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -2,
+      "wealth": 3,
+      "standardOfLiving": 3
+    },
+    "economy": {
+      "type": "*Tourism"
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Planetary Port",
+    "name": "Outpost Civilian",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": -2,
+      "standardOfLiving": 3
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 2,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Planetary Port",
+    "name": "Outpost Industrial",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": -1,
+      "wealth": 3
+    },
+    "economy": {
+      "type": "Industrial"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Planetary Port",
+    "name": "Outpost Scientific",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": -1,
+      "techLevel": 5,
+      "developmentLevel": 1
+    },
+    "economy": {
+      "type": "High Tech"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Planetary Port",
+    "name": "Port",
+    "cost": {
+      "t3": -6
+    },
+    "stats": {
+      "security": -3,
+      "techLevel": 5,
+      "wealth": 5,
+      "standardOfLiving": 7,
+      "developmentLevel": 10
+    },
+    "economy": {
+      "type": "Colony"
+    },
+    "population": {
+      "initialIncrease": 10,
+      "maxIncrease": 10
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Agriculture T1 S",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "standardOfLiving": 3
+    },
+    "economy": {
+      "type": "Agricultural"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Agriculture T1 M",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "standardOfLiving": 7
+    },
+    "economy": {
+      "type": "Agricultural"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Agriculture T2 L",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 2
+    },
+    "stats": {
+      "standardOfLiving": 10
+    },
+    "economy": {
+      "type": "Agricultural"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Extraction T1 S",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "wealth": 3
+    },
+    "economy": {
+      "type": "Extraction"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Extraction T1 M",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "wealth": 5
+    },
+    "economy": {
+      "type": "Extraction"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Extraction T2 L",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 2
+    },
+    "stats": {
+      "techLevel": 2,
+      "wealth": 8,
+      "standardOfLiving": -2
+    },
+    "economy": {
+      "type": "Extraction"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Industrial T1 S",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "Industrial"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Industrial T1 M",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "developmentLevel": 6
+    },
+    "economy": {
+      "type": "Industrial"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Industrial T2 L",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 2
+    },
+    "stats": {
+      "wealth": 3,
+      "developmentLevel": 9
+    },
+    "economy": {
+      "type": "Industrial"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Military T1 S",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": 2
+    },
+    "economy": {
+      "type": "Military"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Military T1 M",
+    "earning": {
+      "t2": 1
+    },
+    "stats": {
+      "security": 4
+    },
+    "economy": {
+      "type": "Military"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Military T2 L",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 2
+    },
+    "stats": {
+      "security": 7,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "Military"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Research Bio T1 S",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "techLevel": 3,
+      "developmentLevel": 1
+    },
+    "economy": {
+      "type": "High Tech"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Research Bio T1 M",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "techLevel": 7,
+      "developmentLevel": 1
+    },
+    "economy": {
+      "type": "High Tech"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Research Bio T2 L",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 2
+    },
+    "stats": {
+      "techLevel": 10,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "High Tech"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Tourism T1 S",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -1,
+      "wealth": 1
+    },
+    "economy": {
+      "type": "Tourism"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Tourism T1 M",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -1,
+      "wealth": 3
+    },
+    "economy": {
+      "type": "Tourism"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Settlement",
+    "name": "Tourism T2 L",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 2
+    },
+    "stats": {
+      "security": -2,
+      "wealth": 5
+    },
+    "economy": {
+      "type": "Tourism"
+    },
+    "population": {
+      "initialIncrease": 1,
+      "maxIncrease": 1
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Extraction",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "wealth": 10,
+      "standardOfLiving": -4,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "*Extraction"
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Civilian",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -3,
+      "standardOfLiving": 3,
+      "developmentLevel": 3
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Exploration",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -1,
+      "techLevel": 7,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "*Tourism"
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Outpost",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -2,
+      "standardOfLiving": 3,
+      "developmentLevel": 3
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Scientific",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "techLevel": 10
+    },
+    "economy": {
+      "type": "*High Tech"
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Military",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": 10
+    },
+    "economy": {
+      "type": "*Military"
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Refinery",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -1,
+      "techLevel": 3,
+      "wealth": 5,
+      "standardOfLiving": -2,
+      "developmentLevel": 7
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "High Tech",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "security": -2,
+      "techLevel": 10,
+      "wealth": 3
+    },
+    "economy": {
+      "type": "*High Tech"
+    }
+  },
+  {
+    "category": "Surface",
+    "type": "Hub",
+    "name": "Industrial",
+    "cost": {
+      "t2": -1
+    },
+    "earning": {
+      "t3": 1
+    },
+    "stats": {
+      "techLevel": 3,
+      "wealth": 5,
+      "standardOfLiving": -4,
+      "developmentLevel": 3
+    },
+    "economy": {
+      "type": "*Industrial"
+    }
+  }
+]

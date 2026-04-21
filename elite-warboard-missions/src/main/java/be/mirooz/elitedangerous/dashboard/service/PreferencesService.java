@@ -1,6 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.construction.Colony;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.construction.Structure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +28,13 @@ public class PreferencesService {
     /** Cache JSON des stations d’achat suggérées (colonisation), à côté de {@code preferences.properties}. */
     private static final String COLONISATION_SUGGESTED_BUY_STATIONS_FILE = "colonisation-suggested-stations.json";
 
+    /** Référence structure Colony ({@code construction_class.json}) par {@code marketId} du chantier. */
+    private static final String COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE = "colonisation-construction-structure-types.properties";
+
     private static final ObjectMapper COLONISATION_SUGGESTED_STATIONS_JSON = createColonisationSuggestedStationsMapper();
+
+    private volatile Properties colonisationConstructionStructureTypes;
+    private final Object colonisationConstructionStructureTypesLock = new Object();
 
     private static ObjectMapper createColonisationSuggestedStationsMapper() {
         ObjectMapper m = new ObjectMapper();
@@ -47,6 +55,94 @@ public class PreferencesService {
             return Paths.get(COLONISATION_SUGGESTED_BUY_STATIONS_FILE);
         }
         return parent.resolve(COLONISATION_SUGGESTED_BUY_STATIONS_FILE);
+    }
+
+    private Path colonisationConstructionStructureTypesPath() {
+        Path parent = preferencesFile.getParent();
+        if (parent == null) {
+            return Paths.get(COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE);
+        }
+        return parent.resolve(COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE);
+    }
+
+    private Properties loadColonisationConstructionStructureTypes() {
+        Properties p = new Properties();
+        Path file = colonisationConstructionStructureTypesPath();
+        try {
+            if (Files.isRegularFile(file)) {
+                try (InputStream in = Files.newInputStream(file)) {
+                    p.load(in);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Préférences: lecture types structure colonisation : " + e.getMessage());
+        }
+        return p;
+    }
+
+    private void saveColonisationConstructionStructureTypes(Properties p) {
+        Path file = colonisationConstructionStructureTypesPath();
+        try {
+            Path parent = file.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            try (OutputStream out = Files.newOutputStream(file)) {
+                p.store(out, "Colonisation construction structures (Colony JSON) by MarketID");
+            }
+        } catch (IOException e) {
+            System.err.println("Préférences: enregistrement types structure colonisation : " + e.getMessage());
+        }
+    }
+
+    private Properties colonisationConstructionStructureTypes() {
+        Properties local = colonisationConstructionStructureTypes;
+        if (local != null) {
+            return local;
+        }
+        synchronized (colonisationConstructionStructureTypesLock) {
+            if (colonisationConstructionStructureTypes == null) {
+                colonisationConstructionStructureTypes = loadColonisationConstructionStructureTypes();
+            }
+            return colonisationConstructionStructureTypes;
+        }
+    }
+
+    /**
+     * Structure Colony ({@code construction_class.json}) associée au chantier / station
+     * ({@code marketId}), persistée sous {@code ~/.elite-warboard/colonisation-construction-structure-types.properties}.
+     */
+    public Optional<Structure> getColonisationUserConstructionStructure(long marketId) {
+        if (marketId <= 0) {
+            return Optional.empty();
+        }
+        String v = colonisationConstructionStructureTypes().getProperty(String.valueOf(marketId));
+        if (v == null || v.isBlank()) {
+            return Optional.empty();
+        }
+        return Colony.structureFromPersistedKey(v.strip());
+    }
+
+    /**
+     * Enregistre ou efface la structure utilisateur pour ce {@code marketId}.
+     *
+     * @param structure {@code null} pour supprimer l’entrée.
+     */
+    public void setColonisationUserConstructionStructure(long marketId, Structure structure) {
+        if (marketId <= 0) {
+            return;
+        }
+        synchronized (colonisationConstructionStructureTypesLock) {
+            Properties p = loadColonisationConstructionStructureTypes();
+            String key = String.valueOf(marketId);
+            if (structure == null) {
+                p.remove(key);
+            } else {
+                p.setProperty(key, Colony.persistedStructureKey(structure));
+            }
+            saveColonisationConstructionStructureTypes(p);
+            colonisationConstructionStructureTypes = p;
+        }
     }
 
     public static PreferencesService getInstance() {

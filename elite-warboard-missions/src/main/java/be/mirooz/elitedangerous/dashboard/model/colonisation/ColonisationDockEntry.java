@@ -18,6 +18,7 @@ public class ColonisationDockEntry {
     private String stationType;
     private String starSystem;
     private long systemAddress;
+    private Long bodyId;
     private String stationFactionName;
     private double distFromStarLs;
 
