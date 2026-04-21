@@ -100,6 +100,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private static final double MIN_ZOOM = 0.1;
     private static final double MAX_ZOOM = 5.0;
     private static final double ZOOM_FACTOR = 0.1;
+
+    /**
+     * Facteur sur les espacements de la vue système (orrery) : chaîne des planètes, lunes, étoiles, marges.
+     * {@code 0.85} ≈ réduction de 15 % des distances (horizontal et vertical).
+     */
+    private static final double SYSTEM_VIEW_ORRERY_SPACING_SCALE = 0.85;
+
+    private static int orrerySpacing(int basePixels) {
+        return Math.max(1, (int) Math.round(basePixels * SYSTEM_VIEW_ORRERY_SPACING_SCALE));
+    }
     private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
     private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -487,14 +497,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
 
             // Disposer les corps : étoiles verticalement à gauche, planètes en chaîne horizontale, lunes verticalement
-            // Ajouter un gap pour que les planètes ne collent pas au bord
-            int gapLeft = 50; // Espace à gauche
-            int gapTop = 50; // Espace en haut
-            int startX = gapLeft; // Position de départ avec gap
+            // Ajouter un gap pour que les planètes ne collent pas au bord (espacements réduits ~15 % via
+            // {@link #SYSTEM_VIEW_ORRERY_SPACING_SCALE} / {@link #orrerySpacing(int)}).
+            int gapLeft = orrerySpacing(50);
+            int gapTop = orrerySpacing(50);
+            int startX = gapLeft;
             int startY = gapTop;
-            int starVerticalSpacing = 200; // Espacement vertical entre les étoiles
-            int horizontalSpacing = 120; // Espacement horizontal entre les planètes
-            int moonVerticalSpacing = 80; // Espacement vertical entre les lunes
+            int starVerticalSpacing = orrerySpacing(200);
+            int horizontalSpacing = orrerySpacing(120);
+            int moonVerticalSpacing = orrerySpacing(80);
+            /* Lunes de lune : même facteur global en plus sur l’horizontal (chaîne plus serrée que planète–planète). */
+            int subMoonHorizontalSpacing = Math.max(1,
+                    (int) Math.round(horizontalSpacing * SYSTEM_VIEW_ORRERY_SPACING_SCALE));
 
             // Organiser la hiérarchie : étoiles -> planètes directes -> lunes -> lunes de lune
             List<ACelesteBody> stars = new ArrayList<>();
@@ -821,7 +835,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 }
                                 
                                 if (subMoons != null && !subMoons.isEmpty()) {
-                                    int subMoonX = planetX + horizontalSpacing;
+                                    int subMoonX = planetX + subMoonHorizontalSpacing;
                                     for (ACelesteBody subMoon : subMoons) {
                                         double subMoonSize = getBodySize(BodyHierarchyType.SUB_MOON);
                                         bodyPositions.put(subMoon.getBodyID(), new BodyPosition(subMoonX, moonY, subMoon, subMoonSize));
@@ -832,7 +846,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         // Ajouter les icônes sous la lune de lune (exobio et mapped)
                                         addPlanetIcons(subMoon, subMoonX, moonY);
                                         
-                                        subMoonX += horizontalSpacing;
+                                        subMoonX += subMoonHorizontalSpacing;
                                         maxSubMoonX = Math.max(maxSubMoonX, subMoonX);
                                     }
                                     for (ACelesteBody subMoon : subMoons) {
@@ -935,8 +949,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         moonToSubMoons.computeIfAbsent(parentBody, k -> new ArrayList<>()).add(body);
                                         BodyPosition parentPos = bodyPositions.get(parentBody.getBodyID());
                                         if (parentPos != null) {
-                                            int subMoonX = (int)parentPos.x + horizontalSpacing;
-                                            int subMoonY = (int)parentPos.y;
+                                            int subMoonX = (int) parentPos.x + subMoonHorizontalSpacing;
+                                            int subMoonY = (int) parentPos.y;
                                             double subMoonSize = getBodySize(BodyHierarchyType.SUB_MOON);
                                             bodyPositions.put(body.getBodyID(), new BodyPosition(subMoonX, subMoonY, body, subMoonSize));
                                             Node subMoonView = createBodyImageView(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
@@ -947,7 +961,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                             addPlanetIcons(body, subMoonX, subMoonY);
                                             addColonisationConstructionCaption(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
                                             
-                                            maxX = Math.max(maxX, subMoonX + horizontalSpacing);
+                                            maxX = Math.max(maxX, subMoonX + subMoonHorizontalSpacing);
                                         }
                                         break;
                                     }
