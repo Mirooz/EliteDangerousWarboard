@@ -62,7 +62,7 @@ public class CarrierTradeService {
      * @return {@code true} si un snapshot a été appliqué
      */
     public synchronized boolean tryRestoreFleetCarrierJournalSnapshotFromDisk() {
-        return FleetCarrierJournalSnapshotPersistence.getInstance().restoreInto(carrierStatus);
+        return CarrierStatusPersistence.getInstance().restoreFromDisk(carrierStatus);
     }
 
     public synchronized void applyFleetCarrierCapiSnapshot(CapiFleetCarrierProxyResponse capiData) {

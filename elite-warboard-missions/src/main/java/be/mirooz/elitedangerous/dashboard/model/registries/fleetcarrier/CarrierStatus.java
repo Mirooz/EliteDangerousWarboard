@@ -15,7 +15,6 @@ import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierPayload;
 import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierProxyResponse;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierPosition;
-import be.mirooz.elitedangerous.dashboard.service.FleetCarrierJournalSnapshotPersistence;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -448,9 +447,66 @@ public class CarrierStatus {
         }
     }
 
+    /**
+     * Remplace tout l’état carrier depuis un snapshot disque (schéma 2 — fermeture d’app).
+     */
+    public synchronized void applyFullPersistedSnapshot(
+            long carrierId,
+            String carrierType,
+            String callsign,
+            String name,
+            int totalCapacity,
+            boolean blackMarket,
+            boolean carrierStatsInitialized,
+            long balance,
+            int fuel,
+            String operationalState,
+            String positionStarSystem,
+            long positionBodyId,
+            Instant lastModifiedTimeOrNull,
+            Map<ICommodity, Integer> stocks,
+            List<CarrierTradeOrderEntry> orders) {
+        marketByCommodity.clear();
+        stocksByCommodity.clear();
+        this.carrierId = carrierId;
+        this.carrierType = carrierType != null ? carrierType : "";
+        this.callsign = callsign != null ? callsign : "";
+        this.name = name != null ? name : "";
+        this.totalCapacity = Math.max(totalCapacity, 0);
+        this.blackMarket = blackMarket;
+        this.carrierStatsInitialized = carrierStatsInitialized;
+        this.balance = balance;
+        this.fuel = fuel;
+        this.operationalState = operationalState != null ? operationalState : "";
+        this.position = new CarrierPosition(positionStarSystem != null ? positionStarSystem : "", positionBodyId);
+        this.lastModifiedTime = lastModifiedTimeOrNull;
+        if (stocks != null) {
+            for (Map.Entry<ICommodity, Integer> e : stocks.entrySet()) {
+                if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) {
+                    continue;
+                }
+                if (isFleetStockExcludedDrone(e.getKey())) {
+                    continue;
+                }
+                stocksByCommodity.put(e.getKey(), e.getValue());
+            }
+        }
+        if (orders != null) {
+            for (CarrierTradeOrderEntry entry : orders) {
+                if (entry == null || entry.isCancelTrade()) {
+                    continue;
+                }
+                ICommodity key = canonicalCommodity(entry);
+                if (key == null) {
+                    continue;
+                }
+                marketByCommodity.put(key, entry);
+            }
+        }
+    }
+
     private void markLastModifiedFromJournal(String journalIsoTimestamp) {
         lastModifiedTime = parseJournalInstant(journalIsoTimestamp);
-        FleetCarrierJournalSnapshotPersistence.getInstance().notifyJournalMutation();
     }
 
     private static Instant parseJournalInstant(String journalIsoTimestamp) {

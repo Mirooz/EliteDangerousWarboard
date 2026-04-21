@@ -9,7 +9,6 @@ import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
-import be.mirooz.elitedangerous.dashboard.service.FleetCarrierJournalSnapshotPersistence;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -83,13 +82,11 @@ public class JournalService {
             List<Mission> missions = parseAllJournalFiles();
 
             // Données fleet CAPI : après tout le chargement journal (ordres, stocks journal, etc.)
-            if (profileOk) {
-                if (!CarrierTradeService.getInstance()
-                        .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
-                    CapiApiService.getInstance().fetchFleetCarrierData();
-                } else {
-                    CarrierTradeService.getInstance().tryRestoreFleetCarrierJournalSnapshotFromDisk();
-                }
+            if (profileOk && !CarrierTradeService.getInstance()
+                    .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
+                CapiApiService.getInstance().fetchFleetCarrierData();
+            } else {
+                CarrierTradeService.getInstance().tryRestoreFleetCarrierJournalSnapshotFromDisk();
             }
 
             return missions;
@@ -141,7 +138,7 @@ public class JournalService {
      * Vérifie si un fichier journal appartient au commandant identifié
      */
     private boolean isJournalFromCommander(File journalFile) {
-        if (getCommanderFid() == null ||getCommanderFid().isEmpty()) {
+        if (getCommanderFid() == null || getCommanderFid().isEmpty()) {
             return false;
         }
 
@@ -171,6 +168,7 @@ public class JournalService {
     public String getCommanderName() {
         return commanderStatus.getCommanderName();
     }
+
     public String getCommanderFid() {
         return commanderStatus.getFID();
     }
@@ -253,7 +251,7 @@ public class JournalService {
             if (!journalFiles.isEmpty()) {
                 File latestJournal = journalFiles.get(journalFiles.size() - 1);
                 JournalWatcherService.getInstance().start(preferencesService.getJournalFolder());
-                JournalTailService.getInstance().start(latestJournal,false);
+                JournalTailService.getInstance().start(latestJournal, false);
 
             }
 
@@ -283,7 +281,6 @@ public class JournalService {
             }
         }
         DashboardContext.getInstance().setBatchLoading(false);
-        FleetCarrierJournalSnapshotPersistence.getInstance().flushAfterJournalBatchIfDirty();
 
         CargoEventNotificationService.getInstance().notifyCargoEvent();
         ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
@@ -305,7 +302,7 @@ public class JournalService {
                         .filter(window -> window.isShowing() && !window.getScene().getRoot().getChildrenUnmodifiable().isEmpty())
                         .findFirst()
                         .orElse(null);
-                
+
                 if (primaryWindow != null) {
                     // Afficher au centre (les coordonnées seront ignorées car on utilise CENTER)
                     popupManager.showWarningPopup(warningMessage, 0, 0, primaryWindow);
@@ -326,7 +323,7 @@ public class JournalService {
                         .filter(window -> window.isShowing() && !window.getScene().getRoot().getChildrenUnmodifiable().isEmpty())
                         .findFirst()
                         .orElse(null);
-                
+
                 if (primaryWindow instanceof javafx.stage.Stage stage) {
                     DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 900, 850);
                     dialog.init(stage);
@@ -340,6 +337,7 @@ public class JournalService {
 
     /**
      * Lit et parse le fichier Cargo.json
+     *
      * @return L'objet Cargo parsé ou null si erreur
      */
     public Cargo readCargoFile() {
@@ -349,75 +347,75 @@ public class JournalService {
                 System.out.println("⚠️ Dossier journal non configuré");
                 return null;
             }
-            
+
             Path cargoFilePath = Paths.get(journalFolder, CARGO_FILE);
             if (!Files.exists(cargoFilePath)) {
                 System.out.println("⚠️ Fichier Cargo.json non trouvé: " + cargoFilePath);
                 return null;
             }
-            
+
             String cargoContent = Files.readString(cargoFilePath);
             if (cargoContent == null || cargoContent.trim().isEmpty()) {
                 System.out.println("⚠️ Fichier Cargo.json vide");
                 return null;
             }
-            
+
             JsonNode cargoNode = objectMapper.readTree(cargoContent);
             return parseCargoFromJson(cargoNode);
-            
+
         } catch (Exception e) {
             System.err.println("❌ Erreur lors de la lecture du fichier Cargo.json: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
     }
-    
+
     /**
      * Parse un JsonNode en objet Cargo
      */
     private Cargo parseCargoFromJson(JsonNode jsonNode) {
         Cargo cargo = new Cargo();
-        
+
         // Fonctions utilitaires locales
-        java.util.function.Function<String, String> getText = field -> 
-            jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asText() : null;
-        java.util.function.Function<String, Integer> getInt = field -> 
-            jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asInt() : null;
-        
+        java.util.function.Function<String, String> getText = field ->
+                jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asText() : null;
+        java.util.function.Function<String, Integer> getInt = field ->
+                jsonNode.has(field) && !jsonNode.get(field).isNull() ? jsonNode.get(field).asInt() : null;
+
         // Champs de base
         cargo.setTimestamp(getText.apply("timestamp"));
         cargo.setEvent(getText.apply("event"));
         cargo.setVessel(getText.apply("Vessel"));
         if (getInt.apply("Count") != null) cargo.setCount(getInt.apply("Count"));
-        
+
         // Parse inventory si présent
         if (jsonNode.has("Inventory") && jsonNode.get("Inventory").isArray()) {
             JsonNode inventoryNode = jsonNode.get("Inventory");
             List<Cargo.Inventory> inventory = new ArrayList<>();
-            
+
             for (JsonNode itemNode : inventoryNode) {
                 Cargo.Inventory item = parseInventoryItem(itemNode);
                 inventory.add(item);
             }
-            
+
             cargo.setInventory(inventory);
         }
-        
+
         return cargo;
     }
-    
+
     /**
      * Parse un item d'inventaire depuis un JsonNode
      */
     private Cargo.Inventory parseInventoryItem(JsonNode itemNode) {
         Cargo.Inventory item = new Cargo.Inventory();
-        
+
         // Fonctions utilitaires locales
-        java.util.function.Function<String, String> getText = field -> 
-            itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asText() : null;
-        java.util.function.Function<String, Integer> getInt = field -> 
-            itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asInt() : null;
-        
+        java.util.function.Function<String, String> getText = field ->
+                itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asText() : null;
+        java.util.function.Function<String, Integer> getInt = field ->
+                itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asInt() : null;
+
         // Champs (Name / name — certains outils écrivent en camelCase JSON différent)
         String nm = getText.apply("Name");
         if (nm == null || nm.isBlank()) {
@@ -431,7 +429,7 @@ public class JournalService {
         item.setNameLocalised(loc);
         if (getInt.apply("Count") != null) item.setCount(getInt.apply("Count"));
         if (getInt.apply("Stolen") != null) item.setStolen(getInt.apply("Stolen"));
-        
+
         return item;
     }
 
