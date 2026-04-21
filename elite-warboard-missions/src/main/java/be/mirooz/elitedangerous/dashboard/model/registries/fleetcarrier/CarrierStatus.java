@@ -341,7 +341,62 @@ public class CarrierStatus {
         } else {
             stocksByCommodity.put(commodityKey, next);
         }
+
+        ICommodity mapKey = linkedMarketKey(commodityKey);
+        if (mapKey != null) {
+            CarrierTradeOrderEntry cur = marketByCommodity.get(mapKey);
+            if (cur != null && cur.getCommodity() != null && !cur.isCancelTrade()) {
+                int newPo = cur.getPurchaseOrder();
+                int newSo = cur.getSaleOrder();
+                int newListingStock = cur.getStock();
+                if (delta > 0) {
+                    // MarketSell sur le FC : le commandant livre → l’ordre d’achat du carrier diminue.
+                    newPo = Math.max(0, newPo - delta);
+                } else {
+                    // MarketBuy sur le FC : le commandant achète → stock listé / ordre de vente diminuent.
+                    int bought = -delta;
+                    newListingStock = Math.max(0, newListingStock - bought);
+                    newSo = Math.max(0, newSo - bought);
+                }
+                if (newPo <= 0 && newSo <= 0 && newListingStock <= 0) {
+                    marketByCommodity.remove(mapKey);
+                } else {
+                    marketByCommodity.put(mapKey, new CarrierTradeOrderEntry(
+                            cur.getTimestamp(),
+                            cur.getCarrierId(),
+                            cur.getCarrierType(),
+                            cur.isBlackMarket(),
+                            cur.getCommodity(),
+                            newPo,
+                            newSo,
+                            cur.isCancelTrade(),
+                            cur.getPrice(),
+                            newListingStock));
+                }
+            }
+        }
+
         markLastModifiedFromJournal(eventTimestamp);
+    }
+
+    /** Clé présente dans {@link #marketByCommodity} pour la même commodité (instance ou {@link ColonisationCommodityKeys}). */
+    private ICommodity linkedMarketKey(ICommodity resolved) {
+        if (resolved == null) {
+            return null;
+        }
+        if (marketByCommodity.containsKey(resolved)) {
+            return resolved;
+        }
+        String mk = ColonisationCommodityKeys.mergeKey(resolved);
+        if (mk.isBlank()) {
+            return null;
+        }
+        for (ICommodity k : marketByCommodity.keySet()) {
+            if (k != null && ColonisationCommodityKeys.mergeKey(k).equals(mk)) {
+                return k;
+            }
+        }
+        return null;
     }
 
     /**
