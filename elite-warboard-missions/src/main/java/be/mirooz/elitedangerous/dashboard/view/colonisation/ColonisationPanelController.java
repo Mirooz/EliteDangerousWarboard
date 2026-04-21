@@ -622,7 +622,8 @@ public class ColonisationPanelController implements Initializable {
             selectedConstructionRow = null;
         }
         syncArchitectSystemComboSelection(arch);
-        if (architectCenterTabPane != null && architectSystemViewTab != null) {
+        // Ne pas changer l’onglet (ex. Fleet & Cargo) lors d’un simple refresh si le système est inchangé.
+        if (systemChanged && architectCenterTabPane != null && architectSystemViewTab != null) {
             architectCenterTabPane.getSelectionModel().select(architectSystemViewTab);
         }
         applyArchitectColonisationOverlayToMapView();
