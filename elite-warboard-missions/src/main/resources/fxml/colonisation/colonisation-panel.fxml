@@ -7,22 +7,19 @@
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.view.colonisation.ColonisationPanelController"
       styleClass="colonisation-panel" spacing="10">
-    <padding>
-        <Insets top="8.0" right="12.0" bottom="12.0" left="12.0"/>
-    </padding>
     <VBox fx:id="architectViewRoot" spacing="10.0" VBox.vgrow="ALWAYS">
-        <HBox spacing="10.0" alignment="CENTER_LEFT">
-            <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
-            <ComboBox fx:id="architectSystemComboBox" minWidth="120.0" prefWidth="200.0" maxWidth="220.0"
-                      HBox.hgrow="NEVER" styleClass="colonisation-architect-system-combo"/>
-            <Label fx:id="architectSystemStatsLabel" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"
-                   styleClass="colonisation-architect-system-stats"/>
-            <Button fx:id="openColonisationFinderButton" mnemonicParsing="false" focusTraversable="false"
-                    styleClass="elite-nav-button"/>
-        </HBox>
         <SplitPane fx:id="colonisationSplitPane" dividerPositions="0.62" VBox.vgrow="ALWAYS"
                    styleClass="colonisation-split">
             <VBox spacing="10.0" styleClass="colonisation-column" VBox.vgrow="ALWAYS" minHeight="160.0">
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
+                    <ComboBox fx:id="architectSystemComboBox" minWidth="120.0" prefWidth="200.0" maxWidth="220.0"
+                              HBox.hgrow="NEVER" styleClass="colonisation-architect-system-combo"/>
+                    <Label fx:id="architectSystemStatsLabel" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                           styleClass="colonisation-architect-system-stats"/>
+                    <Button fx:id="openColonisationFinderButton" mnemonicParsing="false" focusTraversable="false"
+                            styleClass="elite-nav-button"/>
+                </HBox>
                 <TabPane fx:id="architectCenterTabPane" styleClass="colonisation-tab-pane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
                     <tabs>
                         <Tab fx:id="architectSystemViewTab" text="System View">
@@ -105,16 +102,16 @@
 
     <VBox fx:id="colonisationFinderRoot" spacing="8.0" visible="false" managed="false" VBox.vgrow="ALWAYS"
           styleClass="colonisation-finder-root">
-        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-finder-header">
-            <Button fx:id="backToArchitectViewButton" mnemonicParsing="false" focusTraversable="false"
-                    styleClass="elite-nav-button"/>
-        </HBox>
         <BorderPane styleClass="colonisation-column,colonisation-search-pane" VBox.vgrow="ALWAYS">
             <left>
                 <VBox spacing="12.0" minWidth="360.0" maxWidth="420.0" styleClass="colonisation-search-filters" BorderPane.alignment="CENTER_LEFT">
                     <padding>
                         <Insets top="10.0" right="10.0" bottom="10.0" left="4.0"/>
                     </padding>
+                    <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-finder-header">
+                        <Button fx:id="backToArchitectViewButton" mnemonicParsing="false" focusTraversable="false"
+                                styleClass="elite-nav-button"/>
+                    </HBox>
                     <HBox spacing="8.0" alignment="CENTER_LEFT">
                         <Label fx:id="searchMinLandablesLabel" styleClass="config-label"/>
                         <Spinner fx:id="searchMinLandablesSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="100"

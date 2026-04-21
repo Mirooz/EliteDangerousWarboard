@@ -425,10 +425,10 @@ public class ColonisationPanelController implements Initializable {
             backToArchitectViewButton.setText(localizationService.getString("colonisation.nav.backArchitect"));
         }
         if (architectSystemViewTab != null) {
-            architectSystemViewTab.setText("System View");
+            architectSystemViewTab.setText("Architect view");
         }
         if (architectCargoFleetTab != null) {
-            architectCargoFleetTab.setText("Cargo & Fleet");
+            architectCargoFleetTab.setText("Fleet & Cargo");
         }
         if (searchNeighborsTitleLabel != null) {
             searchNeighborsTitleLabel.setText(localizationService.getString("colonisation.edcolonise.neighbors.title"));
@@ -787,10 +787,15 @@ public class ColonisationPanelController implements Initializable {
                 continue;
             }
             if (site.getBodyId() != null) {
-                selectedArchitectPlanetBodyId = site.getBodyId().intValue();
+                int bid = site.getBodyId().intValue();
+                selectedArchitectPlanetBodyId = bid;
+                String bodyFromMap = architectBodyNamesById.get(bid);
+                selectedArchitectPlanetDisplayName =
+                        (bodyFromMap != null && !bodyFromMap.isBlank()) ? bodyFromMap : null;
+            } else {
+                selectedArchitectPlanetBodyId = null;
+                selectedArchitectPlanetDisplayName = null;
             }
-            selectedArchitectPlanetDisplayName = firstNonBlank(
-                    site.getSiteNameLocalised(), site.getStationNameRaw(), "—");
             clearSuggestedBuyStations();
             selectConstructionRow(constructionSiteRowFromDock(site));
             return;
@@ -1105,6 +1110,13 @@ public class ColonisationPanelController implements Initializable {
                     }
                     architectBodyNamesById.clear();
                     architectBodyNamesById.putAll(bodyNames);
+                    if (selectedArchitectPlanetBodyId != null) {
+                        String n = architectBodyNamesById.get(selectedArchitectPlanetBodyId);
+                        if (n != null && !n.isBlank()) {
+                            selectedArchitectPlanetDisplayName = n;
+                        }
+                    }
+                    refreshConstructionDetailPanel();
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
@@ -1113,6 +1125,7 @@ public class ColonisationPanelController implements Initializable {
                     }
                     architectBodyNamesById.clear();
                     clearArchitectVisualPanel();
+                    refreshConstructionDetailPanel();
                 });
             }
         }, "ed-colonise-architect-map-load");
@@ -1125,15 +1138,15 @@ public class ColonisationPanelController implements Initializable {
             return "";
         }
         int bodyId = dock.getBodyId().intValue();
+        String bodyName = architectBodyNamesById.get(bodyId);
+        if (bodyName != null && !bodyName.isBlank()) {
+            return bodyName;
+        }
         if (selectedArchitectPlanetBodyId != null
                 && selectedArchitectPlanetBodyId == bodyId
                 && selectedArchitectPlanetDisplayName != null
                 && !selectedArchitectPlanetDisplayName.isBlank()) {
             return selectedArchitectPlanetDisplayName;
-        }
-        String bodyName = architectBodyNamesById.get(bodyId);
-        if (bodyName != null && !bodyName.isBlank()) {
-            return bodyName;
         }
         return "#" + bodyId;
     }

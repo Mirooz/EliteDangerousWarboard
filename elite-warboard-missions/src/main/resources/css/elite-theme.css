@@ -190,6 +190,7 @@
 /* Onglets colonisation (Search / Architect) : contraste fort actif/inactif */
 .colonisation-panel .colonisation-tab-pane {
     -fx-background-color: transparent;
+    -fx-padding: 0;
 }
 
 .colonisation-panel .colonisation-tab-pane .tab-header-background {
@@ -200,6 +201,10 @@
 
 .colonisation-panel .colonisation-tab-pane .tab-header-area {
     -fx-padding: 0 0 8px 0;
+}
+
+.colonisation-panel .colonisation-tab-pane .headers-region {
+    -fx-padding: 0;
 }
 
 .colonisation-panel .colonisation-tab-pane .tab {
@@ -238,7 +243,7 @@
 
 .colonisation-panel .colonisation-tab-pane .tab-content-area {
     -fx-background-color: transparent;
-    -fx-padding: 2px 0 0 0;
+    -fx-padding: 0;
 }
 
 .colonisation-search-pane {
@@ -327,8 +332,8 @@
 .colonisation-column {
     -fx-background-color: -fx-elite-gray;
     -fx-padding: 12px;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1px;
+    -fx-border-color: derive(-fx-elite-orange, -30%);
+    -fx-border-width: 0.8px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
     -fx-spacing: 8;
