@@ -1,13 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.view.main;
 
+import be.mirooz.elitedangerous.dashboard.service.*;
+import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.view.common.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
-import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
-import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
-import be.mirooz.elitedangerous.dashboard.service.CarrierStatusPersistence;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
@@ -19,7 +17,6 @@ import be.mirooz.elitedangerous.dashboard.view.mining.MiningController;
 import be.mirooz.elitedangerous.dashboard.view.colonisation.ColonisationPanelController;
 import be.mirooz.elitedangerous.dashboard.view.exploration.ExplorationController;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
-import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import javafx.scene.input.MouseEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -133,7 +130,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         popupManager.attachToContainer(popupContainer);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Arrêt global : sauvegarde état fleet carrier...");
-            CarrierStatusPersistence.getInstance().saveOnShutdown();
+            PersistenceService.getInstance().save();
             System.out.println("Arrêt global : arrêt des services de journal...");
             JournalTailService.getInstance().stop();
             JournalWatcherService.getInstance().stop();

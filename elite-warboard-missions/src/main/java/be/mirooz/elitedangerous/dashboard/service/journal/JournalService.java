@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service.journal;
 
+import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -86,7 +87,7 @@ public class JournalService {
                     .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
                 CapiApiService.getInstance().fetchFleetCarrierData();
             } else {
-                CarrierTradeService.getInstance().tryRestoreFleetCarrierJournalSnapshotFromDisk();
+                PersistenceService.getInstance().load();
             }
 
             return missions;

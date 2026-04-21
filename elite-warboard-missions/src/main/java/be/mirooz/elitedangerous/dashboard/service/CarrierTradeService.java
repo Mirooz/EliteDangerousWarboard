@@ -55,16 +55,6 @@ public class CarrierTradeService {
         return carrierStatus.hasRecentJournalCarrierActivity(maxAge);
     }
 
-    /**
-     * Recharge stocks + ordres depuis le fichier snapshot journal (si présent).
-     * Utilisé quand le fetch CAPI fleet carrier est sauté suite à une activité journal récente.
-     *
-     * @return {@code true} si un snapshot a été appliqué
-     */
-    public synchronized boolean tryRestoreFleetCarrierJournalSnapshotFromDisk() {
-        return CarrierStatusPersistence.getInstance().restoreFromDisk(carrierStatus);
-    }
-
     public synchronized void applyFleetCarrierCapiSnapshot(CapiFleetCarrierProxyResponse capiData) {
         carrierStatus.applyCapiFleetCarrierPayload(capiData);
         ColonisationNotificationService.getInstance().notifyColonisationDataChanged();

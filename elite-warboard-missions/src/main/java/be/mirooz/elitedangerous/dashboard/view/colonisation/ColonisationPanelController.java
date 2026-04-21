@@ -2505,7 +2505,6 @@ public class ColonisationPanelController implements Initializable {
         out.sort(Comparator
                 .comparing(this::fleetMarketRowCategorySortKey, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
-        System.out.println(CarrierStatus.getInstance().getPurchaseOrder());
         return out;
     }
 
