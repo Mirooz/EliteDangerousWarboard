@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationJournalContext;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class ColonisationBeaconDeployedHandler implements JournalEventHandler {
@@ -21,6 +22,7 @@ public class ColonisationBeaconDeployedHandler implements JournalEventHandler {
             String timestamp = jsonNode.path("timestamp").asText("");
             String starSystem = ColonisationJournalContext.resolveStarSystem(jsonNode, commanderStatus);
             colonisationService.recordArchitectBeaconDeployed(starSystem);
+            ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
             System.out.println("Colonisation: balise de colonisation déployée"
                     + (starSystem.isEmpty() ? "" : " dans « " + starSystem + " »")
                     + (timestamp.isEmpty() ? "" : " (" + timestamp + ")"));

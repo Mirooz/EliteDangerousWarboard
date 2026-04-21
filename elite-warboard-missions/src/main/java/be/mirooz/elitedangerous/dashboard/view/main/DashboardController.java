@@ -294,6 +294,10 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     }
 
     private static Image loadColonisationTabIcon() {
+        var colonisation = DashboardController.class.getResourceAsStream("/images/dashboard/colonisation-tab.png");
+        if (colonisation != null) {
+            return new Image(colonisation);
+        }
         var fleet = DashboardController.class.getResourceAsStream("/images/fleet.png");
         if (fleet != null) {
             return new Image(fleet);

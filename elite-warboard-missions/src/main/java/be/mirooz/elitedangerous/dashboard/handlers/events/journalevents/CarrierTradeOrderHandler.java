@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class CarrierTradeOrderHandler implements JournalEventHandler {
@@ -40,6 +41,7 @@ public class CarrierTradeOrderHandler implements JournalEventHandler {
             carrierTradeService.recordTradeOrder(new CarrierTradeOrderEntry(
                     timestamp, carrierId, carrierType, blackMarket, commodity, commodityLocalised,
                     purchaseOrder, saleOrder, cancelTrade, price, stock));
+            ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
 
             System.out.println("CarrierTradeOrder: " + commodityLocalised + " (" + commodity + ")"
                     + " (PurchaseOrder=" + purchaseOrder

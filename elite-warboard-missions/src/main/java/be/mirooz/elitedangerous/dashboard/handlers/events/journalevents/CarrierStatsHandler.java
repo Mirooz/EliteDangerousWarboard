@@ -1,9 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class CarrierStatsHandler implements JournalEventHandler {
+
+    private static final String FLEET_CARRIER_TYPE = "FleetCarrier";
 
     private final CarrierTradeService carrierTradeService = CarrierTradeService.getInstance();
 
@@ -22,6 +25,9 @@ public class CarrierStatsHandler implements JournalEventHandler {
             int totalCapacity = jsonNode.path("SpaceUsage").path("TotalCapacity").asInt(0);
 
             carrierTradeService.updateCarrierStats(carrierId, carrierType, callsign, name, totalCapacity);
+            if (FLEET_CARRIER_TYPE.equalsIgnoreCase(carrierType)) {
+                ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
+            }
 
             System.out.println("CarrierStats: " + callsign
                     + " | " + name

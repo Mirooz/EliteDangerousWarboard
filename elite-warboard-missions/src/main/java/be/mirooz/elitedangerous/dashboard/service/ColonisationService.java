@@ -217,13 +217,15 @@ public class ColonisationService {
 
     /**
      * Si l'événement Docked concerne un site de colonisation, ajoute une entrée au registre seulement si le MarketID n’y est pas encore.
+     *
+     * @return {@code true} si une nouvelle entrée dock colonisation a été enregistrée
      */
-    public void handleDocked(JsonNode jsonNode) {
+    public boolean handleDocked(JsonNode jsonNode) {
         if (jsonNode == null || !hasColonisationStationService(jsonNode)) {
-            return;
+            return false;
         }
         if (!jsonNode.has("StationName")) {
-            return;
+            return false;
         }
 
         String stationName = jsonNode.path("StationName").asText("");
@@ -242,7 +244,9 @@ public class ColonisationService {
         if (registry.addDockIfAbsent(snap)) {
             System.out.println("Colonisation: amarrage sur « " + snap.getSiteNameLocalised() + " » ("
                     + snap.getStarSystem() + ", MarketID=" + snap.getMarketId() + ")");
+            return true;
         }
+        return false;
     }
 
     public static boolean hasColonisationStationService(JsonNode dockedEvent) {

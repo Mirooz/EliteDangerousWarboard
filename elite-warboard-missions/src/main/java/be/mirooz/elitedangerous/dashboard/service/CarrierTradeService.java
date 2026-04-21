@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.Duration;
@@ -55,6 +56,7 @@ public class CarrierTradeService {
 
     public synchronized void applyFleetCarrierCapiSnapshot(JsonNode capiDataNode) {
         carrierStatus.applyCapiFleetCarrierPayload(capiDataNode);
+        ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
     }
 
     /**

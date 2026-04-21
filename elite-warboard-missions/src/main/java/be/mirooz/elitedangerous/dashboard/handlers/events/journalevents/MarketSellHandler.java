@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -60,6 +61,7 @@ public class MarketSellHandler implements JournalEventHandler {
 
             // Vente au marché du carrier => le stock du carrier augmente.
             carrierTradeService.applyMarketStockDelta(type, typeLocalised, count, timestamp);
+            ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement MarketSell: " + e.getMessage());
         }

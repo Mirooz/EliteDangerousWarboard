@@ -334,6 +334,15 @@
     -fx-spacing: 8;
 }
 
+.colonisation-finder-root {
+    -fx-spacing: 8px;
+}
+
+.colonisation-finder-header {
+    -fx-padding: 0 0 2px 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
 .colonisation-architect-system-button {
     -fx-max-width: infinity;
     -fx-text-alignment: center;
@@ -366,8 +375,59 @@
     -fx-border-color: -fx-elite-cyan;
 }
 
+.colonisation-architect-system-combo:showing {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.35), 8, 0.35, 0, 0);
+}
+
 .colonisation-architect-system-combo .list-cell {
     -fx-text-fill: -fx-elite-orange;
+}
+
+/*
+ * Liste déroulante des ComboBox : le contenu est dans une popup (classe combo-box-popup),
+ * pas sous le nœud du ComboBox — il faut donc styler la popup explicitement.
+ */
+.combo-box-popup {
+    -fx-background-color: -fx-elite-darker;
+    -fx-background-radius: 4px;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-padding: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.30), 12, 0.35, 0, 0);
+}
+
+.combo-box-popup > .list-view {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.combo-box-popup > .list-view .list-cell {
+    -fx-background-color: -fx-elite-darker;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-padding: 6px 10px;
+}
+
+.combo-box-popup > .list-view .list-cell:filled:hover {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.combo-box-popup > .list-view .list-cell:filled:selected,
+.combo-box-popup > .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: rgba(0, 255, 255, 0.22);
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.combo-box-popup > .list-view .scroll-bar:vertical,
+.combo-box-popup > .list-view .scroll-bar:horizontal {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.combo-box-popup > .list-view .scroll-bar .thumb {
+    -fx-background-color: -fx-elite-orange;
 }
 
 .colonisation-architect-system-stats {
@@ -1064,6 +1124,21 @@
 .colonisation-detail-actions {
     -fx-padding: 0 0 4 0;
     -fx-spacing: 10px;
+}
+
+.colonisation-detail-progress-wrap {
+    -fx-max-width: Infinity;
+}
+
+.colonisation-detail-progress-bar {
+    -fx-pref-height: 18px;
+    -fx-max-width: Infinity;
+}
+
+.colonisation-detail-progress-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
 }
 
 /* Table marché carrier : stock / achat / vente */
@@ -1819,6 +1894,20 @@
 .colonisation-fleet-market-scroll .scroll-bar:vertical .increment-arrow:hover,
 .colonisation-fleet-market-scroll .scroll-bar:vertical .decrement-arrow:hover {
     -fx-background-color: -fx-elite-cyan;
+}
+
+/* Cadre bleu autour du tableau fusionné Commodities/Market (onglet Cargo & Fleet). */
+.colonisation-fleet-merged-frame {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    /* Plus d’air à gauche pour éviter que le texte colle au bord cyan */
+    -fx-padding: 4px 6px 4px 10px;
+}
+
+.colonisation-fleet-merged-frame > .viewport {
+    -fx-padding: 2px 4px 2px 8px;
 }
 
 /* Masquer la scrollbar horizontale */
@@ -5478,14 +5567,17 @@
 }
 
 .exploration-visual-colonisation-caption-chip {
-    -fx-background-color: rgba(6, 8, 12, 0.92);
+    /* Pastille carte : cyan ; le chiffre de colonies reste orange vif. */
+    -fx-background-color: derive(-fx-elite-cyan, -62%);
+    -fx-border-color: derive(-fx-elite-cyan, -8%);
     -fx-background-radius: 7px;
-    -fx-padding: 3px 8px 4px 8px;
+    -fx-padding: 4px 10px 4px 10px;
     -fx-border-radius: 7px;
     -fx-border-width: 2px;
-    -fx-text-fill: rgba(255, 230, 200, 0.96);
+    -fx-text-fill: derive(-fx-elite-cyan, 18%);
     -fx-font-size: 11.5px;
     -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.22), 4, 0.35, 0, 0);
 }
 
 .exploration-visual-colonisation-port-count {
@@ -5495,28 +5587,43 @@
     -fx-padding: 0 1 0 0;
 }
 
+.exploration-visual-colonisation-caption-chip .exploration-visual-colonisation-port-count {
+    -fx-text-fill: -fx-elite-orange;
+}
+
+.exploration-visual-colonisation-caption-chip .exploration-visual-colonisation-port-count .text {
+    -fx-fill: -fx-elite-orange;
+}
+
+/* Conteneur de l’image : pas de second fond (fond = chip). */
+.exploration-visual-colonisation-settlement-icon-wrap {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 2px;
+}
+
 .exploration-visual-colonisation-caption-chip-complete {
-    -fx-border-color: #3dcc7a;
-    -fx-effect: dropshadow(gaussian, rgba(61, 204, 122, 0.35), 4, 0.35, 0, 0);
+    -fx-border-color: derive(-fx-elite-cyan, 6%);
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.38), 5, 0.4, 0, 0);
 }
 
 .exploration-visual-colonisation-caption-chip-inprogress {
-    -fx-border-color: #ff9a3c;
-    -fx-effect: dropshadow(gaussian, rgba(255, 154, 60, 0.35), 4, 0.35, 0, 0);
+    -fx-border-color: derive(-fx-elite-cyan, -12%);
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.28), 4, 0.35, 0, 0);
 }
 
 .exploration-visual-colonisation-caption-chip-inprogress:hover {
-    -fx-border-color: #ffc266;
-    -fx-effect: dropshadow(gaussian, rgba(255, 210, 130, 0.55), 7, 0.45, 0, 0);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.55), 8, 0.45, 0, 0);
 }
 
 /* Toute la pastille (icônes) cliquable / survol vue architecte */
 .exploration-visual-colonisation-caption-chip-interactive:hover {
-    -fx-border-color: #ffc266;
-    -fx-effect: dropshadow(gaussian, rgba(255, 210, 130, 0.55), 7, 0.45, 0, 0);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 8, 0.45, 0, 0);
 }
 
 .exploration-visual-colonisation-caption-chip-failed {
+    -fx-background-color: derive(#6b2a2a, -12%);
     -fx-border-color: #ff5c5c;
     -fx-effect: dropshadow(gaussian, rgba(255, 92, 92, 0.3), 4, 0.35, 0, 0);
 }

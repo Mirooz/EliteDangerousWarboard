@@ -31,6 +31,16 @@ public class PreferencesService {
     /** Référence structure Colony ({@code construction_class.json}) par {@code marketId} du chantier. */
     private static final String COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE = "colonisation-construction-structure-types.properties";
 
+    /**
+     * Dernier chantier colonisation sélectionné dans l’UI ({@code MarketID} du site), dans {@code preferences.properties}
+     * sous {@code ~/.elite-warboard/}.
+     */
+    public static final String PREF_COLONISATION_LAST_SELECTED_COLONY_MARKET_ID = "colonisation.lastSelectedColony.marketId";
+    /**
+     * Dernier système architecte sélectionné dans l’UI colonisation ({@code StarSystem}).
+     */
+    public static final String PREF_COLONISATION_LAST_SELECTED_ARCHITECT_SYSTEM = "colonisation.lastSelectedArchitectSystem";
+
     private static final ObjectMapper COLONISATION_SUGGESTED_STATIONS_JSON = createColonisationSuggestedStationsMapper();
 
     private volatile Properties colonisationConstructionStructureTypes;

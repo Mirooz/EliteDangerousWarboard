@@ -93,6 +93,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     /** Icônes chantier colonisation (vue architecte) : alignées sur {@code /images/stations/}. */
     private Image colonisationStationPortOrbitalImage;
     private Image colonisationStationPortSurfaceImage;
+    /** Icône unique sur la carte dès qu’il y a au moins une colonie (orbital et/ou surface). */
+    private Image colonisationSettlementImage;
     private SystemVisited currentSystem;
     private Map<Integer, BodyPosition> bodyPositions = new HashMap<>();
     private Scale zoomTransform;
@@ -183,6 +185,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
         } catch (Exception e) {
             System.err.println("Erreur chargement images/stations/planetport.png: " + e.getMessage());
+        }
+        try {
+            var settlement = getClass().getResourceAsStream("/images/colonisation/settlement.png");
+            if (settlement != null) {
+                colonisationSettlementImage = new Image(settlement);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur chargement images/colonisation/settlement.png: " + e.getMessage());
         }
 
         // Charger les images par type de planète
@@ -441,6 +451,27 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     public void setColonisationArchitectStationClickHandler(LongConsumer handler) {
         this.colonisationStationClickHandler = handler;
+    }
+
+    /**
+     * Met à jour le titre du système tout de suite (ex. pendant un chargement EDSM asynchrone).
+     */
+    public void setPendingSystemTitle(String systemName) {
+        Runnable r = () -> {
+            if (systemTitleLabel == null) {
+                return;
+            }
+            if (systemName != null && !systemName.isBlank()) {
+                systemTitleLabel.setText(systemName.trim());
+            } else {
+                systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));
+            }
+        };
+        if (Platform.isFxApplicationThread()) {
+            r.run();
+        } else {
+            Platform.runLater(r);
+        }
     }
 
     /**
@@ -1167,7 +1198,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     /**
-     * Marqueur chantier colonisation (vue architecte) : icônes port orbital / planétaire en haut à droite du corps.
+     * Marqueur colonisation (vue architecte) : nombre de colonies puis icône {@code settlement.png} en haut à droite du corps.
      */
     private void addColonisationConstructionCaption(ACelesteBody body, double cx, double cy, BodyHierarchyType hierarchyType) {
         if (!(body instanceof PlaneteDetail)) {
@@ -1196,7 +1227,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 orbitalMarketIds.add(entry.marketId());
             }
         }
-        if (orbitalMarketIds.isEmpty() && surfaceMarketIds.isEmpty()) {
+        int colonyCount = orbitalMarketIds.size() + surfaceMarketIds.size();
+        if (colonyCount <= 0) {
             return;
         }
 
@@ -1210,15 +1242,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             case FAILED -> "exploration-visual-colonisation-caption-chip-failed";
         });
 
-        if (!orbitalMarketIds.isEmpty()) {
-            row.getChildren().add(buildColonisationPortIconGroup(orbitalMarketIds, false));
-        }
-        if (!surfaceMarketIds.isEmpty()) {
-            row.getChildren().add(buildColonisationPortIconGroup(surfaceMarketIds, true));
-        }
-        if (row.getChildren().isEmpty()) {
-            return;
-        }
+        row.getChildren().add(buildColonisationSettlementChip(colonyCount));
 
         for (Node child : row.getChildren()) {
             child.setMouseTransparent(true);
@@ -1248,8 +1272,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         double layH = 24;
         double pad = 0;
         double diag = 1;
-        row.setLayoutX(cx + bodyRadius + pad + diag);
-        row.setLayoutY(cy - bodyRadius - pad - layH - diag);
+        double captionHorizontalLeftPx = 8;
+        /* Décalage vers le bas pour mieux caler la pastille sur le disque (évite trop « collée » au bord haut). */
+        double captionVerticalDownPx = 10;
+        row.setLayoutX(cx + bodyRadius + pad + diag - captionHorizontalLeftPx);
+        row.setLayoutY(cy - bodyRadius - pad - layH - diag + captionVerticalDownPx);
         bodiesPane.getChildren().add(row);
     }
 
@@ -1344,26 +1371,28 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         };
     }
 
-    private Node buildColonisationPortIconGroup(List<Long> marketIds, boolean surface) {
-        HBox hb = new HBox(3);
+    /** Pastille carte : « N » + icône settlement (fond orange = celui du chip CSS). */
+    private Node buildColonisationSettlementChip(int colonyCount) {
+        HBox hb = new HBox(6);
         hb.setAlignment(Pos.CENTER_LEFT);
-        Image img = surface ? colonisationStationPortSurfaceImage : colonisationStationPortOrbitalImage;
-        if (marketIds.size() > 1) {
-            Label count = new Label(Integer.toString(marketIds.size()));
-            count.getStyleClass().add("exploration-visual-colonisation-port-count");
-            hb.getChildren().add(count);
-        }
-        if (img != null) {
-            ImageView iv = new ImageView(img);
+        Label count = new Label(Integer.toString(colonyCount));
+        count.getStyleClass().add("exploration-visual-colonisation-port-count");
+        hb.getChildren().add(count);
+
+        StackPane iconWrap = new StackPane();
+        iconWrap.getStyleClass().add("exploration-visual-colonisation-settlement-icon-wrap");
+        if (colonisationSettlementImage != null) {
+            ImageView iv = new ImageView(colonisationSettlementImage);
             iv.setPreserveRatio(true);
-            iv.setFitHeight(20);
-            iv.setFitWidth(20);
-            hb.getChildren().add(iv);
+            iv.setFitHeight(28);
+            iv.setFitWidth(28);
+            iconWrap.getChildren().add(iv);
         } else {
-            Label fb = new Label(surface ? "P" : "O");
+            Label fb = new Label("·");
             fb.getStyleClass().add("exploration-visual-colonisation-port-count");
-            hb.getChildren().add(fb);
+            iconWrap.getChildren().add(fb);
         }
+        hb.getChildren().add(iconWrap);
         return hb;
     }
 

@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class DockedHandler implements JournalEventHandler {
@@ -17,7 +18,9 @@ public class DockedHandler implements JournalEventHandler {
     @Override
     public void handle(JsonNode jsonNode) {
         try {
-            colonisationService.handleDocked(jsonNode);
+            if (colonisationService.handleDocked(jsonNode)) {
+                ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
+            }
             if (jsonNode.has("StarSystem")) {
                 String starSystem = jsonNode.get("StarSystem").asText();
                 String stationName = jsonNode.get("StationName").asText();

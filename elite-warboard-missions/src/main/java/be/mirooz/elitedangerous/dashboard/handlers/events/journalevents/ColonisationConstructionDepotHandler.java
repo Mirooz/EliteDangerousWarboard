@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResourc
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ public class ColonisationConstructionDepotHandler implements JournalEventHandler
             ColonisationConstruction construction = new ColonisationConstruction(
                     timestamp, progress, status, List.copyOf(resources));
             colonisationService.applyConstructionDepot(marketId, construction, starSystem, CommanderStatus.getInstance().getCurrentBodyId());
+            ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
 
             System.out.println("Colonisation: dépôt de construction MarketID=" + marketId
                     + (starSystem.isEmpty() ? "" : " (« " + starSystem + " »)")

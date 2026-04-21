@@ -15,6 +15,7 @@ import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcher
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
@@ -277,6 +278,7 @@ public class JournalService {
             }
         }
         DashboardContext.getInstance().setBatchLoading(false);
+        ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
     }
 
     /**

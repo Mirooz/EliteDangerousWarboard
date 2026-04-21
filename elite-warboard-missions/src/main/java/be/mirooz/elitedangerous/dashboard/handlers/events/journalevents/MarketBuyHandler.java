@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -25,6 +26,7 @@ public class MarketBuyHandler implements JournalEventHandler {
             String timestamp = event.path("timestamp").asText("");
             // Achat au marché du carrier => le stock du carrier diminue.
             carrierTradeService.applyMarketStockDelta(type, typeLocalised, -Math.max(count, 0), timestamp);
+            ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du traitement de l'événement MarketBuy: " + e.getMessage());
         }
