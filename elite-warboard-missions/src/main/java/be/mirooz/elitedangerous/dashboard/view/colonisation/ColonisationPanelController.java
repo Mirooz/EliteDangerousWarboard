@@ -2229,32 +2229,47 @@ public class ColonisationPanelController implements Initializable {
                 return;
             }
 
+            addCommanderCargoHeaderRow();
             if (cargo.getCommodities().isEmpty()) {
                 Label ph = placeholderLabel("colonisation.fleet.commanderCargoEmpty");
-                commanderCargoGrid.add(ph, 0, 0, 2, 1);
+                ph.getStyleClass().add("cargo-mineral-null-price");
+                commanderCargoGrid.add(ph, 0, 1, 2, 1);
                 return;
             }
             List<Entry<ICommodity, Integer>> rows = new ArrayList<>(cargo.getCommodities().entrySet());
             rows.sort(Comparator.comparing(e -> e.getKey().getVisibleName(), String.CASE_INSENSITIVE_ORDER));
-            int row = 0;
+            int row = 1;
+            int shown = 0;
             for (Entry<ICommodity, Integer> e : rows) {
-                if (row >= MAX_COMMANDER_CARGO_ROWS_COMPACT) {
+                if (shown >= MAX_COMMANDER_CARGO_ROWS_COMPACT) {
                     Label more = new Label("…");
                     more.getStyleClass().add("colonisation-detail-placeholder");
                     commanderCargoGrid.add(more, 0, row, 2, 1);
                     break;
                 }
-                Label name = new Label(e.getKey().getVisibleName());
-                name.getStyleClass().add("colonisation-commander-cargo-name");
+                String title = e.getKey().getTitleName();
+                if (title == null || title.isBlank()) {
+                    title = e.getKey().getVisibleName();
+                }
+                Label name = new Label(title);
+                name.getStyleClass().add("cargo-mineral-name");
+                name.setWrapText(true);
                 name.setMaxWidth(Double.MAX_VALUE);
-                name.setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
-                Label qty = new Label(Integer.toString(e.getValue()));
-                qty.getStyleClass().add("colonisation-commander-cargo-qty");
+                int q = e.getValue();
+                Label qty = new Label(Integer.toString(q));
+                qty.getStyleClass().add(q > 0 ? "cargo-mineral-quantity" : "cargo-mineral-null-price");
                 commanderCargoGrid.add(name, 0, row);
                 commanderCargoGrid.add(qty, 1, row);
                 row++;
+                shown++;
             }
         });
+    }
+
+    /** Même en-têtes que le tableau fleet (colonnes commodité + stock uniquement). */
+    private void addCommanderCargoHeaderRow() {
+        commanderCargoGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.commodity"), 0, 0);
+        commanderCargoGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.stock"), 1, 0);
     }
 
     private Label placeholderLabel(String messageKey) {
