@@ -28,6 +28,7 @@ public final class CommodityLoader {
         if (cargoJsonName == null || cargoJsonName.isBlank()) {
             return Optional.empty();
         }
+        cargoJsonName = normalizeCargoName(cargoJsonName);
         String key = cargoJsonName.toLowerCase().trim();
         return Optional.ofNullable(byCargoJson.get(key)).map(ICommodity.class::cast);
     }
@@ -39,7 +40,16 @@ public final class CommodityLoader {
         }
         return Optional.ofNullable(byInaraId.get(inaraId.trim())).map(ICommodity.class::cast);
     }
+    private static String normalizeCargoName(String name) {
+        if (name == null || name.isEmpty() || !name.contains("$")) {
+            return name;
+        }
 
+        String cleaned = name.replace("$", "");
+        int i = cleaned.indexOf('_');
+
+        return i == -1 ? cleaned : cleaned.substring(0, i);
+    }
     private static void ensureLoaded() {
         if (loadAttempted) {
             return;
@@ -51,7 +61,7 @@ public final class CommodityLoader {
             loadAttempted = true;
             try (InputStream in = CommodityLoader.class.getResourceAsStream(RESOURCE)) {
                 if (in == null) {
-                    System.err.println("ArdentInaraCommodityRegistry: ressource absente " + RESOURCE);
+                    System.err.println("CommodityLoader: ressource absente " + RESOURCE);
                     byCargoJson = Map.of();
                     byInaraId = Map.of();
                     return;
@@ -85,7 +95,7 @@ public final class CommodityLoader {
                 byCargoJson = Collections.unmodifiableMap(cargo);
                 byInaraId = Collections.unmodifiableMap(inara);
             } catch (Exception e) {
-                System.err.println("ArdentInaraCommodityRegistry: échec du chargement — " + e.getMessage());
+                System.err.println("CommodityLoader: échec du chargement — " + e.getMessage());
                 e.printStackTrace();
                 byCargoJson = Map.of();
                 byInaraId = Map.of();

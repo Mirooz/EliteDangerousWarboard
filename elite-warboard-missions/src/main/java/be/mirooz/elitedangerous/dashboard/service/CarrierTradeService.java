@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
@@ -72,19 +73,19 @@ public class CarrierTradeService {
         return carrierStatus;
     }
 
-    public synchronized Map<String, CarrierTradeOrderEntry> getMarketByCommodity() {
+    public synchronized Map<ICommodity, CarrierTradeOrderEntry> getMarketByCommodity() {
         return carrierStatus.getMarketByCommodity();
     }
 
-    public synchronized Map<String, Integer> getStocksByCommodity() {
+    public synchronized Map<ICommodity, Integer> getStocksByCommodity() {
         return carrierStatus.getStocksByCommodity();
     }
 
-    public synchronized List<String> getPurchaseOrder() {
+    public synchronized List<ICommodity> getPurchaseOrder() {
         return carrierStatus.getPurchaseOrder();
     }
 
-    public synchronized List<String> getSaleOrder() {
+    public synchronized List<ICommodity> getSaleOrder() {
         return carrierStatus.getSaleOrder();
     }
 

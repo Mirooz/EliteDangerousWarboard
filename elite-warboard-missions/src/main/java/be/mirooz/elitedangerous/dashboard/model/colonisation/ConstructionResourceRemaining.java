@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.colonisation;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import lombok.Value;
 
 /**
@@ -8,8 +9,7 @@ import lombok.Value;
 @Value
 public class ConstructionResourceRemaining {
 
-    String name;
-    String nameLocalised;
+    ICommodity commodity;
     int requiredAmount;
     int providedAmount;
     int remainingAmount;
@@ -21,8 +21,7 @@ public class ConstructionResourceRemaining {
         }
         int remaining = Math.max(0, resource.getRequiredAmount() - resource.getProvidedAmount());
         return new ConstructionResourceRemaining(
-                resource.getName(),
-                resource.getNameLocalised(),
+                resource.getCommodity(),
                 resource.getRequiredAmount(),
                 resource.getProvidedAmount(),
                 remaining,

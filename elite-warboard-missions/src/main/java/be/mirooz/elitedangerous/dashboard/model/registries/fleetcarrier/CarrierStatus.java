@@ -1,5 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.CarrierCommodityResolver;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommodityKeys;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierPosition;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,8 +48,8 @@ public class CarrierStatus {
     private String operationalState = "";
     private CarrierPosition position = new CarrierPosition("", -1L);
 
-    private final Map<String, CarrierTradeOrderEntry> marketByCommodity = new LinkedHashMap<>();
-    private final Map<String, Integer> stocksByCommodity = new LinkedHashMap<>();
+    private final Map<ICommodity, CarrierTradeOrderEntry> marketByCommodity = new LinkedHashMap<>();
+    private final Map<ICommodity, Integer> stocksByCommodity = new LinkedHashMap<>();
 
     /** Dernière activité journal (ordre / achat-vente marché carrier) — pour éviter un sync CAPI redondant. */
     private volatile Instant lastModifiedTime;
@@ -81,7 +84,11 @@ public class CarrierStatus {
         this.carrierType = entry.getCarrierType() != null ? entry.getCarrierType() : this.carrierType;
         this.blackMarket = entry.isBlackMarket();
 
-        String commodityKey = commodityPrimaryKey(entry.getCommodity(), entry.getCommodityLocalised());
+        ICommodity commodityKey = canonicalCommodity(entry);
+        if (commodityKey == null) {
+            markLastModifiedFromJournal(entry.getTimestamp());
+            return;
+        }
 
         if (entry.isCancelTrade()) {
             marketByCommodity.remove(commodityKey);
@@ -201,13 +208,12 @@ public class CarrierStatus {
         if (internal.isBlank() && loc.isBlank()) {
             return;
         }
+        ICommodity key = CarrierCommodityResolver.resolve(internal, loc);
         if (isFleetStockExcludedDrone(internal, loc)) {
-            String key = commodityPrimaryKey(internal, loc);
             stocksByCommodity.remove(key);
             marketByCommodity.remove(key);
             return;
         }
-        String key = commodityPrimaryKey(internal, loc);
         int stock = c.path("stock").asInt(0);
         if (stock <= 0) {
             stocksByCommodity.remove(key);
@@ -225,7 +231,7 @@ public class CarrierStatus {
             return;
         }
 
-        String commodityKey = commodityPrimaryKey(commodity, commodityLocalised);
+        ICommodity commodityKey = CarrierCommodityResolver.resolve(commodity, commodityLocalised);
         int current = stocksByCommodity.getOrDefault(commodityKey, 0);
         int next = Math.max(current + delta, 0);
         if (next <= 0) {
@@ -262,22 +268,22 @@ public class CarrierStatus {
         }
     }
 
-    public Map<String, CarrierTradeOrderEntry> getMarketByCommodity() {
+    public Map<ICommodity, CarrierTradeOrderEntry> getMarketByCommodity() {
         return Collections.unmodifiableMap(new LinkedHashMap<>(marketByCommodity));
     }
 
-    public Map<String, Integer> getStocksByCommodity() {
+    public Map<ICommodity, Integer> getStocksByCommodity() {
         return Collections.unmodifiableMap(new LinkedHashMap<>(stocksByCommodity));
     }
 
-    public List<String> getPurchaseOrder() {
+    public List<ICommodity> getPurchaseOrder() {
         return marketByCommodity.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && entry.getValue().getPurchaseOrder() != 0)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
 
-    public List<String> getSaleOrder() {
+    public List<ICommodity> getSaleOrder() {
         return marketByCommodity.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && entry.getValue().getSaleOrder() != 0)
                 .map(Map.Entry::getKey)
@@ -301,67 +307,89 @@ public class CarrierStatus {
         return !loc.isBlank() && (loc.contains("limpet") || loc.contains("limpét"));
     }
 
+    public static boolean isFleetStockExcludedDrone(ICommodity c) {
+        if (c == null) {
+            return false;
+        }
+        return isFleetStockExcludedDrone(c.getCargoJsonName(), c.getInaraName());
+    }
+
     /**
-     * Clé stable (toujours en minuscules) : identifiant interne journal / CAPI si présent, sinon libellé localisé.
+     * Commodité canonique pour une entrée marché / ordre (alignée sur les clés de {@link #stocksByCommodity}).
      */
-    private String commodityPrimaryKey(String commodity, String commodityLocalised) {
-        if (commodity != null && !commodity.isBlank()) {
-            return commodity.trim().toLowerCase(Locale.ROOT);
-        }
-        if (commodityLocalised != null && !commodityLocalised.isBlank()) {
-            return commodityLocalised.trim().toLowerCase(Locale.ROOT);
-        }
-        return "__UNKNOWN_COMMODITY__";
-    }
-
-    /** Clé canonique pour une entrée marché / ordre (alignée sur {@link #stocksByCommodity}). */
-    public String canonicalCommodityKey(CarrierTradeOrderEntry e) {
+    public ICommodity canonicalCommodity(CarrierTradeOrderEntry e) {
         if (e == null) {
-            return "__UNKNOWN_COMMODITY__";
+            return null;
         }
-        return commodityPrimaryKey(e.getCommodity(), e.getCommodityLocalised());
+        boolean blank =
+                (e.getCommodity() == null || e.getCommodity().isBlank())
+                        && (e.getCommodityLocalised() == null || e.getCommodityLocalised().isBlank());
+        if (blank) {
+            return null;
+        }
+        return CarrierCommodityResolver.resolve(e.getCommodity(), e.getCommodityLocalised());
     }
 
-    /** Tonnes physiques pour cette clé (égalité insensible à la casse en secours). */
-    public int physicalStockForCanonicalKey(String key) {
-        if (key == null || key.isBlank()) {
+    /** Tonnes physiques pour cette commodité (égalité des instances ou clé de fusion {@link ColonisationCommodityKeys}). */
+    public int physicalStock(ICommodity c) {
+        if (c == null) {
             return 0;
         }
-        if (isFleetStockExcludedDrone(key, "")) {
+        if (isFleetStockExcludedDrone(c)) {
             return 0;
         }
-        Integer v = stocksByCommodity.get(key);
+        Integer v = stocksByCommodity.get(c);
         if (v != null) {
             return v;
         }
-        for (Map.Entry<String, Integer> e : stocksByCommodity.entrySet()) {
-            if (e.getKey() != null && e.getKey().equalsIgnoreCase(key)) {
+        String mk = ColonisationCommodityKeys.mergeKey(c);
+        for (Map.Entry<ICommodity, Integer> e : stocksByCommodity.entrySet()) {
+            if (e.getKey() != null && ColonisationCommodityKeys.mergeKey(e.getKey()).equals(mk)) {
                 return e.getValue() != null ? e.getValue() : 0;
             }
         }
         return 0;
     }
 
-    /** Libellé affichable pour une entrée du stock (localisé si marché connu pour cette clé). */
-    public String displayLabelForStockKey(String stockKey) {
-        if (stockKey == null || stockKey.isBlank() || "__UNKNOWN_COMMODITY__".equalsIgnoreCase(stockKey)) {
+    /** Libellé affichable (journal / CAPI si ordre connu pour la même commodité fusionnée). */
+    public String displayLabel(ICommodity c) {
+        if (c == null) {
             return "?";
         }
-        CarrierTradeOrderEntry tr = marketByCommodity.get(stockKey);
-        if (tr != null) {
-            return firstNonBlank(tr.getCommodityLocalised(), tr.getCommodity(), stockKey);
+        String mk = ColonisationCommodityKeys.mergeKey(c);
+        if (mk.isBlank()) {
+            return "?";
         }
-        return stockKey;
+        for (Map.Entry<ICommodity, CarrierTradeOrderEntry> e : marketByCommodity.entrySet()) {
+            if (e.getKey() != null && ColonisationCommodityKeys.mergeKey(e.getKey()).equals(mk)) {
+                CarrierTradeOrderEntry tr = e.getValue();
+                if (tr != null) {
+                    return firstNonBlank(tr.getCommodityLocalised(), tr.getCommodity(), titleOrCargo(c));
+                }
+            }
+        }
+        return titleOrCargo(c);
+    }
+
+    private static String titleOrCargo(ICommodity c) {
+        String t = c.getTitleName();
+        if (t != null && !t.isBlank()) {
+            return t;
+        }
+        if (c.getVisibleName() != null) {
+            return c.getVisibleName();
+        }
+        return c.getCargoJsonName();
     }
 
     /** Somme des tonnes en stock sur le carrier (cartographie CAPI / journal), hors drones / limpets. */
     public int sumPhysicalStocksTons() {
         int s = 0;
-        for (Map.Entry<String, Integer> e : stocksByCommodity.entrySet()) {
+        for (Map.Entry<ICommodity, Integer> e : stocksByCommodity.entrySet()) {
             if (e.getValue() == null || e.getValue() <= 0) {
                 continue;
             }
-            if (isFleetStockExcludedDrone(e.getKey(), "")) {
+            if (isFleetStockExcludedDrone(e.getKey())) {
                 continue;
             }
             s += e.getValue();

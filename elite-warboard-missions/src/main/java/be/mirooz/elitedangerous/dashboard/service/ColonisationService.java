@@ -16,8 +16,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
 /**
  * Point d’entrée applicatif pour la colonisation (dock, chantiers) : délègue au {@link ColonisationRegistry}.
  * Les handlers journal doivent passer par ce service, pas par le registre directement.
@@ -174,40 +172,10 @@ public class ColonisationService {
     }
 
     private static String commodityNameForNearbyBuy(ConstructionResource r) {
-        String raw = null;
-        if (r.getName() != null && !r.getName().isBlank()) {
-            raw = r.getName().trim();
-        } else if (r.getNameLocalised() != null && !r.getNameLocalised().isBlank()) {
-            raw = r.getNameLocalised().trim();
-        }
-        return normalizeJournalCommodityIdForNearbyBuy(raw);
-    }
-
-    /**
-     * Ex. journal {@code $aluminium_name;} → {@code aluminium} (partie entre {@code $} et {@code _name}, sans {@code ;}).
-     * Sinon : avant le premier espace si libellé libre.
-     */
-    static String normalizeJournalCommodityIdForNearbyBuy(String raw) {
-        if (raw == null || raw.isBlank()) {
+        if (r == null || r.getCommodity() == null) {
             return "";
         }
-        String s = raw.trim();
-        if (s.startsWith("$")) {
-            s = s.substring(1);
-        }
-        if (s.endsWith(";")) {
-            s = s.substring(0, s.length() - 1).trim();
-        }
-        int nameIdx = s.indexOf("_name");
-        if (nameIdx >= 0) {
-            s = s.substring(0, nameIdx);
-        } else {
-            int sp = s.indexOf(' ');
-            if (sp > 0) {
-                s = s.substring(0, sp);
-            }
-        }
-        return s.toLowerCase(Locale.ROOT);
+        return r.getCommodity().getCargoJsonName();
     }
 
     public void clear() {

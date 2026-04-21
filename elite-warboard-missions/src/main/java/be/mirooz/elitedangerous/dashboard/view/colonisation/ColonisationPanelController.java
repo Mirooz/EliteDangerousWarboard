@@ -4,6 +4,8 @@ import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseBackendApiFacade;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseColonisedSystemRef;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSearchResult;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseSystemCounts;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.CarrierCommodityResolver;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommodityKeys;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.backend.generated.model.MatchedCommodityNearbyExport;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
@@ -1686,7 +1688,7 @@ public class ColonisationPanelController implements Initializable {
     private void fillResourceRatioRow(GridPane grid, int row, ConstructionResource r, int wProv, int wReq) {
         Label dot = new Label("•");
         dot.getStyleClass().add("colonisation-detail-res-bullet");
-        String n = firstNonBlank(r.getNameLocalised(), r.getName(), "?");
+        String n = r.displayLabel();
         Label name = new Label(n);
         name.getStyleClass().add("colonisation-detail-res-name");
         name.setMaxWidth(Double.MAX_VALUE);
@@ -2401,7 +2403,7 @@ public class ColonisationPanelController implements Initializable {
     }
 
     private List<FleetMarketRow> buildFleetMarketRows(CarrierStatus cs) {
-        Map<String, Integer> stocks = cs.getStocksByCommodity();
+        Map<ICommodity, Integer> stocks = cs.getStocksByCommodity();
         Map<String, FleetMarketRow> acc = new LinkedHashMap<>();
 
         for (CarrierTradeOrderEntry e : cs.getActiveTransactions()) {
@@ -2411,42 +2413,47 @@ public class ColonisationPanelController implements Initializable {
             if (CarrierStatus.isFleetStockExcludedDrone(e.getCommodity(), e.getCommodityLocalised())) {
                 continue;
             }
-            String nk = cs.canonicalCommodityKey(e);
-            if (nk.isBlank() || "__UNKNOWN_COMMODITY__".equalsIgnoreCase(nk)) {
+            ICommodity nk = cs.canonicalCommodity(e);
+            if (nk == null || ColonisationCommodityKeys.mergeKey(nk).isBlank()) {
                 continue;
             }
-            int stockVal = Math.max(e.getStock(), cs.physicalStockForCanonicalKey(nk));
+            int stockVal = Math.max(e.getStock(), cs.physicalStock(nk));
             if (stockVal <= 0 && e.getPurchaseOrder() == 0 && e.getSaleOrder() == 0) {
                 continue;
             }
-            String display = firstNonBlank(e.getCommodityLocalised(), e.getCommodity(), nk);
+            String display = firstNonBlank(e.getCommodityLocalised(), e.getCommodity(), nk.getTitleName());
             /*
              * Journal CarrierTradeOrder : Price est le prix à la tonne pour l’ordre actif.
              * Pour un ordre d’achat (PurchaseOrder > 0), c’est ce que le carrier propose d’offrir par tonne ;
              * pour un ordre de vente seul, ce serait le prix de vente — on ne le mélange pas dans cette colonne.
              */
             long carrierPurchaseBidPerTonCr = e.getPurchaseOrder() > 0 ? e.getPrice() : 0L;
-            acc.put(nk, new FleetMarketRow(nk, display, stockVal, e.getPurchaseOrder(), e.getSaleOrder(), carrierPurchaseBidPerTonCr));
+            String rowKey = ColonisationCommodityKeys.mergeKey(nk);
+            acc.put(rowKey, new FleetMarketRow(nk, display, stockVal, e.getPurchaseOrder(), e.getSaleOrder(), carrierPurchaseBidPerTonCr));
         }
 
         if (stocks != null) {
-            for (Map.Entry<String, Integer> en : stocks.entrySet()) {
+            for (Map.Entry<ICommodity, Integer> en : stocks.entrySet()) {
                 int st = en.getValue() == null ? 0 : en.getValue();
                 if (st <= 0) {
                     continue;
                 }
-                String nk = en.getKey() != null ? en.getKey().trim().toLowerCase(Locale.ROOT) : "";
-                if (nk.isBlank()) {
+                ICommodity comm = en.getKey();
+                if (comm == null) {
                     continue;
                 }
-                if (CarrierStatus.isFleetStockExcludedDrone(nk, "")) {
+                if (CarrierStatus.isFleetStockExcludedDrone(comm)) {
+                    continue;
+                }
+                String nk = ColonisationCommodityKeys.mergeKey(comm);
+                if (nk.isBlank()) {
                     continue;
                 }
                 if (acc.containsKey(nk)) {
                     FleetMarketRow old = acc.get(nk);
                     acc.put(nk, old.withStock(Math.max(old.getStock(), st)));
                 } else {
-                    acc.put(nk, new FleetMarketRow(nk, cs.displayLabelForStockKey(nk), st, 0, 0, 0L));
+                    acc.put(nk, new FleetMarketRow(comm, cs.displayLabel(comm), st, 0, 0, 0L));
                 }
             }
         }
@@ -2472,7 +2479,8 @@ public class ColonisationPanelController implements Initializable {
                 byCommodity.put(k, existing.withMissing(missing));
             } else {
                 String display = missingDisplayByCommodity.getOrDefault(k, k);
-                byCommodity.put(k, new FleetMarketRow(k, display, 0, 0, 0, 0L, missing));
+                ICommodity onlyMissing = CarrierCommodityResolver.resolve(k, display);
+                byCommodity.put(k, new FleetMarketRow(onlyMissing, display, 0, 0, 0, 0L, missing));
             }
         }
         // Missing net = manque chantier - stock présent sur le fleet (jamais < 0)
@@ -2493,7 +2501,10 @@ public class ColonisationPanelController implements Initializable {
             if (missing <= 0) {
                 continue;
             }
-            String key = normalizeCommodityKey(firstNonBlank(r.getName(), r.getNameLocalised()));
+            if (r.getCommodity() == null) {
+                continue;
+            }
+            String key = ColonisationCommodityKeys.mergeKey(r.getCommodity());
             if (!key.isBlank()) {
                 out.merge(key, missing, Integer::sum);
             }
@@ -2508,31 +2519,20 @@ public class ColonisationPanelController implements Initializable {
             return out;
         }
         for (ConstructionResource r : c.getResourcesRequired()) {
-            String key = normalizeCommodityKey(firstNonBlank(r.getName(), r.getNameLocalised()));
+            if (r.getCommodity() == null) {
+                continue;
+            }
+            String key = ColonisationCommodityKeys.mergeKey(r.getCommodity());
             if (key.isBlank()) {
                 continue;
             }
-            out.putIfAbsent(key, firstNonBlank(r.getNameLocalised(), r.getName(), key));
+            out.putIfAbsent(key, firstNonBlank(r.displayLabel(), key));
         }
         return out;
     }
 
     private static String normalizeCommodityKey(String raw) {
-        if (raw == null) {
-            return "";
-        }
-        String s = raw.trim().toLowerCase(Locale.ROOT);
-        if (s.startsWith("$")) {
-            s = s.substring(1);
-        }
-        if (s.endsWith(";")) {
-            s = s.substring(0, s.length() - 1);
-        }
-        int nameIdx = s.indexOf("_name");
-        if (nameIdx > 0) {
-            s = s.substring(0, nameIdx);
-        }
-        return s.replace(" ", "").replace("_", "");
+        return ColonisationCommodityKeys.normalizeMergeKey(raw);
     }
 
     private Label fleetInlineLabel(String messageKey) {
@@ -2669,7 +2669,7 @@ public class ColonisationPanelController implements Initializable {
     }
 
     public static final class FleetMarketRow {
-        private final String commodityKey;
+        private final ICommodity commodity;
         private final String displayName;
         private final int stock;
         private final int purchaseOrder;
@@ -2678,13 +2678,15 @@ public class ColonisationPanelController implements Initializable {
         private final long price;
         private final int missing;
 
-        public FleetMarketRow(String commodityKey, String displayName, int stock, int purchaseOrder, int saleOrder, long price) {
-            this(commodityKey, displayName, stock, purchaseOrder, saleOrder, price, 0);
+        public FleetMarketRow(ICommodity commodity, String displayName, int stock, int purchaseOrder, int saleOrder, long price) {
+            this(commodity, displayName, stock, purchaseOrder, saleOrder, price, 0);
         }
 
-        public FleetMarketRow(String commodityKey, String displayName, int stock, int purchaseOrder, int saleOrder, long price, int missing) {
-            this.commodityKey = commodityKey != null ? commodityKey : "";
-            this.displayName = displayName != null && !displayName.isBlank() ? displayName : commodityKey;
+        public FleetMarketRow(ICommodity commodity, String displayName, int stock, int purchaseOrder, int saleOrder, long price, int missing) {
+            this.commodity = commodity;
+            String fallback =
+                    commodity != null && commodity.getCargoJsonName() != null ? commodity.getCargoJsonName() : "";
+            this.displayName = displayName != null && !displayName.isBlank() ? displayName : fallback;
             this.stock = stock;
             this.purchaseOrder = purchaseOrder;
             this.saleOrder = saleOrder;
@@ -2693,15 +2695,20 @@ public class ColonisationPanelController implements Initializable {
         }
 
         public FleetMarketRow withStock(int newStock) {
-            return new FleetMarketRow(commodityKey, displayName, newStock, purchaseOrder, saleOrder, price, missing);
+            return new FleetMarketRow(commodity, displayName, newStock, purchaseOrder, saleOrder, price, missing);
         }
 
         public FleetMarketRow withMissing(int newMissing) {
-            return new FleetMarketRow(commodityKey, displayName, stock, purchaseOrder, saleOrder, price, newMissing);
+            return new FleetMarketRow(commodity, displayName, stock, purchaseOrder, saleOrder, price, newMissing);
         }
 
+        public ICommodity getCommodity() {
+            return commodity;
+        }
+
+        /** Clé de fusion avec les ressources chantier (même logique qu’avant, dérivée du {@link ICommodity}). */
         public String getCommodityKey() {
-            return normalizeCommodityKey(commodityKey);
+            return ColonisationCommodityKeys.mergeKey(commodity);
         }
 
         public String getDisplayName() {

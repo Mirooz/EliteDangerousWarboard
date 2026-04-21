@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Commodité issue du fichier {@code commodities/ardent-inara-registry.json}.
+ * Commodité issue du fichier {@code commodities/ardent-inara-registry.json}, chargé par {@link CommodityLoader}.
  * Les minéraux et limpets connus en enum restent prioritaires dans {@link ICommodityFactory}.
  */
 public final class RegistryCommodity implements ICommodity {
