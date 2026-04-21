@@ -79,9 +79,16 @@ public class CargoHandler implements JournalEventHandler {
         Function<String, String> getText = field -> itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asText() : null;
         Function<String, Integer> getInt = field -> itemNode.has(field) && !itemNode.get(field).isNull() ? itemNode.get(field).asInt() : null;
 
-        // Champs
-        item.setName(getText.apply("Name"));
-        item.setNameLocalised(getText.apply("Name_Localised"));
+        String nm = getText.apply("Name");
+        if (nm == null || nm.isBlank()) {
+            nm = getText.apply("name");
+        }
+        item.setName(nm);
+        String loc = getText.apply("Name_Localised");
+        if (loc == null || loc.isBlank()) {
+            loc = getText.apply("name_localised");
+        }
+        item.setNameLocalised(loc);
         if (getInt.apply("Count") != null) item.setCount(getInt.apply("Count"));
         if (getInt.apply("Stolen") != null) item.setStolen(getInt.apply("Stolen"));
 

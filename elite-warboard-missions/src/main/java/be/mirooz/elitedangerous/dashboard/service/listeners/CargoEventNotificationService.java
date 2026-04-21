@@ -78,17 +78,31 @@ public class CargoEventNotificationService {
             }
             commanderStatus.getShip().setJsonShipCargo(new CommanderShip.ShipCargo());
 
-            // Mapper chaque item de l'inventaire
+            // Mapper chaque item de l'inventaire (champ Name du Cargo.json = identifiant jeu, aligné sur le registre)
             if (cargoData.getInventory() != null) {
                 for (Cargo.Inventory item : cargoData.getInventory()) {
-                    if (item.getName() != null && item.getCount() != null && item.getCount() > 0) {
-                        // Créer la commodité à partir du nom cargo JSON
-                        ICommodityFactory.ofByCargoJson(item.getName())
-                                .ifPresent(commodity -> {
-                                    commanderStatus.getShip().getJsonShipCargo().addCommodity(commodity, item.getCount());
-                                    System.out.printf("📦 Cargo mappé: %s x%d%n", commodity.getVisibleName(), item.getCount());
-                                });
+                    if (item.getCount() == null || item.getCount() <= 0) {
+                        continue;
                     }
+                    String rawName = item.getName();
+                    if (rawName == null || rawName.isBlank()) {
+                        System.out.printf(
+                                "⚠️ Cargo.json: ligne inventaire sans Name (localised=%s) x%d — ignorée%n",
+                                item.getNameLocalised() != null ? item.getNameLocalised() : "?",
+                                item.getCount());
+                        continue;
+                    }
+                    ICommodityFactory.ofByCargoJson(rawName)
+                            .ifPresentOrElse(
+                                    commodity -> {
+                                        commanderStatus.getShip().getJsonShipCargo().addCommodity(commodity, item.getNameLocalised(), item.getCount());
+                                        System.out.printf("📦 Cargo mappé: %s x%d%n", commodity.getVisibleName(), item.getCount());
+                                    },
+                                    () -> System.out.printf(
+                                            "⚠️ Cargo.json: commodité non reconnue Name=%s (localised=%s) x%d — absente du registre / enums%n",
+                                            rawName,
+                                            item.getNameLocalised() != null ? item.getNameLocalised() : "?",
+                                            item.getCount()));
                 }
             }
             // Mapper le count total

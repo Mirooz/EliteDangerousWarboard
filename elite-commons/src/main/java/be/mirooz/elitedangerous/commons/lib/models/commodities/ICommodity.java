@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities;
 
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
+import java.util.Optional;
 
 import static be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType.LOW_TEMPERATURE_DIAMONDS;
 
@@ -11,13 +11,20 @@ public interface ICommodity {
     String getInaraId();
 
     String getInaraName();
-
+    default String getLocalisedName() {
+        return null;
+    }
+    default void setLocalisedName(String localisedName) {
+    }
     default String getVisibleName() {
         if (this.equals(LOW_TEMPERATURE_DIAMONDS)) {
             return "LTD";
         }
+        if (getLocalisedName() != null){
+            return getLocalisedName();
+        }
         if (getInaraName() != null)
-            return getInaraName().toUpperCase();
+            return getInaraName();
         return null;
     }
 
@@ -60,6 +67,12 @@ public interface ICommodity {
      */
     CommodityType getCommodityType();
 
+    /**
+     * Catégorie Inara lorsque la commodité provient du registre Ardent/Inara ; vide pour les enums (minéraux, limpets).
+     */
+    default Optional<CommodityCategory> getInaraCommodityCategory() {
+        return Optional.empty();
+    }
 
     /**
      * Enum représentant les types de commodités disponibles

@@ -9,7 +9,7 @@ import java.util.Optional;
  * Design pattern Factory pour gérer les différents types de commodités :
  * - Core minerals (minéraux de core mining)
  * - Limpets (drones)
- * - Autres commodités (à venir)
+ * - Registre Ardent/Inara ({@link CommodityLoader})
  */
 public class ICommodityFactory {
 
@@ -17,21 +17,35 @@ public class ICommodityFactory {
 
     /**
      * Crée une commodité à partir de son nom cargo JSON
-     * 
-     * @param cargoJsonName Le nom cargo JSON (ex: "benitoite", "drones")
+     * <p>
+     * Accepte les variantes usuelles du journal / {@code Cargo.json} : trim, casse,
+     * puis une seconde passe « clé alphanumérique » (sans espaces, tirets, underscores)
+     * pour coller aux {@code cargoJsonName} du registre (ex. {@code meta-alloys} → {@code metaalloys}).
+     *
+     * @param cargoJsonName Le nom cargo JSON (ex: "benitoite", "drones", "Gold")
      * @return Optional contenant la commodité ou vide si non trouvée
      */
     public static Optional<ICommodity> ofByCargoJson(String cargoJsonName) {
         if (cargoJsonName == null || cargoJsonName.isBlank()) {
             return Optional.empty();
         }
-        
-        String key = cargoJsonName.toLowerCase().trim();
 
-        // Recherche dans tous les types de commodités
-        return searchInCoreMinerals(key)
-                .or(() -> searchInLimpets(key))
-                .or(Optional::empty);
+        String key = cargoJsonName.trim().toLowerCase();
+        Optional<ICommodity> direct =
+                searchInCoreMinerals(key)
+                        .or(() -> searchInLimpets(key))
+                        .or(() -> CommodityLoader.findByCargoJsonName(key));
+        if (direct.isPresent()) {
+            return direct;
+        }
+
+        String compact = key.replaceAll("[^a-z0-9]", "");
+        if (compact.isEmpty() || compact.equals(key)) {
+            return Optional.empty();
+        }
+        return searchInCoreMinerals(compact)
+                .or(() -> searchInLimpets(compact))
+                .or(() -> CommodityLoader.findByCargoJsonName(compact));
     }
 
     /**
@@ -64,7 +78,7 @@ public class ICommodityFactory {
         // Recherche dans tous les types de commodités par ID Inara
         return searchInCoreMineralsByInaraId(inaraId)
                 .or(() -> searchInLimpetsByInaraId(inaraId))
-                .or(Optional::empty);
+                .or(() -> CommodityLoader.findByInaraId(inaraId));
     }
 
     /**

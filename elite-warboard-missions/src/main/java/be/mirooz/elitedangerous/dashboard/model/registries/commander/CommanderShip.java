@@ -17,11 +17,11 @@ public class CommanderShip {
     private double maxRange;
 
     public void addCommodity(ICommodity commodity, int number) {
-        this.getShipCargo().addCommodity(commodity, number);
+        this.getShipCargo().addCommodity(commodity,null, number);
     }
 
     public void addCommodity(ICommodity commodity) {
-        this.getShipCargo().addCommodity(commodity, 1);
+        this.getShipCargo().addCommodity(commodity,null, 1);
     }
 
     public void removeCommodity(ICommodity commodity) {
@@ -54,11 +54,11 @@ public class CommanderShip {
     public static class ShipCargo {
         private int currentUsed;
         private final Map<ICommodity, Integer> commodities = new HashMap<>();
-
         public ShipCargo(){
         }
-        public void addCommodity(ICommodity c, int x) {
+        public void addCommodity(ICommodity c, String nameLocalised, int x) {
             currentUsed+=x;
+            c.setLocalisedName(nameLocalised);
             commodities.merge(c, x, Integer::sum);
         }
         private void removeCommodity(ICommodity c, int x) {

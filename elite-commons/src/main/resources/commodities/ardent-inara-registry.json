@@ -1,0 +1,2816 @@
+[
+  {
+    "cargoJsonName": "advancedcatalysers",
+    "inaraId": "61",
+    "inaraName": "Advanced Catalysers",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "advancedmedicines",
+    "inaraId": "166",
+    "inaraName": "Advanced Medicines",
+    "inaraCategory": "MEDICINES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "advert1",
+    "inaraId": null,
+    "inaraName": "Advert1",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "aerialedenapple",
+    "inaraId": null,
+    "inaraName": "Aerialedenapple",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "aganipperush",
+    "inaraId": null,
+    "inaraName": "Aganipperush",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "agriculturalmedicines",
+    "inaraId": "1",
+    "inaraName": "Agri-Medicines",
+    "inaraCategory": "MEDICINES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "agronomictreatment",
+    "inaraId": "10268",
+    "inaraName": "Agronomic Treatment",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "airelics",
+    "inaraId": "89",
+    "inaraName": "AI Relics",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "alacarakmoskinart",
+    "inaraId": null,
+    "inaraName": "Alacarakmoskinart",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "albinoquechuamammoth",
+    "inaraId": null,
+    "inaraName": "Albinoquechuamammoth",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "alexandrite",
+    "inaraId": "10249",
+    "inaraName": "Alexandrite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "algae",
+    "inaraId": "15",
+    "inaraName": "Algae",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "alieneggs",
+    "inaraId": null,
+    "inaraName": "Alieneggs",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "altairianskin",
+    "inaraId": null,
+    "inaraName": "Altairianskin",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "aluminium",
+    "inaraId": "37",
+    "inaraName": "Aluminium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "alyabodilysoap",
+    "inaraId": null,
+    "inaraName": "Alyabodilysoap",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancientcasket",
+    "inaraId": "10153",
+    "inaraName": "Guardian Casket",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancientkey",
+    "inaraId": "10240",
+    "inaraName": "Ancient Key",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancientorb",
+    "inaraId": "10154",
+    "inaraName": "Guardian Orb",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancientrelic",
+    "inaraId": "10155",
+    "inaraName": "Guardian Relic",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancientrelictg",
+    "inaraId": "10437",
+    "inaraName": "Unclassified Relic",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancienttablet",
+    "inaraId": "10156",
+    "inaraName": "Guardian Tablet",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancienttotem",
+    "inaraId": "10157",
+    "inaraName": "Guardian Totem",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ancienturn",
+    "inaraId": "10158",
+    "inaraName": "Guardian Urn",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "anduligafireworks",
+    "inaraId": null,
+    "inaraName": "Anduligafireworks",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "animaleffigies",
+    "inaraId": null,
+    "inaraName": "Animaleffigies",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "animalmeat",
+    "inaraId": "16",
+    "inaraName": "Animal Meat",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "animalmonitors",
+    "inaraId": "62",
+    "inaraName": "Animal Monitors",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "antimattercontainmentunit",
+    "inaraId": "10167",
+    "inaraName": "Antimatter Containment Unit",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "antiquejewellery",
+    "inaraId": "10209",
+    "inaraName": "Antique Jewellery",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "antiquities",
+    "inaraId": "91",
+    "inaraName": "Antiquities",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "anynacoffee",
+    "inaraId": null,
+    "inaraName": "Anynacoffee",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "apavietii",
+    "inaraId": null,
+    "inaraName": "Apavietii",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "aquaponicsystems",
+    "inaraId": "63",
+    "inaraName": "Aquaponic Systems",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "aroucaconventualsweets",
+    "inaraId": null,
+    "inaraName": "Aroucaconventualsweets",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "articulationmotors",
+    "inaraId": "182",
+    "inaraName": "Articulation Motors",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "assaultplans",
+    "inaraId": "169",
+    "inaraName": "Assault Plans",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "atmosphericextractors",
+    "inaraId": "87",
+    "inaraName": "Atmospheric Processors",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "autofabricators",
+    "inaraId": "65",
+    "inaraName": "Auto-Fabricators",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "azcancriformula42",
+    "inaraId": null,
+    "inaraName": "Azcancriformula42",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bakedgreebles",
+    "inaraId": null,
+    "inaraName": "Bakedgreebles",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "baltahsinevacuumkrill",
+    "inaraId": null,
+    "inaraName": "Baltahsinevacuumkrill",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bankiamphibiousleather",
+    "inaraId": null,
+    "inaraName": "Bankiamphibiousleather",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "basicmedicines",
+    "inaraId": "33",
+    "inaraName": "Basic Medicines",
+    "inaraCategory": "MEDICINES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "basicnarcotics",
+    "inaraId": "12",
+    "inaraName": "Narcotics",
+    "inaraCategory": "LEGAL_DRUGS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bastsnakegin",
+    "inaraId": null,
+    "inaraName": "Bastsnakegin",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "battleweapons",
+    "inaraId": "88",
+    "inaraName": "Battle Weapons",
+    "inaraCategory": "WEAPONS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bauxite",
+    "inaraId": "51",
+    "inaraName": "Bauxite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "beer",
+    "inaraId": "10",
+    "inaraName": "Beer",
+    "inaraCategory": "LEGAL_DRUGS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "belalansrayleather",
+    "inaraId": null,
+    "inaraName": "Belalansrayleather",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "benitoite",
+    "inaraId": "10247",
+    "inaraName": "Benitoite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bertrandite",
+    "inaraId": "52",
+    "inaraName": "Bertrandite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "beryllium",
+    "inaraId": "38",
+    "inaraName": "Beryllium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bioreducinglichen",
+    "inaraId": "66",
+    "inaraName": "Bioreducing Lichen",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "biowaste",
+    "inaraId": "76",
+    "inaraName": "Biowaste",
+    "inaraCategory": "WASTE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bismuth",
+    "inaraId": "106",
+    "inaraName": "Bismuth",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bluemilk",
+    "inaraId": null,
+    "inaraName": "Bluemilk",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bootlegliquor",
+    "inaraId": "95",
+    "inaraName": "Bootleg Liquor",
+    "inaraCategory": "LEGAL_DRUGS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "borasetanipathogenetics",
+    "inaraId": null,
+    "inaraName": "Borasetanipathogenetics",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "bromellite",
+    "inaraId": "148",
+    "inaraName": "Bromellite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "buckyballbeermats",
+    "inaraId": null,
+    "inaraName": "Buckyballbeermats",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "buildingfabricators",
+    "inaraId": "102",
+    "inaraName": "Building Fabricators",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "burnhambiledistillate",
+    "inaraId": null,
+    "inaraName": "Burnhambiledistillate",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cd-75kittenbrandcoffee",
+    "inaraId": null,
+    "inaraName": "Cd-75kittenbrandcoffee",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cd75catcoffee",
+    "inaraId": null,
+    "inaraName": "Cd75catcoffee",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "centaurimegagin",
+    "inaraId": null,
+    "inaraName": "Centaurimegagin",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ceramiccomposites",
+    "inaraId": "100",
+    "inaraName": "Ceramic Composites",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ceremonialheiketea",
+    "inaraId": null,
+    "inaraName": "Ceremonialheiketea",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cetiaepyornisegg",
+    "inaraId": null,
+    "inaraName": "Cetiaepyornisegg",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cetirabbits",
+    "inaraId": null,
+    "inaraName": "Cetirabbits",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "chameleoncloth",
+    "inaraId": null,
+    "inaraName": "Chameleoncloth",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "chateaudeaegaeon",
+    "inaraId": null,
+    "inaraName": "Chateaudeaegaeon",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "chemicalwaste",
+    "inaraId": "32",
+    "inaraName": "Chemical Waste",
+    "inaraCategory": "WASTE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cherbonesbloodcrystals",
+    "inaraId": null,
+    "inaraName": "Cherbonesbloodcrystals",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "chieridanimarinepaste",
+    "inaraId": null,
+    "inaraName": "Chieridanimarinepaste",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "classifiedexperimentalequipment",
+    "inaraId": "123",
+    "inaraName": "Experimental Chemicals",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "clothing",
+    "inaraId": "7",
+    "inaraName": "Clothing",
+    "inaraCategory": "CONSUMER_ITEMS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cmmcomposite",
+    "inaraId": "140",
+    "inaraName": "CMM Composite",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cobalt",
+    "inaraId": "39",
+    "inaraName": "Cobalt",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "coffee",
+    "inaraId": "17",
+    "inaraName": "Coffee",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "coltan",
+    "inaraId": "55",
+    "inaraName": "Coltan",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "combatstabilisers",
+    "inaraId": "34",
+    "inaraName": "Combat Stabilisers",
+    "inaraCategory": "MEDICINES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "comercialsamples",
+    "inaraId": "170",
+    "inaraName": "Commercial Samples",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "computercomponents",
+    "inaraId": "67",
+    "inaraName": "Computer Components",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "conductivefabrics",
+    "inaraId": "165",
+    "inaraName": "Conductive Fabrics",
+    "inaraCategory": "TEXTILES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "consumertechnology",
+    "inaraId": "8",
+    "inaraName": "Consumer Technology",
+    "inaraCategory": "CONSUMER_ITEMS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "coolinghoses",
+    "inaraId": "185",
+    "inaraName": "Micro-weave Cooling Hoses",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "copper",
+    "inaraId": "40",
+    "inaraName": "Copper",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "coquimspongiformvictuals",
+    "inaraId": null,
+    "inaraName": "Coquimspongiformvictuals",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "coralsap",
+    "inaraId": "10451",
+    "inaraName": "Coral Sap",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cropharvesters",
+    "inaraId": "29",
+    "inaraName": "Crop Harvesters",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "cryolite",
+    "inaraId": "110",
+    "inaraName": "Cryolite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "crystallinespheres",
+    "inaraId": null,
+    "inaraName": "Crystallinespheres",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "damagedescapepod",
+    "inaraId": "10215",
+    "inaraName": "Damaged Escape Pod",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "damnacarapaces",
+    "inaraId": null,
+    "inaraName": "Damnacarapaces",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "datacore",
+    "inaraId": "10166",
+    "inaraName": "Data Core",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "deltaphoenicispalms",
+    "inaraId": null,
+    "inaraName": "Deltaphoenicispalms",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "deuringastruffles",
+    "inaraId": null,
+    "inaraName": "Deuringastruffles",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "diagnosticsensor",
+    "inaraId": "155",
+    "inaraName": "Hardware Diagnostic Sensor",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "diplomaticbag",
+    "inaraId": "171",
+    "inaraName": "Diplomatic Bag",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "disomacorn",
+    "inaraId": null,
+    "inaraName": "Disomacorn",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "domesticappliances",
+    "inaraId": "9",
+    "inaraName": "Domestic Appliances",
+    "inaraCategory": "CONSUMER_ITEMS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "duradrives",
+    "inaraId": null,
+    "inaraName": "Duradrives",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "earthrelics",
+    "inaraId": "10210",
+    "inaraName": "Earth Relics",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "edenapplesofaerial",
+    "inaraId": null,
+    "inaraName": "Edenapplesofaerial",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "eleuthermals",
+    "inaraId": null,
+    "inaraName": "Eleuthermals",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "emergencypowercells",
+    "inaraId": "158",
+    "inaraName": "Emergency Power Cells",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "encripteddatastorage",
+    "inaraId": "173",
+    "inaraName": "Encrypted Data Storage",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "encryptedcorrespondence",
+    "inaraId": "172",
+    "inaraName": "Encrypted Correspondence",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "eraninpearlwhisky",
+    "inaraId": null,
+    "inaraName": "Eraninpearlwhisky",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "eshuumbrellas",
+    "inaraId": null,
+    "inaraName": "Eshuumbrellas",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "esusekucaviar",
+    "inaraId": null,
+    "inaraName": "Esusekucaviar",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ethgrezeteabuds",
+    "inaraId": null,
+    "inaraName": "Ethgrezeteabuds",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "evacuationshelter",
+    "inaraId": "99",
+    "inaraName": "Evacuation Shelter",
+    "inaraCategory": "CONSUMER_ITEMS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "exhaustmanifold",
+    "inaraId": "159",
+    "inaraName": "Exhaust Manifold",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "explosives",
+    "inaraId": "3",
+    "inaraName": "Explosives",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "fish",
+    "inaraId": "18",
+    "inaraName": "Fish",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "foodcartridges",
+    "inaraId": "19",
+    "inaraName": "Food Cartridges",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "fossilremnants",
+    "inaraId": "10221",
+    "inaraName": "Fossil Remnants",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "fruitandvegetables",
+    "inaraId": "20",
+    "inaraName": "Fruit and Vegetables",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "fujintea",
+    "inaraId": null,
+    "inaraName": "Fujintea",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "galactictravelguide",
+    "inaraId": null,
+    "inaraName": "Galactictravelguide",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "gallite",
+    "inaraId": "56",
+    "inaraName": "Gallite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "gallium",
+    "inaraId": "41",
+    "inaraName": "Gallium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "geawendancedust",
+    "inaraId": null,
+    "inaraName": "Geawendancedust",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "genebank",
+    "inaraId": "10211",
+    "inaraName": "Gene Bank",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "geologicalequipment",
+    "inaraId": "103",
+    "inaraName": "Geological Equipment",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "geologicalsamples",
+    "inaraId": "174",
+    "inaraName": "Geological Samples",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "gerasiangueuzebeer",
+    "inaraId": null,
+    "inaraName": "Gerasiangueuzebeer",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "giantirukamasnails",
+    "inaraId": null,
+    "inaraName": "Giantirukamasnails",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "giantverrix",
+    "inaraId": null,
+    "inaraName": "Giantverrix",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "gilyasignatureweapons",
+    "inaraId": null,
+    "inaraName": "Gilyasignatureweapons",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "gold",
+    "inaraId": "42",
+    "inaraName": "Gold",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "gomanyauponcoffee",
+    "inaraId": null,
+    "inaraName": "Gomanyauponcoffee",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "goslarite",
+    "inaraId": "111",
+    "inaraName": "Goslarite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "grain",
+    "inaraId": "21",
+    "inaraName": "Grain",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "grandidierite",
+    "inaraId": "10248",
+    "inaraName": "Grandidierite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "haematite",
+    "inaraId": "10486",
+    "inaraName": "Haematite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hafnium178",
+    "inaraId": "124",
+    "inaraName": "Hafnium 178",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "haidneblackbrew",
+    "inaraId": null,
+    "inaraName": "Haidneblackbrew",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "harmasilversearum",
+    "inaraId": null,
+    "inaraName": "Harmasilversearum",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "havasupaidreamcatcher",
+    "inaraId": null,
+    "inaraName": "Havasupaidreamcatcher",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hazardousenvironmentsuits",
+    "inaraId": "68",
+    "inaraName": "H.E. Suits",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "heatsinkinterlink",
+    "inaraId": "151",
+    "inaraName": "Heatsink Interlink",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "heliostaticfurnaces",
+    "inaraId": null,
+    "inaraName": "Heliostaticfurnaces",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "helvetitjpearls",
+    "inaraId": null,
+    "inaraName": "Helvetitjpearls",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hip10175bushmeat",
+    "inaraId": null,
+    "inaraName": "Hip10175bushmeat",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hip118311swarm",
+    "inaraId": null,
+    "inaraName": "Hip118311swarm",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hip41181squid",
+    "inaraId": null,
+    "inaraName": "Hip41181squid",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hiporganophosphates",
+    "inaraId": null,
+    "inaraName": "Hiporganophosphates",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hnshockmount",
+    "inaraId": "150",
+    "inaraName": "HN Shock Mount",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "holvaduellingblades",
+    "inaraId": null,
+    "inaraName": "Holvaduellingblades",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "honestypills",
+    "inaraId": null,
+    "inaraName": "Honestypills",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hostage",
+    "inaraId": "175",
+    "inaraName": "Hostages",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hr7221wheat",
+    "inaraId": null,
+    "inaraName": "Hr7221wheat",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hydrogenfuel",
+    "inaraId": "4",
+    "inaraName": "Hydrogen Fuel",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "hydrogenperoxide",
+    "inaraId": "138",
+    "inaraName": "Hydrogen Peroxide",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "imperialslaves",
+    "inaraId": "49",
+    "inaraName": "Imperial Slaves",
+    "inaraCategory": "SLAVES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "indibourbon",
+    "inaraId": null,
+    "inaraName": "Indibourbon",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "indite",
+    "inaraId": "57",
+    "inaraName": "Indite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "indium",
+    "inaraId": "43",
+    "inaraName": "Indium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "insulatingmembrane",
+    "inaraId": "141",
+    "inaraName": "Insulating Membrane",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "iondistributor",
+    "inaraId": "160",
+    "inaraName": "Ion Distributor",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "jadeite",
+    "inaraId": "168",
+    "inaraName": "Jadeite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "jaquesquinentianstill",
+    "inaraId": null,
+    "inaraName": "Jaquesquinentianstill",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "jaradharrepuzzlebox",
+    "inaraId": null,
+    "inaraName": "Jaradharrepuzzlebox",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "jarouarice",
+    "inaraId": null,
+    "inaraName": "Jarouarice",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "jotunmookah",
+    "inaraId": null,
+    "inaraName": "Jotunmookah",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "kachiriginleaches",
+    "inaraId": null,
+    "inaraName": "Kachiriginleaches",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "kamitracigars",
+    "inaraId": null,
+    "inaraName": "Kamitracigars",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "kamorinhistoricweapons",
+    "inaraId": null,
+    "inaraName": "Kamorinhistoricweapons",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "karetiicouture",
+    "inaraId": null,
+    "inaraName": "Karetiicouture",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "karsukilocusts",
+    "inaraId": null,
+    "inaraName": "Karsukilocusts",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "kinagoinstruments",
+    "inaraId": null,
+    "inaraName": "Kinagoinstruments",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "konggaale",
+    "inaraId": null,
+    "inaraName": "Konggaale",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "korokungpellets",
+    "inaraId": null,
+    "inaraName": "Korokungpellets",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "korrokungpellets",
+    "inaraId": null,
+    "inaraName": "Korrokungpellets",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "landmines",
+    "inaraId": "118",
+    "inaraName": "Landmines",
+    "inaraCategory": "WEAPONS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lanthanum",
+    "inaraId": "107",
+    "inaraName": "Lanthanum",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "largeexplorationdatacash",
+    "inaraId": "125",
+    "inaraName": "Large Survey Data Cache",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lavianbrandy",
+    "inaraId": null,
+    "inaraName": "Lavianbrandy",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "leather",
+    "inaraId": "73",
+    "inaraName": "Leather",
+    "inaraCategory": "TEXTILES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "leestianeviljuice",
+    "inaraId": null,
+    "inaraName": "Leestianeviljuice",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lepidolite",
+    "inaraId": "58",
+    "inaraName": "Lepidolite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lftvoidextractcoffee",
+    "inaraId": null,
+    "inaraName": "Lftvoidextractcoffee",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "liquidoxygen",
+    "inaraId": "137",
+    "inaraName": "Liquid oxygen",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "liquor",
+    "inaraId": "11",
+    "inaraName": "Liquor",
+    "inaraCategory": "LEGAL_DRUGS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lithium",
+    "inaraId": "44",
+    "inaraName": "Lithium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lithiumhydroxide",
+    "inaraId": "147",
+    "inaraName": "Lithium Hydroxide",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "livehecateseaworms",
+    "inaraId": null,
+    "inaraName": "Livehecateseaworms",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lowtemperaturediamond",
+    "inaraId": "144",
+    "inaraName": "Low Temperature Diamonds",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ltthypersweet",
+    "inaraId": null,
+    "inaraName": "Ltthypersweet",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "lyraeweed",
+    "inaraId": null,
+    "inaraName": "Lyraeweed",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "m3_tissuesample_membrane",
+    "inaraId": "10252",
+    "inaraName": "Mollusc Membrane",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "m3_tissuesample_mycelium",
+    "inaraId": "10253",
+    "inaraName": "Mollusc Mycelium",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "m3_tissuesample_spores",
+    "inaraId": "10251",
+    "inaraName": "Mollusc Spores",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "m_tissuesample_fluid",
+    "inaraId": "10255",
+    "inaraName": "Mollusc Fluid",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "m_tissuesample_nerves",
+    "inaraId": "10256",
+    "inaraName": "Mollusc Brain Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "m_tissuesample_soft",
+    "inaraId": "10254",
+    "inaraName": "Mollusc Soft Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "magneticemittercoil",
+    "inaraId": "152",
+    "inaraName": "Magnetic Emitter Coil",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "marinesupplies",
+    "inaraId": "86",
+    "inaraName": "Marine Equipment",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "masterchefs",
+    "inaraId": null,
+    "inaraName": "Masterchefs",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mechucoshightea",
+    "inaraId": null,
+    "inaraName": "Mechucoshightea",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "medbstarlube",
+    "inaraId": null,
+    "inaraName": "Medbstarlube",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "medicaldiagnosticequipment",
+    "inaraId": "154",
+    "inaraName": "Medical Diagnostic Equipment",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "metaalloys",
+    "inaraId": "101",
+    "inaraName": "Meta-Alloys",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "methaneclathrate",
+    "inaraId": "145",
+    "inaraName": "Methane Clathrate",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "methanolmonohydratecrystals",
+    "inaraId": "146",
+    "inaraName": "Methanol Monohydrate Crystals",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "microcontrollers",
+    "inaraId": "156",
+    "inaraName": "Micro Controllers",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "militarygradefabrics",
+    "inaraId": "157",
+    "inaraName": "Military Grade Fabrics",
+    "inaraCategory": "TEXTILES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "militaryintelligence",
+    "inaraId": "126",
+    "inaraName": "Military Intelligence",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mineralextractors",
+    "inaraId": "31",
+    "inaraName": "Mineral Extractors",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mineraloil",
+    "inaraId": "5",
+    "inaraName": "Mineral Oil",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "modularterminals",
+    "inaraId": "181",
+    "inaraName": "Modular Terminals",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "moissanite",
+    "inaraId": "116",
+    "inaraName": "Moissanite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mokojingbeastfeast",
+    "inaraId": null,
+    "inaraName": "Mokojingbeastfeast",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "momusbogspaniel",
+    "inaraId": null,
+    "inaraName": "Momusbogspaniel",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "monazite",
+    "inaraId": "10245",
+    "inaraName": "Monazite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "motronaexperiencejelly",
+    "inaraId": null,
+    "inaraName": "Motronaexperiencejelly",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mukusubiichitinos",
+    "inaraId": null,
+    "inaraName": "Mukusubiichitinos",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mulachigiantfungus",
+    "inaraId": null,
+    "inaraName": "Mulachigiantfungus",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "musgravite",
+    "inaraId": "10246",
+    "inaraName": "Musgravite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mutomimager",
+    "inaraId": "119",
+    "inaraName": "Muon Imager",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "mysteriousidol",
+    "inaraId": "10219",
+    "inaraName": "Mysterious Idol",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "nanobreakers",
+    "inaraId": "167",
+    "inaraName": "Nanobreakers",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "nanomedicines",
+    "inaraId": null,
+    "inaraName": "Nanomedicines",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "naturalfabrics",
+    "inaraId": "74",
+    "inaraName": "Natural Fabrics",
+    "inaraCategory": "TEXTILES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "neofabricinsulation",
+    "inaraId": "183",
+    "inaraName": "Neofabric Insulation",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "neritusberries",
+    "inaraId": null,
+    "inaraName": "Neritusberries",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "nerveagents",
+    "inaraId": "96",
+    "inaraName": "Nerve Agents",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ngadandarifireopals",
+    "inaraId": null,
+    "inaraName": "Ngadandarifireopals",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ngunamodernantiques",
+    "inaraId": null,
+    "inaraName": "Ngunamodernantiques",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "njangarisaddles",
+    "inaraId": null,
+    "inaraName": "Njangarisaddles",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "noneuclidianexotanks",
+    "inaraId": null,
+    "inaraName": "Noneuclidianexotanks",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "nonlethalweapons",
+    "inaraId": "78",
+    "inaraName": "Non-Lethal Weapons",
+    "inaraCategory": "WEAPONS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "occupiedcryopod",
+    "inaraId": "129",
+    "inaraName": "Occupied Escape Pod",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ochoengchillies",
+    "inaraId": null,
+    "inaraName": "Ochoengchillies",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "onionhead",
+    "inaraId": null,
+    "inaraName": "Onionhead",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "onionheada",
+    "inaraId": null,
+    "inaraName": "Onionheada",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "onionheadb",
+    "inaraId": null,
+    "inaraName": "Onionheadb",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "onionheadc",
+    "inaraId": null,
+    "inaraName": "Onionheadc",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "opal",
+    "inaraId": "10250",
+    "inaraName": "Void Opal",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "ophiuchiexinoartefacts",
+    "inaraId": null,
+    "inaraName": "Ophiuchiexinoartefacts",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "orrerianviciousbrew",
+    "inaraId": null,
+    "inaraName": "Orrerianviciousbrew",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "osmium",
+    "inaraId": "72",
+    "inaraName": "Osmium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "p_particulatesample",
+    "inaraId": "10270",
+    "inaraName": "Anomaly Particles",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "painite",
+    "inaraId": "84",
+    "inaraName": "Painite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "palladium",
+    "inaraId": "45",
+    "inaraName": "Palladium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "pantaaprayersticks",
+    "inaraId": null,
+    "inaraName": "Pantaaprayersticks",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "pavoniseargrubs",
+    "inaraId": null,
+    "inaraName": "Pavoniseargrubs",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "performanceenhancers",
+    "inaraId": "35",
+    "inaraName": "Performance Enhancers",
+    "inaraCategory": "MEDICINES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "personaleffects",
+    "inaraId": "10159",
+    "inaraName": "Personal Effects",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "personalgifts",
+    "inaraId": null,
+    "inaraName": "Personalgifts",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "personalweapons",
+    "inaraId": "79",
+    "inaraName": "Personal Weapons",
+    "inaraCategory": "WEAPONS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "pesticides",
+    "inaraId": "6",
+    "inaraName": "Pesticides",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "platinum",
+    "inaraId": "81",
+    "inaraName": "Platinum",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "platinumaloy",
+    "inaraId": null,
+    "inaraName": "Platinumaloy",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "politicalprisoner",
+    "inaraId": "177",
+    "inaraName": "Political Prisoners",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "polymers",
+    "inaraId": "26",
+    "inaraName": "Polymers",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "powerconverter",
+    "inaraId": "153",
+    "inaraName": "Power Converter",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "powergenerators",
+    "inaraId": "83",
+    "inaraName": "Power Generators",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "powergridassembly",
+    "inaraId": "149",
+    "inaraName": "Energy Grid Assembly",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "powertransferconduits",
+    "inaraId": "161",
+    "inaraName": "Power Transfer Bus",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "praseodymium",
+    "inaraId": "143",
+    "inaraName": "Praseodymium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "preciousgems",
+    "inaraId": "10165",
+    "inaraName": "Precious Gems",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "progenitorcells",
+    "inaraId": "36",
+    "inaraName": "Progenitor Cells",
+    "inaraCategory": "MEDICINES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "prohibitedresearchmaterials",
+    "inaraId": "10220",
+    "inaraName": "Prohibited Research Materials",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "pyrophyllite",
+    "inaraId": "112",
+    "inaraName": "Pyrophyllite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "radiationbaffle",
+    "inaraId": "162",
+    "inaraName": "Radiation Baffle",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "rajukrustoves",
+    "inaraId": null,
+    "inaraName": "Rajukrustoves",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "rapabaosnakeskins",
+    "inaraId": null,
+    "inaraName": "Rapabaosnakeskins",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "reactivearmour",
+    "inaraId": "80",
+    "inaraName": "Reactive Armour",
+    "inaraCategory": "WEAPONS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "reinforcedmountingplate",
+    "inaraId": "163",
+    "inaraName": "Reinforced Mounting Plate",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "resonatingseparators",
+    "inaraId": "69",
+    "inaraName": "Resonating Separators",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "rhodplumsite",
+    "inaraId": "10243",
+    "inaraName": "Rhodplumsite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "robotics",
+    "inaraId": "70",
+    "inaraName": "Robotics",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "rockforthfertiliser",
+    "inaraId": "10264",
+    "inaraName": "Rockforth Fertiliser",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "rusanioldsmokey",
+    "inaraId": null,
+    "inaraName": "Rusanioldsmokey",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "rutile",
+    "inaraId": "59",
+    "inaraName": "Rutile",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "s6_tissuesample_cells",
+    "inaraId": "10258",
+    "inaraName": "Pod Surface Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "s6_tissuesample_coenosarc",
+    "inaraId": "10261",
+    "inaraName": "Pod Shell Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "s6_tissuesample_mesoglea",
+    "inaraId": "10262",
+    "inaraName": "Pod Mesoglea",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "s9_tissuesample_shell",
+    "inaraId": "10263",
+    "inaraName": "Pod Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "s_tissuesample_cells",
+    "inaraId": "10259",
+    "inaraName": "Pod Core Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "s_tissuesample_core",
+    "inaraId": "10260",
+    "inaraName": "Pod Outer Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "s_tissuesample_surface",
+    "inaraId": "10257",
+    "inaraName": "Pod Dead Tissue",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "samarium",
+    "inaraId": "142",
+    "inaraName": "Samarium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "sanumadecorativemeat",
+    "inaraId": null,
+    "inaraName": "Sanumadecorativemeat",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "sanumameat",
+    "inaraId": null,
+    "inaraName": "Sanumameat",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "sap8corecontainer",
+    "inaraId": "90",
+    "inaraName": "SAP 8 Core Container",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "saxonwine",
+    "inaraId": null,
+    "inaraName": "Saxonwine",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "scientificresearch",
+    "inaraId": "178",
+    "inaraName": "Scientific Research",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "scientificsamples",
+    "inaraId": "179",
+    "inaraName": "Scientific Samples",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "scrap",
+    "inaraId": "77",
+    "inaraName": "Scrap",
+    "inaraCategory": "WASTE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "semiconductors",
+    "inaraId": "28",
+    "inaraName": "Semiconductors",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "serendibite",
+    "inaraId": "10244",
+    "inaraName": "Serendibite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "shanscharisorchid",
+    "inaraId": null,
+    "inaraName": "Shanscharisorchid",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "silver",
+    "inaraId": "46",
+    "inaraName": "Silver",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "skimercomponents",
+    "inaraId": "104",
+    "inaraName": "Skimmer Components",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "slaves",
+    "inaraId": "53",
+    "inaraName": "Slaves",
+    "inaraCategory": "SLAVES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "smallexplorationdatacash",
+    "inaraId": "10208",
+    "inaraName": "Small Survey Data Cache",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "soontillrelics",
+    "inaraId": null,
+    "inaraName": "Soontillrelics",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "sothiscrystallinegold",
+    "inaraId": null,
+    "inaraName": "Sothiscrystallinegold",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "spacepioneerrelics",
+    "inaraId": "10164",
+    "inaraName": "Space Pioneer Relics",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "steel",
+    "inaraId": "10487",
+    "inaraName": "Steel",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "structuralregulators",
+    "inaraId": "117",
+    "inaraName": "Structural Regulators",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "superconductors",
+    "inaraId": "27",
+    "inaraName": "Superconductors",
+    "inaraCategory": "INDUSTRIAL_MATERIALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "surfacestabilisers",
+    "inaraId": "97",
+    "inaraName": "Surface Stabilisers",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "survivalequipment",
+    "inaraId": "164",
+    "inaraName": "Survival Equipment",
+    "inaraCategory": "CONSUMER_ITEMS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "syntheticfabrics",
+    "inaraId": "75",
+    "inaraName": "Synthetic Fabrics",
+    "inaraCategory": "TEXTILES",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "syntheticmeat",
+    "inaraId": "23",
+    "inaraName": "Synthetic Meat",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "syntheticreagents",
+    "inaraId": "98",
+    "inaraName": "Synthetic Reagents",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "taaffeite",
+    "inaraId": "120",
+    "inaraName": "Taaffeite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tacticaldata",
+    "inaraId": "180",
+    "inaraName": "Tactical Data",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tanmarktranquiltea",
+    "inaraId": null,
+    "inaraName": "Tanmarktranquiltea",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tantalum",
+    "inaraId": "47",
+    "inaraName": "Tantalum",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tarachtorspice",
+    "inaraId": null,
+    "inaraName": "Tarachtorspice",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "taurichimes",
+    "inaraId": null,
+    "inaraName": "Taurichimes",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tea",
+    "inaraId": "22",
+    "inaraName": "Tea",
+    "inaraCategory": "FOODS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "telemetrysuite",
+    "inaraId": "184",
+    "inaraName": "Telemetry Suite",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "terrainenrichmentsystems",
+    "inaraId": "71",
+    "inaraName": "Land Enrichment Systems",
+    "inaraCategory": "TECHNOLOGY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "terramaterbloodbores",
+    "inaraId": null,
+    "inaraName": "Terramaterbloodbores",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thallium",
+    "inaraId": "108",
+    "inaraName": "Thallium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidbonefragments",
+    "inaraId": "10456",
+    "inaraName": "Bone Fragments",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidcystspecimen",
+    "inaraId": "10459",
+    "inaraName": "Cyst Specimen",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidgeneratortissuesample",
+    "inaraId": "10439",
+    "inaraName": "Caustic Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidheart",
+    "inaraId": "10235",
+    "inaraName": "Thargoid Heart",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidorgansample",
+    "inaraId": "10458",
+    "inaraName": "Organ Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidpod",
+    "inaraId": "10450",
+    "inaraName": "Thargoid Bio-storage Capsule",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidscouttissuesample",
+    "inaraId": "10238",
+    "inaraName": "Thargoid Scout Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype1",
+    "inaraId": "10234",
+    "inaraName": "Thargoid Cyclops Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype10a",
+    "inaraId": "10445",
+    "inaraName": "Titan Maw Deep Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype10b",
+    "inaraId": "10447",
+    "inaraName": "Titan Maw Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype10c",
+    "inaraId": "10446",
+    "inaraName": "Titan Maw Partial Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype2",
+    "inaraId": "10236",
+    "inaraName": "Thargoid Basilisk Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype3",
+    "inaraId": "10237",
+    "inaraName": "Thargoid Medusa Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype4",
+    "inaraId": "10239",
+    "inaraName": "Thargoid Hydra Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype5",
+    "inaraId": "10438",
+    "inaraName": "Thargoid Orthrus Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype6",
+    "inaraId": "10441",
+    "inaraName": "Thargoid Glaive Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype7",
+    "inaraId": "10448",
+    "inaraName": "Thargoid Scythe Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype9a",
+    "inaraId": "10442",
+    "inaraName": "Titan Deep Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype9b",
+    "inaraId": "10443",
+    "inaraName": "Titan Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtissuesampletype9c",
+    "inaraId": "10444",
+    "inaraName": "Titan Partial Tissue Sample",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thargoidtitandrivecomponent",
+    "inaraId": "10457",
+    "inaraName": "Titan Drive Component",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thehuttonmug",
+    "inaraId": null,
+    "inaraName": "Thehuttonmug",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thermalcoolingunits",
+    "inaraId": "105",
+    "inaraName": "Thermal Cooling Units",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thorium",
+    "inaraId": "109",
+    "inaraName": "Thorium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "thrutiscream",
+    "inaraId": null,
+    "inaraName": "Thrutiscream",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tiegfriessynthsilk",
+    "inaraId": null,
+    "inaraName": "Tiegfriessynthsilk",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "timecapsule",
+    "inaraId": "10212",
+    "inaraName": "Time Capsule",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tiolcewaste2pasteunits",
+    "inaraId": null,
+    "inaraName": "Tiolcewaste2pasteunits",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "titanium",
+    "inaraId": "48",
+    "inaraName": "Titanium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tobacco",
+    "inaraId": "13",
+    "inaraName": "Tobacco",
+    "inaraCategory": "LEGAL_DRUGS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "toxandjivirocide",
+    "inaraId": null,
+    "inaraName": "Toxandjivirocide",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "toxicwaste",
+    "inaraId": "54",
+    "inaraName": "Toxic Waste",
+    "inaraCategory": "WASTE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "transgeniconionhead",
+    "inaraId": "10435",
+    "inaraName": "Onionhead Gamma Strain",
+    "inaraCategory": "LEGAL_DRUGS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "trinketsoffortune",
+    "inaraId": "135",
+    "inaraName": "Trinkets of Hidden Fortune",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "tritium",
+    "inaraId": "10269",
+    "inaraName": "Tritium",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownartifact",
+    "inaraId": "10226",
+    "inaraName": "Thargoid Sensor",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownartifact2",
+    "inaraId": "186",
+    "inaraName": "Thargoid Probe",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownartifact3",
+    "inaraId": "10161",
+    "inaraName": "Thargoid Link",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownbiologicalmatter",
+    "inaraId": "10160",
+    "inaraName": "Thargoid Biological Matter",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownmineral",
+    "inaraId": "10452",
+    "inaraName": "Impure Spire Mineral",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownrefinedmineral",
+    "inaraId": "10453",
+    "inaraName": "Semi-Refined Spire Mineral",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownresin",
+    "inaraId": "10162",
+    "inaraName": "Thargoid Resin",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknownsack",
+    "inaraId": "10449",
+    "inaraName": "Protective Membrane Scrap",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unknowntechnologysamples",
+    "inaraId": "10163",
+    "inaraName": "Thargoid Technology Samples",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unocuppiedescapepod",
+    "inaraId": "10440",
+    "inaraName": "Unoccupied Escape Pod",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "unstabledatacore",
+    "inaraId": "176",
+    "inaraName": "Unstable Data Core",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "uraninite",
+    "inaraId": "60",
+    "inaraName": "Uraninite",
+    "inaraCategory": "MINERALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "uranium",
+    "inaraId": "50",
+    "inaraName": "Uranium",
+    "inaraCategory": "METALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargoancientartefact",
+    "inaraId": "121",
+    "inaraName": "Ancient Artefact",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargoblackbox",
+    "inaraId": "122",
+    "inaraName": "Black Box",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargoexperimentalchemicals",
+    "inaraId": null,
+    "inaraName": "Usscargoexperimentalchemicals",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargomilitaryplans",
+    "inaraId": "127",
+    "inaraName": "Military Plans",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargoprototypetech",
+    "inaraId": "130",
+    "inaraName": "Prototype Tech",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargorareartwork",
+    "inaraId": "131",
+    "inaraName": "Rare Artwork",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargorebeltransmissions",
+    "inaraId": "132",
+    "inaraName": "Rebel Transmissions",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargotechnicalblueprints",
+    "inaraId": "133",
+    "inaraName": "Technical Blueprints",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "usscargotradedata",
+    "inaraId": "134",
+    "inaraName": "Trade Data",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "uszaiantreegrub",
+    "inaraId": null,
+    "inaraName": "Uszaiantreegrub",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "utgaroarmillenialeggs",
+    "inaraId": null,
+    "inaraName": "Utgaroarmillenialeggs",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "uzumokulow-gwings",
+    "inaraId": null,
+    "inaraName": "Uzumokulow-gwings",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "uzumokulowgwings",
+    "inaraId": null,
+    "inaraName": "Uzumokulowgwings",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "vanayequirhinofur",
+    "inaraId": null,
+    "inaraName": "Vanayequirhinofur",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "vegaslimweed",
+    "inaraId": null,
+    "inaraName": "Vegaslimweed",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "vherculisbodyrub",
+    "inaraId": null,
+    "inaraName": "Vherculisbodyrub",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "vidavantianlace",
+    "inaraId": null,
+    "inaraName": "Vidavantianlace",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "volkhabbeedrones",
+    "inaraId": null,
+    "inaraName": "Volkhabbeedrones",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "water",
+    "inaraId": "139",
+    "inaraName": "Water",
+    "inaraCategory": "CHEMICALS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "waterpurifiers",
+    "inaraId": "82",
+    "inaraName": "Water Purifiers",
+    "inaraCategory": "MACHINERY",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "watersofshintara",
+    "inaraId": null,
+    "inaraName": "Watersofshintara",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "wheemetewheatcakes",
+    "inaraId": null,
+    "inaraName": "Wheemetewheatcakes",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "wine",
+    "inaraId": "14",
+    "inaraName": "Wine",
+    "inaraCategory": "LEGAL_DRUGS",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "witchhaulkobebeef",
+    "inaraId": null,
+    "inaraName": "Witchhaulkobebeef",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "wolf1301fesh",
+    "inaraId": null,
+    "inaraName": "Wolf1301fesh",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "wreckagecomponents",
+    "inaraId": "10207",
+    "inaraName": "Wreckage Components",
+    "inaraCategory": "SALVAGE",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "wulpahyperboresystems",
+    "inaraId": null,
+    "inaraName": "Wulpahyperboresystems",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "wuthielokufroth",
+    "inaraId": null,
+    "inaraName": "Wuthielokufroth",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "xihecompanions",
+    "inaraId": null,
+    "inaraName": "Xihecompanions",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "yasokondileaf",
+    "inaraId": null,
+    "inaraName": "Yasokondileaf",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  },
+  {
+    "cargoJsonName": "zeesszeantglue",
+    "inaraId": null,
+    "inaraName": "Zeesszeantglue",
+    "inaraCategory": "UNKNOWN",
+    "edToolName": null
+  }
+]
