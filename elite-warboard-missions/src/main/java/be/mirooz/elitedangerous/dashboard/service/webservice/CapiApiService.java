@@ -121,9 +121,8 @@ public final class CapiApiService {
                     || !isOauthApproved(fleetCarrierResponse.getStatus(), fleetCarrierResponse.getError())) {
                 return;
             }
-            JsonNode dataNode = objectMapper.valueToTree(fleetCarrierResponse.getData());
             CarrierTradeService carrierTrade = CarrierTradeService.getInstance();
-            carrierTrade.applyFleetCarrierCapiSnapshot(dataNode);
+            carrierTrade.applyFleetCarrierCapiSnapshot(fleetCarrierResponse.getData());
             System.out.println("CAPI fleet carrier synced: " + carrierTrade.getCarrierStatus());
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());

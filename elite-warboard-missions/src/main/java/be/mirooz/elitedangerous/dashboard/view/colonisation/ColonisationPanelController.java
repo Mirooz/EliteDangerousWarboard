@@ -2421,7 +2421,7 @@ public class ColonisationPanelController implements Initializable {
             if (e == null) {
                 continue;
             }
-            if (CarrierStatus.isFleetStockExcludedDrone(e.getCommodity(), e.getCommodityLocalised())) {
+            if (e.getCommodity() == null || CarrierStatus.isFleetStockExcludedDrone(e.getCommodity())) {
                 continue;
             }
             ICommodity nk = cs.canonicalCommodity(e);
@@ -2432,7 +2432,10 @@ public class ColonisationPanelController implements Initializable {
             if (stockVal <= 0 && e.getPurchaseOrder() == 0 && e.getSaleOrder() == 0) {
                 continue;
             }
-            String display = firstNonBlank(e.getCommodityLocalised(), e.getCommodity(), nk.getTitleName());
+            String display = firstNonBlank(
+                    nk.getTitleName(),
+                    nk.getVisibleName(),
+                    nk.getCargoJsonName());
             /*
              * Journal CarrierTradeOrder : Price est le prix à la tonne pour l’ordre actif.
              * Pour un ordre d’achat (PurchaseOrder > 0), c’est ce que le carrier propose d’offrir par tonne ;
@@ -2502,6 +2505,7 @@ public class ColonisationPanelController implements Initializable {
         out.sort(Comparator
                 .comparing(this::fleetMarketRowCategorySortKey, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
+        System.out.println(CarrierStatus.getInstance().getPurchaseOrder());
         return out;
     }
 

@@ -9,6 +9,7 @@ import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
+import be.mirooz.elitedangerous.dashboard.service.FleetCarrierJournalSnapshotPersistence;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -82,10 +83,13 @@ public class JournalService {
             List<Mission> missions = parseAllJournalFiles();
 
             // Données fleet CAPI : après tout le chargement journal (ordres, stocks journal, etc.)
-            if (profileOk
-                    && !CarrierTradeService.getInstance()
-                            .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
-                CapiApiService.getInstance().fetchFleetCarrierData();
+            if (profileOk) {
+                if (!CarrierTradeService.getInstance()
+                        .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
+                    CapiApiService.getInstance().fetchFleetCarrierData();
+                } else {
+                    CarrierTradeService.getInstance().tryRestoreFleetCarrierJournalSnapshotFromDisk();
+                }
             }
 
             return missions;
@@ -279,6 +283,7 @@ public class JournalService {
             }
         }
         DashboardContext.getInstance().setBatchLoading(false);
+        FleetCarrierJournalSnapshotPersistence.getInstance().flushAfterJournalBatchIfDirty();
 
         CargoEventNotificationService.getInstance().notifyCargoEvent();
         ColonisationNotificationService.getInstance().notifyColonisationDataChanged();

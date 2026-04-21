@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.CarrierCommodityResolver;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
@@ -38,8 +40,13 @@ public class CarrierTradeOrderHandler implements JournalEventHandler {
                 return;
             }
 
+            ICommodity resolved = CarrierCommodityResolver.resolve(commodity, commodityLocalised);
+            if (resolved != null && commodityLocalised != null && !commodityLocalised.isBlank()) {
+                resolved.setLocalisedName(commodityLocalised);
+            }
+
             carrierTradeService.recordTradeOrder(new CarrierTradeOrderEntry(
-                    timestamp, carrierId, carrierType, blackMarket, commodity, commodityLocalised,
+                    timestamp, carrierId, carrierType, blackMarket, resolved,
                     purchaseOrder, saleOrder, cancelTrade, price, stock));
             ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
 

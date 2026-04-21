@@ -3,9 +3,19 @@ package be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.CarrierCommodityResolver;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommodityKeys;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcCapacity;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcCargoItem;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcCommodityPurchase;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcMarketCommodity;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcName;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcOrderCommodities;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcOrders;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFcStationMarket;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierPayload;
+import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierProxyResponse;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierPosition;
-import com.fasterxml.jackson.databind.JsonNode;
+import be.mirooz.elitedangerous.dashboard.service.FleetCarrierJournalSnapshotPersistence;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -19,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -85,47 +96,40 @@ public class CarrierStatus {
         this.blackMarket = entry.isBlackMarket();
 
         ICommodity commodityKey = canonicalCommodity(entry);
+        markLastModifiedFromJournal(entry.getTimestamp());
         if (commodityKey == null) {
-            markLastModifiedFromJournal(entry.getTimestamp());
             return;
         }
 
         if (entry.isCancelTrade()) {
             marketByCommodity.remove(commodityKey);
             stocksByCommodity.remove(commodityKey);
-            markLastModifiedFromJournal(entry.getTimestamp());
             return;
         }
 
         marketByCommodity.put(commodityKey, entry);
-        markLastModifiedFromJournal(entry.getTimestamp());
     }
 
     /**
-     * Met à jour l'état à partir de la charge {@code data} de la réponse CAPI {@code /api/capi/fleetcarrier}.
+     * Met à jour l'état à partir de {@link CapiFleetCarrierProxyResponse#getFleetcarrier()}
+     * (données CAPI {@code /api/capi/fleetcarrier}).
      */
-    public void applyCapiFleetCarrierPayload(JsonNode data) {
-        if (data == null || data.isNull() || data.isMissingNode()) {
+    public void applyCapiFleetCarrierPayload(CapiFleetCarrierProxyResponse response) {
+        if (response == null || response.getFleetcarrier() == null) {
             return;
         }
-        JsonNode fleet = data.path("fleetcarrier");
-        if (!fleet.isObject() || fleet.isEmpty()) {
-            fleet = data.path("fleetCarrier");
-        }
-        if (!fleet.isObject()) {
-            return;
-        }
+        CapiFleetCarrierPayload fleet = response.getFleetcarrier();
 
-        JsonNode nameNode = fleet.path("name");
-        String callsign = textOrEmpty(nameNode, "callsign", "callssign");
-        String vanityHex = textOrEmpty(nameNode, "vanityName", "vanityname");
-        String filteredHex = textOrEmpty(nameNode, "filteredVanityName", "filteredvanityname");
+        CapiFcName nameNode = fleet.getName();
+        String callsign = nameNode != null && nameNode.getCallsign() != null ? nameNode.getCallsign() : "";
+        String vanityHex = nameNode != null && nameNode.getVanityName() != null ? nameNode.getVanityName() : "";
+        String filteredHex = nameNode != null && nameNode.getFilteredVanityName() != null ? nameNode.getFilteredVanityName() : "";
         String decodedVanity = decodeHexUtf8(vanityHex);
         String decodedFiltered = decodeHexUtf8(filteredHex);
         String displayName = firstNonBlank(decodedVanity, decodedFiltered, vanityHex, filteredHex, callsign);
 
-        JsonNode market = fleet.path("market");
-        long marketId = market.path("id").asLong(0L);
+        CapiFcStationMarket market = fleet.getMarket();
+        long marketId = market != null && market.getId() != null ? market.getId() : 0L;
         if (marketId > 0L) {
             this.carrierId = marketId;
         }
@@ -134,92 +138,190 @@ public class CarrierStatus {
         this.callsign = callsign;
         this.name = displayName;
 
-        JsonNode cap = fleet.path("capacity");
-        if (cap.isObject()) {
-            int cargoForSale = cap.path("cargoForSale").asInt(0);
-            int cargoNotForSale = cap.path("cargoNotForSale").asInt(0);
-            int cargoSpaceReserved = cap.path("cargoSpaceReserved").asInt(0);
-            int freeSpace = cap.path("freeSpace").asInt(0);
+        CapiFcCapacity cap = fleet.getCapacity();
+        if (cap != null) {
+            int cargoForSale = nz(cap.getCargoForSale());
+            int cargoNotForSale = nz(cap.getCargoNotForSale());
+            int cargoSpaceReserved = nz(cap.getCargoSpaceReserved());
+            int freeSpace = nz(cap.getFreeSpace());
             this.totalCapacity = Math.max(cargoForSale + cargoNotForSale + cargoSpaceReserved + freeSpace, 0);
         }
 
-        this.balance = fleet.path("balance").asLong(0L);
-        this.fuel = fleet.path("fuel").asInt(0);
-        this.operationalState = textOrEmpty(fleet, "state");
+        this.balance = fleet.getBalance() != null ? fleet.getBalance() : 0L;
+        this.fuel = fleet.getFuel() != null ? fleet.getFuel() : 0;
+        this.operationalState = fleet.getState() != null ? fleet.getState() : "";
 
-        JsonNode services = market.path("services");
-        if (!services.isObject()) {
-            services = market.path("Services");
-        }
-        if (services.isObject()) {
-            String bm = textOrEmpty(services, "blackmarket", "blackMarket");
+        if (market != null && market.getServices() != null) {
+            String bm = firstServiceValue(market.getServices(), "blackmarket", "blackMarket");
             this.blackMarket = "ok".equalsIgnoreCase(bm);
         }
 
-        String starSystem = textOrEmpty(fleet, "currentStarSystem", "currentstarsystem");
+        String starSystem = fleet.getCurrentStarSystem() != null ? fleet.getCurrentStarSystem() : "";
         long bodyId = this.position != null ? this.position.getBodyId() : -1L;
         if (!starSystem.isBlank()) {
             this.position = new CarrierPosition(starSystem, bodyId);
         }
+        marketByCommodity.clear();
+        stocksByCommodity.clear();
 
-        JsonNode commodities = market.path("commodities");
-        if (!commodities.isArray()) {
-            commodities = market.path("Commodities");
-        }
-        if (commodities.isArray()) {
-            for (JsonNode c : commodities) {
-                applyOneCapiCommodityStockRow(c);
+        if (fleet.getCargo() != null) {
+            for (CapiFcCargoItem row : fleet.getCargo()) {
+                applyOneCapiCargoItem(row);
             }
         }
 
-        JsonNode orders = fleet.path("orders");
-        if (!orders.isObject()) {
-            orders = fleet.path("Orders");
-        }
-        if (orders.isObject()) {
-            JsonNode orderCommodities = orders.path("commodities");
-            if (!orderCommodities.isObject()) {
-                orderCommodities = orders.path("Commodities");
-            }
-            if (orderCommodities.isObject()) {
-                JsonNode sales = orderCommodities.path("sales");
-                if (!sales.isArray()) {
-                    sales = orderCommodities.path("Sales");
-                }
-                if (sales.isArray()) {
-                    for (JsonNode c : sales) {
-                        applyOneCapiCommodityStockRow(c);
-                    }
-                }
+        if (market != null && market.getCommodities() != null) {
+            for (CapiFcMarketCommodity c : market.getCommodities()) {
+                applyOneCapiMarketCommodity(c);
             }
         }
+        applyCapiOrderPurchases(fleet);
 
         stocksByCommodity.entrySet().removeIf(e -> e.getValue() == null || e.getValue() <= 0);
 
         this.carrierStatsInitialized = this.carrierId > 0L;
     }
 
-    private void applyOneCapiCommodityStockRow(JsonNode c) {
-        if (c == null || c.isNull() || c.isMissingNode()) {
+    private static int nz(Integer v) {
+        return v != null ? v : 0;
+    }
+
+    private static String firstServiceValue(Map<String, String> services, String... keys) {
+        if (services == null || keys == null) {
+            return "";
+        }
+        for (String k : keys) {
+            String v = services.get(k);
+            if (v != null && !v.isBlank()) {
+                return v;
+            }
+        }
+        return "";
+    }
+
+    private void applyOneCapiCargoItem(CapiFcCargoItem c) {
+        if (c == null) {
             return;
         }
-        String internal = c.path("name").asText("");
-        String loc = c.path("locName").asText("");
+        String internal = Objects.toString(c.getCommodity(), "");
+        String loc = Objects.toString(c.getLocName(), "");
+        int qty = nz(c.getQty());
+        if (internal.isBlank() && loc.isBlank()) {
+            return;
+        }
+        if (qty <= 0) {
+            return;
+        }
+        if (isFleetStockExcludedDrone(internal, loc)) {
+            return;
+        }
+        ICommodity key = CarrierCommodityResolver.resolve(internal, loc);
+        stocksByCommodity.merge(key, qty, Integer::sum);
+    }
+
+    private void applyOneCapiMarketCommodity(CapiFcMarketCommodity c) {
+        if (c == null) {
+            return;
+        }
+        String internal = Objects.toString(c.getName(), "");
+        String loc = Objects.toString(c.getLocName(), "");
         if (internal.isBlank() && loc.isBlank()) {
             return;
         }
         ICommodity key = CarrierCommodityResolver.resolve(internal, loc);
         if (isFleetStockExcludedDrone(internal, loc)) {
-            stocksByCommodity.remove(key);
             marketByCommodity.remove(key);
             return;
         }
-        int stock = c.path("stock").asInt(0);
-        if (stock <= 0) {
-            stocksByCommodity.remove(key);
+        int stock = nz(c.getStock());
+        int demand = nz(c.getDemand());
+        if (stock <= 0 && demand <= 0) {
             marketByCommodity.remove(key);
+            return;
+        }
+        long pricePerTon = 0L;
+        if (demand > 0) {
+            pricePerTon = nz(c.getSellPrice());
         } else {
-            stocksByCommodity.put(key, stock);
+            pricePerTon = nz(c.getBuyPrice());
+        }
+        CarrierTradeOrderEntry e = new CarrierTradeOrderEntry(
+                Instant.now().toString(),
+                this.carrierId,
+                "FleetCarrier",
+                false,
+                key,
+                demand,
+                stock,
+                false,
+                pricePerTon,
+                stock);
+        marketByCommodity.put(key, e);
+    }
+
+    /**
+     * Ordres d’achat détaillés côté CAPI (complète {@code market.commodities} si besoin).
+     */
+    private void applyCapiOrderPurchases(CapiFleetCarrierPayload fleet) {
+        if (fleet == null || fleet.getOrders() == null) {
+            return;
+        }
+        CapiFcOrders orders = fleet.getOrders();
+        CapiFcOrderCommodities commodities = orders.getCommodities();
+        if (commodities == null) {
+            return;
+        }
+        List<CapiFcCommodityPurchase> purchases = commodities.getPurchases();
+        if (purchases == null) {
+            return;
+        }
+        for (CapiFcCommodityPurchase p : purchases) {
+            if (p == null) {
+                continue;
+            }
+            String internal = Objects.toString(p.getName(), "");
+            if (internal.isBlank()) {
+                continue;
+            }
+            if (isFleetStockExcludedDrone(internal, "")) {
+                continue;
+            }
+            ICommodity key = CarrierCommodityResolver.resolve(internal, "");
+            int po = nz(p.getOutstanding());
+            if (po <= 0) {
+                po = nz(p.getTotal());
+            }
+            if (po <= 0) {
+                continue;
+            }
+            boolean bm = Boolean.TRUE.equals(p.getBlackmarket());
+            long bid = nz(p.getPrice());
+            CarrierTradeOrderEntry cur = marketByCommodity.get(key);
+            if (cur == null) {
+                marketByCommodity.put(key, new CarrierTradeOrderEntry(
+                        Instant.now().toString(),
+                        this.carrierId,
+                        "FleetCarrier",
+                        bm,
+                        key,
+                        po,
+                        0,
+                        false,
+                        bid,
+                        0));
+            } else if (po > cur.getPurchaseOrder()) {
+                marketByCommodity.put(key, new CarrierTradeOrderEntry(
+                        cur.getTimestamp(),
+                        this.carrierId,
+                        "FleetCarrier",
+                        cur.isBlackMarket() || bm,
+                        cur.getCommodity(),
+                        po,
+                        cur.getSaleOrder(),
+                        false,
+                        bid,
+                        cur.getStock()));
+            }
         }
     }
 
@@ -253,8 +355,47 @@ public class CarrierStatus {
         return !t.isBefore(Instant.now().minus(maxAge));
     }
 
+    /**
+     * Remplace stocks et ordres marché issus du journal par un snapshot disque
+     * (lorsque le sync CAPI fleet carrier est sauté).
+     */
+    public void restoreJournalPersistedSnapshot(
+            List<CarrierTradeOrderEntry> orders,
+            Map<ICommodity, Integer> stocks,
+            String lastModifiedIso) {
+        marketByCommodity.clear();
+        if (orders != null) {
+            for (CarrierTradeOrderEntry e : orders) {
+                if (e == null || e.isCancelTrade()) {
+                    continue;
+                }
+                ICommodity key = canonicalCommodity(e);
+                if (key == null) {
+                    continue;
+                }
+                marketByCommodity.put(key, e);
+            }
+        }
+        stocksByCommodity.clear();
+        if (stocks != null) {
+            for (Map.Entry<ICommodity, Integer> e : stocks.entrySet()) {
+                if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) {
+                    continue;
+                }
+                if (isFleetStockExcludedDrone(e.getKey())) {
+                    continue;
+                }
+                stocksByCommodity.put(e.getKey(), e.getValue());
+            }
+        }
+        if (lastModifiedIso != null && !lastModifiedIso.isBlank()) {
+            lastModifiedTime = parseJournalInstant(lastModifiedIso);
+        }
+    }
+
     private void markLastModifiedFromJournal(String journalIsoTimestamp) {
         lastModifiedTime = parseJournalInstant(journalIsoTimestamp);
+        FleetCarrierJournalSnapshotPersistence.getInstance().notifyJournalMutation();
     }
 
     private static Instant parseJournalInstant(String journalIsoTimestamp) {
@@ -318,16 +459,10 @@ public class CarrierStatus {
      * Commodité canonique pour une entrée marché / ordre (alignée sur les clés de {@link #stocksByCommodity}).
      */
     public ICommodity canonicalCommodity(CarrierTradeOrderEntry e) {
-        if (e == null) {
+        if (e == null || e.getCommodity() == null) {
             return null;
         }
-        boolean blank =
-                (e.getCommodity() == null || e.getCommodity().isBlank())
-                        && (e.getCommodityLocalised() == null || e.getCommodityLocalised().isBlank());
-        if (blank) {
-            return null;
-        }
-        return CarrierCommodityResolver.resolve(e.getCommodity(), e.getCommodityLocalised());
+        return e.getCommodity();
     }
 
     /** Tonnes physiques pour cette commodité (égalité des instances ou clé de fusion {@link ColonisationCommodityKeys}). */
@@ -363,8 +498,12 @@ public class CarrierStatus {
         for (Map.Entry<ICommodity, CarrierTradeOrderEntry> e : marketByCommodity.entrySet()) {
             if (e.getKey() != null && ColonisationCommodityKeys.mergeKey(e.getKey()).equals(mk)) {
                 CarrierTradeOrderEntry tr = e.getValue();
-                if (tr != null) {
-                    return firstNonBlank(tr.getCommodityLocalised(), tr.getCommodity(), titleOrCargo(c));
+                if (tr != null && tr.getCommodity() != null) {
+                    return firstNonBlank(
+                            tr.getCommodity().getTitleName(),
+                            tr.getCommodity().getVisibleName(),
+                            tr.getCommodity().getCargoJsonName(),
+                            titleOrCargo(c));
                 }
             }
         }
@@ -395,22 +534,6 @@ public class CarrierStatus {
             s += e.getValue();
         }
         return s;
-    }
-
-    private static String textOrEmpty(JsonNode node, String... fieldNames) {
-        if (node == null || node.isMissingNode() || node.isNull() || !node.isObject()) {
-            return "";
-        }
-        for (String n : fieldNames) {
-            JsonNode vNode = node.get(n);
-            if (vNode != null && !vNode.isNull() && !vNode.isMissingNode()) {
-                String v = vNode.asText("");
-                if (v != null && !v.isBlank()) {
-                    return v;
-                }
-            }
-        }
-        return "";
     }
 
     private static String firstNonBlank(String... values) {

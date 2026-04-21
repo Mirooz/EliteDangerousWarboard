@@ -1,10 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierProxyResponse;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.Duration;
 import java.util.List;
@@ -55,8 +55,18 @@ public class CarrierTradeService {
         return carrierStatus.hasRecentJournalCarrierActivity(maxAge);
     }
 
-    public synchronized void applyFleetCarrierCapiSnapshot(JsonNode capiDataNode) {
-        carrierStatus.applyCapiFleetCarrierPayload(capiDataNode);
+    /**
+     * Recharge stocks + ordres depuis le fichier snapshot journal (si présent).
+     * Utilisé quand le fetch CAPI fleet carrier est sauté suite à une activité journal récente.
+     *
+     * @return {@code true} si un snapshot a été appliqué
+     */
+    public synchronized boolean tryRestoreFleetCarrierJournalSnapshotFromDisk() {
+        return FleetCarrierJournalSnapshotPersistence.getInstance().restoreInto(carrierStatus);
+    }
+
+    public synchronized void applyFleetCarrierCapiSnapshot(CapiFleetCarrierProxyResponse capiData) {
+        carrierStatus.applyCapiFleetCarrierPayload(capiData);
         ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
     }
 
