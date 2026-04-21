@@ -500,15 +500,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Ajouter un gap pour que les planètes ne collent pas au bord (espacements réduits ~15 % via
             // {@link #SYSTEM_VIEW_ORRERY_SPACING_SCALE} / {@link #orrerySpacing(int)}).
             int gapLeft = orrerySpacing(50);
-            int gapTop = orrerySpacing(50);
+            int gapTop = orrerySpacing(58);
             int startX = gapLeft;
             int startY = gapTop;
-            int starVerticalSpacing = orrerySpacing(200);
+            int starVerticalSpacing = orrerySpacing(165);
             int horizontalSpacing = orrerySpacing(120);
             int moonVerticalSpacing = orrerySpacing(80);
-            /* Lunes de lune : même facteur global en plus sur l’horizontal (chaîne plus serrée que planète–planète). */
+            /* Lunes de lune : encore un peu plus serrées horizontalement. */
             int subMoonHorizontalSpacing = Math.max(1,
-                    (int) Math.round(horizontalSpacing * SYSTEM_VIEW_ORRERY_SPACING_SCALE));
+                    (int) Math.round(horizontalSpacing * SYSTEM_VIEW_ORRERY_SPACING_SCALE * 0.9));
 
             // Organiser la hiérarchie : étoiles -> planètes directes -> lunes -> lunes de lune
             List<ACelesteBody> stars = new ArrayList<>();
@@ -1558,8 +1558,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         BodyPosition bodyPos = bodyPositions.get(body.getBodyID());
         double bodySize = bodyPos != null ? bodyPos.size : 60.0; // Fallback à 60px si non trouvé
         double bodyRadius = bodySize / 2;
-        double offsetX = 2; // Décalage horizontal depuis le bord de la planète
-        double offsetY = 2; // Décalage vertical depuis le bord de la planète
+        double offsetX = 0; // Plus proche du bord de la planète
+        double offsetY = 0; // Plus proche du bord de la planète
         
         // Pour une forme ronde, utiliser un point légèrement en dessous de 45° pour un meilleur alignement visuel
         // Un angle d'environ 30-35° donne un meilleur positionnement pour le badge
@@ -2227,12 +2227,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         VBox card = new VBox(5);
         card.getStyleClass().add("exploration-body-card");
         
-        // Définir une largeur minimale et préférée pour uniformiser toutes les cartes
-        // Largeur du panneau (450px) moins les paddings et marges
-        double cardMinWidth = 420.0; // Légèrement moins que 450 pour tenir compte des paddings
-        card.setMinWidth(cardMinWidth);
-        card.setPrefWidth(cardMinWidth);
-        card.setMaxWidth(Double.MAX_VALUE); // Permettre l'expansion si nécessaire
+        // Largeur adaptative : évite que le fond de carte dépasse visuellement le cadre orange
+        // quand la scrollbar/paddings/indentation réduisent l'espace réel.
+        card.setFillWidth(true);
+        card.setMinWidth(Region.USE_COMPUTED_SIZE);
+        card.setPrefWidth(Region.USE_COMPUTED_SIZE);
+        card.setMaxWidth(Double.MAX_VALUE);
         
         // Créer un conteneur pour les lignes hiérarchiques et le contenu
         HBox mainContainer = new HBox(0);
@@ -2250,7 +2250,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         VBox cardContent = new VBox(5);
         cardContent.setPadding(new javafx.geometry.Insets(8));
         // S'assurer que le contenu prend toute la largeur disponible
-        cardContent.setMinWidth(Region.USE_PREF_SIZE);
+        cardContent.setMinWidth(0);
         cardContent.setPrefWidth(Region.USE_COMPUTED_SIZE);
         HBox.setHgrow(cardContent, Priority.ALWAYS);
         

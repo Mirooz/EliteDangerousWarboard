@@ -203,7 +203,7 @@
 }
 
 .colonisation-panel .colonisation-tab-pane .tab {
-    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, derive(-fx-elite-gray, -12%), derive(-fx-elite-darker, 6%));
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, -fx-elite-gray, -fx-elite-darker);
     -fx-background-insets: 0;
     -fx-background-radius: 7px 7px 0 0;
     -fx-border-color: derive(-fx-elite-orange, -30%);
@@ -220,7 +220,7 @@
 }
 
 .colonisation-panel .colonisation-tab-pane .tab:hover {
-    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(255, 107, 0, 0.24), derive(-fx-elite-gray, 2%));
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(255, 107, 0, 0.24), -fx-elite-gray);
     -fx-border-color: -fx-elite-cyan;
     -fx-cursor: hand;
 }
@@ -662,7 +662,7 @@
     -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.28), 12, 0.4, 0, 0);
 }
 .colonisation-colony-stat-panel--hint:hover {
-    -fx-background-color: derive(-fx-elite-gray, 2%);
+    -fx-background-color: -fx-elite-gray;
     -fx-border-color: derive(-fx-elite-light-gray, -22%);
 }
 .colonisation-colony-stat-section-title {
@@ -856,8 +856,8 @@
     -fx-font-size: 12px;
     -fx-padding: 8px 22px 8px 14px;
 }
-.context-menu .menu-item.colonisation-colony-cascade-menu-item:not(.colonisation-site-picker-menu-item):focused,
-.context-menu .menu-item.colonisation-colony-cascade-menu-item:not(.colonisation-site-picker-menu-item):hover {
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:focused,
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:hover {
     -fx-background-color: rgba(255, 107, 0, 0.1);
     -fx-text-fill: -fx-elite-cyan;
 }
@@ -894,7 +894,7 @@
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
     -fx-border-width: 2px;
-    -fx-border-color: derive(-fx-elite-orange, -6%);
+    -fx-border-color: -fx-elite-orange;
 }
 .context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-name {
     -fx-text-fill: -fx-elite-text;
@@ -903,7 +903,7 @@
     -fx-cursor: hand;
 }
 .context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-kind {
-    -fx-text-fill: derive(-fx-elite-cyan, -8%);
+    -fx-text-fill: -fx-elite-cyan;
     -fx-font-size: 12px;
     -fx-font-weight: normal;
     -fx-cursor: hand;
@@ -916,7 +916,7 @@
     -fx-text-fill: -fx-elite-cyan;
 }
 .context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-kind {
-    -fx-text-fill: derive(-fx-elite-cyan, 12%);
+    -fx-text-fill: #9defff;
 }
 
 .colonisation-detail-resource-card {
@@ -5439,10 +5439,14 @@
 
 .exploration-visual-scroll {
     -fx-background-color: -fx-elite-dark;
+    -fx-background: -fx-elite-dark;
     -fx-border-color: -fx-elite-light-gray;
     -fx-border-width: 1px;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-background-insets: 2px;
+    -fx-border-insets: 2px;
+    -fx-control-inner-background: -fx-elite-dark;
 }
 
 .exploration-visual-scroll .viewport {
@@ -5529,17 +5533,36 @@
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
+    -fx-background-radius: 2px;
+    -fx-background-insets: 2px;
     -fx-padding: 10px;
 }
 
 .exploration-bodies-list-scroll {
     -fx-background-color: transparent;
+    -fx-background: transparent;
     -fx-border-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-insets: 2px;
+    -fx-border-insets: 2px;
+    -fx-padding: 2px;
+}
+
+.exploration-bodies-list-scroll:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .exploration-bodies-list-scroll .viewport {
     -fx-background-color: transparent;
+}
+
+.exploration-bodies-list-scroll > .viewport,
+.exploration-bodies-list-scroll > .corner {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
 }
 
 /* Scrollbar style Elite pour le panneau de liste des corps */
@@ -5620,6 +5643,10 @@
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
+    -fx-background-insets: 1px;
+    -fx-border-insets: 1px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
     -fx-padding: 8px;
 }
 
@@ -5637,7 +5664,15 @@
 
 .exploration-body-card:hover {
     -fx-background-color: rgba(255, 140, 0, 0.1);
-    -fx-border-color: -fx-elite-orange;
+    -fx-border-color: -fx-elite-light-gray;
+}
+
+.exploration-body-card:focused,
+.exploration-body-card:pressed,
+.exploration-body-card:armed {
+    -fx-border-color: -fx-elite-light-gray;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .exploration-body-card-name {
