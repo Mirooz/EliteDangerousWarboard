@@ -1215,8 +1215,8 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/CapiFcEconomyNode'
         prohibited:
-          type: object
-          additionalProperties:
+          type: array
+          items:
             type: string
         commodities:
           type: array
