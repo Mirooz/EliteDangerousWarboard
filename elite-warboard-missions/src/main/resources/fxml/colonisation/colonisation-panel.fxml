@@ -8,9 +8,8 @@
       fx:controller="be.mirooz.elitedangerous.dashboard.view.colonisation.ColonisationPanelController"
       styleClass="colonisation-panel" spacing="10">
     <VBox fx:id="architectViewRoot" spacing="10.0" VBox.vgrow="ALWAYS">
-        <SplitPane fx:id="colonisationSplitPane" dividerPositions="0.62" VBox.vgrow="ALWAYS"
-                   styleClass="colonisation-split">
-            <VBox spacing="10.0" styleClass="colonisation-column" VBox.vgrow="ALWAYS" minHeight="160.0">
+        <HBox spacing="10.0" VBox.vgrow="ALWAYS" alignment="TOP_LEFT" styleClass="colonisation-split">
+            <VBox spacing="10.0" styleClass="colonisation-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minHeight="160.0" minWidth="200.0">
                 <HBox spacing="10.0" alignment="CENTER_LEFT">
                     <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
                     <ComboBox fx:id="architectSystemComboBox" minWidth="120.0" prefWidth="200.0" maxWidth="220.0"
@@ -28,44 +27,47 @@
                             </VBox>
                         </Tab>
                         <Tab fx:id="architectCargoFleetTab" text="Cargo &amp; Fleet">
+                            <VBox spacing="0.0" styleClass="colonisation-fleet-tab-wrap" VBox.vgrow="ALWAYS">
                             <HBox spacing="10.0" VBox.vgrow="ALWAYS">
-                                <VBox spacing="6.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                <VBox spacing="8.0" styleClass="colonisation-fleet-carrier-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                                     <HBox spacing="8.0" alignment="CENTER_LEFT">
                                         <Label fx:id="fleetTitleLabel" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="mining-title"/>
                                         <Button fx:id="fleetCollapseButton" mnemonicParsing="false" focusTraversable="false" managed="false" visible="false"
                                                 styleClass="colonisation-panel-fold-button" text="▼"/>
                                     </HBox>
-                                    <VBox fx:id="fleetCollapsibleContent" spacing="6.0" VBox.vgrow="ALWAYS">
-                                        <VBox fx:id="fleetSummaryBox" spacing="4.0"/>
+                                    <VBox fx:id="fleetCollapsibleContent" spacing="0.0" VBox.vgrow="ALWAYS">
                                         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                                     styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame" VBox.vgrow="ALWAYS">
-                                            <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
-                                                <columnConstraints>
-                                                    <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
-                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="46.0"/>
-                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
-                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
-                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
-                                                </columnConstraints>
-                                            </GridPane>
+                                            <VBox spacing="6.0" maxWidth="Infinity" styleClass="colonisation-fleet-scroll-inner">
+                                                <VBox fx:id="fleetSummaryBox" spacing="4.0"/>
+                                                <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="46.0"/>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
+                                                    </columnConstraints>
+                                                </GridPane>
+                                            </VBox>
                                         </ScrollPane>
                                     </VBox>
                                 </VBox>
-                                <VBox spacing="6.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                <VBox spacing="8.0" styleClass="colonisation-fleet-commander-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                                     <HBox spacing="8.0" alignment="CENTER_LEFT">
                                         <Label fx:id="commanderCurrentCargoTitleLabel" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="mining-title"/>
                                         <Button fx:id="commanderCollapseButton" mnemonicParsing="false" focusTraversable="false" managed="false" visible="false"
                                                 styleClass="colonisation-panel-fold-button" text="▼"/>
                                     </HBox>
                                     <VBox fx:id="commanderCollapsibleContent" spacing="0.0" VBox.vgrow="ALWAYS">
-                                        <VBox spacing="6.0" styleClass="colonisation-buy-station-wrap" VBox.vgrow="ALWAYS">
+                                        <VBox spacing="6.0" styleClass="colonisation-buy-station-wrap,colonisation-fleet-commander-cargo-inner" VBox.vgrow="ALWAYS">
                                             <HBox spacing="8.0" alignment="CENTER_LEFT" managed="false" visible="false"
                                                   styleClass="colonisation-commander-cargo-summary,cargo-info,colonisation-fleet-cargo-info">
                                                 <ProgressBar fx:id="commanderCargoProgressBar" styleClass="progress-bar" prefWidth="120.0" prefHeight="8.0" HBox.hgrow="ALWAYS"/>
                                                 <Label fx:id="commanderCargoUsedLabel" styleClass="colonisation-commander-cargo-used"/>
                                             </HBox>
                                             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                                                        styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll" VBox.vgrow="ALWAYS">
+                                                        styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame" VBox.vgrow="ALWAYS">
                                                 <GridPane fx:id="commanderCargoGrid" hgap="8.0" vgap="3.0" styleClass="colonisation-commander-cargo-grid">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="ALWAYS" minWidth="72.0"/>
@@ -77,11 +79,12 @@
                                     </VBox>
                                 </VBox>
                             </HBox>
+                            </VBox>
                         </Tab>
                     </tabs>
                 </TabPane>
             </VBox>
-            <VBox spacing="8.0" minWidth="300.0" maxWidth="520.0" prefWidth="480.0"
+            <VBox spacing="8.0" minWidth="300.0" maxWidth="520.0" prefWidth="480.0" HBox.hgrow="NEVER"
                   styleClass="colonisation-column,colonisation-detail-column" VBox.vgrow="ALWAYS">
                 <Label fx:id="constructionDetailTitleLabel" styleClass="mining-title"/>
                 <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-detail-actions">
@@ -97,7 +100,7 @@
                     </VBox>
                 </ScrollPane>
             </VBox>
-        </SplitPane>
+        </HBox>
     </VBox>
 
     <VBox fx:id="colonisationFinderRoot" spacing="8.0" visible="false" managed="false" VBox.vgrow="ALWAYS"

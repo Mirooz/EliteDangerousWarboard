@@ -50,7 +50,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -98,8 +97,6 @@ public class ColonisationPanelController implements Initializable {
     private Button buildStationButton;
     @FXML
     private Button updateTradeStationButton;
-    @FXML
-    private SplitPane colonisationSplitPane;
     @FXML
     private Label statusLabel;
     @FXML
@@ -212,13 +209,8 @@ public class ColonisationPanelController implements Initializable {
     /** Requête API « stations d’achat » en cours (build ou mise à jour). */
     private boolean suggestBuyStationsRequestInProgress;
 
-    /** Proportion carte / détail (SplitPane architecte à deux volets). */
-    private static final double ARCHITECT_SPLIT_DIVIDER_LOCK = 0.62;
-
     private boolean suppressArchitectComboListener;
 
-    private boolean adjustingArchitectDivider;
-    private boolean architectSplitDividerListenerAttached;
     private SystemVisualViewComponent architectSystemVisualView;
     private SystemVisualViewComponent searchSystemVisualView;
     private final List<BorderPane> searchResultCards = new ArrayList<>();
@@ -236,7 +228,6 @@ public class ColonisationPanelController implements Initializable {
             updateTradeStationButton.setVisible(false);
             updateTradeStationButton.setManaged(false);
         }
-        setupColonisationSplitPaneArchitectLock();
         initArchitectCenterTabs();
         initArchitectSystemCombo();
         initArchitectVisualPanel();
@@ -1153,44 +1144,6 @@ public class ColonisationPanelController implements Initializable {
 
     private void clearSuggestedBuyStations() {
         suggestedBuyStations = List.of();
-    }
-
-    private void setupColonisationSplitPaneArchitectLock() {
-        if (colonisationSplitPane == null) {
-            return;
-        }
-        colonisationSplitPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null) {
-                Platform.runLater(this::ensureArchitectSplitDividerStaysFixed);
-            }
-        });
-        if (colonisationSplitPane.getScene() != null) {
-            Platform.runLater(this::ensureArchitectSplitDividerStaysFixed);
-        }
-    }
-
-    private void ensureArchitectSplitDividerStaysFixed() {
-        if (colonisationSplitPane == null || colonisationSplitPane.getDividers().isEmpty()) {
-            return;
-        }
-        var d0 = colonisationSplitPane.getDividers().get(0);
-        if (!architectSplitDividerListenerAttached) {
-            architectSplitDividerListenerAttached = true;
-            d0.positionProperty().addListener((obs, ov, nv) -> {
-                if (adjustingArchitectDivider) {
-                    return;
-                }
-                double v = nv.doubleValue();
-                if (Math.abs(v - ARCHITECT_SPLIT_DIVIDER_LOCK) > 0.002) {
-                    adjustingArchitectDivider = true;
-                    colonisationSplitPane.setDividerPositions(ARCHITECT_SPLIT_DIVIDER_LOCK);
-                    adjustingArchitectDivider = false;
-                }
-            });
-        }
-        adjustingArchitectDivider = true;
-        colonisationSplitPane.setDividerPositions(ARCHITECT_SPLIT_DIVIDER_LOCK);
-        adjustingArchitectDivider = false;
     }
 
     private void onSearchColonisableSystems() {

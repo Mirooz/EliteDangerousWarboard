@@ -246,6 +246,30 @@
     -fx-padding: 0;
 }
 
+/* Onglet Cargo & Fleet : cadre orange global + air sous la barre d’onglets */
+.colonisation-fleet-tab-wrap {
+    -fx-border-color: derive(-fx-elite-orange, -18%);
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-color: transparent;
+    -fx-padding: 16px 12px 12px 12px;
+}
+
+.colonisation-fleet-carrier-column,
+.colonisation-fleet-commander-column {
+    -fx-alignment: TOP_LEFT;
+}
+
+/* Colonne cargo commandant : pas de second cadre cyan (le ScrollPane porte colonisation-fleet-merged-frame). */
+.colonisation-fleet-commander-cargo-inner.colonisation-buy-station-wrap {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
 .colonisation-search-pane {
     -fx-border-color: -fx-elite-cyan;
     -fx-border-width: 1px;
@@ -449,20 +473,8 @@
     -fx-max-width: 520px;
 }
 
-.colonisation-panel .split-pane {
-    -fx-background-color: -fx-elite-dark;
-    -fx-border-color: transparent;
-}
-
-.colonisation-panel .split-pane > .split-pane-divider {
-    -fx-background-color: -fx-elite-orange;
-}
-
-.colonisation-panel .split-pane > .split-pane-divider:hover {
-    -fx-background-color: -fx-elite-cyan;
-}
-
-.colonisation-panel .colonisation-split.split-pane {
+/* Rangée architecte : deux colonnes sans barre de redimensionnement (remplace SplitPane). */
+.colonisation-panel .colonisation-split {
     -fx-background-color: -fx-elite-dark;
     -fx-padding: 0;
 }
@@ -1901,18 +1913,18 @@
     -fx-background-color: -fx-elite-cyan;
 }
 
-/* Cadre bleu autour du tableau fusionné Commodities/Market (onglet Cargo & Fleet). */
+/* Cadre cyan identique pour les deux grilles (fleet + cargo commandant), onglet Cargo & Fleet. */
 .colonisation-fleet-merged-frame {
-    -fx-border-color: -fx-elite-cyan;
+    -fx-border-color: derive(-fx-elite-cyan, -12%);
     -fx-border-width: 1px;
-    -fx-border-radius: 4px;
-    -fx-background-radius: 4px;
-    /* Plus d’air à gauche pour éviter que le texte colle au bord cyan */
-    -fx-padding: 4px 6px 4px 10px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-background-color: derive(-fx-elite-darker, 4%);
+    -fx-padding: 4px 8px 4px 8px;
 }
 
 .colonisation-fleet-merged-frame > .viewport {
-    -fx-padding: 2px 4px 2px 8px;
+    -fx-padding: 2px 4px 2px 4px;
 }
 
 /* Masquer la scrollbar horizontale */
