@@ -2835,8 +2835,18 @@ public class ColonisationPanelController implements Initializable {
             Label shipL = new Label(shipT > 0 ? Integer.toString(shipT) : "—");
             shipL.getStyleClass().add(shipT > 0 ? "cargo-mineral-quantity" : "cargo-mineral-null-price");
             int po = r.getPurchaseOrder();
-            Label buyOrder = new Label(po > 0 ? Integer.toString(po) : "—");
-            buyOrder.getStyleClass().add(po > 0 ? "cargo-mineral-quantity" : "cargo-mineral-null-price");
+            int so = r.getSaleOrder();
+            int marketOrder = po > 0 ? po : so;
+            Label buyOrder = new Label(marketOrder > 0 ? Integer.toString(marketOrder) : "—");
+            if (po > 0) {
+                buyOrder.setText("▲ " + marketOrder);
+                buyOrder.getStyleClass().add("colonisation-fleet-market-order-buy");
+            } else if (so > 0) {
+                buyOrder.setText("▼ " + marketOrder);
+                buyOrder.getStyleClass().add("colonisation-fleet-market-order-sell");
+            } else {
+                buyOrder.getStyleClass().add("cargo-mineral-null-price");
+            }
             String priceText;
             if (po <= 0) {
                 priceText = "—";
