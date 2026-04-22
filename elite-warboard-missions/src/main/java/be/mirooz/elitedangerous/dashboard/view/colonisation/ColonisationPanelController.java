@@ -124,6 +124,8 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private GridPane fleetMarketGrid;
     @FXML
+    private GridPane fleetMarketHeaderGrid;
+    @FXML
     private Label commanderCurrentCargoTitleLabel;
     @FXML
     private VBox fleetRightColumn;
@@ -2805,17 +2807,17 @@ public class ColonisationPanelController implements Initializable {
 
     private void refreshFleetMarketGrid(CarrierStatus cs) {
         fleetMarketGrid.getChildren().clear();
+        refreshFleetMarketHeader();
         List<FleetMarketRow> rows = buildFleetMergedRows(cs);
         Map<String, Integer> shipByKey = buildShipStockTonsByMergeKey();
-        addFleetMarketHeaderRow();
         if (rows.isEmpty()) {
             Label empty = new Label(localizationService.getString("colonisation.fleet.marketEmpty"));
             empty.getStyleClass().add("cargo-mineral-null-price");
             empty.setWrapText(true);
-            fleetMarketGrid.add(empty, 0, 1, 6, 1);
+            fleetMarketGrid.add(empty, 0, 0, 6, 1);
             return;
         }
-        int row = 1;
+        int row = 0;
         CommodityCategory lastCategory = null;
         for (FleetMarketRow r : rows) {
             CommodityCategory cat = fleetMarketRowCategory(r);
@@ -2859,13 +2861,17 @@ public class ColonisationPanelController implements Initializable {
         }
     }
 
-    private void addFleetMarketHeaderRow() {
-        fleetMarketGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.commodity"), 0, 0);
-        fleetMarketGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.shipStock"), 1, 0);
-        fleetMarketGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.stock"), 2, 0);
-        fleetMarketGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.missing"), 3, 0);
-        fleetMarketGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.buyOrder"), 4, 0);
-        fleetMarketGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.price"), 5, 0);
+    private void refreshFleetMarketHeader() {
+        if (fleetMarketHeaderGrid == null) {
+            return;
+        }
+        fleetMarketHeaderGrid.getChildren().clear();
+        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.commodity"), 0, 0);
+        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.shipStock"), 1, 0);
+        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.stock"), 2, 0);
+        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.missing"), 3, 0);
+        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.buyOrder"), 4, 0);
+        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.price"), 5, 0);
     }
 
     private Label fleetMarketHeaderLabel(String messageKey) {

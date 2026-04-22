@@ -12,7 +12,7 @@
             <VBox spacing="10.0" styleClass="colonisation-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minHeight="160.0" minWidth="200.0">
                 <HBox spacing="10.0" alignment="CENTER_LEFT">
                     <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
-                    <ComboBox fx:id="architectSystemComboBox" minWidth="120.0" prefWidth="200.0" maxWidth="220.0"
+                    <ComboBox fx:id="architectSystemComboBox" minWidth="140.0" prefWidth="260.0" maxWidth="300.0"
                               HBox.hgrow="NEVER" styleClass="colonisation-architect-system-combo"/>
                     <Label fx:id="architectSystemStatsLabel" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"
                            styleClass="colonisation-architect-system-stats"/>
@@ -36,6 +36,16 @@
                                                 styleClass="colonisation-panel-fold-button" text="▼"/>
                                     </HBox>
                                     <VBox fx:id="fleetCollapsibleContent" spacing="0.0" VBox.vgrow="ALWAYS">
+                                        <GridPane fx:id="fleetMarketHeaderGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid,colonisation-fleet-market-header-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
+                                            </columnConstraints>
+                                        </GridPane>
                                         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                                     styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame" VBox.vgrow="ALWAYS">
                                             <VBox spacing="6.0" maxWidth="Infinity" styleClass="colonisation-fleet-scroll-inner">

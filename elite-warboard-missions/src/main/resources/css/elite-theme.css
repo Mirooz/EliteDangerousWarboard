@@ -449,7 +449,7 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
     -fx-pref-height: 30px;
-    -fx-max-width: 220px;
+    -fx-max-width: 300px;
     -fx-padding: 0 2px 0 2px;
     -fx-cursor: hand;
 }
@@ -1161,11 +1161,16 @@
 
 /* Grille marché carrier : texte plus petit */
 .colonisation-fleet-market-grid .cargo-column-header {
-    -fx-font-size: 10px;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 4 6 5 6;
 }
 
 .colonisation-fleet-market-grid .cargo-mineral-name {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
+    -fx-border-color: transparent transparent rgba(120, 150, 170, 0.28) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 3 0 4 0;
 }
 
 .colonisation-fleet-market-grid .cargo-mineral-quantity,
@@ -1173,14 +1178,29 @@
 .colonisation-fleet-market-grid .cargo-mineral-station-price,
 .colonisation-fleet-market-grid .cargo-mineral-total-price,
 .colonisation-fleet-market-grid .cargo-mineral-null-price {
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
+    -fx-border-color: transparent transparent rgba(120, 150, 170, 0.28) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 3 0 4 0;
 }
 
 .colonisation-fleet-market-grid .colonisation-fleet-commodity-category {
-    -fx-font-size: 10px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-elite-orange;
-    -fx-padding: 6 0 2 0;
+    -fx-padding: 6 8 4 8;
+    -fx-background-color: rgba(0, 255, 255, 0.08);
+    -fx-border-color: rgba(0, 255, 255, 0.45);
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.colonisation-fleet-market-header-grid {
+    -fx-padding: 0 6 4 6;
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: rgba(0, 255, 255, 0.35);
+    -fx-border-width: 0 0 1 0;
 }
 
 /* Cargo commandant : colonne dédiée, encadré comme les blocs station d’achat (colonisation-buy-station-wrap) */
