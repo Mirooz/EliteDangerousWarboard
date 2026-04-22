@@ -15,7 +15,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 /**
  * Point d’entrée applicatif pour la colonisation (dock, chantiers) : délègue au {@link ColonisationRegistry}.
@@ -34,12 +36,36 @@ public class ColonisationService {
     private final ColonisationRegistry registry = ColonisationRegistry.getInstance();
     private final ArdentBackendApiFacade ardentBackend = ArdentBackendApiFacade.getInstance();
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
+    private final Set<Long> persistedConstructionListMarketIds = new LinkedHashSet<>();
+    private String persistedSelectedArchitectSystem = "";
+    private boolean persistedUiStateLoadedAfterBatch;
 
     private ColonisationService() {
     }
 
     public static ColonisationService getInstance() {
         return INSTANCE;
+    }
+
+    public synchronized void loadPersistedUiStateAfterJournalBatch() {
+        persistedConstructionListMarketIds.clear();
+        persistedConstructionListMarketIds.addAll(preferencesService.loadColonisationConstructionListMarketIds());
+        String persisted = preferencesService.loadColonisationConstructionListSelectedArchitectSystem();
+        persistedSelectedArchitectSystem = persisted != null ? persisted : "";
+        persistedUiStateLoadedAfterBatch = true;
+    }
+
+    public synchronized boolean isPersistedUiStateLoadedAfterBatch() {
+        return persistedUiStateLoadedAfterBatch;
+    }
+
+    public synchronized Set<Long> getPersistedConstructionListMarketIds() {
+        return Set.copyOf(persistedConstructionListMarketIds);
+    }
+
+    public synchronized String getPersistedSelectedArchitectSystem() {
+        return persistedSelectedArchitectSystem;
     }
 
     public void recordArchitectBeaconDeployed(String starSystem) {
@@ -184,7 +210,12 @@ public class ColonisationService {
 
     public void clear() {
         registry.clear();
-        PreferencesService.getInstance().removeColonisationSuggestedBuyStationsFile();
+        preferencesService.removeColonisationSuggestedBuyStationsFile();
+        synchronized (this) {
+            persistedConstructionListMarketIds.clear();
+            persistedSelectedArchitectSystem = "";
+            persistedUiStateLoadedAfterBatch = false;
+        }
     }
 
     /**

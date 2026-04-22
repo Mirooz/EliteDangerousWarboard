@@ -1217,6 +1217,61 @@
     -fx-font-weight: bold;
 }
 
+.colonisation-progress-black {
+    -fx-background-color: #000000;
+}
+
+.colonisation-progress-black > .track {
+    -fx-background-color: #000000;
+    -fx-background-insets: 0;
+}
+
+.colonisation-progress-completed {
+    -fx-text-fill: #00ff66;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.colonisation-map-detail-overlay {
+    -fx-padding: 0;
+}
+
+.colonisation-map-detail-window {
+    -fx-padding: 10 10 10 10;
+}
+
+.colonisation-map-detail-window .colonisation-detail-window-body {
+    -fx-padding: 4 6 8 6;
+}
+
+.colonisation-map-detail-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-fit-to-width: true;
+}
+
+.colonisation-map-detail-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.colonisation-map-detail-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-pref-width: 10px;
+}
+
+.colonisation-map-detail-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+}
+
+.colonisation-list-progress-bar {
+    -fx-pref-height: 14px;
+}
+
+.colonisation-construction-list-card {
+    -fx-background-color: #15241a;
+    -fx-border-color: #2f6a46;
+}
+
 /* Table marché carrier : stock / achat / vente */
 .colonisation-fleet-market-table.table-view .table-row-cell.colonisation-fleet-row-stock {
     -fx-background-color: rgba(0, 220, 170, 0.14);

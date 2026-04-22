@@ -10,6 +10,7 @@ import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
+import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -283,6 +284,7 @@ public class JournalService {
         }
         DashboardContext.getInstance().setBatchLoading(false);
 
+        ColonisationService.getInstance().loadPersistedUiStateAfterJournalBatch();
         CargoEventNotificationService.getInstance().notifyCargoEvent();
         ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
     }

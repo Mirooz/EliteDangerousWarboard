@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard;
 
 import be.mirooz.elitedangerous.backend.generated.model.LatestVersionResponse;
+import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.view.common.VersionUpdateNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
@@ -110,6 +111,8 @@ public class EliteDashboardApp extends Application {
                 stage.hide();
                 // Fermer la session analytics
                 AnalyticsService.getInstance().endSession();
+                System.out.println("Arrêt global : sauvegarde état fleet carrier...");
+                PersistenceService.getInstance().save();
                 System.out.println("Arrêt des services de journal...");
                 JournalTailService.getInstance().stop();
                 JournalWatcherService.getInstance().stop();

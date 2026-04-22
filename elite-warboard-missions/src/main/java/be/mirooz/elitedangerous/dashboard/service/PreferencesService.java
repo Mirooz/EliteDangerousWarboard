@@ -13,9 +13,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Service pour gérer les préférences utilisateur
@@ -30,6 +33,8 @@ public class PreferencesService {
 
     /** Référence structure Colony ({@code construction_class.json}) par {@code marketId} du chantier. */
     private static final String COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE = "colonisation-construction-structure-types.properties";
+    /** Liste des colonies ajoutées à la construction list (MarketID). */
+    private static final String COLONISATION_CONSTRUCTION_LIST_FILE = "colonisation-construction-list.properties";
 
     /**
      * Dernier chantier colonisation sélectionné dans l’UI ({@code MarketID} du site), dans {@code preferences.properties}
@@ -45,6 +50,7 @@ public class PreferencesService {
 
     private volatile Properties colonisationConstructionStructureTypes;
     private final Object colonisationConstructionStructureTypesLock = new Object();
+    private final Object colonisationConstructionListLock = new Object();
 
     private static ObjectMapper createColonisationSuggestedStationsMapper() {
         ObjectMapper m = new ObjectMapper();
@@ -73,6 +79,14 @@ public class PreferencesService {
             return Paths.get(COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE);
         }
         return parent.resolve(COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE);
+    }
+
+    private Path colonisationConstructionListPath() {
+        Path parent = preferencesFile.getParent();
+        if (parent == null) {
+            return Paths.get(COLONISATION_CONSTRUCTION_LIST_FILE);
+        }
+        return parent.resolve(COLONISATION_CONSTRUCTION_LIST_FILE);
     }
 
     private Properties loadColonisationConstructionStructureTypes() {
@@ -583,6 +597,115 @@ public class PreferencesService {
             Files.deleteIfExists(colonisationSuggestedBuyStationsPath());
         } catch (IOException e) {
             System.err.println("Préférences: impossible de supprimer le cache stations d'achat colonisation : " + e.getMessage());
+        }
+    }
+
+    public Set<Long> loadColonisationConstructionListMarketIds() {
+        synchronized (colonisationConstructionListLock) {
+            Set<Long> out = new LinkedHashSet<>();
+            Path file = colonisationConstructionListPath();
+            if (!Files.isRegularFile(file)) {
+                return out;
+            }
+            Properties p = new Properties();
+            try (InputStream in = Files.newInputStream(file)) {
+                p.load(in);
+                String raw = p.getProperty("marketIds", "");
+                if (raw != null && !raw.isBlank()) {
+                    String[] parts = raw.split(",");
+                    for (String part : parts) {
+                        String s = part == null ? "" : part.trim();
+                        if (s.isEmpty()) {
+                            continue;
+                        }
+                        try {
+                            long id = Long.parseLong(s);
+                            if (id > 0) {
+                                out.add(id);
+                            }
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Préférences: lecture construction list colonisation : " + e.getMessage());
+            }
+            return out;
+        }
+    }
+
+    public String loadColonisationConstructionListSelectedArchitectSystem() {
+        synchronized (colonisationConstructionListLock) {
+            Path file = colonisationConstructionListPath();
+            if (!Files.isRegularFile(file)) {
+                return "";
+            }
+            Properties p = new Properties();
+            try (InputStream in = Files.newInputStream(file)) {
+                p.load(in);
+                return p.getProperty("selectedArchitectSystem", "").trim();
+            } catch (IOException e) {
+                System.err.println("Préférences: lecture selectedArchitectSystem colonisation : " + e.getMessage());
+                return "";
+            }
+        }
+    }
+
+    public void persistColonisationConstructionListMarketIds(Set<Long> marketIds) {
+        synchronized (colonisationConstructionListLock) {
+            Path file = colonisationConstructionListPath();
+            try {
+                Path parent = file.getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
+                Properties p = new Properties();
+                List<String> ids = new ArrayList<>();
+                if (marketIds != null) {
+                    for (Long id : marketIds) {
+                        if (id != null && id > 0) {
+                            ids.add(String.valueOf(id));
+                        }
+                    }
+                }
+                p.setProperty("marketIds", String.join(",", ids));
+                try (OutputStream out = Files.newOutputStream(file)) {
+                    p.store(out, "Colonisation construction list market IDs");
+                }
+            } catch (IOException e) {
+                System.err.println("Préférences: enregistrement construction list colonisation : " + e.getMessage());
+            }
+        }
+    }
+
+    public void persistColonisationConstructionListSelectedArchitectSystem(String starSystem) {
+        synchronized (colonisationConstructionListLock) {
+            Path file = colonisationConstructionListPath();
+            try {
+                Path parent = file.getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
+                Properties p = new Properties();
+                if (Files.isRegularFile(file)) {
+                    try (InputStream in = Files.newInputStream(file)) {
+                        p.load(in);
+                    }
+                }
+                if (starSystem == null || starSystem.isBlank()) {
+                    p.remove("selectedArchitectSystem");
+                } else {
+                    p.setProperty("selectedArchitectSystem", starSystem.trim());
+                }
+                if (!p.containsKey("marketIds")) {
+                    p.setProperty("marketIds", "");
+                }
+                try (OutputStream out = Files.newOutputStream(file)) {
+                    p.store(out, "Colonisation construction list market IDs");
+                }
+            } catch (IOException e) {
+                System.err.println("Préférences: enregistrement selectedArchitectSystem colonisation : " + e.getMessage());
+            }
         }
     }
 }

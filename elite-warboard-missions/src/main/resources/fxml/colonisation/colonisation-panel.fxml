@@ -54,7 +54,7 @@
                                         </ScrollPane>
                                     </VBox>
                                 </VBox>
-                                <VBox spacing="8.0" styleClass="colonisation-fleet-commander-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                <VBox fx:id="fleetRightColumn" spacing="8.0" styleClass="colonisation-fleet-commander-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                                     <HBox spacing="8.0" alignment="CENTER_LEFT">
                                         <Label fx:id="commanderCurrentCargoTitleLabel" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="mining-title"/>
                                         <Button fx:id="commanderCollapseButton" mnemonicParsing="false" focusTraversable="false" managed="false" visible="false"

@@ -39,6 +39,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -81,6 +82,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -88,6 +90,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,6 +125,8 @@ public class ColonisationPanelController implements Initializable {
     private GridPane fleetMarketGrid;
     @FXML
     private Label commanderCurrentCargoTitleLabel;
+    @FXML
+    private VBox fleetRightColumn;
     @FXML
     private Button commanderCollapseButton;
     @FXML
@@ -196,6 +201,7 @@ public class ColonisationPanelController implements Initializable {
 
     /** Dernières stations d’achat affichées dans le détail (vidée au changement de sélection / actualisation). */
     private List<NearbyExportsBestStationResult> suggestedBuyStations = List.of();
+    private final Set<Long> constructionListMarketIds = new LinkedHashSet<>();
 
     private ConstructionSiteRow selectedConstructionRow;
 
@@ -212,11 +218,14 @@ public class ColonisationPanelController implements Initializable {
 
     /** Requête API « stations d’achat » en cours (build ou mise à jour). */
     private boolean suggestBuyStationsRequestInProgress;
+    private boolean constructionListLoadedAfterJournalRead;
 
     private boolean suppressArchitectComboListener;
 
     private SystemVisualViewComponent architectSystemVisualView;
     private SystemVisualViewComponent searchSystemVisualView;
+    private StackPane architectSystemMapRoot;
+    private VBox architectSystemMapDetailOverlay;
     private final List<BorderPane> searchResultCards = new ArrayList<>();
     private BorderPane selectedSearchResultCard;
 
@@ -249,6 +258,7 @@ public class ColonisationPanelController implements Initializable {
         }
         showArchitectView();
         refreshAll();
+        hideFleetRightColumn();
     }
 
     /** Vue par défaut : architecte (carte + détail chantiers). */
@@ -274,8 +284,27 @@ public class ColonisationPanelController implements Initializable {
         }
     }
 
+    private void hideFleetRightColumn() {
+        if (fleetRightColumn != null) {
+            fleetRightColumn.setManaged(false);
+            fleetRightColumn.setVisible(false);
+        }
+    }
+
     private void onColonisationDataChanged() {
+        ensureConstructionListLoadedAfterBatch();
         refreshAll();
+    }
+
+    private void ensureConstructionListLoadedAfterBatch() {
+        if (constructionListLoadedAfterJournalRead) {
+            return;
+        }
+        if (!colonisationService.isPersistedUiStateLoadedAfterBatch()) {
+            return;
+        }
+        reloadPersistedConstructionList();
+        constructionListLoadedAfterJournalRead = true;
     }
 
     private void initColonisationSearchTab() {
@@ -309,13 +338,30 @@ public class ColonisationPanelController implements Initializable {
             architectSystemVisualView.setBodiesListPanelVisible(false);
             architectSystemVisualView.setColonisationArchitectBodyCaptions(Map.of());
             architectSystemVisualView.setColonisationArchitectStationClickHandler(null);
-            architectMapContainer.getChildren().setAll(content);
-            VBox.setVgrow(content, Priority.ALWAYS);
+            architectSystemMapRoot = new StackPane(content);
+            architectSystemMapRoot.setMaxWidth(Double.MAX_VALUE);
+            architectSystemMapRoot.setMaxHeight(Double.MAX_VALUE);
+            StackPane.setAlignment(content, Pos.CENTER);
+            initArchitectMapDetailOverlay();
+            architectMapContainer.getChildren().setAll(architectSystemMapRoot);
+            VBox.setVgrow(architectSystemMapRoot, Priority.ALWAYS);
         } catch (Exception e) {
             Label error = new Label("Unable to load map view: " + e.getMessage());
             error.getStyleClass().add("colonisation-detail-placeholder");
             architectMapContainer.getChildren().setAll(error);
         }
+    }
+
+    private void initArchitectMapDetailOverlay() {
+        architectSystemMapDetailOverlay = new VBox(8);
+        architectSystemMapDetailOverlay.setManaged(false);
+        architectSystemMapDetailOverlay.setVisible(false);
+        architectSystemMapDetailOverlay.setFillWidth(true);
+        architectSystemMapDetailOverlay.setMaxWidth(430);
+        architectSystemMapDetailOverlay.getStyleClass().addAll("colonisation-column", "colonisation-map-detail-overlay");
+        StackPane.setAlignment(architectSystemMapDetailOverlay, Pos.TOP_RIGHT);
+        StackPane.setMargin(architectSystemMapDetailOverlay, new Insets(12));
+        architectSystemMapRoot.getChildren().add(architectSystemMapDetailOverlay);
     }
 
     private void initArchitectSystemCombo() {
@@ -445,7 +491,7 @@ public class ColonisationPanelController implements Initializable {
         }
         constructionsTitleLabel.setText(localizationService.getString("colonisation.constructions.title"));
         fleetTitleLabel.setText(localizationService.getString("colonisation.fleet.title"));
-        commanderCurrentCargoTitleLabel.setText(localizationService.getString("colonisation.fleet.currentColony"));
+        commanderCurrentCargoTitleLabel.setText(localizationService.getString("colonisation.list.title"));
         updateFoldButtonTooltips();
         rebuildArchitectSystemCards();
         refreshFleetPanel();
@@ -536,7 +582,7 @@ public class ColonisationPanelController implements Initializable {
             if (architectSystemComboBox != null) {
                 architectSystemComboBox.setDisable(false);
             }
-            selectedConstructionRow = globalMatch;
+            selectedConstructionRow = null;
             ColonisationArchitectSystem toSelect = resolveArchitectSystemSelection(systemsWithSites, cur, globalMatch);
             if (architectSystemComboBox != null) {
                 suppressArchitectComboListener = true;
@@ -547,7 +593,7 @@ public class ColonisationPanelController implements Initializable {
                 }
             }
             selectArchitectSystem(toSelect);
-            if (globalMatch != null) {
+            if (globalMatch != null && Objects.equals(globalMatch.getStarSystem(), toSelect.getStarSystem())) {
                 selectConstructionRow(globalMatch);
             }
         }
@@ -578,6 +624,14 @@ public class ColonisationPanelController implements Initializable {
         }
         String persistedArchitectSystem = preferencesService.getPreference(
                 PreferencesService.PREF_COLONISATION_LAST_SELECTED_ARCHITECT_SYSTEM, "");
+        String persistedFromColonisationService = colonisationService.getPersistedSelectedArchitectSystem();
+        if (persistedFromColonisationService != null && !persistedFromColonisationService.isBlank()) {
+            persistedArchitectSystem = persistedFromColonisationService;
+        }
+        String persistedFromConstructionListFile = preferencesService.loadColonisationConstructionListSelectedArchitectSystem();
+        if (persistedFromConstructionListFile != null && !persistedFromConstructionListFile.isBlank()) {
+            persistedArchitectSystem = persistedFromConstructionListFile;
+        }
         if (persistedArchitectSystem != null && !persistedArchitectSystem.isBlank()) {
             String keep = persistedArchitectSystem.trim();
             for (ColonisationArchitectSystem a : built) {
@@ -612,12 +666,14 @@ public class ColonisationPanelController implements Initializable {
             preferencesService.setPreference(
                     PreferencesService.PREF_COLONISATION_LAST_SELECTED_ARCHITECT_SYSTEM,
                     selectedArchitectStarSystem);
+            preferencesService.persistColonisationConstructionListSelectedArchitectSystem(selectedArchitectStarSystem);
         }
         if (systemChanged) {
             selectedArchitectPlanetBodyId = null;
             selectedArchitectPlanetDisplayName = null;
             architectBodyNamesById.clear();
             clearSuggestedBuyStations();
+            hideArchitectMapConstructionOverlay();
         }
         if (selectedConstructionRow != null && selectedConstructionRow.getStarSystem() != null
                 && selectedArchitectStarSystem != null
@@ -792,7 +848,16 @@ public class ColonisationPanelController implements Initializable {
                 selectedArchitectPlanetDisplayName = null;
             }
             clearSuggestedBuyStations();
-            selectConstructionRow(constructionSiteRowFromDock(site));
+            selectedConstructionRow = null;
+            colonisationService.designateBuildingSite(site.getMarketId());
+            preferencesService.setPreference(
+                    PreferencesService.PREF_COLONISATION_LAST_SELECTED_COLONY_MARKET_ID,
+                    String.valueOf(site.getMarketId()));
+            refreshFleetPanel();
+            refreshPlanetInProgressSiteSelectionStyles();
+            resetSuggestedStationsForSelection();
+            updateButtonStates();
+            showArchitectMapConstructionOverlay(site);
             return;
         }
     }
@@ -846,7 +911,7 @@ public class ColonisationPanelController implements Initializable {
 
     private void refreshConstructionDetailPanel() {
         constructionDetailContent.getChildren().clear();
-        constructionDetailTitleLabel.setText(localizationService.getString("colonisation.detail.title"));
+        constructionDetailTitleLabel.setText(localizationService.getString("colonisation.list.title"));
 
         if (selectedArchitectStarSystem == null || selectedArchitectArch == null) {
             if (architectSystemVisualView != null) {
@@ -854,30 +919,59 @@ public class ColonisationPanelController implements Initializable {
                 architectSystemVisualView.setColonisationArchitectStationClickHandler(null);
             }
             clearArchitectVisualPanel();
-            Label ph = new Label(localizationService.getString("colonisation.detail.placeholder"));
-            ph.getStyleClass().add("colonisation-detail-placeholder");
-            ph.setWrapText(true);
-            ph.setMaxWidth(Double.MAX_VALUE);
-            constructionDetailContent.getChildren().add(ph);
+            constructionDetailContent.getChildren().add(placeholderLabel("colonisation.list.empty"));
             return;
         }
+        renderConstructionListDetailPanel();
+    }
 
-        if (selectedConstructionRow != null) {
-            renderArchitectConstructionRowDetailFull(selectedConstructionRow);
+    private void renderConstructionListDetailPanel() {
+        constructionDetailTitleLabel.setText(localizationService.getString("colonisation.list.title"));
+        List<ColonisationDockEntry> docks = selectedConstructionListDocks();
+        if (docks.isEmpty()) {
+            Label empty = placeholderLabel("colonisation.list.empty");
+            constructionDetailContent.getChildren().add(empty);
             return;
         }
-
-        if (selectedArchitectPlanetBodyId != null) {
-            renderArchitectPlanetInProgressDetail();
-            return;
+        for (ColonisationDockEntry dock : docks) {
+            VBox card = new VBox(4);
+            card.getStyleClass().addAll("colonisation-buy-station-wrap", "colonisation-construction-list-card");
+            String headline = firstNonBlank(dock.getSiteNameLocalised(), dock.getStationNameRaw(), "—");
+            BorderPane titleRow = new BorderPane();
+            Label h = new Label(headline);
+            h.getStyleClass().add("colonisation-construction-card-title");
+            h.setWrapText(true);
+            h.setMaxWidth(Double.MAX_VALUE);
+            Button removeButton = new Button("X");
+            removeButton.setMnemonicParsing(false);
+            removeButton.setFocusTraversable(false);
+            removeButton.getStyleClass().add("colonisation-panel-fold-button");
+            removeButton.setOnAction(e -> {
+                removeFromConstructionList(dock.getMarketId());
+                refreshConstructionDetailPanel();
+                refreshFleetPanel();
+            });
+            titleRow.setCenter(h);
+            titleRow.setRight(removeButton);
+            card.getChildren().add(titleRow);
+            String body = resolveDockBodyDisplayName(dock);
+            String info = firstNonBlank(dock.getStarSystem(), "—")
+                    + " · "
+                    + localizedConstructionSiteClass(dock)
+                    + (body.isBlank() ? "" : " · " + body);
+            Label line = new Label(info);
+            line.getStyleClass().add("colonisation-buy-station-meta-dim");
+            line.setWrapText(true);
+            card.getChildren().add(line);
+            if (dock.getConstruction() != null) {
+                card.getChildren().add(buildConstructionListProgressNode(dock.getConstruction()));
+            }
+            constructionDetailContent.getChildren().add(card);
         }
-
-        constructionDetailTitleLabel.setText(selectedArchitectStarSystem);
-        Label hint = new Label(localizationService.getString("colonisation.architect.selectPlanet"));
-        hint.getStyleClass().add("colonisation-detail-placeholder");
-        hint.setWrapText(true);
-        hint.setMaxWidth(Double.MAX_VALUE);
-        constructionDetailContent.getChildren().add(hint);
+        List<ConstructionResource> aggregated = aggregateConstructionListResources(docks);
+        if (!aggregated.isEmpty()) {
+            addConstructionResourcesSection(constructionDetailContent, aggregated);
+        }
     }
 
     private void renderArchitectPlanetInProgressDetail() {
@@ -969,33 +1063,148 @@ public class ColonisationPanelController implements Initializable {
 
         String headline = firstNonBlank(dock.getSiteNameLocalised(), dock.getStationNameRaw(), "—");
         constructionDetailTitleLabel.setText(headline);
+        populateConstructionDetailBody(constructionDetailContent, dock, false);
+    }
 
-        addUserConstructionStructureTypeRow(constructionDetailContent, dock);
-        appendKv(constructionDetailContent, "colonisation.detail.stationType",
-                localizedConstructionSiteClass(dock));
+    private void populateConstructionDetailBody(VBox parent, ColonisationDockEntry dock, boolean mapOverlayMode) {
+        addUserConstructionStructureTypeRow(parent, dock);
+        appendKv(parent, "colonisation.detail.stationType", localizedConstructionSiteClass(dock));
         String bodyLabel = resolveDockBodyDisplayName(dock);
         if (bodyLabel != null && !bodyLabel.isBlank()) {
-            appendKv(constructionDetailContent, "colonisation.detail.body", bodyLabel);
+            appendKv(parent, "colonisation.detail.body", bodyLabel);
         }
         if (dock.getDistFromStarLs() > 0 && Double.isFinite(dock.getDistFromStarLs())) {
-            appendKv(constructionDetailContent, "colonisation.detail.distLs", String.format("%.0f", dock.getDistFromStarLs()));
+            appendKv(parent, "colonisation.detail.distLs", String.format("%.0f", dock.getDistFromStarLs()));
         }
-
         ColonisationConstruction c = dock.getConstruction();
         if (c != null) {
-            addConstructionProgressSection(constructionDetailContent, c);
-
-            if (c.getResourcesRequired() != null && !c.getResourcesRequired().isEmpty()) {
-                addConstructionResourcesSection(constructionDetailContent, c);
+            addConstructionProgressSection(parent, c, mapOverlayMode);
+            if (c.getStatus() != ConstructionStatus.COMPLETE
+                    && c.getResourcesRequired() != null
+                    && !c.getResourcesRequired().isEmpty()) {
+                if (mapOverlayMode) {
+                    addCollapsibleConstructionResourcesSection(parent, c);
+                } else {
+                    addConstructionResourcesSection(parent, c);
+                }
             }
-            appendColonyImpactPointsPanel(constructionDetailContent, dock.getMarketId());
+            appendColonyImpactPointsPanel(parent, dock.getMarketId());
         } else {
             clearSuggestedBuyStations();
         }
     }
 
+    private VBox buildConstructionDetailWindow(String headline, ColonisationDockEntry dock, Runnable onClose) {
+        VBox window = new VBox(8);
+        window.setMaxWidth(Double.MAX_VALUE);
+        window.getStyleClass().addAll("colonisation-detail-window", "colonisation-map-detail-window");
+
+        HBox header = new HBox(8);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.getStyleClass().add("colonisation-detail-window-header");
+
+        Label title = new Label(headline);
+        title.setMaxWidth(Double.MAX_VALUE);
+        title.getStyleClass().add("colonisation-section-subtitle");
+        HBox.setHgrow(title, Priority.ALWAYS);
+
+        Button closeButton = new Button("X");
+        closeButton.setMnemonicParsing(false);
+        closeButton.setFocusTraversable(false);
+        closeButton.getStyleClass().add("colonisation-panel-fold-button");
+        closeButton.setTooltip(new Tooltip(localizationService.getString("colonisation.detail.close")));
+        closeButton.setOnAction(e -> onClose.run());
+
+        header.getChildren().addAll(title, closeButton);
+        window.getChildren().add(header);
+        return window;
+    }
+
+    private void showArchitectMapConstructionOverlay(ColonisationDockEntry dock) {
+        if (architectSystemMapDetailOverlay == null || dock == null) {
+            return;
+        }
+        String headline = firstNonBlank(dock.getSiteNameLocalised(), dock.getStationNameRaw(), "—");
+        VBox window = buildConstructionDetailWindow(headline, dock, this::hideArchitectMapConstructionOverlay);
+        VBox body = new VBox(10);
+        body.setMaxWidth(Double.MAX_VALUE);
+        body.getStyleClass().add("colonisation-detail-window-body");
+        ColonisationConstruction c = dock.getConstruction();
+        if (c != null && c.getStatus() != ConstructionStatus.COMPLETE) {
+            Button addButton = new Button(localizationService.getString("colonisation.list.add"));
+            addButton.setMnemonicParsing(false);
+            addButton.setFocusTraversable(false);
+            addButton.getStyleClass().add("elite-nav-button");
+            addButton.setDisable(constructionListMarketIds.contains(dock.getMarketId()));
+            addButton.setOnAction(e -> {
+                addToConstructionList(dock.getMarketId());
+                addButton.setDisable(true);
+                refreshConstructionDetailPanel();
+                refreshFleetPanel();
+                statusLabel.setText(localizationService.getString("colonisation.list.added"));
+            });
+            body.getChildren().add(addButton);
+        }
+        populateConstructionDetailBody(body, dock, true);
+        javafx.scene.control.ScrollPane bodyScroll = new javafx.scene.control.ScrollPane(body);
+        bodyScroll.setFitToWidth(true);
+        bodyScroll.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        bodyScroll.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        bodyScroll.getStyleClass().add("colonisation-map-detail-scroll");
+        window.getChildren().add(bodyScroll);
+        architectSystemMapDetailOverlay.getChildren().setAll(window);
+        architectSystemMapDetailOverlay.setManaged(true);
+        architectSystemMapDetailOverlay.setVisible(true);
+    }
+
+    private void hideArchitectMapConstructionOverlay() {
+        if (architectSystemMapDetailOverlay == null) {
+            return;
+        }
+        architectSystemMapDetailOverlay.getChildren().clear();
+        architectSystemMapDetailOverlay.setManaged(false);
+        architectSystemMapDetailOverlay.setVisible(false);
+    }
+
+    private void reloadPersistedConstructionList() {
+        constructionListMarketIds.clear();
+        constructionListMarketIds.addAll(colonisationService.getPersistedConstructionListMarketIds());
+    }
+
+    private void addToConstructionList(long marketId) {
+        if (marketId <= 0) {
+            return;
+        }
+        if (constructionListMarketIds.add(marketId)) {
+            persistConstructionList();
+        }
+    }
+
+    private void removeFromConstructionList(long marketId) {
+        if (marketId <= 0) {
+            return;
+        }
+        if (constructionListMarketIds.remove(marketId)) {
+            persistConstructionList();
+        }
+    }
+
+    private void persistConstructionList() {
+        preferencesService.persistColonisationConstructionListMarketIds(constructionListMarketIds);
+    }
+
     private void addConstructionProgressSection(VBox parent, ColonisationConstruction c) {
+        addConstructionProgressSection(parent, c, false);
+    }
+
+    private void addConstructionProgressSection(VBox parent, ColonisationConstruction c, boolean showCompletedText) {
         appendSectionTitle(parent, "colonisation.col.progress");
+        if (showCompletedText && c.getStatus() == ConstructionStatus.COMPLETE) {
+            Label completed = new Label(localizationService.getString("colonisation.status.COMPLETED_CAPS"));
+            completed.getStyleClass().add("colonisation-progress-completed");
+            parent.getChildren().add(completed);
+            return;
+        }
         double raw = c.getConstructionProgress();
         double percent = (raw >= 0 && raw <= 1.0) ? raw * 100.0 : raw;
         double clampedPercent = Math.max(0.0, Math.min(100.0, percent));
@@ -1005,7 +1214,7 @@ public class ColonisationPanelController implements Initializable {
         wrap.setMaxWidth(Double.MAX_VALUE);
 
         ProgressBar pb = new ProgressBar(clampedPercent / 100.0);
-        pb.getStyleClass().addAll("progress-bar", "colonisation-detail-progress-bar");
+        pb.getStyleClass().addAll("progress-bar", "colonisation-detail-progress-bar", "colonisation-progress-black");
         pb.setMaxWidth(Double.MAX_VALUE);
         pb.setPrefHeight(18);
 
@@ -1014,6 +1223,56 @@ public class ColonisationPanelController implements Initializable {
 
         wrap.getChildren().addAll(pb, pct);
         parent.getChildren().add(wrap);
+    }
+
+    private Node buildConstructionListProgressNode(ColonisationConstruction c) {
+        if (c == null) {
+            return new Label("—");
+        }
+        if (c.getStatus() == ConstructionStatus.COMPLETE) {
+            Label completed = new Label(localizationService.getString("colonisation.status.COMPLETED_CAPS"));
+            completed.getStyleClass().add("colonisation-progress-completed");
+            return completed;
+        }
+        double raw = c.getConstructionProgress();
+        double percent = (raw >= 0 && raw <= 1.0) ? raw * 100.0 : raw;
+        double clampedPercent = Math.max(0.0, Math.min(100.0, percent));
+        StackPane wrap = new StackPane();
+        wrap.getStyleClass().add("colonisation-detail-progress-wrap");
+        ProgressBar pb = new ProgressBar(clampedPercent / 100.0);
+        pb.getStyleClass().addAll("progress-bar", "colonisation-detail-progress-bar", "colonisation-progress-black", "colonisation-list-progress-bar");
+        pb.setMaxWidth(Double.MAX_VALUE);
+        Label pct = new Label(String.format(Locale.ROOT, "%.1f %%", clampedPercent));
+        pct.getStyleClass().add("colonisation-detail-progress-label");
+        wrap.getChildren().addAll(pb, pct);
+        return wrap;
+    }
+
+    private void addCollapsibleConstructionResourcesSection(VBox parent, ColonisationConstruction c) {
+        VBox block = new VBox(6);
+        block.setMaxWidth(Double.MAX_VALUE);
+        HBox header = new HBox(8);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label title = new Label(localizationService.getString("colonisation.detail.section.resources"));
+        title.getStyleClass().add("colonisation-section-subtitle");
+        HBox.setHgrow(title, Priority.ALWAYS);
+        Button toggle = new Button("▼");
+        toggle.setMnemonicParsing(false);
+        toggle.setFocusTraversable(false);
+        toggle.getStyleClass().add("colonisation-panel-fold-button");
+        VBox body = new VBox(6);
+        body.setMaxWidth(Double.MAX_VALUE);
+        List<ConstructionResource> req = sortResourcesRequiredIncompleteFirst(c.getResourcesRequired());
+        addConstructionResourcesSection(body, req, false);
+        toggle.setOnAction(e -> {
+            boolean collapse = body.isManaged();
+            body.setManaged(!collapse);
+            body.setVisible(!collapse);
+            toggle.setText(collapse ? "▶" : "▼");
+        });
+        header.getChildren().addAll(title, toggle);
+        block.getChildren().addAll(header, body);
+        parent.getChildren().add(block);
     }
 
     private void appendColonyImpactPointsPanel(VBox parent, long marketId) {
@@ -1055,6 +1314,16 @@ public class ColonisationPanelController implements Initializable {
      * Recherche de stations d’achat pour le chantier sélectionné (sans exiger que ce soit le « chantier courant » enregistré).
      */
     private void onFindOptimalMarkets() {
+        List<ColonisationDockEntry> listDocks = selectedConstructionListDocks();
+        if (!listDocks.isEmpty()) {
+            clearSuggestedBuyStations();
+            suggestBuyStationsRequestInProgress = true;
+            updateButtonStates();
+            statusLabel.setText(localizationService.getString("colonisation.findOptimalMarkets.searching"));
+            refreshConstructionDetailPanel();
+            runSuggestBuyStationsWorkerForConstructionList(listDocks);
+            return;
+        }
         if (selectedConstructionRow == null) {
             statusLabel.setText(localizationService.getString("colonisation.buy.needSelection"));
             return;
@@ -1073,6 +1342,7 @@ public class ColonisationPanelController implements Initializable {
     }
 
     private void clearArchitectVisualPanel() {
+        hideArchitectMapConstructionOverlay();
         if (architectSystemVisualView != null) {
             architectSystemVisualView.displaySystem(null);
         }
@@ -1454,10 +1724,20 @@ public class ColonisationPanelController implements Initializable {
      */
     private void addConstructionResourcesSection(VBox parent, ColonisationConstruction c) {
         List<ConstructionResource> req = sortResourcesRequiredIncompleteFirst(c.getResourcesRequired());
+        addConstructionResourcesSection(parent, req, true);
+    }
+
+    private void addConstructionResourcesSection(VBox parent, List<ConstructionResource> req) {
+        addConstructionResourcesSection(parent, req, true);
+    }
+
+    private void addConstructionResourcesSection(VBox parent, List<ConstructionResource> req, boolean includeTitle) {
         if (req.isEmpty()) {
             return;
         }
-        appendSectionTitle(parent, "colonisation.detail.section.resources");
+        if (includeTitle) {
+            appendSectionTitle(parent, "colonisation.detail.section.resources");
+        }
         int[] w = maxProvidedRequiredDigits(req);
         int wProv = w[0];
         int wReq = w[1];
@@ -1521,6 +1801,65 @@ public class ColonisationPanelController implements Initializable {
                 parent.getChildren().add(buildResourceRatioRow(req.get(i), wProv, wReq));
             }
         }
+    }
+
+    private List<ColonisationDockEntry> selectedConstructionListDocks() {
+        List<ColonisationDockEntry> out = new ArrayList<>();
+        boolean changed = false;
+        boolean hasAnyDockEntryLoaded = !colonisationService.getDockEntries().isEmpty();
+        for (Long marketId : constructionListMarketIds) {
+            ColonisationDockEntry dock = findDockEntry(marketId);
+            if (dock != null && dock.getConstruction() != null && dock.getConstruction().getStatus() != ConstructionStatus.COMPLETE) {
+                out.add(dock);
+            } else {
+                changed = true;
+            }
+        }
+        // Important: au démarrage les docks peuvent ne pas être encore chargés ; ne pas vider la liste persistée trop tôt.
+        if (changed && hasAnyDockEntryLoaded) {
+            constructionListMarketIds.clear();
+            for (ColonisationDockEntry dock : out) {
+                constructionListMarketIds.add(dock.getMarketId());
+            }
+            persistConstructionList();
+        }
+        return out;
+    }
+
+    private static final class ResourceAccumulator {
+        ConstructionResource resource;
+        int required;
+        int provided;
+        long payment;
+    }
+
+    private List<ConstructionResource> aggregateConstructionListResources(List<ColonisationDockEntry> docks) {
+        Map<String, ResourceAccumulator> byCommodity = new LinkedHashMap<>();
+        for (ColonisationDockEntry dock : docks) {
+            ColonisationConstruction c = dock.getConstruction();
+            if (c == null || c.getResourcesRequired() == null) {
+                continue;
+            }
+            for (ConstructionResource r : c.getResourcesRequired()) {
+                if (r == null || r.getCommodity() == null) {
+                    continue;
+                }
+                String key = firstNonBlank(r.getCommodity().getCargoJsonName(), r.displayLabel(), "?");
+                ResourceAccumulator acc = byCommodity.computeIfAbsent(key, k -> {
+                    ResourceAccumulator a = new ResourceAccumulator();
+                    a.resource = r;
+                    return a;
+                });
+                acc.required += r.getRequiredAmount();
+                acc.provided += r.getProvidedAmount();
+                acc.payment = Math.max(acc.payment, r.getPayment());
+            }
+        }
+        List<ConstructionResource> out = new ArrayList<>();
+        for (ResourceAccumulator acc : byCommodity.values()) {
+            out.add(new ConstructionResource(acc.resource.getCommodity(), acc.required, acc.provided, acc.payment));
+        }
+        return sortResourcesRequiredIncompleteFirst(out);
     }
 
     private static int[] maxProvidedRequiredDigits(List<ConstructionResource> resources) {
@@ -2310,7 +2649,7 @@ public class ColonisationPanelController implements Initializable {
     }
 
     /**
-     * Chantier / colonie courant : carte + statut, barre de progression et ressources (même rendu que le panneau de détail architecte).
+     * Panneau Fleet (colonne droite) basé sur la construction list : cartes colonies + ressources agrégées.
      */
     private void refreshCommanderColonyPanel() {
         Platform.runLater(() -> {
@@ -2318,29 +2657,24 @@ public class ColonisationPanelController implements Initializable {
                 return;
             }
             commanderColonyVBox.getChildren().clear();
-            ColonisationDockEntry site = colonisationService.getCurrentConstructionSite();
-            if (site == null) {
-                Label ph = placeholderLabel("colonisation.fleet.currentColony.none");
+            List<ColonisationDockEntry> docks = selectedConstructionListDocks();
+            if (docks.isEmpty()) {
+                Label ph = placeholderLabel("colonisation.list.empty");
                 ph.setMaxWidth(Double.MAX_VALUE);
                 commanderColonyVBox.getChildren().add(ph);
                 return;
             }
-            commanderColonyVBox.getChildren().add(buildFleetColonySiteCard(site));
-            ColonisationConstruction c = site.getConstruction();
-            if (c == null) {
-                c = colonisationService.getCurrentConstruction();
+            for (ColonisationDockEntry dock : docks) {
+                commanderColonyVBox.getChildren().add(buildFleetColonySiteCard(dock));
+                ColonisationConstruction c = dock.getConstruction();
+                if (c != null) {
+                    commanderColonyVBox.getChildren().add(buildConstructionListProgressNode(c));
+                }
             }
-            if (c == null) {
-                Label hint = new Label(localizationService.getString("colonisation.fleet.currentColony.noDepot"));
-                hint.getStyleClass().add("colonisation-detail-placeholder");
-                hint.setWrapText(true);
-                hint.setMaxWidth(Double.MAX_VALUE);
-                commanderColonyVBox.getChildren().add(hint);
-                return;
+            List<ConstructionResource> aggregated = aggregateConstructionListResources(docks);
+            if (!aggregated.isEmpty()) {
+                addConstructionResourcesSection(commanderColonyVBox, aggregated);
             }
-            commanderColonyVBox.getChildren().add(buildFleetColonyStatusRow(c));
-            addConstructionProgressSection(commanderColonyVBox, c);
-            addFleetColonyResourcesSection(commanderColonyVBox, c);
         });
     }
 
@@ -2648,11 +2982,6 @@ public class ColonisationPanelController implements Initializable {
                 byCommodity.put(k, new FleetMarketRow(onlyMissing, display, 0, 0, 0, 0L, missing));
             }
         }
-        // Missing net = manque chantier - stock FC - cargo vaisseau (jamais < 0)
-        byCommodity.replaceAll((k, r) -> r.withMissing(Math.max(0, r.getMissing() - Math.max(0, r.getStock()))));
-        Map<String, Integer> shipTonsByKey = buildShipStockTonsByMergeKey();
-        byCommodity.replaceAll((k, r) -> r.withMissing(
-                Math.max(0, r.getMissing() - shipTonsByKey.getOrDefault(k, 0))));
         List<FleetMarketRow> out = new ArrayList<>(byCommodity.values());
         out.sort(Comparator
                 .comparing(this::fleetMarketRowCategorySortKey, String.CASE_INSENSITIVE_ORDER)
@@ -2678,21 +3007,23 @@ public class ColonisationPanelController implements Initializable {
 
     private Map<String, Integer> buildMissingByCommodity() {
         Map<String, Integer> out = new HashMap<>();
-        ColonisationConstruction c = colonisationService.getCurrentConstruction();
-        if (c == null || c.getResourcesRequired() == null) {
-            return out;
-        }
-        for (ConstructionResource r : c.getResourcesRequired()) {
-            int missing = Math.max(0, r.getRequiredAmount() - r.getProvidedAmount());
-            if (missing <= 0) {
+        for (ColonisationDockEntry dock : selectedConstructionListDocks()) {
+            ColonisationConstruction c = dock.getConstruction();
+            if (c == null || c.getResourcesRequired() == null) {
                 continue;
             }
-            if (r.getCommodity() == null) {
-                continue;
-            }
-            String key = ColonisationCommodityKeys.mergeKey(r.getCommodity());
-            if (!key.isBlank()) {
-                out.merge(key, missing, Integer::sum);
+            for (ConstructionResource r : c.getResourcesRequired()) {
+                int missing = Math.max(0, r.getRequiredAmount() - r.getProvidedAmount());
+                if (missing <= 0) {
+                    continue;
+                }
+                if (r.getCommodity() == null) {
+                    continue;
+                }
+                String key = ColonisationCommodityKeys.mergeKey(r.getCommodity());
+                if (!key.isBlank()) {
+                    out.merge(key, missing, Integer::sum);
+                }
             }
         }
         return out;
@@ -2700,19 +3031,21 @@ public class ColonisationPanelController implements Initializable {
 
     private Map<String, String> buildMissingDisplayByCommodity() {
         Map<String, String> out = new HashMap<>();
-        ColonisationConstruction c = colonisationService.getCurrentConstruction();
-        if (c == null || c.getResourcesRequired() == null) {
-            return out;
-        }
-        for (ConstructionResource r : c.getResourcesRequired()) {
-            if (r.getCommodity() == null) {
+        for (ColonisationDockEntry dock : selectedConstructionListDocks()) {
+            ColonisationConstruction c = dock.getConstruction();
+            if (c == null || c.getResourcesRequired() == null) {
                 continue;
             }
-            String key = ColonisationCommodityKeys.mergeKey(r.getCommodity());
-            if (key.isBlank()) {
-                continue;
+            for (ConstructionResource r : c.getResourcesRequired()) {
+                if (r.getCommodity() == null) {
+                    continue;
+                }
+                String key = ColonisationCommodityKeys.mergeKey(r.getCommodity());
+                if (key.isBlank()) {
+                    continue;
+                }
+                out.putIfAbsent(key, firstNonBlank(r.displayLabel(), key));
             }
-            out.putIfAbsent(key, firstNonBlank(r.displayLabel(), key));
         }
         return out;
     }
@@ -2762,6 +3095,44 @@ public class ColonisationPanelController implements Initializable {
         statusLabel.setText(localizationService.getString("colonisation.buildStationSearching"));
         final long requestMarketId = selectedConstructionRow.getMarketId();
         runSuggestBuyStationsWorker(requestMarketId);
+    }
+
+    private void runSuggestBuyStationsWorkerForConstructionList(List<ColonisationDockEntry> docks) {
+        List<ColonisationDockEntry> snapshot = List.copyOf(docks);
+        Thread t = new Thread(() -> {
+            try {
+                Map<String, NearbyExportsBestStationResult> byStation = new LinkedHashMap<>();
+                for (ColonisationDockEntry dock : snapshot) {
+                    List<NearbyExportsBestStationResult> list = colonisationService.suggestBuyStationsForDock(dock);
+                    for (NearbyExportsBestStationResult st : list) {
+                        String key = firstNonBlank(st.getSystemName(), "") + "|" + firstNonBlank(st.getStationName(), "");
+                        byStation.putIfAbsent(key, st);
+                    }
+                }
+                List<NearbyExportsBestStationResult> merged = List.copyOf(byStation.values());
+                Platform.runLater(() -> {
+                    suggestedBuyStations = merged;
+                    suggestBuyStationsRequestInProgress = false;
+                    refreshConstructionDetailPanel();
+                    if (merged.isEmpty()) {
+                        statusLabel.setText(localizationService.getString("colonisation.buy.noStations"));
+                    } else {
+                        statusLabel.setText("");
+                    }
+                    updateButtonStates();
+                });
+            } catch (IOException e) {
+                Platform.runLater(() -> {
+                    suggestedBuyStations = List.of();
+                    suggestBuyStationsRequestInProgress = false;
+                    refreshConstructionDetailPanel();
+                    statusLabel.setText(localizationService.getString("colonisation.stationsError") + " " + e.getMessage());
+                    updateButtonStates();
+                });
+            }
+        }, "colonisation-suggest-buy-list");
+        t.setDaemon(true);
+        t.start();
     }
 
     /**
@@ -2833,7 +3204,7 @@ public class ColonisationPanelController implements Initializable {
         if (buildStationButton == null) {
             return;
         }
-        boolean noSelection = selectedConstructionRow == null;
+        boolean noSelection = selectedConstructionRow == null && constructionListMarketIds.isEmpty();
         boolean busy = suggestBuyStationsRequestInProgress;
         buildStationButton.setDisable(noSelection || busy);
         if (updateTradeStationButton != null) {

@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.view.main;
 
 import be.mirooz.elitedangerous.dashboard.service.*;
 import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.view.common.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
@@ -129,6 +130,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         loadDonateButtonImage();
         popupManager.attachToContainer(popupContainer);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            AnalyticsService.getInstance().endSession();
             System.out.println("Arrêt global : sauvegarde état fleet carrier...");
             PersistenceService.getInstance().save();
             System.out.println("Arrêt global : arrêt des services de journal...");
