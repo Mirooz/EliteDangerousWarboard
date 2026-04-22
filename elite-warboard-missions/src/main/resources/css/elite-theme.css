@@ -1042,18 +1042,46 @@
     -fx-padding: 3 0 3 0;
 }
 
-/* Lignes cascade : après les règles .context-menu .menu-item pour garder orange / survol type elite-nav-button */
+/* Lignes cascade : texte blanc par défaut (lisible), orange au survol / focus / sous-menu ouvert */
 .context-menu .menu-item.colonisation-colony-cascade-menu-item {
     -fx-background-color: transparent;
-    -fx-text-fill: -fx-elite-orange;
+    -fx-text-fill: white;
+    -fx-mark-color: white;
     -fx-font-weight: bold;
     -fx-font-size: 12px;
     -fx-padding: 8px 22px 8px 14px;
 }
+.context-menu .menu-item.colonisation-colony-cascade-menu-item > .label {
+    -fx-text-fill: white;
+}
+.context-menu .menu-item.colonisation-colony-cascade-menu-item > .right-container > .arrow {
+    -fx-background-color: white;
+}
 .context-menu .menu-item.colonisation-colony-cascade-menu-item:focused,
 .context-menu .menu-item.colonisation-colony-cascade-menu-item:hover {
     -fx-background-color: rgba(255, 107, 0, 0.1);
-    -fx-text-fill: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-mark-color: -fx-elite-orange;
+}
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:focused > .label,
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:hover > .label {
+    -fx-text-fill: -fx-elite-orange;
+}
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:focused > .right-container > .arrow,
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:hover > .right-container > .arrow {
+    -fx-background-color: -fx-elite-orange;
+}
+/* Ligne Menu dont le sous-menu est ouvert : reste « sélectionnée » en orange */
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:showing {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-text-fill: -fx-elite-orange;
+    -fx-mark-color: -fx-elite-orange;
+}
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:showing > .label {
+    -fx-text-fill: -fx-elite-orange;
+}
+.context-menu .menu-item.colonisation-colony-cascade-menu-item:showing > .right-container > .arrow {
+    -fx-background-color: -fx-elite-orange;
 }
 .context-menu .menu-item.colonisation-colony-cascade-menu-item:disabled {
     -fx-background-color: transparent;
