@@ -16,17 +16,15 @@
                               HBox.hgrow="NEVER" styleClass="colonisation-architect-system-combo"/>
                     <Label fx:id="architectSystemStatsLabel" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"
                            styleClass="colonisation-architect-system-stats"/>
-                    <Button fx:id="openColonisationFinderButton" mnemonicParsing="false" focusTraversable="false"
-                            styleClass="elite-nav-button"/>
                 </HBox>
                 <TabPane fx:id="architectCenterTabPane" styleClass="colonisation-tab-pane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
                     <tabs>
-                        <Tab fx:id="architectSystemViewTab" text="System View">
+                        <Tab fx:id="architectSystemViewTab">
                             <VBox spacing="0.0" VBox.vgrow="ALWAYS">
                                 <VBox fx:id="architectMapContainer" VBox.vgrow="ALWAYS"/>
                             </VBox>
                         </Tab>
-                        <Tab fx:id="architectCargoFleetTab" text="Cargo &amp; Fleet">
+                        <Tab fx:id="architectCargoFleetTab">
                             <VBox spacing="0.0" styleClass="colonisation-fleet-tab-wrap" VBox.vgrow="ALWAYS">
                             <HBox spacing="10.0" VBox.vgrow="ALWAYS">
                                 <VBox spacing="8.0" styleClass="colonisation-fleet-carrier-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
@@ -106,6 +104,52 @@
                             </HBox>
                             </VBox>
                         </Tab>
+                        <Tab fx:id="architectColonisableSearchTab">
+                            <VBox spacing="8.0" styleClass="colonisation-finder-root" VBox.vgrow="ALWAYS">
+                                <BorderPane styleClass="colonisation-column,colonisation-search-pane" VBox.vgrow="ALWAYS">
+                                    <left>
+                                        <VBox spacing="12.0" minWidth="360.0" maxWidth="420.0" styleClass="colonisation-search-filters" BorderPane.alignment="CENTER_LEFT">
+                                            <padding>
+                                                <Insets top="10.0" right="10.0" bottom="10.0" left="4.0"/>
+                                            </padding>
+                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                                <Label fx:id="searchMinLandablesLabel" styleClass="config-label"/>
+                                                <Spinner fx:id="searchMinLandablesSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="100"
+                                                         styleClass="config-spinner"/>
+                                            </HBox>
+                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                                <Label fx:id="searchMinRingsLabel" styleClass="config-label"/>
+                                                <Spinner fx:id="searchMinRingsSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="100"
+                                                         styleClass="config-spinner"/>
+                                            </HBox>
+                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                                <Label fx:id="searchMaxDistanceSolLabel" styleClass="config-label"/>
+                                                <Spinner fx:id="searchMaxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="110"
+                                                         styleClass="config-spinner"/>
+                                            </HBox>
+                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                                <Button fx:id="searchColonisableButton" styleClass="elite-nav-button"/>
+                                                <ProgressIndicator fx:id="searchLoadingIndicator" maxHeight="30.0" maxWidth="30.0" visible="false"/>
+                                            </HBox>
+                                            <Label fx:id="searchErrorLabel" styleClass="footer-text" wrapText="true" visible="false" managed="false"/>
+                                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                                        styleClass="colonisation-architect-scroll,colonisation-detail-scroll" VBox.vgrow="ALWAYS">
+                                                <VBox fx:id="searchResultsBox" spacing="10.0" styleClass="colonisation-search-results-box">
+                                                    <padding>
+                                                        <Insets top="4.0" right="4.0" bottom="8.0" left="4.0"/>
+                                                    </padding>
+                                                </VBox>
+                                            </ScrollPane>
+                                        </VBox>
+                                    </left>
+                                    <center>
+                                        <VBox spacing="0.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+                                            <VBox fx:id="searchMapContainer" VBox.vgrow="ALWAYS"/>
+                                        </VBox>
+                                    </center>
+                                </BorderPane>
+                            </VBox>
+                        </Tab>
                     </tabs>
                 </TabPane>
             </VBox>
@@ -123,68 +167,5 @@
                 </ScrollPane>
             </VBox>
         </HBox>
-    </VBox>
-
-    <VBox fx:id="colonisationFinderRoot" spacing="8.0" visible="false" managed="false" VBox.vgrow="ALWAYS"
-          styleClass="colonisation-finder-root">
-        <BorderPane styleClass="colonisation-column,colonisation-search-pane" VBox.vgrow="ALWAYS">
-            <left>
-                <VBox spacing="12.0" minWidth="360.0" maxWidth="420.0" styleClass="colonisation-search-filters" BorderPane.alignment="CENTER_LEFT">
-                    <padding>
-                        <Insets top="10.0" right="10.0" bottom="10.0" left="4.0"/>
-                    </padding>
-                    <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-finder-header">
-                        <Button fx:id="backToArchitectViewButton" mnemonicParsing="false" focusTraversable="false"
-                                styleClass="elite-nav-button"/>
-                    </HBox>
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
-                        <Label fx:id="searchMinLandablesLabel" styleClass="config-label"/>
-                        <Spinner fx:id="searchMinLandablesSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="100"
-                                 styleClass="config-spinner"/>
-                    </HBox>
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
-                        <Label fx:id="searchMinRingsLabel" styleClass="config-label"/>
-                        <Spinner fx:id="searchMinRingsSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="100"
-                                 styleClass="config-spinner"/>
-                    </HBox>
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
-                        <Label fx:id="searchMaxDistanceSolLabel" styleClass="config-label"/>
-                        <Spinner fx:id="searchMaxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="110"
-                                 styleClass="config-spinner"/>
-                    </HBox>
-                    <HBox spacing="8.0" alignment="CENTER_LEFT">
-                        <Button fx:id="searchColonisableButton" styleClass="elite-nav-button"/>
-                        <ProgressIndicator fx:id="searchLoadingIndicator" maxHeight="30.0" maxWidth="30.0" visible="false"/>
-                    </HBox>
-                    <Label fx:id="searchErrorLabel" styleClass="footer-text" wrapText="true" visible="false" managed="false"/>
-                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                                styleClass="colonisation-architect-scroll,colonisation-detail-scroll" VBox.vgrow="ALWAYS">
-                        <VBox fx:id="searchResultsBox" spacing="10.0" styleClass="colonisation-search-results-box">
-                            <padding>
-                                <Insets top="4.0" right="4.0" bottom="8.0" left="4.0"/>
-                            </padding>
-                        </VBox>
-                    </ScrollPane>
-                </VBox>
-            </left>
-            <center>
-                <HBox spacing="10.0" BorderPane.alignment="CENTER">
-                    <VBox spacing="0.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
-                        <VBox fx:id="searchMapContainer" VBox.vgrow="ALWAYS"/>
-                    </VBox>
-                    <VBox spacing="8.0" minWidth="300.0" maxWidth="380.0" prefWidth="340.0"
-                          styleClass="colonisation-search-map-pane">
-                        <padding>
-                            <Insets top="10.0" right="8.0" bottom="10.0" left="8.0"/>
-                        </padding>
-                        <Label fx:id="searchNeighborsTitleLabel" styleClass="colonisation-section-subtitle"/>
-                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                                    styleClass="colonisation-architect-scroll,colonisation-detail-scroll" VBox.vgrow="ALWAYS">
-                            <VBox fx:id="searchNeighborsBox" spacing="8.0"/>
-                        </ScrollPane>
-                    </VBox>
-                </HBox>
-            </center>
-        </BorderPane>
     </VBox>
 </VBox>

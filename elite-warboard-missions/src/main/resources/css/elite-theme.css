@@ -455,6 +455,42 @@
     -fx-fill: #ffb24a;
 }
 
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-neighbors-column {
+    -fx-padding: 0 0 0 10;
+    -fx-alignment: top-right;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-neighbors-caption {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: derive(-fx-elite-orange, -12%);
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-neighbors-caption .text {
+    -fx-fill: derive(-fx-elite-orange, -12%);
+    -fx-font-size: 10px;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-neighbor-system-compact {
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: derive(-fx-elite-text-dim, 8%);
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-neighbor-system-compact:hover {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-neighbor-system-compact .text {
+    -fx-fill: derive(-fx-elite-text-dim, 8%);
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+}
+
+.colonisation-search-results-box .colonisation-search-result-card .colonisation-search-neighbor-system-compact:hover .text {
+    -fx-fill: -fx-elite-cyan;
+}
+
 .colonisation-column {
     -fx-background-color: -fx-elite-gray;
     -fx-padding: 12px;
