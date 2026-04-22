@@ -19,6 +19,8 @@ import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import com.fasterxml.jackson.databind.JsonNode;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -33,6 +35,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.Cursor;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -40,6 +43,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Scale;
 import javafx.util.Duration;
+import javafx.stage.Window;
 
 import java.net.URL;
 import java.util.*;
@@ -153,6 +157,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
+    private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
+    private final PopupManager popupManager = PopupManager.getInstance();
     private static SystemVisualViewComponent instance;
     private static final String PREF_SYSTEM_VIEW_SPACING_X = "exploration.systemView.spacing.horizontal";
     private static final String PREF_SYSTEM_VIEW_SPACING_Y = "exploration.systemView.spacing.vertical";
@@ -176,6 +182,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Initialiser le composant overlay
         bodiesOverlayComponent = new ExplorationBodiesOverlayComponent();
         bodiesOverlayComponent.setBodyCardFactory(this::createBodiesListForOverlay);
+        initSystemTitleClipboardAction();
 
         // Mettre à jour le texte du bouton overlay
         Platform.runLater(() -> {
@@ -275,6 +282,40 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Initialiser le radar
         initializeRadar();
+    }
+
+    private void initSystemTitleClipboardAction() {
+        if (systemTitleLabel == null) {
+            return;
+        }
+        systemTitleLabel.setPickOnBounds(true);
+        systemTitleLabel.setCursor(Cursor.HAND);
+        Tooltip tip = new TooltipComponent(localizationService.getString("colonisation.buy.tooltipCopySystem"));
+        tip.setShowDelay(Duration.millis(180));
+        Tooltip.install(systemTitleLabel, tip);
+        systemTitleLabel.setOnMouseEntered(e -> systemTitleLabel.setUnderline(true));
+        systemTitleLabel.setOnMouseExited(e -> systemTitleLabel.setUnderline(false));
+        systemTitleLabel.setOnMouseClicked(event -> {
+            if (event.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+            String name = null;
+            if (currentSystem != null && currentSystem.getSystemName() != null && !currentSystem.getSystemName().isBlank()) {
+                name = currentSystem.getSystemName().trim();
+            } else if (systemTitleLabel.getText() != null && !systemTitleLabel.getText().isBlank()) {
+                name = systemTitleLabel.getText().trim();
+            }
+            if (name == null || name.isBlank()) {
+                return;
+            }
+            Window win = systemTitleLabel.getScene() != null ? systemTitleLabel.getScene().getWindow() : null;
+            if (win == null) {
+                return;
+            }
+            copyClipboardManager.copyToClipboard(name);
+            popupManager.showPopup(localizationService.getString("system.copied"), event.getSceneX(), event.getSceneY(), win);
+            event.consume();
+        });
     }
 
     private void initMapPanControls() {
