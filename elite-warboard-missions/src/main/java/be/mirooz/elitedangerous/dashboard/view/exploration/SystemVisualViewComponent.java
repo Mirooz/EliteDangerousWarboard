@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -440,6 +441,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (deltaY == 0) {
             return;
         }
+        if (bodiesGroup == null) {
+            return;
+        }
+
+        // Point visé par la souris dans le repère local du groupe (avant zoom)
+        Point2D mouseInGroupBeforeZoom = bodiesGroup.sceneToLocal(event.getSceneX(), event.getSceneY());
 
         // Calculer le nouveau niveau de zoom
         double zoomChange = deltaY > 0 ? (1 + ZOOM_FACTOR) : (1 - ZOOM_FACTOR);
@@ -455,6 +462,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             zoomTransform.setX(newZoom);
             zoomTransform.setY(newZoom);
             currentZoom = newZoom;
+
+            // Après zoom, recalculer la position écran de ce même point logique
+            // puis translater pour que la souris reste "ancrée" sur ce point.
+            Point2D mouseInSceneAfterZoom = bodiesGroup.localToScene(mouseInGroupBeforeZoom);
+            double adjustX = event.getSceneX() - mouseInSceneAfterZoom.getX();
+            double adjustY = event.getSceneY() - mouseInSceneAfterZoom.getY();
+            panTranslateX += adjustX;
+            panTranslateY += adjustY;
+            bodiesGroup.setTranslateX(panTranslateX);
+            bodiesGroup.setTranslateY(panTranslateY);
         }
     }
 
