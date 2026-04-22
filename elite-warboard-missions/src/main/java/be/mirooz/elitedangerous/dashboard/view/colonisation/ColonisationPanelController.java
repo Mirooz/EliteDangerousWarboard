@@ -130,6 +130,8 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private CheckBox fleetAvoidPlanetaryLandingCheckBox;
     @FXML
+    private CheckBox fleetLargePadOnlyCheckBox;
+    @FXML
     private Button fleetFindOptimalMarketButton;
     @FXML
     private Button fleetOptimalMarketHelpButton;
@@ -286,6 +288,9 @@ public class ColonisationPanelController implements Initializable {
         }
         if (fleetAvoidPlanetaryLandingCheckBox != null) {
             fleetAvoidPlanetaryLandingCheckBox.setSelected(true);
+        }
+        if (fleetLargePadOnlyCheckBox != null) {
+            fleetLargePadOnlyCheckBox.setSelected(true);
         }
         if (fleetOptimalMarketHelpButton != null) {
             fleetOptimalMarketHelpTooltip = new Tooltip();
@@ -534,6 +539,9 @@ public class ColonisationPanelController implements Initializable {
         fleetTitleLabel.setText(localizationService.getString("colonisation.fleet.title"));
         if (fleetAvoidPlanetaryLandingCheckBox != null) {
             fleetAvoidPlanetaryLandingCheckBox.setText(localizationService.getString("colonisation.fleet.optimalMarket.avoidPlanetary"));
+        }
+        if (fleetLargePadOnlyCheckBox != null) {
+            fleetLargePadOnlyCheckBox.setText(localizationService.getString("colonisation.fleet.optimalMarket.largePadOnly"));
         }
         if (fleetFindOptimalMarketButton != null) {
             fleetFindOptimalMarketButton.setText(localizationService.getString("colonisation.fleet.optimalMarket.findButton"));
@@ -1004,13 +1012,8 @@ public class ColonisationPanelController implements Initializable {
             titleRow.setCenter(h);
             titleRow.setRight(removeButton);
             card.getChildren().add(titleRow);
-            String body = resolveDockBodyDisplayName(dock);
-            String info = firstNonBlank(dock.getStarSystem(), "—")
-                    + " · "
-                    + localizedConstructionSiteClass(dock)
-                    + (body.isBlank() ? "" : " · " + body);
-            Label line = new Label(info);
-            line.getStyleClass().add("colonisation-buy-station-meta-dim");
+            Label line = new Label(constructionListSubtitleBodyAndType(dock));
+            line.getStyleClass().addAll("colonisation-buy-station-meta-dim", "colonisation-construction-list-subtitle");
             line.setWrapText(true);
             card.getChildren().add(line);
             if (dock.getConstruction() != null) {
@@ -2559,6 +2562,46 @@ public class ColonisationPanelController implements Initializable {
                 : localizationService.getString("colonisation.detail.stationClassOrbital");
     }
 
+    /**
+     * Sous-titre liste construction : corps céleste puis type (StationType journal en mots minuscules ;
+     * si type absent : « orbital » / « surface » localisés).
+     */
+    private String constructionListSubtitleBodyAndType(ColonisationDockEntry dock) {
+        String body = resolveDockBodyDisplayName(dock);
+        String typePart = formattedJournalStationTypeOrOrbitalSurface(dock);
+        if (!body.isBlank() && !typePart.isBlank()) {
+            return body + " · " + typePart;
+        }
+        if (!body.isBlank()) {
+            return body;
+        }
+        return typePart.isBlank() ? "—" : typePart;
+    }
+
+    private String formattedJournalStationTypeOrOrbitalSurface(ColonisationDockEntry dock) {
+        if (dock == null) {
+            return "";
+        }
+        String raw = dock.getStationType();
+        if (raw != null && !raw.isBlank()) {
+            String spaced = splitPascalCaseToLowerSpaceSep(raw.trim());
+            if (!spaced.isBlank()) {
+                return spaced;
+            }
+        }
+        return localizedConstructionSiteClass(dock);
+    }
+
+    /** Ex. {@code OrbitalConstructionSite} → {@code orbital construction site}. */
+    private static String splitPascalCaseToLowerSpaceSep(String s) {
+        if (s == null || s.isBlank()) {
+            return "";
+        }
+        String t = s.replaceAll("([a-z0-9])([A-Z])", "$1 $2")
+                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1 $2");
+        return t.toLowerCase(Locale.ROOT).trim();
+    }
+
     private static String joinCascadeParts(String... parts) {
         StringBuilder b = new StringBuilder();
         for (String p : parts) {
@@ -2727,6 +2770,7 @@ public class ColonisationPanelController implements Initializable {
         }
         List<CommodityRequest> requests = buildFleetOptimalMarketCommodityRequests(cs);
         final boolean avoidPlanetary = fleetAvoidPlanetaryLandingCheckBox != null && fleetAvoidPlanetaryLandingCheckBox.isSelected();
+        final boolean largePadOnly = fleetLargePadOnlyCheckBox != null && fleetLargePadOnlyCheckBox.isSelected();
         if (requests.isEmpty()) {
             showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.nothingToSearch"));
             fleetCargoRowHighlightByMergeKey.clear();
@@ -2747,7 +2791,8 @@ public class ColonisationPanelController implements Initializable {
         Thread t = new Thread(() -> {
             try {
                 List<NearbyExportsBestStationResult> stations =
-                        colonisationService.suggestBuyStationsForCommodityRequests(systemArg, requestsArg, avoidPlanetary);
+                        colonisationService.suggestBuyStationsForCommodityRequests(
+                                systemArg, requestsArg, avoidPlanetary, largePadOnly);
                 Platform.runLater(() -> {
                     fleetOptimalMarketSearchInProgress = false;
                     if (fleetOptimalMarketProgress != null) {
@@ -2969,11 +3014,9 @@ public class ColonisationPanelController implements Initializable {
         }
     }
 
-    /**
-     * Couleurs distinctes par leg ; décale la phase pour éviter la teinte 0° (rouge) sur la première station.
-     */
+    /** Teintes espacées (ratio d’or) ; phase +215° pour éviter rouge et vert sur la 1re station. */
     private static Color fleetStationColor(int index) {
-        double hue = ((index + 1) * 0.38196601125 * 360.0) % 360.0;
+        double hue = (index * 0.38196601125 * 360.0 + 215.0) % 360.0;
         return Color.hsb(hue, 0.62, 0.92, 1.0);
     }
 

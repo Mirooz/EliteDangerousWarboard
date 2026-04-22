@@ -1496,12 +1496,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         HBox row = new HBox(6);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("exploration-visual-colonisation-caption-chip");
-        ConstructionStatus chipStatus = worstColonisationCaptionStatus(lines);
-        row.getStyleClass().add(switch (chipStatus) {
-            case COMPLETE -> "exploration-visual-colonisation-caption-chip-complete";
-            case IN_PROGRESS -> "exploration-visual-colonisation-caption-chip-inprogress";
-            case FAILED -> "exploration-visual-colonisation-caption-chip-failed";
-        });
+        boolean anyInProgress = false;
+        for (ColonisationArchitectMapCaptionLine l : lines) {
+            if (l.status() == ConstructionStatus.IN_PROGRESS) {
+                anyInProgress = true;
+                break;
+            }
+        }
+        row.getStyleClass().add(anyInProgress
+                ? "exploration-visual-colonisation-caption-chip-inprogress"
+                : "exploration-visual-colonisation-caption-chip-idle");
 
         row.getChildren().add(buildColonisationSettlementChip(colonyCount));
 
@@ -1530,7 +1534,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             Tooltip.install(row, new TooltipComponent(String.join("\n", tooltipParts)));
         }
 
-        double layH = 24;
+        double layH = 30;
         double pad = 0;
         double diag = 1;
         double captionHorizontalLeftPx = 8;
@@ -1575,6 +1579,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         HBox row = new HBox(10);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("colonisation-site-picker-row");
+        if (line.status() == ConstructionStatus.COMPLETE) {
+            row.getStyleClass().add("colonisation-site-picker-row-status-complete");
+        } else {
+            row.getStyleClass().add("colonisation-site-picker-row-status-incomplete");
+        }
         row.setMaxWidth(Double.MAX_VALUE);
         row.setCursor(Cursor.HAND);
 
@@ -1614,30 +1623,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         return row;
     }
 
-    private static ConstructionStatus worstColonisationCaptionStatus(List<ColonisationArchitectMapCaptionLine> lines) {
-        ConstructionStatus w = ConstructionStatus.COMPLETE;
-        for (ColonisationArchitectMapCaptionLine l : lines) {
-            if (colonisationCaptionStatusRank(l.status()) > colonisationCaptionStatusRank(w)) {
-                w = l.status();
-            }
-        }
-        return w;
-    }
-
-    private static int colonisationCaptionStatusRank(ConstructionStatus s) {
-        return switch (s) {
-            case FAILED -> 3;
-            case IN_PROGRESS -> 2;
-            case COMPLETE -> 1;
-        };
-    }
-
-    /** Pastille carte : « N » + icône settlement (fond orange = celui du chip CSS). */
+    /** Pastille carte : « N » + icône settlement. */
     private Node buildColonisationSettlementChip(int colonyCount) {
         HBox hb = new HBox(6);
         hb.setAlignment(Pos.CENTER_LEFT);
         Label count = new Label(Integer.toString(colonyCount));
-        count.getStyleClass().add("exploration-visual-colonisation-port-count");
+        count.getStyleClass().addAll(
+                "exploration-visual-colonisation-port-count",
+                "exploration-visual-colonisation-settlement-count");
         hb.getChildren().add(count);
 
         StackPane iconWrap = new StackPane();

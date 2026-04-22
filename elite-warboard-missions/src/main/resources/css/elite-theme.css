@@ -1113,6 +1113,27 @@
     -fx-text-fill: #9defff;
 }
 
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-complete {
+    -fx-background-color: derive(-fx-elite-success, -42%);
+    -fx-background-radius: 6px;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-incomplete {
+    -fx-background-color: derive(-fx-elite-orange, -32%);
+    -fx-background-radius: 6px;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-row.colonisation-site-picker-row-status-complete {
+    -fx-background-color: derive(-fx-elite-success, -30%);
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-row.colonisation-site-picker-row-status-incomplete {
+    -fx-background-color: derive(-fx-elite-orange, -22%);
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-complete .colonisation-site-picker-icon-wrap {
+    -fx-border-color: -fx-elite-success;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-incomplete .colonisation-site-picker-icon-wrap {
+    -fx-border-color: -fx-elite-orange;
+}
+
 .colonisation-detail-resource-card {
     -fx-background-color: -fx-elite-gray;
     -fx-border-color: derive(-fx-elite-orange, -22%);
@@ -1332,9 +1353,13 @@
 }
 
 .colonisation-progress-completed {
-    -fx-text-fill: #00ff66;
+    -fx-text-fill: -fx-elite-cyan;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
+}
+
+.colonisation-progress-completed .text {
+    -fx-fill: -fx-elite-cyan;
 }
 
 .colonisation-map-detail-overlay {
@@ -1372,9 +1397,22 @@
     -fx-pref-height: 14px;
 }
 
-.colonisation-construction-list-card {
-    -fx-background-color: #15241a;
-    -fx-border-color: #2f6a46;
+/* Liste construction (panneau droit) : fond noir, textes clairs. */
+.colonisation-buy-station-wrap.colonisation-construction-list-card {
+    -fx-background-color: #000000;
+    -fx-border-color: derive(-fx-elite-gray, -18%);
+}
+
+.colonisation-buy-station-wrap.colonisation-construction-list-card .colonisation-construction-card-title {
+    -fx-text-fill: -fx-elite-text;
+}
+
+.colonisation-buy-station-wrap.colonisation-construction-list-card .colonisation-construction-list-subtitle {
+    -fx-text-fill: -fx-elite-text-dim;
+}
+
+.colonisation-buy-station-wrap.colonisation-construction-list-card .colonisation-detail-progress-label {
+    -fx-text-fill: -fx-elite-text;
 }
 
 .colonisation-map-spacing-controls {
@@ -5870,18 +5908,26 @@
     -fx-background-color: transparent;
 }
 
+/* Pastille chantier carte : bleu type notification « new version » (-fx-elite-success) ; orange si au moins un chantier en cours. */
 .exploration-visual-colonisation-caption-chip {
-    /* Pastille carte : cyan ; le chiffre de colonies reste orange vif. */
-    -fx-background-color: derive(-fx-elite-cyan, -62%);
-    -fx-border-color: derive(-fx-elite-cyan, -8%);
+    -fx-background-color: derive(-fx-elite-success, -44%);
+    -fx-border-color: -fx-elite-success;
     -fx-background-radius: 7px;
-    -fx-padding: 4px 10px 4px 10px;
     -fx-border-radius: 7px;
     -fx-border-width: 2px;
-    -fx-text-fill: derive(-fx-elite-cyan, 18%);
-    -fx-font-size: 11.5px;
-    -fx-font-weight: bold;
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.22), 4, 0.35, 0, 0);
+    -fx-padding: 4px 10px 4px 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 174, 239, 0.45), 10, 0.35, 0, 2);
+}
+
+.exploration-visual-colonisation-caption-chip-inprogress {
+    -fx-background-color: derive(-fx-elite-orange, -28%);
+    -fx-border-color: derive(-fx-elite-orange, -6%);
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.42), 8, 0.38, 0, 1);
+}
+
+.exploration-visual-colonisation-caption-chip-inprogress:hover {
+    -fx-border-color: -fx-elite-orange;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.55), 10, 0.42, 0, 1);
 }
 
 .exploration-visual-colonisation-port-count {
@@ -5891,12 +5937,22 @@
     -fx-padding: 0 1 0 0;
 }
 
-.exploration-visual-colonisation-caption-chip .exploration-visual-colonisation-port-count {
-    -fx-text-fill: -fx-elite-orange;
+.exploration-visual-colonisation-settlement-count {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 2 0 0;
 }
 
-.exploration-visual-colonisation-caption-chip .exploration-visual-colonisation-port-count .text {
-    -fx-fill: -fx-elite-orange;
+.exploration-visual-colonisation-caption-chip-idle .exploration-visual-colonisation-settlement-count,
+.exploration-visual-colonisation-caption-chip-idle .exploration-visual-colonisation-settlement-count .text {
+    -fx-text-fill: #FFFFFF;
+    -fx-fill: #FFFFFF;
+}
+
+.exploration-visual-colonisation-caption-chip-inprogress .exploration-visual-colonisation-settlement-count,
+.exploration-visual-colonisation-caption-chip-inprogress .exploration-visual-colonisation-settlement-count .text {
+    -fx-text-fill: #FFFFFF;
+    -fx-fill: #FFFFFF;
 }
 
 /* Conteneur de l’image : pas de second fond (fond = chip). */
@@ -5905,31 +5961,17 @@
     -fx-padding: 0 0 0 2px;
 }
 
-.exploration-visual-colonisation-caption-chip-complete {
-    -fx-border-color: derive(-fx-elite-cyan, 6%);
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.38), 5, 0.4, 0, 0);
-}
-
-.exploration-visual-colonisation-caption-chip-inprogress {
-    -fx-border-color: derive(-fx-elite-cyan, -12%);
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.28), 4, 0.35, 0, 0);
-}
-
-.exploration-visual-colonisation-caption-chip-inprogress:hover {
-    -fx-border-color: -fx-elite-cyan;
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.55), 8, 0.45, 0, 0);
-}
-
 /* Toute la pastille (icônes) cliquable / survol vue architecte */
-.exploration-visual-colonisation-caption-chip-interactive:hover {
-    -fx-border-color: -fx-elite-cyan;
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 8, 0.45, 0, 0);
+.exploration-visual-colonisation-caption-chip-interactive.exploration-visual-colonisation-caption-chip-idle:hover {
+    -fx-background-color: derive(-fx-elite-success, -34%);
+    -fx-border-color: derive(-fx-elite-success, 12%);
+    -fx-effect: dropshadow(gaussian, rgba(0, 174, 239, 0.55), 12, 0.4, 0, 2);
 }
 
-.exploration-visual-colonisation-caption-chip-failed {
-    -fx-background-color: derive(#6b2a2a, -12%);
-    -fx-border-color: #ff5c5c;
-    -fx-effect: dropshadow(gaussian, rgba(255, 92, 92, 0.3), 4, 0.35, 0, 0);
+.exploration-visual-colonisation-caption-chip-interactive.exploration-visual-colonisation-caption-chip-inprogress:hover {
+    -fx-background-color: derive(-fx-elite-orange, -18%);
+    -fx-border-color: derive(-fx-elite-orange, 10%);
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.55), 10, 0.42, 0, 1);
 }
 
 .exploration-visual-connection {

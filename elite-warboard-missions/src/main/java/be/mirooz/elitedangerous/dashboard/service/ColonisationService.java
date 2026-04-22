@@ -135,10 +135,10 @@ public class ColonisationService {
         }
         ColonisationArchitectSystem arch = registry.findArchitectSystemContaining(site.getMarketId());
         if (arch == null) {
-            return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null);
+            return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null, false);
         }
         String systemName = resolveSystemNameFromArchitectFirstConstruction(arch);
-        return suggestBuyStationsForConstructionDocks(arch.getSites(), avoidPlanetaryLanding, systemName);
+        return suggestBuyStationsForConstructionDocks(arch.getSites(), avoidPlanetaryLanding, systemName, false);
     }
 
     /**
@@ -148,7 +148,7 @@ public class ColonisationService {
     public List<NearbyExportsBestStationResult> suggestBuyStationsForConstructionDocks(
             List<ColonisationDockEntry> docks,
             boolean avoidPlanetaryLanding) throws IOException {
-        return suggestBuyStationsForConstructionDocks(docks, avoidPlanetaryLanding, null);
+        return suggestBuyStationsForConstructionDocks(docks, avoidPlanetaryLanding, null, false);
     }
 
     /**
@@ -164,7 +164,7 @@ public class ColonisationService {
         if (site == null) {
             return List.of();
         }
-        return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null);
+        return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null, false);
     }
 
     /**
@@ -184,7 +184,8 @@ public class ColonisationService {
     private List<NearbyExportsBestStationResult> suggestBuyStationsForConstructionDocks(
             List<ColonisationDockEntry> docks,
             boolean avoidPlanetaryLanding,
-            String systemNameOverride) throws IOException {
+            String systemNameOverride,
+            boolean largePadOnly) throws IOException {
         if (docks == null || docks.isEmpty()) {
             return List.of();
         }
@@ -201,7 +202,8 @@ public class ColonisationService {
         NearbyExportsCrosscheckRequest request = new NearbyExportsCrosscheckRequest()
                 .systemName(systemName)
                 .commodities(commodities)
-                .avoidPlanetaryLanding(avoidPlanetaryLanding);
+                .avoidPlanetaryLanding(avoidPlanetaryLanding)
+                .largePadOnly(largePadOnly);
         NearbyExportsCrosscheckResponse response = ardentBackend.suggestBuyStations(request);
         if (response.getBestStations() == null) {
             return List.of();
@@ -217,13 +219,22 @@ public class ColonisationService {
             String referenceSystemName,
             List<CommodityRequest> commodities,
             boolean avoidPlanetaryLanding) throws IOException {
+        return suggestBuyStationsForCommodityRequests(referenceSystemName, commodities, avoidPlanetaryLanding, false);
+    }
+
+    public List<NearbyExportsBestStationResult> suggestBuyStationsForCommodityRequests(
+            String referenceSystemName,
+            List<CommodityRequest> commodities,
+            boolean avoidPlanetaryLanding,
+            boolean largePadOnly) throws IOException {
         if (referenceSystemName == null || referenceSystemName.isBlank() || commodities == null || commodities.isEmpty()) {
             return List.of();
         }
         NearbyExportsCrosscheckRequest request = new NearbyExportsCrosscheckRequest()
                 .systemName(referenceSystemName.trim())
                 .commodities(commodities)
-                .avoidPlanetaryLanding(avoidPlanetaryLanding);
+                .avoidPlanetaryLanding(avoidPlanetaryLanding)
+                .largePadOnly(largePadOnly);
         NearbyExportsCrosscheckResponse response = ardentBackend.suggestBuyStations(request);
         if (response.getBestStations() == null) {
             return List.of();
