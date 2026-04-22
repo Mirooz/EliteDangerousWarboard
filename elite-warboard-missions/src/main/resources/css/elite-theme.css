@@ -1272,6 +1272,15 @@
     -fx-border-color: #2f6a46;
 }
 
+.colonisation-map-spacing-controls {
+    -fx-padding: 8 10 8 10;
+    -fx-background-color: rgba(5, 12, 5, 0.78);
+    -fx-border-color: #2f6a46;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
 /* Table marché carrier : stock / achat / vente */
 .colonisation-fleet-market-table.table-view .table-row-cell.colonisation-fleet-row-stock {
     -fx-background-color: rgba(0, 220, 170, 0.14);
@@ -5671,6 +5680,61 @@
 
 .exploration-visual-scroll .viewport {
     -fx-background-color: transparent;
+}
+
+.system-view-spacing-controls {
+    -fx-padding: 7 9 7 9;
+    -fx-background-color: rgba(9, 15, 21, 0.78);
+    -fx-border-color: rgba(255, 163, 70, 0.55);
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.system-view-spacing-controls .slider {
+    -fx-padding: 0;
+}
+
+.system-view-spacing-controls .slider .track {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-background-radius: 3;
+    -fx-pref-height: 4;
+}
+
+.system-view-spacing-controls .slider:vertical .track {
+    -fx-pref-width: 4;
+}
+
+.system-view-spacing-controls .slider .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(0, 0, 0, 0.55);
+    -fx-border-width: 1;
+}
+
+.system-view-spacing-controls .slider:hover .thumb {
+    -fx-background-color: #ffbe73;
+}
+
+.system-view-spacing-slider {
+    -fx-padding: 0;
+}
+
+.system-view-spacing-slider .track {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-background-radius: 3;
+    -fx-pref-height: 4;
+}
+
+.system-view-spacing-slider .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(0, 0, 0, 0.55);
+    -fx-border-width: 1;
+}
+
+.system-view-spacing-slider:hover .thumb {
+    -fx-background-color: #ffbe73;
 }
 
 .exploration-visual-pane {

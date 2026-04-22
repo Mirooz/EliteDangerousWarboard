@@ -30,16 +30,32 @@
         </VBox>
         
         <!-- Zone d'affichage des corps célestes -->
-        <ScrollPane fx:id="bodiesScrollPane" styleClass="exploration-visual-scroll" 
-                    fitToWidth="false" fitToHeight="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"
-                    minWidth="500" minHeight="300" prefWidth="800" prefHeight="450"
-                    hbarPolicy="NEVER" vbarPolicy="NEVER">
-            <Group fx:id="bodiesGroup">
-                <Pane fx:id="bodiesPane" styleClass="exploration-visual-pane" 
-                      minWidth="500" minHeight="300" prefWidth="800" prefHeight="450"
-                      maxWidth="800" maxHeight="600"/>
-            </Group>
-        </ScrollPane>
+        <StackPane HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+            <ScrollPane fx:id="bodiesScrollPane" styleClass="exploration-visual-scroll"
+                        fitToWidth="false" fitToHeight="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"
+                        minWidth="500" minHeight="300" prefWidth="800" prefHeight="450"
+                        hbarPolicy="NEVER" vbarPolicy="NEVER">
+                <Group fx:id="bodiesGroup">
+                    <Pane fx:id="bodiesPane" styleClass="exploration-visual-pane"
+                          minWidth="500" minHeight="300" prefWidth="800" prefHeight="450"
+                          maxWidth="800" maxHeight="600"/>
+                </Group>
+            </ScrollPane>
+            <VBox alignment="BOTTOM_LEFT" maxWidth="260.0" spacing="8.0" pickOnBounds="false"
+                  StackPane.alignment="BOTTOM_LEFT">
+                <StackPane.margin>
+                    <Insets top="0.0" right="0.0" bottom="8.0" left="8.0"/>
+                </StackPane.margin>
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label fx:id="spacingHorizontalLabel" styleClass="colonisation-detail-label" text="Horizontal spacing" minWidth="120.0" prefWidth="120.0"/>
+                    <Slider fx:id="spacingHorizontalSlider" max="1.875" min="0.4" value="1.1375" HBox.hgrow="ALWAYS" styleClass="system-view-spacing-slider"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label fx:id="spacingVerticalLabel" styleClass="colonisation-detail-label" text="Vertical spacing" minWidth="120.0" prefWidth="120.0"/>
+                    <Slider fx:id="spacingVerticalSlider" max="1.875" min="0.4" value="1.1375" HBox.hgrow="ALWAYS" styleClass="system-view-spacing-slider"/>
+                </HBox>
+            </VBox>
+        </StackPane>
         
         <!-- Panneau JSON latéral (caché par défaut) -->
         <VBox fx:id="jsonDetailPanel" styleClass="exploration-json-panel" 

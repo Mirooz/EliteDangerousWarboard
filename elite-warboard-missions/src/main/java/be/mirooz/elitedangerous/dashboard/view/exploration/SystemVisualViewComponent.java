@@ -17,6 +17,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -78,6 +79,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private TreeView<JsonTreeItem> jsonTreeView;
     @FXML
     private Button bodiesOverlayButton;
+    @FXML
+    private Label spacingTitleLabel;
+    @FXML
+    private Label spacingHorizontalLabel;
+    @FXML
+    private Label spacingVerticalLabel;
+    @FXML
+    private Slider spacingHorizontalSlider;
+    @FXML
+    private Slider spacingVerticalSlider;
 
     private ExplorationBodiesOverlayComponent bodiesOverlayComponent;
     private Image gasImage;
@@ -107,15 +118,37 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Facteur sur les espacements de la vue système (orrery) : chaîne des planètes, lunes, étoiles, marges.
      * {@code 0.85} ≈ réduction de 15 % des distances (horizontal et vertical).
      */
-    private static final double SYSTEM_VIEW_ORRERY_SPACING_SCALE = 0.85;
+    private static final double SYSTEM_VIEW_ORRERY_BASE_SPACING_SCALE = 0.85;
+    private static final double USER_SPACING_MIN = 0.4;
+    private static final double USER_SPACING_MAX = 1.875;
+    private static final double USER_SPACING_RANGE = USER_SPACING_MAX - USER_SPACING_MIN;
+    private double userHorizontalSpacingScale = 1.0;
+    private double userVerticalSpacingScale = 1.0;
 
-    private static int orrerySpacing(int basePixels) {
-        return Math.max(1, (int) Math.round(basePixels * SYSTEM_VIEW_ORRERY_SPACING_SCALE));
+    private int orrerySpacingX(int basePixels) {
+        return Math.max(1, (int) Math.round(basePixels * SYSTEM_VIEW_ORRERY_BASE_SPACING_SCALE * userHorizontalSpacingScale));
+    }
+
+    private int orrerySpacingY(int basePixels) {
+        return Math.max(1, (int) Math.round(basePixels * SYSTEM_VIEW_ORRERY_BASE_SPACING_SCALE * userVerticalSpacingScale));
+    }
+
+    public void setOrrerySpacingUserScale(double horizontalScale, double verticalScale) {
+        userHorizontalSpacingScale = Math.max(USER_SPACING_MIN, Math.min(USER_SPACING_MAX, horizontalScale));
+        userVerticalSpacingScale = Math.max(USER_SPACING_MIN, Math.min(USER_SPACING_MAX, verticalScale));
+        if (currentSystem != null) {
+            displaySystem(currentSystem);
+        }
     }
     private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
     private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
     private static SystemVisualViewComponent instance;
+    private static final String PREF_SYSTEM_VIEW_SPACING_X = "exploration.systemView.spacing.horizontal";
+    private static final String PREF_SYSTEM_VIEW_SPACING_Y = "exploration.systemView.spacing.vertical";
+    private static final double DEFAULT_SPACING_X = USER_SPACING_MIN + (USER_SPACING_RANGE / 2.0);
+    private static final double DEFAULT_SPACING_Y = USER_SPACING_MIN + (USER_SPACING_RANGE / 2.0);
 
     /** Si non null, clic sur une puce station (carte architecte) → détail (marketId). */
     private LongConsumer colonisationStationClickHandler;
@@ -228,8 +261,56 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             showOnlyHighValueBodiesCheckBox.setSelected(true);
         }
 
+        initSpacingControls();
+
         // Initialiser le radar
         initializeRadar();
+    }
+
+    private void initSpacingControls() {
+        if (spacingHorizontalSlider == null || spacingVerticalSlider == null) {
+            return;
+        }
+        spacingHorizontalSlider.setValue(parseSpacingPreference(PREF_SYSTEM_VIEW_SPACING_X, DEFAULT_SPACING_X));
+        spacingVerticalSlider.setValue(parseSpacingPreference(PREF_SYSTEM_VIEW_SPACING_Y, DEFAULT_SPACING_Y));
+
+        Runnable apply = () -> setOrrerySpacingUserScale(spacingHorizontalSlider.getValue(), spacingVerticalSlider.getValue());
+        Runnable persist = () -> {
+            preferencesService.setPreference(PREF_SYSTEM_VIEW_SPACING_X, String.format(Locale.ROOT, "%.3f", spacingHorizontalSlider.getValue()));
+            preferencesService.setPreference(PREF_SYSTEM_VIEW_SPACING_Y, String.format(Locale.ROOT, "%.3f", spacingVerticalSlider.getValue()));
+        };
+
+        spacingHorizontalSlider.valueProperty().addListener((obs, oldV, newV) -> apply.run());
+        spacingVerticalSlider.valueProperty().addListener((obs, oldV, newV) -> apply.run());
+
+        spacingHorizontalSlider.valueChangingProperty().addListener((obs, oldV, changing) -> {
+            if (!changing) {
+                persist.run();
+            }
+        });
+        spacingVerticalSlider.valueChangingProperty().addListener((obs, oldV, changing) -> {
+            if (!changing) {
+                persist.run();
+            }
+        });
+
+        spacingHorizontalSlider.setOnMouseReleased(e -> persist.run());
+        spacingVerticalSlider.setOnMouseReleased(e -> persist.run());
+
+        apply.run();
+    }
+
+    private double parseSpacingPreference(String key, double defaultValue) {
+        String raw = preferencesService.getPreference(key, String.valueOf(defaultValue));
+        if (raw == null || raw.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            double v = Double.parseDouble(raw.trim());
+            return Math.max(USER_SPACING_MIN, Math.min(USER_SPACING_MAX, v));
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     /**
@@ -529,17 +610,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
             // Disposer les corps : étoiles verticalement à gauche, planètes en chaîne horizontale, lunes verticalement
             // Ajouter un gap pour que les planètes ne collent pas au bord (espacements réduits ~15 % via
-            // {@link #SYSTEM_VIEW_ORRERY_SPACING_SCALE} / {@link #orrerySpacing(int)}).
-            int gapLeft = orrerySpacing(50);
-            int gapTop = orrerySpacing(58);
+            // {@link #SYSTEM_VIEW_ORRERY_BASE_SPACING_SCALE} + échelles utilisateur horizontale/verticale.
+            int gapLeft = orrerySpacingX(50);
+            int gapTop = orrerySpacingY(58);
             int startX = gapLeft;
             int startY = gapTop;
-            int starVerticalSpacing = orrerySpacing(165);
-            int horizontalSpacing = orrerySpacing(120);
-            int moonVerticalSpacing = orrerySpacing(80);
+            int starVerticalSpacing = orrerySpacingY(165);
+            int horizontalSpacing = orrerySpacingX(120);
+            int moonVerticalSpacing = orrerySpacingY(80);
             /* Lunes de lune : encore un peu plus serrées horizontalement. */
             int subMoonHorizontalSpacing = Math.max(1,
-                    (int) Math.round(horizontalSpacing * SYSTEM_VIEW_ORRERY_SPACING_SCALE * 0.9));
+                    (int) Math.round(horizontalSpacing * 0.9));
 
             // Organiser la hiérarchie : étoiles -> planètes directes -> lunes -> lunes de lune
             List<ACelesteBody> stars = new ArrayList<>();
@@ -3017,6 +3098,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
         if (systemTitleLabel != null && currentSystem == null) {
             systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));
+        }
+        if (spacingTitleLabel != null) {
+            spacingTitleLabel.setText(localizationService.getString("exploration.spacing.title"));
+        }
+        if (spacingHorizontalLabel != null) {
+            spacingHorizontalLabel.setText(localizationService.getString("exploration.spacing.horizontal"));
+        }
+        if (spacingVerticalLabel != null) {
+            spacingVerticalLabel.setText(localizationService.getString("exploration.spacing.vertical"));
         }
     }
     
