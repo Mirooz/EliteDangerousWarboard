@@ -1452,6 +1452,14 @@ components:
           type: array
           items:
             type: string
+    CommodityRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        volume:
+          format: int32
+          type: integer
     EdColoniseColonisedStation:
       type: object
       properties:
@@ -1887,10 +1895,10 @@ components:
       properties:
         systemName:
           type: string
-        commodityNames:
+        commodities:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CommodityRequest'
         avoidPlanetaryLanding:
           type: boolean
     NearbyExportsCrosscheckResponse:
@@ -1898,10 +1906,10 @@ components:
       properties:
         systemName:
           type: string
-        commodityNames:
+        commodities:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CommodityRequest'
         bestStations:
           type: array
           items:

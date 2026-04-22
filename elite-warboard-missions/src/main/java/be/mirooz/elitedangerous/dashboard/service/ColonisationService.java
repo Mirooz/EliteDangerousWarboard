@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.backend.ardentbackend.ArdentBackendApiFacade;
+import be.mirooz.elitedangerous.backend.generated.model.CommodityRequest;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsCrosscheckRequest;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsCrosscheckResponse;
@@ -15,8 +16,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 /**
@@ -115,8 +118,8 @@ public class ColonisationService {
     }
 
     /**
-     * Appelle {@link ArdentBackendApiFacade#suggestBuyStations} pour les commodités encore à livrer sur le chantier courant
-     * (système = celui du site courant, ou système commandant en secours).
+     * Appelle {@link ArdentBackendApiFacade#suggestBuyStations} pour les commodités encore à livrer sur tous les sites
+     * du même projet architecte que le chantier courant ; référence système = premier chantier enregistré sur ce projet.
      *
      * @return stations suggérées (liste vide si pas de chantier courant, pas de système, ou rien à acheter)
      */
@@ -127,12 +130,29 @@ public class ColonisationService {
     public List<NearbyExportsBestStationResult> suggestBuyStationsForCurrentConstruction(boolean avoidPlanetaryLanding)
             throws IOException {
         ColonisationDockEntry site = registry.getCurrentConstructionSite();
-        ColonisationConstruction construction = registry.getCurrentConstruction();
-        return suggestBuyStationsInternal(site, construction, avoidPlanetaryLanding);
+        if (site == null) {
+            return List.of();
+        }
+        ColonisationArchitectSystem arch = registry.findArchitectSystemContaining(site.getMarketId());
+        if (arch == null) {
+            return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null);
+        }
+        String systemName = resolveSystemNameFromArchitectFirstConstruction(arch);
+        return suggestBuyStationsForConstructionDocks(arch.getSites(), avoidPlanetaryLanding, systemName);
     }
 
     /**
-     * Suggestions d’achat pour le chantier du site donné (système et commodités = ce site).
+     * Suggestions d’achat pour un ou plusieurs sites : commodités = somme des tonnages restants par nom cargo ;
+     * système de référence = {@code docks.get(0)} (première entrée de la liste), ou secours commandant si vide.
+     */
+    public List<NearbyExportsBestStationResult> suggestBuyStationsForConstructionDocks(
+            List<ColonisationDockEntry> docks,
+            boolean avoidPlanetaryLanding) throws IOException {
+        return suggestBuyStationsForConstructionDocks(docks, avoidPlanetaryLanding, null);
+    }
+
+    /**
+     * Suggestions d’achat pour le site donné (équivalent à une liste d’un seul élément).
      */
     public List<NearbyExportsBestStationResult> suggestBuyStationsForDock(ColonisationDockEntry site)
             throws IOException {
@@ -144,7 +164,7 @@ public class ColonisationService {
         if (site == null) {
             return List.of();
         }
-        return suggestBuyStationsInternal(site, site.getConstruction(), avoidPlanetaryLanding);
+        return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null);
     }
 
     /**
@@ -158,33 +178,29 @@ public class ColonisationService {
         return !k.isBlank() && k.equalsIgnoreCase(requestedCommodityName.trim());
     }
 
-    private List<NearbyExportsBestStationResult> suggestBuyStationsInternal(
-            ColonisationDockEntry site,
-            ColonisationConstruction construction,
-            boolean avoidPlanetaryLanding) throws IOException {
-        String systemName = resolveConstructionSourceSystem(site);
+    /**
+     * @param systemNameOverride si non null et non vide, utilisé comme {@code systemName} API (sinon dérivé de {@code docks.get(0)}).
+     */
+    private List<NearbyExportsBestStationResult> suggestBuyStationsForConstructionDocks(
+            List<ColonisationDockEntry> docks,
+            boolean avoidPlanetaryLanding,
+            String systemNameOverride) throws IOException {
+        if (docks == null || docks.isEmpty()) {
+            return List.of();
+        }
+        String systemName = systemNameOverride != null && !systemNameOverride.isBlank()
+                ? systemNameOverride.trim()
+                : resolveReferenceStarSystemFromFirstConstruction(docks);
         if (systemName.isBlank()) {
             return List.of();
         }
-        if (construction == null || construction.getResourcesRequired() == null) {
-            return List.of();
-        }
-        List<String> commodityNames = new ArrayList<>();
-        for (ConstructionResource r : construction.getResourcesRequired()) {
-            if (r.getProvidedAmount() >= r.getRequiredAmount()) {
-                continue;
-            }
-            String name = commodityNameForNearbyBuy(r);
-            if (!name.isBlank()) {
-                commodityNames.add(name);
-            }
-        }
-        if (commodityNames.isEmpty()) {
+        List<CommodityRequest> commodities = mergeRemainingCommodityRequests(docks);
+        if (commodities.isEmpty()) {
             return List.of();
         }
         NearbyExportsCrosscheckRequest request = new NearbyExportsCrosscheckRequest()
                 .systemName(systemName)
-                .commodityNames(commodityNames)
+                .commodities(commodities)
                 .avoidPlanetaryLanding(avoidPlanetaryLanding);
         NearbyExportsCrosscheckResponse response = ardentBackend.suggestBuyStations(request);
         if (response.getBestStations() == null) {
@@ -193,12 +209,68 @@ public class ColonisationService {
         return List.copyOf(response.getBestStations());
     }
 
-    private String resolveConstructionSourceSystem(ColonisationDockEntry site) {
-        if (site != null && site.getStarSystem() != null && !site.getStarSystem().isBlank()) {
-            return site.getStarSystem().trim();
+    private static String resolveSystemNameFromArchitectFirstConstruction(ColonisationArchitectSystem arch) {
+        if (arch == null) {
+            return "";
+        }
+        Long firstId = arch.getFirstConstructionMarketId();
+        if (firstId != null) {
+            ColonisationDockEntry site = arch.getSiteByMarketId(firstId);
+            if (site != null && site.getStarSystem() != null && !site.getStarSystem().isBlank()) {
+                return site.getStarSystem().trim();
+            }
+        }
+        for (ColonisationDockEntry e : arch.getSites()) {
+            if (e != null && e.getStarSystem() != null && !e.getStarSystem().isBlank()) {
+                return e.getStarSystem().trim();
+            }
+        }
+        String s = arch.getStarSystem();
+        return s != null ? s.trim() : "";
+    }
+
+    /** Nom de système pour l’API : celui de la première entrée de la liste de chantiers. */
+    private String resolveReferenceStarSystemFromFirstConstruction(List<ColonisationDockEntry> docks) {
+        ColonisationDockEntry first = docks.get(0);
+        if (first != null && first.getStarSystem() != null && !first.getStarSystem().isBlank()) {
+            return first.getStarSystem().trim();
         }
         String current = commanderStatus.getCurrentStarSystem();
         return current != null ? current.trim() : "";
+    }
+
+    private static List<CommodityRequest> mergeRemainingCommodityRequests(List<ColonisationDockEntry> docks) {
+        Map<String, Integer> volumeByCargoName = new LinkedHashMap<>();
+        for (ColonisationDockEntry dock : docks) {
+            if (dock == null) {
+                continue;
+            }
+            ColonisationConstruction construction = dock.getConstruction();
+            if (construction == null || construction.getResourcesRequired() == null) {
+                continue;
+            }
+            for (ConstructionResource r : construction.getResourcesRequired()) {
+                if (r.getProvidedAmount() >= r.getRequiredAmount()) {
+                    continue;
+                }
+                String name = commodityNameForNearbyBuy(r);
+                if (name.isBlank()) {
+                    continue;
+                }
+                int remaining = r.getRequiredAmount() - r.getProvidedAmount();
+                volumeByCargoName.merge(name, remaining, ColonisationService::saturatingAdd);
+            }
+        }
+        List<CommodityRequest> out = new ArrayList<>(volumeByCargoName.size());
+        for (Map.Entry<String, Integer> e : volumeByCargoName.entrySet()) {
+            out.add(new CommodityRequest().name(e.getKey()).volume(e.getValue()));
+        }
+        return out;
+    }
+
+    private static int saturatingAdd(int a, int b) {
+        long s = (long) a + (long) b;
+        return s >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) s;
     }
 
     private static String commodityNameForNearbyBuy(ConstructionResource r) {

@@ -24,6 +24,11 @@ public class ColonisationArchitectSystem {
     private final Map<Long, ColonisationDockEntry> sitesByMarketId = new LinkedHashMap<>();
     private Long firstConstructionMarketId;
 
+    /** Premier {@code MarketID} ayant reçu un dépôt de chantier (journal), ou {@code null}. */
+    public Long getFirstConstructionMarketId() {
+        return firstConstructionMarketId;
+    }
+
     public ColonisationArchitectSystem(String starSystem) {
         this.starSystem = starSystem != null ? starSystem : "";
     }

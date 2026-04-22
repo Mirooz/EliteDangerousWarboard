@@ -3125,15 +3125,8 @@ public class ColonisationPanelController implements Initializable {
         List<ColonisationDockEntry> snapshot = List.copyOf(docks);
         Thread t = new Thread(() -> {
             try {
-                Map<String, NearbyExportsBestStationResult> byStation = new LinkedHashMap<>();
-                for (ColonisationDockEntry dock : snapshot) {
-                    List<NearbyExportsBestStationResult> list = colonisationService.suggestBuyStationsForDock(dock);
-                    for (NearbyExportsBestStationResult st : list) {
-                        String key = firstNonBlank(st.getSystemName(), "") + "|" + firstNonBlank(st.getStationName(), "");
-                        byStation.putIfAbsent(key, st);
-                    }
-                }
-                List<NearbyExportsBestStationResult> merged = List.copyOf(byStation.values());
+                List<NearbyExportsBestStationResult> merged =
+                        colonisationService.suggestBuyStationsForConstructionDocks(snapshot, false);
                 Platform.runLater(() -> {
                     suggestedBuyStations = merged;
                     suggestBuyStationsRequestInProgress = false;
@@ -3180,6 +3173,7 @@ public class ColonisationPanelController implements Initializable {
     }
 
     private void runSuggestBuyStationsWorker(long requestMarketId) {
+        final List<ColonisationDockEntry> constructionListSnapshot = selectedConstructionListDocks();
         Thread t = new Thread(() -> {
             try {
                 ColonisationDockEntry dockRef = findDockEntry(requestMarketId);
@@ -3190,7 +3184,9 @@ public class ColonisationPanelController implements Initializable {
                     });
                     return;
                 }
-                List<NearbyExportsBestStationResult> list = colonisationService.suggestBuyStationsForDock(dockRef);
+                List<NearbyExportsBestStationResult> list = constructionListSnapshot.isEmpty()
+                        ? colonisationService.suggestBuyStationsForDock(dockRef, false)
+                        : colonisationService.suggestBuyStationsForConstructionDocks(constructionListSnapshot, false);
                 int n = list.size();
                 Platform.runLater(() -> {
                     if (selectedConstructionRow == null || selectedConstructionRow.getMarketId() != requestMarketId) {

@@ -119,6 +119,17 @@ public class ColonisationRegistry {
         return null;
     }
 
+    /** Système architecte contenant ce {@code MarketID}, ou {@code null}. */
+    @Synchronized
+    public ColonisationArchitectSystem findArchitectSystemContaining(long marketId) {
+        for (ColonisationArchitectSystem s : architectByStarSystem.values()) {
+            if (s.getSiteByMarketId(marketId) != null) {
+                return s;
+            }
+        }
+        return null;
+    }
+
     /**
      * Enregistre l’entrée dock pour le système de l’entrée, uniquement si ce {@code MarketID} n’existe pas encore dans ce système.
      *
