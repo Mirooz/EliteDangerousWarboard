@@ -38,6 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Scale;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.*;
@@ -89,6 +90,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private Slider spacingHorizontalSlider;
     @FXML
     private Slider spacingVerticalSlider;
+    @FXML
+    private Button resetViewParametersButton;
 
     private ExplorationBodiesOverlayComponent bodiesOverlayComponent;
     private Image gasImage;
@@ -113,6 +116,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private static final double MIN_ZOOM = 0.1;
     private static final double MAX_ZOOM = 5.0;
     private static final double ZOOM_FACTOR = 0.1;
+    private boolean mapPanning;
+    private double lastPanSceneX;
+    private double lastPanSceneY;
+    private double panTranslateX;
+    private double panTranslateY;
 
     /**
      * Facteur sur les espacements de la vue système (orrery) : chaîne des planètes, lunes, étoiles, marges.
@@ -243,7 +251,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         bodiesScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         bodiesScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        // Empêcher complètement le défilement du ScrollPane
+        // Le déplacement (pan) est géré manuellement pour fonctionner partout
         bodiesScrollPane.setPannable(false);
         bodiesScrollPane.setFitToWidth(true);
         bodiesScrollPane.setFitToHeight(true);
@@ -255,6 +263,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Gérer le zoom manuellement
             handleScroll(event);
         });
+        initMapPanControls();
 
         // Cocher la checkbox par défaut
         if (showOnlyHighValueBodiesCheckBox != null) {
@@ -265,6 +274,55 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Initialiser le radar
         initializeRadar();
+    }
+
+    private void initMapPanControls() {
+        if (bodiesScrollPane == null) {
+            return;
+        }
+        bodiesScrollPane.setCursor(Cursor.OPEN_HAND);
+        bodiesScrollPane.setOnMouseEntered(event -> {
+            if (!mapPanning) {
+                bodiesScrollPane.setCursor(Cursor.OPEN_HAND);
+            }
+        });
+        bodiesScrollPane.setOnMouseExited(event -> {
+            if (!mapPanning) {
+                bodiesScrollPane.setCursor(Cursor.DEFAULT);
+            }
+        });
+        bodiesScrollPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+            if (!event.isPrimaryButtonDown()) {
+                return;
+            }
+            mapPanning = true;
+            lastPanSceneX = event.getSceneX();
+            lastPanSceneY = event.getSceneY();
+            bodiesScrollPane.setCursor(Cursor.CLOSED_HAND);
+        });
+        bodiesScrollPane.addEventFilter(MouseEvent.MOUSE_DRAGGED, event -> {
+            if (!mapPanning) {
+                return;
+            }
+            double deltaX = event.getSceneX() - lastPanSceneX;
+            double deltaY = event.getSceneY() - lastPanSceneY;
+            lastPanSceneX = event.getSceneX();
+            lastPanSceneY = event.getSceneY();
+            panTranslateX += deltaX;
+            panTranslateY += deltaY;
+            if (bodiesGroup != null) {
+                bodiesGroup.setTranslateX(panTranslateX);
+                bodiesGroup.setTranslateY(panTranslateY);
+            }
+            event.consume();
+        });
+        bodiesScrollPane.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> {
+            if (!mapPanning) {
+                return;
+            }
+            mapPanning = false;
+            bodiesScrollPane.setCursor(Cursor.OPEN_HAND);
+        });
     }
 
     private void initSpacingControls() {
@@ -296,6 +354,26 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         spacingHorizontalSlider.setOnMouseReleased(e -> persist.run());
         spacingVerticalSlider.setOnMouseReleased(e -> persist.run());
+        if (resetViewParametersButton != null) {
+            Tooltip tooltip = new Tooltip("Reset view parameters");
+            tooltip.setShowDelay(Duration.millis(120));
+            tooltip.setHideDelay(Duration.millis(80));
+            resetViewParametersButton.setTooltip(tooltip);
+            resetViewParametersButton.setOnAction(e -> {
+                spacingHorizontalSlider.setValue(DEFAULT_SPACING_X);
+                spacingVerticalSlider.setValue(DEFAULT_SPACING_Y);
+                persist.run();
+                panTranslateX = 0.0;
+                panTranslateY = 0.0;
+                if (bodiesGroup != null) {
+                    bodiesGroup.setTranslateX(0.0);
+                    bodiesGroup.setTranslateY(0.0);
+                }
+                if (currentSystem != null) {
+                    displaySystem(currentSystem);
+                }
+            });
+        }
 
         apply.run();
     }
@@ -572,7 +650,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 currentJsonBody = null;
             }
             
+            boolean systemSelectionChanged = this.currentSystem != system;
             this.currentSystem = system;
+
+            // On reset le déplacement manuel uniquement quand on change de système sélectionné.
+            // (Un refresh/re-render du même système, ex. slider spacing, garde la position courante.)
+            if (systemSelectionChanged) {
+                panTranslateX = 0.0;
+                panTranslateY = 0.0;
+                if (bodiesGroup != null) {
+                    bodiesGroup.setTranslateX(0.0);
+                    bodiesGroup.setTranslateY(0.0);
+                }
+            }
             
             // Mettre à jour le titre avec le nom du système
             if (systemTitleLabel != null) {

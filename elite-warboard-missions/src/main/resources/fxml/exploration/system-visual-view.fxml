@@ -47,12 +47,17 @@
                     <Insets top="0.0" right="0.0" bottom="8.0" left="8.0"/>
                 </StackPane.margin>
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <Label fx:id="spacingHorizontalLabel" styleClass="colonisation-detail-label" text="Horizontal spacing" minWidth="120.0" prefWidth="120.0"/>
-                    <Slider fx:id="spacingHorizontalSlider" max="1.875" min="0.4" value="1.1375" HBox.hgrow="ALWAYS" styleClass="system-view-spacing-slider"/>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <Label fx:id="spacingVerticalLabel" styleClass="colonisation-detail-label" text="Vertical spacing" minWidth="120.0" prefWidth="120.0"/>
-                    <Slider fx:id="spacingVerticalSlider" max="1.875" min="0.4" value="1.1375" HBox.hgrow="ALWAYS" styleClass="system-view-spacing-slider"/>
+                    <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="8.0">
+                            <Label fx:id="spacingHorizontalLabel" styleClass="colonisation-detail-label" text="Horizontal spacing" minWidth="120.0" prefWidth="120.0"/>
+                            <Slider fx:id="spacingHorizontalSlider" max="1.875" min="0.4" value="1.1375" HBox.hgrow="ALWAYS" styleClass="system-view-spacing-slider"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8.0">
+                            <Label fx:id="spacingVerticalLabel" styleClass="colonisation-detail-label" text="Vertical spacing" minWidth="120.0" prefWidth="120.0"/>
+                            <Slider fx:id="spacingVerticalSlider" max="1.875" min="0.4" value="1.1375" HBox.hgrow="ALWAYS" styleClass="system-view-spacing-slider"/>
+                        </HBox>
+                    </VBox>
+                    <Button fx:id="resetViewParametersButton" text="⟳" styleClass="elite-nav-button"/>
                 </HBox>
             </VBox>
         </StackPane>
