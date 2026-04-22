@@ -1197,7 +1197,9 @@
 }
 
 .colonisation-fleet-market-header-grid {
-    -fx-padding: 0 6 4 6;
+    -fx-padding: 10 0 4 0;
+    -fx-hgap: 10;
+    -fx-vgap: 0;
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: rgba(0, 255, 255, 0.35);
     -fx-border-width: 0 0 1 0;
@@ -2082,6 +2084,10 @@
 }
 
 .colonisation-fleet-merged-frame > .viewport {
+    -fx-padding: 2px 4px 2px 4px;
+}
+
+.colonisation-fleet-merged-frame .colonisation-fleet-market-scroll > .viewport {
     -fx-padding: 2px 4px 2px 4px;
 }
 

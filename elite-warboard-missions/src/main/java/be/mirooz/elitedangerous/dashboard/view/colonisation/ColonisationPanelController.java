@@ -124,8 +124,6 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private GridPane fleetMarketGrid;
     @FXML
-    private GridPane fleetMarketHeaderGrid;
-    @FXML
     private Label commanderCurrentCargoTitleLabel;
     @FXML
     private VBox fleetRightColumn;
@@ -2807,17 +2805,17 @@ public class ColonisationPanelController implements Initializable {
 
     private void refreshFleetMarketGrid(CarrierStatus cs) {
         fleetMarketGrid.getChildren().clear();
-        refreshFleetMarketHeader();
+        addFleetMarketHeaderRow();
         List<FleetMarketRow> rows = buildFleetMergedRows(cs);
         Map<String, Integer> shipByKey = buildShipStockTonsByMergeKey();
         if (rows.isEmpty()) {
             Label empty = new Label(localizationService.getString("colonisation.fleet.marketEmpty"));
             empty.getStyleClass().add("cargo-mineral-null-price");
             empty.setWrapText(true);
-            fleetMarketGrid.add(empty, 0, 0, 6, 1);
+            fleetMarketGrid.add(empty, 0, 1, 6, 1);
             return;
         }
-        int row = 0;
+        int row = 1;
         CommodityCategory lastCategory = null;
         for (FleetMarketRow r : rows) {
             CommodityCategory cat = fleetMarketRowCategory(r);
@@ -2861,17 +2859,27 @@ public class ColonisationPanelController implements Initializable {
         }
     }
 
-    private void refreshFleetMarketHeader() {
-        if (fleetMarketHeaderGrid == null) {
-            return;
-        }
-        fleetMarketHeaderGrid.getChildren().clear();
-        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.commodity"), 0, 0);
-        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.shipStock"), 1, 0);
-        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.stock"), 2, 0);
-        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.missing"), 3, 0);
-        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.buyOrder"), 4, 0);
-        fleetMarketHeaderGrid.add(fleetMarketHeaderLabel("colonisation.fleet.col.price"), 5, 0);
+    private void addFleetMarketHeaderRow() {
+        Label commodity = fleetMarketHeaderLabel("colonisation.fleet.col.commodity");
+        Label ship = fleetMarketHeaderLabel("colonisation.fleet.col.shipStock");
+        Label stock = fleetMarketHeaderLabel("colonisation.fleet.col.stock");
+        Label missing = fleetMarketHeaderLabel("colonisation.fleet.col.missing");
+        Label buyOrder = fleetMarketHeaderLabel("colonisation.fleet.col.buyOrder");
+        Label price = fleetMarketHeaderLabel("colonisation.fleet.col.price");
+
+        fleetMarketGrid.add(commodity, 0, 0);
+        fleetMarketGrid.add(ship, 1, 0);
+        fleetMarketGrid.add(stock, 2, 0);
+        fleetMarketGrid.add(missing, 3, 0);
+        fleetMarketGrid.add(buyOrder, 4, 0);
+        fleetMarketGrid.add(price, 5, 0);
+
+        GridPane.setHalignment(commodity, HPos.LEFT);
+        GridPane.setHalignment(ship, HPos.LEFT);
+        GridPane.setHalignment(stock, HPos.LEFT);
+        GridPane.setHalignment(missing, HPos.LEFT);
+        GridPane.setHalignment(buyOrder, HPos.LEFT);
+        GridPane.setHalignment(price, HPos.LEFT);
     }
 
     private Label fleetMarketHeaderLabel(String messageKey) {

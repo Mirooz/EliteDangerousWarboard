@@ -36,32 +36,24 @@
                                                 styleClass="colonisation-panel-fold-button" text="▼"/>
                                     </HBox>
                                     <VBox fx:id="fleetCollapsibleContent" spacing="0.0" VBox.vgrow="ALWAYS">
-                                        <GridPane fx:id="fleetMarketHeaderGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid,colonisation-fleet-market-header-grid">
-                                            <columnConstraints>
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
-                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
-                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
-                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
-                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
-                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
-                                            </columnConstraints>
-                                        </GridPane>
-                                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                                                    styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame" VBox.vgrow="ALWAYS">
-                                            <VBox spacing="6.0" maxWidth="Infinity" styleClass="colonisation-fleet-scroll-inner">
-                                                <VBox fx:id="fleetSummaryBox" spacing="4.0"/>
-                                                <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
-                                                    <columnConstraints>
-                                                        <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
-                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
-                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
-                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
-                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
-                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
-                                                    </columnConstraints>
-                                                </GridPane>
-                                            </VBox>
-                                        </ScrollPane>
+                                        <VBox fx:id="fleetSummaryBox" spacing="4.0"/>
+                                        <VBox spacing="0.0" styleClass="colonisation-fleet-merged-frame" VBox.vgrow="ALWAYS">
+                                            <ScrollPane fx:id="fleetMarketScrollPane" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                                        styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll" VBox.vgrow="ALWAYS">
+                                                <VBox spacing="6.0" maxWidth="Infinity" styleClass="colonisation-fleet-scroll-inner">
+                                                    <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
+                                                        <columnConstraints>
+                                                            <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
+                                                        </columnConstraints>
+                                                    </GridPane>
+                                                </VBox>
+                                            </ScrollPane>
+                                        </VBox>
                                     </VBox>
                                 </VBox>
                                 <VBox fx:id="fleetRightColumn" spacing="8.0" styleClass="colonisation-fleet-commander-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
