@@ -296,6 +296,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (!event.isPrimaryButtonDown()) {
                 return;
             }
+            if (!isPanStartAllowed(event)) {
+                mapPanning = false;
+                bodiesScrollPane.setCursor(Cursor.OPEN_HAND);
+                return;
+            }
             mapPanning = true;
             lastPanSceneX = event.getSceneX();
             lastPanSceneY = event.getSceneY();
@@ -324,6 +329,33 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             mapPanning = false;
             bodiesScrollPane.setCursor(Cursor.OPEN_HAND);
         });
+    }
+
+    private boolean isPanStartAllowed(MouseEvent event) {
+        Node node = event.getPickResult() != null ? event.getPickResult().getIntersectedNode() : null;
+        if (node == null && event.getTarget() instanceof Node n) {
+            node = n;
+        }
+        while (node != null) {
+            if (node == bodiesPane || node == bodiesGroup || node == bodiesScrollPane) {
+                return true;
+            }
+            if (isInteractiveMapNode(node)) {
+                return false;
+            }
+            node = node.getParent();
+        }
+        return true;
+    }
+
+    private boolean isInteractiveMapNode(Node node) {
+        if (node.getOnMouseClicked() != null || node.getOnMousePressed() != null || node.getOnMouseReleased() != null) {
+            return true;
+        }
+        if (node.getCursor() == Cursor.HAND) {
+            return true;
+        }
+        return node.getStyleClass().contains("exploration-visual-colonisation-caption-chip-interactive");
     }
 
     private void initSpacingControls() {

@@ -445,11 +445,13 @@
 .colonisation-architect-system-combo {
     -fx-background-color: -fx-elite-dark;
     -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1px;
+    -fx-border-width: 2px;
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
     -fx-pref-height: 30px;
     -fx-max-width: 220px;
+    -fx-padding: 0 2px 0 2px;
+    -fx-cursor: hand;
 }
 
 .colonisation-architect-system-combo:hover {
@@ -464,6 +466,13 @@
 
 .colonisation-architect-system-combo .list-cell {
     -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.colonisation-architect-system-combo .arrow-button,
+.colonisation-architect-system-combo .arrow {
+    -fx-cursor: hand;
 }
 
 /*
@@ -482,13 +491,19 @@
 
 .combo-box-popup > .list-view {
     -fx-background-color: -fx-elite-darker;
-    -fx-border-color: transparent;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 1px;
 }
 
 .combo-box-popup > .list-view .list-cell {
     -fx-background-color: -fx-elite-darker;
     -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 13px;
     -fx-padding: 6px 10px;
+    -fx-cursor: hand;
 }
 
 .combo-box-popup > .list-view .list-cell:filled:hover {
