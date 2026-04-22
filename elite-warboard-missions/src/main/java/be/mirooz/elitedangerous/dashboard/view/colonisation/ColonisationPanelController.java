@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.CarrierCommodityR
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommodityKeys;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.CommodityCategory;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
+import be.mirooz.elitedangerous.backend.generated.model.CommodityRequest;
 import be.mirooz.elitedangerous.backend.generated.model.MatchedCommodityNearbyExport;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
@@ -45,6 +46,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -59,6 +61,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -68,6 +71,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -100,8 +104,6 @@ import java.util.regex.Pattern;
 public class ColonisationPanelController implements Initializable {
 
     @FXML
-    private Button buildStationButton;
-    @FXML
     private Button updateTradeStationButton;
     @FXML
     private Label statusLabel;
@@ -123,6 +125,18 @@ public class ColonisationPanelController implements Initializable {
     private VBox fleetCargoBarBox;
     @FXML
     private GridPane fleetMarketGrid;
+    @FXML
+    private VBox fleetOptimalMarketPanel;
+    @FXML
+    private CheckBox fleetAvoidPlanetaryLandingCheckBox;
+    @FXML
+    private Button fleetFindOptimalMarketButton;
+    @FXML
+    private Button fleetOptimalMarketHelpButton;
+    @FXML
+    private ProgressIndicator fleetOptimalMarketProgress;
+    @FXML
+    private VBox fleetOptimalMarketResultsBox;
     @FXML
     private Label commanderCurrentCargoTitleLabel;
     @FXML
@@ -220,6 +234,11 @@ public class ColonisationPanelController implements Initializable {
     private boolean suggestBuyStationsRequestInProgress;
     private boolean constructionListLoadedAfterJournalRead;
 
+    /** Recherche « marché optimal » Fleet Carrier (onglet Cargo & Fleet). */
+    private volatile boolean fleetOptimalMarketSearchInProgress;
+    private final Map<String, Color> fleetCargoRowHighlightByMergeKey = new HashMap<>();
+    private Tooltip fleetOptimalMarketHelpTooltip;
+
     private boolean suppressArchitectComboListener;
 
     private SystemVisualViewComponent architectSystemVisualView;
@@ -235,7 +254,6 @@ public class ColonisationPanelController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        buildStationButton.setOnAction(e -> onFindOptimalMarkets());
         if (updateTradeStationButton != null) {
             updateTradeStationButton.setVisible(false);
             updateTradeStationButton.setManaged(false);
@@ -259,6 +277,30 @@ public class ColonisationPanelController implements Initializable {
         showArchitectView();
         refreshAll();
         hideFleetRightColumn();
+        initFleetOptimalMarketPanel();
+    }
+
+    private void initFleetOptimalMarketPanel() {
+        if (fleetFindOptimalMarketButton != null) {
+            fleetFindOptimalMarketButton.setOnAction(e -> onFleetFindOptimalMarket());
+        }
+        if (fleetAvoidPlanetaryLandingCheckBox != null) {
+            fleetAvoidPlanetaryLandingCheckBox.setSelected(true);
+        }
+        if (fleetOptimalMarketHelpButton != null) {
+            fleetOptimalMarketHelpTooltip = new Tooltip();
+            fleetOptimalMarketHelpTooltip.setWrapText(true);
+            fleetOptimalMarketHelpTooltip.setMaxWidth(320);
+            fleetOptimalMarketHelpTooltip.setShowDelay(Duration.millis(200));
+            fleetOptimalMarketHelpTooltip.setShowDuration(Duration.minutes(3));
+            fleetOptimalMarketHelpTooltip.setHideDelay(Duration.millis(800));
+            fleetOptimalMarketHelpTooltip.setText(localizationService.getString("colonisation.fleet.optimalMarket.helpTooltip"));
+            fleetOptimalMarketHelpButton.setTooltip(fleetOptimalMarketHelpTooltip);
+        }
+        if (fleetOptimalMarketResultsBox != null) {
+            fleetOptimalMarketResultsBox.getChildren().clear();
+        }
+        fleetCargoRowHighlightByMergeKey.clear();
     }
 
     /** Vue par défaut : architecte (carte + détail chantiers). */
@@ -485,12 +527,20 @@ public class ColonisationPanelController implements Initializable {
         if (searchColonisableButton != null) {
             searchColonisableButton.setText(localizationService.getString("colonisation.edcolonise.search"));
         }
-        buildStationButton.setText(localizationService.getString("colonisation.findOptimalStations"));
         if (updateTradeStationButton != null) {
             updateTradeStationButton.setText(localizationService.getString("colonisation.updateTradeStation"));
         }
         constructionsTitleLabel.setText(localizationService.getString("colonisation.constructions.title"));
         fleetTitleLabel.setText(localizationService.getString("colonisation.fleet.title"));
+        if (fleetAvoidPlanetaryLandingCheckBox != null) {
+            fleetAvoidPlanetaryLandingCheckBox.setText(localizationService.getString("colonisation.fleet.optimalMarket.avoidPlanetary"));
+        }
+        if (fleetFindOptimalMarketButton != null) {
+            fleetFindOptimalMarketButton.setText(localizationService.getString("colonisation.fleet.optimalMarket.findButton"));
+        }
+        if (fleetOptimalMarketHelpTooltip != null) {
+            fleetOptimalMarketHelpTooltip.setText(localizationService.getString("colonisation.fleet.optimalMarket.helpTooltip"));
+        }
         commanderCurrentCargoTitleLabel.setText(localizationService.getString("colonisation.list.title"));
         updateFoldButtonTooltips();
         rebuildArchitectSystemCards();
@@ -1190,7 +1240,20 @@ public class ColonisationPanelController implements Initializable {
     }
 
     private void persistConstructionList() {
+        clearSuggestedBuyStations();
         preferencesService.persistColonisationConstructionListMarketIds(constructionListMarketIds);
+        resetFleetOptimalMarketPanelAfterConstructionListChanged();
+    }
+
+    private void resetFleetOptimalMarketPanelAfterConstructionListChanged() {
+        fleetCargoRowHighlightByMergeKey.clear();
+        if (fleetOptimalMarketResultsBox != null) {
+            fleetOptimalMarketResultsBox.getChildren().clear();
+        }
+        CarrierStatus cs = carrierTradeService.getCarrierStatus();
+        if (fleetMarketGrid != null && cs.isCarrierStatsInitialized()) {
+            refreshFleetMarketGrid(cs);
+        }
     }
 
     private void addConstructionProgressSection(VBox parent, ColonisationConstruction c) {
@@ -1308,37 +1371,6 @@ public class ColonisationPanelController implements Initializable {
         if (s.stats != null && s.stats.developmentLevel != null) {
             parent.getChildren().add(buildColonyChevronStatRow("colonisation.colony.developmentLevel", s.stats.developmentLevel));
         }
-    }
-
-    /**
-     * Recherche de stations d’achat pour le chantier sélectionné (sans exiger que ce soit le « chantier courant » enregistré).
-     */
-    private void onFindOptimalMarkets() {
-        List<ColonisationDockEntry> listDocks = selectedConstructionListDocks();
-        if (!listDocks.isEmpty()) {
-            clearSuggestedBuyStations();
-            suggestBuyStationsRequestInProgress = true;
-            updateButtonStates();
-            statusLabel.setText(localizationService.getString("colonisation.findOptimalMarkets.searching"));
-            refreshConstructionDetailPanel();
-            runSuggestBuyStationsWorkerForConstructionList(listDocks);
-            return;
-        }
-        if (selectedConstructionRow == null) {
-            statusLabel.setText(localizationService.getString("colonisation.buy.needSelection"));
-            return;
-        }
-        ColonisationDockEntry dock = findDockEntry(selectedConstructionRow.getMarketId());
-        if (dock == null || dock.getConstruction() == null) {
-            statusLabel.setText(localizationService.getString("colonisation.buy.noDock"));
-            return;
-        }
-        clearSuggestedBuyStations();
-        suggestBuyStationsRequestInProgress = true;
-        updateButtonStates();
-        statusLabel.setText(localizationService.getString("colonisation.findOptimalMarkets.searching"));
-        refreshConstructionDetailPanel();
-        runSuggestBuyStationsWorker(selectedConstructionRow.getMarketId());
     }
 
     private void clearArchitectVisualPanel() {
@@ -1897,6 +1929,30 @@ public class ColonisationPanelController implements Initializable {
         tip.setShowDelay(Duration.millis(350));
         Tooltip.install(l, tip);
         l.setOnMouseClicked(e -> copyToClipboardWithStandardPopup(l, text, stationName, e));
+        return l;
+    }
+
+    /** Station colorée + copie (panneau marché Fleet), sans le style orange générique des achats chantier. */
+    private Label createCopyableFleetOptimalStationLabel(String station, Color c) {
+        Label l = new Label(station);
+        l.getStyleClass().addAll("colonisation-fleet-optimal-station-copy", "colonisation-buy-copy-target");
+        l.setTextFill(c);
+        l.setCursor(Cursor.HAND);
+        Tooltip tip = new Tooltip(localizationService.getString("colonisation.buy.tooltipCopyStation"));
+        tip.setShowDelay(Duration.millis(350));
+        Tooltip.install(l, tip);
+        l.setOnMouseClicked(e -> copyToClipboardWithStandardPopup(l, station, true, e));
+        return l;
+    }
+
+    private Label createCopyableFleetOptimalSystemLabel(String system) {
+        Label l = new Label(system);
+        l.getStyleClass().addAll("colonisation-fleet-optimal-system-copy", "colonisation-buy-copy-target");
+        l.setCursor(Cursor.HAND);
+        Tooltip tip = new Tooltip(localizationService.getString("colonisation.buy.tooltipCopySystem"));
+        tip.setShowDelay(Duration.millis(350));
+        Tooltip.install(l, tip);
+        l.setOnMouseClicked(e -> copyToClipboardWithStandardPopup(l, system, false, e));
         return l;
     }
 
@@ -2618,6 +2674,10 @@ public class ColonisationPanelController implements Initializable {
         }
         CarrierStatus cs = carrierTradeService.getCarrierStatus();
         if (!cs.isCarrierStatsInitialized()) {
+            fleetCargoRowHighlightByMergeKey.clear();
+            if (fleetFindOptimalMarketButton != null) {
+                fleetFindOptimalMarketButton.setDisable(true);
+            }
             Label empty = new Label(localizationService.getString("colonisation.fleet.notInitialized"));
             empty.getStyleClass().add("colonisation-detail-placeholder");
             empty.setWrapText(true);
@@ -2645,7 +2705,342 @@ public class ColonisationPanelController implements Initializable {
         }
 
         refreshFleetMarketGrid(cs);
+        if (fleetFindOptimalMarketButton != null) {
+            fleetFindOptimalMarketButton.setDisable(fleetOptimalMarketSearchInProgress);
+        }
         refreshCommanderColonyPanel();
+    }
+
+    private void onFleetFindOptimalMarket() {
+        if (fleetOptimalMarketSearchInProgress) {
+            return;
+        }
+        CarrierStatus cs = carrierTradeService.getCarrierStatus();
+        if (!cs.isCarrierStatsInitialized()) {
+            showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.notInitialized"));
+            return;
+        }
+        String refSystem = cs.getPosition() != null ? cs.getPosition().getStarSystem() : "";
+        if (refSystem == null || refSystem.isBlank()) {
+            showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noCarrierSystem"));
+            return;
+        }
+        List<CommodityRequest> requests = buildFleetOptimalMarketCommodityRequests(cs);
+        final boolean avoidPlanetary = fleetAvoidPlanetaryLandingCheckBox != null && fleetAvoidPlanetaryLandingCheckBox.isSelected();
+        if (requests.isEmpty()) {
+            showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.nothingToSearch"));
+            fleetCargoRowHighlightByMergeKey.clear();
+            refreshFleetMarketGrid(cs);
+            return;
+        }
+        fleetOptimalMarketSearchInProgress = true;
+        if (fleetFindOptimalMarketButton != null) {
+            fleetFindOptimalMarketButton.setDisable(true);
+        }
+        if (fleetOptimalMarketProgress != null) {
+            fleetOptimalMarketProgress.setManaged(true);
+            fleetOptimalMarketProgress.setVisible(true);
+        }
+        showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.searching"));
+        final String systemArg = refSystem.trim();
+        final List<CommodityRequest> requestsArg = List.copyOf(requests);
+        Thread t = new Thread(() -> {
+            try {
+                List<NearbyExportsBestStationResult> stations =
+                        colonisationService.suggestBuyStationsForCommodityRequests(systemArg, requestsArg, avoidPlanetary);
+                Platform.runLater(() -> {
+                    fleetOptimalMarketSearchInProgress = false;
+                    if (fleetOptimalMarketProgress != null) {
+                        fleetOptimalMarketProgress.setVisible(false);
+                        fleetOptimalMarketProgress.setManaged(false);
+                    }
+                    if (fleetFindOptimalMarketButton != null) {
+                        fleetFindOptimalMarketButton.setDisable(false);
+                    }
+                    if (stations.isEmpty()) {
+                        fleetCargoRowHighlightByMergeKey.clear();
+                        showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noResults"));
+                    } else {
+                        Map<String, Integer> tonsByKey = buildRequestedTonsByMergeKey(requestsArg);
+                        List<NearbyExportsBestStationResult> ordered =
+                                sortFleetOptimalStationsByTotalTonsDesc(stations, tonsByKey);
+                        rebuildFleetCargoHighlightsFromStations(ordered);
+                        populateFleetOptimalMarketResults(ordered, tonsByKey);
+                    }
+                    refreshFleetMarketGrid(cs);
+                });
+            } catch (IOException e) {
+                Platform.runLater(() -> {
+                    fleetOptimalMarketSearchInProgress = false;
+                    if (fleetOptimalMarketProgress != null) {
+                        fleetOptimalMarketProgress.setVisible(false);
+                        fleetOptimalMarketProgress.setManaged(false);
+                    }
+                    if (fleetFindOptimalMarketButton != null) {
+                        fleetFindOptimalMarketButton.setDisable(false);
+                    }
+                    fleetCargoRowHighlightByMergeKey.clear();
+                    showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.error") + " " + e.getMessage());
+                    refreshFleetMarketGrid(cs);
+                });
+            }
+        }, "fleet-optimal-market");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private List<CommodityRequest> buildFleetOptimalMarketCommodityRequests(CarrierStatus cs) {
+        List<CommodityRequest> out = new ArrayList<>();
+        for (FleetMarketRow r : buildFleetMergedRows(cs)) {
+            if (r.getMissing() <= 0) {
+                continue;
+            }
+            if (r.getCommodity() == null) {
+                continue;
+            }
+            String cargo = r.getCommodity().getCargoJsonName();
+            if (cargo == null || cargo.isBlank()) {
+                continue;
+            }
+            out.add(new CommodityRequest().name(cargo).volume(r.getMissing()));
+        }
+        return out;
+    }
+
+    private void showFleetOptimalMarketMessage(String text) {
+        if (fleetOptimalMarketResultsBox == null) {
+            return;
+        }
+        fleetOptimalMarketResultsBox.getChildren().clear();
+        Label l = new Label(text);
+        l.setWrapText(true);
+        l.setMaxWidth(Double.MAX_VALUE);
+        l.getStyleClass().add("colonisation-detail-placeholder");
+        fleetOptimalMarketResultsBox.getChildren().add(l);
+    }
+
+    private void rebuildFleetCargoHighlightsFromStations(List<NearbyExportsBestStationResult> stations) {
+        fleetCargoRowHighlightByMergeKey.clear();
+        int idx = 0;
+        for (NearbyExportsBestStationResult st : stations) {
+            if (st == null) {
+                continue;
+            }
+            Color c = fleetStationColor(idx++);
+            if (st.getMatches() == null) {
+                continue;
+            }
+            for (MatchedCommodityNearbyExport m : st.getMatches()) {
+                if (m == null || m.getRequestedCommodityName() == null) {
+                    continue;
+                }
+                String mk = ColonisationCommodityKeys.normalizeMergeKey(m.getRequestedCommodityName());
+                if (mk.isBlank()) {
+                    continue;
+                }
+                fleetCargoRowHighlightByMergeKey.putIfAbsent(mk, c);
+                ICommodity resolved = CarrierCommodityResolver.resolve(
+                        m.getRequestedCommodityName() != null ? m.getRequestedCommodityName() : "", "");
+                String mkResolved = ColonisationCommodityKeys.mergeKey(resolved);
+                if (!mkResolved.isBlank() && !mkResolved.equals(mk)) {
+                    fleetCargoRowHighlightByMergeKey.putIfAbsent(mkResolved, c);
+                }
+            }
+        }
+    }
+
+    private static Map<String, Integer> buildRequestedTonsByMergeKey(List<CommodityRequest> requests) {
+        Map<String, Integer> map = new HashMap<>();
+        if (requests == null) {
+            return map;
+        }
+        for (CommodityRequest cr : requests) {
+            if (cr == null || cr.getName() == null || cr.getName().isBlank()) {
+                continue;
+            }
+            String mk = ColonisationCommodityKeys.normalizeMergeKey(cr.getName());
+            if (mk.isBlank()) {
+                continue;
+            }
+            int v = cr.getVolume() != null ? cr.getVolume() : 0;
+            map.merge(mk, Math.max(0, v), Integer::sum);
+        }
+        return map;
+    }
+
+    private static int fleetOptimalStationTotalRequestedTons(
+            NearbyExportsBestStationResult st,
+            Map<String, Integer> requestedTonsByMergeKey) {
+        if (st == null || st.getMatches() == null || requestedTonsByMergeKey == null || requestedTonsByMergeKey.isEmpty()) {
+            return 0;
+        }
+        int total = 0;
+        for (MatchedCommodityNearbyExport m : st.getMatches()) {
+            if (m == null || m.getRequestedCommodityName() == null) {
+                continue;
+            }
+            String mk = ColonisationCommodityKeys.normalizeMergeKey(m.getRequestedCommodityName());
+            total += requestedTonsByMergeKey.getOrDefault(mk, 0);
+        }
+        return total;
+    }
+
+    /** Plus de tonnes demandées en tête (même ordre que les couleurs du tableau fleet). */
+    private static List<NearbyExportsBestStationResult> sortFleetOptimalStationsByTotalTonsDesc(
+            List<NearbyExportsBestStationResult> stations,
+            Map<String, Integer> requestedTonsByMergeKey) {
+        if (stations == null || stations.isEmpty()) {
+            return List.of();
+        }
+        List<NearbyExportsBestStationResult> copy = new ArrayList<>(stations);
+        copy.sort((a, b) -> {
+            int ta = fleetOptimalStationTotalRequestedTons(a, requestedTonsByMergeKey);
+            int tb = fleetOptimalStationTotalRequestedTons(b, requestedTonsByMergeKey);
+            if (tb != ta) {
+                return Integer.compare(tb, ta);
+            }
+            String la = fleetOptimalStationSortLabel(a);
+            String lb = fleetOptimalStationSortLabel(b);
+            return la.compareToIgnoreCase(lb);
+        });
+        return copy;
+    }
+
+    private static String fleetOptimalStationSortLabel(NearbyExportsBestStationResult st) {
+        if (st == null) {
+            return "";
+        }
+        return firstNonBlank(st.getSystemName(), "") + "\u0000" + firstNonBlank(st.getStationName(), "");
+    }
+
+    private void populateFleetOptimalMarketResults(
+            List<NearbyExportsBestStationResult> stations,
+            Map<String, Integer> requestedTonsByMergeKey) {
+        if (fleetOptimalMarketResultsBox == null) {
+            return;
+        }
+        fleetOptimalMarketResultsBox.getChildren().clear();
+        int idx = 0;
+        for (NearbyExportsBestStationResult st : stations) {
+            if (st == null) {
+                continue;
+            }
+            Color c = fleetStationColor(idx++);
+            VBox card = new VBox(4);
+            card.getStyleClass().add("colonisation-fleet-optimal-result-card");
+            card.setMaxWidth(Double.MAX_VALUE);
+
+            HBox head = new HBox(4);
+            head.setAlignment(Pos.CENTER_LEFT);
+            String sysText = firstNonBlank(st.getSystemName(), "—");
+            String stationText = firstNonBlank(st.getStationName(), "—");
+            Label sysPart = createCopyableFleetOptimalSystemLabel(sysText);
+            Label sep = new Label(" - ");
+            sep.getStyleClass().add("colonisation-fleet-optimal-result-sep");
+            Label stationPart = createCopyableFleetOptimalStationLabel(stationText, c);
+            HBox.setHgrow(stationPart, Priority.ALWAYS);
+            head.getChildren().addAll(sysPart, sep, stationPart);
+
+            List<String> names = new ArrayList<>();
+            if (st.getMatches() != null) {
+                for (MatchedCommodityNearbyExport m : st.getMatches()) {
+                    if (m == null) {
+                        continue;
+                    }
+                    String n = fleetOptimalMatchedCommodityVisibleName(m);
+                    if (!n.isBlank()) {
+                        names.add(n);
+                    }
+                }
+            }
+            Label commodities = new Label(String.join(", ", names));
+            commodities.setWrapText(true);
+            commodities.setMaxWidth(Double.MAX_VALUE);
+            commodities.getStyleClass().add("colonisation-fleet-optimal-result-commodities");
+
+            int totalTons = fleetOptimalStationTotalRequestedTons(st, requestedTonsByMergeKey);
+            Label totalLabel = new Label(localizationService.getString("colonisation.fleet.optimalMarket.totalTons", totalTons));
+            totalLabel.setWrapText(true);
+            totalLabel.setMaxWidth(Double.MAX_VALUE);
+            totalLabel.getStyleClass().add("colonisation-fleet-optimal-result-total-tons");
+
+            card.getChildren().addAll(head, commodities, totalLabel);
+            fleetOptimalMarketResultsBox.getChildren().add(card);
+        }
+    }
+
+    /**
+     * Couleurs distinctes par leg ; décale la phase pour éviter la teinte 0° (rouge) sur la première station.
+     */
+    private static Color fleetStationColor(int index) {
+        double hue = ((index + 1) * 0.38196601125 * 360.0) % 360.0;
+        return Color.hsb(hue, 0.62, 0.92, 1.0);
+    }
+
+    private String fleetOptimalMatchedCommodityVisibleName(MatchedCommodityNearbyExport m) {
+        if (m == null) {
+            return "";
+        }
+        String req = m.getRequestedCommodityName();
+        ICommodity comm = CarrierCommodityResolver.resolve(req != null ? req : "", "");
+        if (comm != null) {
+            String vis = comm.getVisibleName();
+            if (vis != null && !vis.isBlank()) {
+                return vis;
+            }
+        }
+        if (m.getExport() != null && m.getExport().getCommodityName() != null && !m.getExport().getCommodityName().isBlank()) {
+            return m.getExport().getCommodityName();
+        }
+        return firstNonBlank(req, "");
+    }
+
+    private Color fleetRouteColorForRow(FleetMarketRow r) {
+        if (r == null || r.getMissing() <= 0) {
+            return null;
+        }
+        String mk = r.getCommodityKey();
+        Color c = fleetCargoRowHighlightByMergeKey.get(mk);
+        if (c != null) {
+            return c;
+        }
+        if (r.getCommodity() != null) {
+            String cargo = r.getCommodity().getCargoJsonName();
+            if (cargo != null && !cargo.isBlank()) {
+                c = fleetCargoRowHighlightByMergeKey.get(ColonisationCommodityKeys.normalizeMergeKey(cargo));
+            }
+        }
+        return c;
+    }
+
+    private static void clearFleetMarketRowHighlight(Label name, Label shipL, Label stock, Label missing, Label buyOrder, Label price) {
+        for (Label cell : List.of(name, shipL, stock, missing, buyOrder, price)) {
+            cell.setBackground(Background.EMPTY);
+        }
+        name.setStyle(null);
+    }
+
+    /**
+     * Couleur uniquement sur le libellé commodité : le thème impose {@code -fx-text-fill} sur {@code .cargo-mineral-name},
+     * donc style inline pour la couleur station.
+     */
+    private void applyFleetMarketRowRouteHighlight(
+            FleetMarketRow r, Label name, Label shipL, Label stock, Label missing, Label buyOrder, Label price) {
+        Color c = fleetRouteColorForRow(r);
+        if (c == null) {
+            clearFleetMarketRowHighlight(name, shipL, stock, missing, buyOrder, price);
+            return;
+        }
+        shipL.setBackground(Background.EMPTY);
+        stock.setBackground(Background.EMPTY);
+        missing.setBackground(Background.EMPTY);
+        buyOrder.setBackground(Background.EMPTY);
+        price.setBackground(Background.EMPTY);
+        name.setBackground(Background.EMPTY);
+        int rr = (int) Math.round(c.getRed() * 255);
+        int gg = (int) Math.round(c.getGreen() * 255);
+        int bb = (int) Math.round(c.getBlue() * 255);
+        name.setStyle(String.format(Locale.ROOT, "-fx-text-fill: rgb(%d,%d,%d); -fx-font-weight: bold;", rr, gg, bb));
     }
 
     /**
@@ -2859,6 +3254,7 @@ public class ColonisationPanelController implements Initializable {
             stock.getStyleClass().add(r.getStock() > 0 ? "cargo-mineral-quantity" : "cargo-mineral-null-price");
             Label missing = new Label(r.getMissing() > 0 ? Integer.toString(r.getMissing()) : "—");
             missing.getStyleClass().add(r.getMissing() > 0 ? "cargo-mineral-unit-price" : "cargo-mineral-null-price");
+            applyFleetMarketRowRouteHighlight(r, name, shipL, stock, missing, buyOrder, price);
             fleetMarketGrid.add(name, 0, row);
             fleetMarketGrid.add(shipL, 1, row);
             fleetMarketGrid.add(stock, 2, row);
@@ -3121,37 +3517,6 @@ public class ColonisationPanelController implements Initializable {
         runSuggestBuyStationsWorker(requestMarketId);
     }
 
-    private void runSuggestBuyStationsWorkerForConstructionList(List<ColonisationDockEntry> docks) {
-        List<ColonisationDockEntry> snapshot = List.copyOf(docks);
-        Thread t = new Thread(() -> {
-            try {
-                List<NearbyExportsBestStationResult> merged =
-                        colonisationService.suggestBuyStationsForConstructionDocks(snapshot, false);
-                Platform.runLater(() -> {
-                    suggestedBuyStations = merged;
-                    suggestBuyStationsRequestInProgress = false;
-                    refreshConstructionDetailPanel();
-                    if (merged.isEmpty()) {
-                        statusLabel.setText(localizationService.getString("colonisation.buy.noStations"));
-                    } else {
-                        statusLabel.setText("");
-                    }
-                    updateButtonStates();
-                });
-            } catch (IOException e) {
-                Platform.runLater(() -> {
-                    suggestedBuyStations = List.of();
-                    suggestBuyStationsRequestInProgress = false;
-                    refreshConstructionDetailPanel();
-                    statusLabel.setText(localizationService.getString("colonisation.stationsError") + " " + e.getMessage());
-                    updateButtonStates();
-                });
-            }
-        }, "colonisation-suggest-buy-list");
-        t.setDaemon(true);
-        t.start();
-    }
-
     /**
      * Rafraîchit uniquement les stations d’achat pour le chantier déjà enregistré (sans redésigner le site).
      */
@@ -3221,12 +3586,6 @@ public class ColonisationPanelController implements Initializable {
     }
 
     private void updateButtonStates() {
-        if (buildStationButton == null) {
-            return;
-        }
-        boolean noSelection = selectedConstructionRow == null && constructionListMarketIds.isEmpty();
-        boolean busy = suggestBuyStationsRequestInProgress;
-        buildStationButton.setDisable(noSelection || busy);
         if (updateTradeStationButton != null) {
             updateTradeStationButton.setVisible(false);
             updateTradeStationButton.setManaged(false);

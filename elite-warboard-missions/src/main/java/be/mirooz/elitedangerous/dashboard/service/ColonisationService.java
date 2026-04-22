@@ -209,6 +209,28 @@ public class ColonisationService {
         return List.copyOf(response.getBestStations());
     }
 
+    /**
+     * Recherche de stations d’export (achat pour le joueur) autour d’un système de référence pour une liste de commodités arbitraires
+     * (ex. manquants sur le Fleet Carrier).
+     */
+    public List<NearbyExportsBestStationResult> suggestBuyStationsForCommodityRequests(
+            String referenceSystemName,
+            List<CommodityRequest> commodities,
+            boolean avoidPlanetaryLanding) throws IOException {
+        if (referenceSystemName == null || referenceSystemName.isBlank() || commodities == null || commodities.isEmpty()) {
+            return List.of();
+        }
+        NearbyExportsCrosscheckRequest request = new NearbyExportsCrosscheckRequest()
+                .systemName(referenceSystemName.trim())
+                .commodities(commodities)
+                .avoidPlanetaryLanding(avoidPlanetaryLanding);
+        NearbyExportsCrosscheckResponse response = ardentBackend.suggestBuyStations(request);
+        if (response.getBestStations() == null) {
+            return List.of();
+        }
+        return List.copyOf(response.getBestStations());
+    }
+
     private static String resolveSystemNameFromArchitectFirstConstruction(ColonisationArchitectSystem arch) {
         if (arch == null) {
             return "";

@@ -260,6 +260,56 @@
     -fx-alignment: TOP_LEFT;
 }
 
+.colonisation-fleet-optimal-column {
+    -fx-alignment: TOP_LEFT;
+    -fx-padding: 0 0 0 4px;
+}
+
+.colonisation-fleet-optimal-toolbar {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.colonisation-fleet-optimal-system-copy {
+    -fx-text-fill: derive(-fx-elite-cyan, 5%);
+    -fx-font-size: 13.5px;
+    -fx-wrap-text: true;
+}
+
+.colonisation-fleet-optimal-station-copy {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.colonisation-fleet-optimal-result-sep {
+    -fx-text-fill: ladder(-fx-base, white 49%, derive(-fx-base, -30%) 50%);
+    -fx-opacity: 0.75;
+}
+
+.colonisation-fleet-optimal-results {
+    -fx-padding: 6px 4px 10px 4px;
+}
+
+.colonisation-fleet-optimal-result-card {
+    -fx-padding: 8px 10px;
+    -fx-background-color: derive(-fx-elite-gray, -10%);
+    -fx-background-radius: 6px;
+    -fx-border-color: derive(-fx-elite-cyan, -35%);
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+}
+
+.colonisation-fleet-optimal-result-commodities {
+    -fx-text-fill: ladder(-fx-base, white 49%, derive(-fx-base, -30%) 50%);
+    -fx-opacity: 0.92;
+}
+
+.colonisation-fleet-optimal-result-total-tons {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15.5px;
+    -fx-font-weight: bold;
+}
+
 /* Colonne cargo commandant : pas de second cadre cyan (le ScrollPane porte colonisation-fleet-merged-frame). */
 .colonisation-fleet-commander-cargo-inner.colonisation-buy-station-wrap {
     -fx-border-color: transparent;

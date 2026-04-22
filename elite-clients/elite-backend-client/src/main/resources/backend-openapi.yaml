@@ -1901,6 +1901,10 @@ components:
             $ref: '#/components/schemas/CommodityRequest'
         avoidPlanetaryLanding:
           type: boolean
+        largePadOnly:
+          type: boolean
+          description: Si vrai, ne retient que les marchés avec maxLandingPadSize = 3 (large pad).
+          default: false
     NearbyExportsCrosscheckResponse:
       type: object
       properties:

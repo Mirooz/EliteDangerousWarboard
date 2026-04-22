@@ -56,6 +56,30 @@
                                         </VBox>
                                     </VBox>
                                 </VBox>
+                                <VBox fx:id="fleetOptimalMarketPanel" spacing="8.0" styleClass="colonisation-fleet-optimal-column"
+                                      minWidth="300.0" prefWidth="400.0" maxWidth="560.0" HBox.hgrow="SOMETIMES" VBox.vgrow="ALWAYS">
+                                    <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="colonisation-fleet-optimal-toolbar">
+                                        <Button fx:id="fleetFindOptimalMarketButton" mnemonicParsing="false" focusTraversable="false"
+                                                styleClass="elite-nav-button" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                        <Button fx:id="fleetOptimalMarketHelpButton" mnemonicParsing="false" focusTraversable="false"
+                                                styleClass="nav-route-info-button" minWidth="24.0" maxWidth="24.0" minHeight="24.0" maxHeight="24.0">
+                                            <graphic>
+                                                <Label text="?" styleClass="nav-route-info-icon"/>
+                                            </graphic>
+                                        </Button>
+                                        <ProgressIndicator fx:id="fleetOptimalMarketProgress" prefWidth="32.0" prefHeight="32.0"
+                                                           minWidth="32.0" minHeight="32.0" maxWidth="32.0" maxHeight="32.0"
+                                                           visible="false" managed="false"/>
+                                    </HBox>
+                                    <CheckBox fx:id="fleetAvoidPlanetaryLandingCheckBox" wrapText="true" maxWidth="Infinity"
+                                              styleClass="fleet-carrier-checkbox" selected="true"/>
+                                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                                styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame"
+                                                VBox.vgrow="ALWAYS">
+                                        <VBox fx:id="fleetOptimalMarketResultsBox" spacing="10.0" maxWidth="Infinity"
+                                              styleClass="colonisation-fleet-optimal-results"/>
+                                    </ScrollPane>
+                                </VBox>
                                 <VBox fx:id="fleetRightColumn" spacing="8.0" styleClass="colonisation-fleet-commander-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                                     <HBox spacing="8.0" alignment="CENTER_LEFT">
                                         <Label fx:id="commanderCurrentCargoTitleLabel" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="mining-title"/>
@@ -86,9 +110,6 @@
             <VBox spacing="8.0" minWidth="300.0" maxWidth="520.0" prefWidth="480.0" HBox.hgrow="NEVER"
                   styleClass="colonisation-column,colonisation-detail-column" VBox.vgrow="ALWAYS">
                 <Label fx:id="constructionDetailTitleLabel" styleClass="mining-title"/>
-                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="colonisation-detail-actions">
-                    <Button fx:id="buildStationButton" styleClass="elite-nav-button"/>
-                </HBox>
                 <Label fx:id="statusLabel" styleClass="footer-text" wrapText="true" maxWidth="496.0"/>
                 <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                             styleClass="colonisation-architect-scroll,colonisation-detail-scroll" VBox.vgrow="ALWAYS">
