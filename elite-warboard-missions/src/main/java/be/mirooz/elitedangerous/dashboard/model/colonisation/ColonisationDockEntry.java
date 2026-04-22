@@ -19,6 +19,8 @@ public class ColonisationDockEntry {
     private String starSystem;
     private long systemAddress;
     private Long bodyId;
+    /** Vrai si ce site correspond au tout premier dépôt de construction détecté dans le journal. */
+    private boolean firstStation;
     private String stationFactionName;
     private double distFromStarLs;
 

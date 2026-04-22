@@ -22,6 +22,7 @@ public class ColonisationArchitectSystem {
     private long systemAddress;
 
     private final Map<Long, ColonisationDockEntry> sitesByMarketId = new LinkedHashMap<>();
+    private Long firstConstructionMarketId;
 
     public ColonisationArchitectSystem(String starSystem) {
         this.starSystem = starSystem != null ? starSystem : "";
@@ -65,6 +66,10 @@ public class ColonisationArchitectSystem {
         if (bodyIdResolved != null && bodyIdResolved >= 0) {
             entry.setBodyId(bodyIdResolved);
         }
+        if (firstConstructionMarketId == null) {
+            firstConstructionMarketId = marketId;
+        }
+        entry.setFirstStation(firstConstructionMarketId == marketId);
     }
 
     public ColonisationDockEntry getSiteByMarketId(long marketId) {

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 /**
  * Point d’entrée applicatif pour la colonisation (dock, chantiers) : délègue au {@link ColonisationRegistry}.
  * Les handlers journal doivent passer par ce service, pas par le registre directement.
@@ -24,6 +25,9 @@ public class ColonisationService {
 
     /** Service présent sur les stations / dépôts liés à la colonisation (journal Docked). */
     public static final String COLONISATION_STATION_SERVICE = "colonisationcontribution";
+    private static final Pattern CONSTRUCTION_SITE_PREFIX_PATTERN = Pattern.compile(
+            "^(orbital|planetary)\\s+construction\\s+site\\s*:\\s*",
+            Pattern.CASE_INSENSITIVE);
 
     private static final ColonisationService INSTANCE = new ColonisationService();
 
@@ -236,9 +240,9 @@ public class ColonisationService {
     private static String resolveSiteDisplayName(JsonNode jsonNode, String stationName) {
         String localised = jsonNode.path("StationName_Localised").asText("").trim();
         if (!localised.isEmpty()) {
-            return localised;
+            return stripConstructionSitePrefix(localised);
         }
-        return stripOptionalPanelPrefix(stationName);
+        return stripConstructionSitePrefix(stripOptionalPanelPrefix(stationName));
     }
 
     /** Ex. {@code $EXT_PANEL_...; Nom affiché} → partie après {@code ;} si présente. */
@@ -251,5 +255,13 @@ public class ColonisationService {
             return stationName.substring(semi + 1).trim();
         }
         return stationName.trim();
+    }
+
+    static String stripConstructionSitePrefix(String siteName) {
+        if (siteName == null) {
+            return "";
+        }
+        String cleaned = CONSTRUCTION_SITE_PREFIX_PATTERN.matcher(siteName.trim()).replaceFirst("");
+        return cleaned.trim();
     }
 }

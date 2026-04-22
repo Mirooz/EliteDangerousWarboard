@@ -746,7 +746,7 @@ public class ColonisationPanelController implements Initializable {
         if (t.isEmpty()) {
             return false;
         }
-        return "CraterPort".equalsIgnoreCase(t) || "PlanetaryPort".equalsIgnoreCase(t);
+        return "CraterPort".equalsIgnoreCase(t) || "PlanetaryPort".equalsIgnoreCase(t) || "PlanetaryConstructionDepot".equalsIgnoreCase(t);
     }
 
     private static String truncateCaptionSite(String s, int max) {
@@ -970,7 +970,9 @@ public class ColonisationPanelController implements Initializable {
         String headline = firstNonBlank(dock.getSiteNameLocalised(), dock.getStationNameRaw(), "—");
         constructionDetailTitleLabel.setText(headline);
 
-        addUserConstructionStructureTypeRow(constructionDetailContent, dock.getMarketId());
+        addUserConstructionStructureTypeRow(constructionDetailContent, dock);
+        appendKv(constructionDetailContent, "colonisation.detail.stationType",
+                localizedConstructionSiteClass(dock));
         String bodyLabel = resolveDockBodyDisplayName(dock);
         if (bodyLabel != null && !bodyLabel.isBlank()) {
             appendKv(constructionDetailContent, "colonisation.detail.body", bodyLabel);
@@ -1923,12 +1925,17 @@ public class ColonisationPanelController implements Initializable {
      * Choix utilisateur de la structure ({@link Colony} / {@code construction_class.json}),
      * persisté sous {@code ~/.elite-warboard/}. Menu en cascade : catégorie → type → (settlements : famille) → modèle.
      */
-    private void addUserConstructionStructureTypeRow(VBox parent, long marketId) {
+    private void addUserConstructionStructureTypeRow(VBox parent, ColonisationDockEntry dock) {
+        if (dock == null) {
+            return;
+        }
+        long marketId = dock.getMarketId();
         VBox block = new VBox(8);
         block.getStyleClass().add("colonisation-structure-type-picker");
         block.setMaxWidth(Double.MAX_VALUE);
 
         List<Structure> catalog = Colony.getInstance().getConstructionClassCatalog();
+        Optional<String> preferredCategory = inferDefaultConstructionCategory(dock);
 
         Label section = new Label(localizationService.getString("colonisation.structureType.user") + ":");
         section.getStyleClass().add("colonisation-detail-k");
@@ -1951,7 +1958,8 @@ public class ColonisationPanelController implements Initializable {
             if (s == null) {
                 cascade.setText(localizationService.getString("colonisation.structureType.none"));
             } else {
-                cascade.setText(formatColonyCascadeLabel(s));
+                boolean hideCategory = preferredCategory.isPresent();
+                cascade.setText(formatColonyCascadeLabel(s, hideCategory));
             }
         };
 
@@ -1971,66 +1979,17 @@ public class ColonisationPanelController implements Initializable {
 
         Runnable rebuildCascadeMenu = () -> {
             cascade.getItems().clear();
-            MenuItem clear = new MenuItem(localizationService.getString("colonisation.structureType.none"));
-            clear.setOnAction(e -> {
-                selection[0] = null;
-                updateCascadeLabel.run();
-                preferencesService.setColonisationUserConstructionStructure(marketId, null);
-                refreshTip.run();
-                refreshColonyStatsIfDetailForSite.run();
-            });
-            cascade.getItems().add(clear);
-            for (String cat : Colony.distinctCategories(catalog)) {
-                Menu catMenu = new Menu(cat);
-                for (String typ : Colony.distinctTypes(catalog, cat)) {
-                    if (isSettlementStructureType(typ)) {
-                        Menu settlementMenu = new Menu(typ);
-                        Map<String, ArrayList<Structure>> byFamily = new LinkedHashMap<>();
-                        for (Structure s : Colony.structuresFor(catalog, cat, typ)) {
-                            String fam = settlementFamilyKey(s);
-                            byFamily.computeIfAbsent(fam, k -> new ArrayList<>()).add(s);
-                        }
-                        ArrayList<String> families = new ArrayList<>(byFamily.keySet());
-                        families.sort(String.CASE_INSENSITIVE_ORDER);
-                        for (String fam : families) {
-                            Menu famMenu = new Menu(fam);
-                            ArrayList<Structure> group = byFamily.get(fam);
-                            group.sort(Comparator.comparingInt(ColonisationPanelController::settlementTierPadSortKey));
-                            for (Structure s : group) {
-                                Structure chosen = s;
-                                String itemLabel = settlementTierPadLabel(s);
-                                MenuItem it = new MenuItem(itemLabel);
-                                it.setOnAction(e -> {
-                                    selection[0] = chosen;
-                                    updateCascadeLabel.run();
-                                    preferencesService.setColonisationUserConstructionStructure(marketId, chosen);
-                                    refreshTip.run();
-                                    refreshColonyStatsIfDetailForSite.run();
-                                });
-                                famMenu.getItems().add(it);
-                            }
-                            settlementMenu.getItems().add(famMenu);
-                        }
-                        catMenu.getItems().add(settlementMenu);
-                    } else {
-                        Menu typMenu = new Menu(typ);
-                        for (Structure s : Colony.structuresFor(catalog, cat, typ)) {
-                            Structure chosen = s;
-                            String nm = s.name != null ? s.name : "";
-                            MenuItem it = new MenuItem(nm);
-                            it.setOnAction(e -> {
-                                selection[0] = chosen;
-                                updateCascadeLabel.run();
-                                preferencesService.setColonisationUserConstructionStructure(marketId, chosen);
-                                refreshTip.run();
-                                refreshColonyStatsIfDetailForSite.run();
-                            });
-                            typMenu.getItems().add(it);
-                        }
-                        catMenu.getItems().add(typMenu);
-                    }
+            if (preferredCategory.isPresent()) {
+                String cat = preferredCategory.get();
+                addTypeMenusForCategory(cascade.getItems(), catalog, cat, selection, updateCascadeLabel,
+                        marketId, refreshTip, refreshColonyStatsIfDetailForSite);
+            } else {
+                for (String cat : Colony.distinctCategories(catalog)) {
+                    Menu catMenu = new Menu(cat);
+                    addTypeMenusForCategory(catMenu.getItems(), catalog, cat, selection, updateCascadeLabel,
+                            marketId, refreshTip, refreshColonyStatsIfDetailForSite);
+                    cascade.getItems().add(catMenu);
                 }
-                cascade.getItems().add(catMenu);
             }
             for (MenuItem mi : cascade.getItems()) {
                 applyColonisationCascadeMenuItemStyle(mi);
@@ -2040,6 +1999,16 @@ public class ColonisationPanelController implements Initializable {
 
         rebuildCascadeMenu.run();
         selection[0] = preferencesService.getColonisationUserConstructionStructure(marketId).orElse(null);
+        if (selection[0] != null && preferredCategory.isPresent()
+                && !preferredCategory.get().equalsIgnoreCase(selection[0].category)) {
+            selection[0] = null;
+        }
+        if (selection[0] == null && preferredCategory.isPresent()) {
+            selection[0] = firstStructureForCategory(catalog, preferredCategory.get()).orElse(null);
+            if (selection[0] != null) {
+                preferencesService.setColonisationUserConstructionStructure(marketId, selection[0]);
+            }
+        }
         updateCascadeLabel.run();
         refreshTip.run();
 
@@ -2071,17 +2040,128 @@ public class ColonisationPanelController implements Initializable {
 
     private static final Pattern SETTLEMENT_NAME_PARTS = Pattern.compile(
             "^(?<fam>.+?)\\s+T(?<tier>[12])\\s+(?<pad>[SML]|SL|ML|SM)$");
+    private static final Pattern ORBITAL_SITE_NAME_PATTERN = Pattern.compile(
+            "^orbital\\s+construction\\s+site\\s*:\\s*.+$",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern PLANETARY_SITE_NAME_PATTERN = Pattern.compile(
+            "^planetary\\s+construction\\s+site\\s*:\\s*.+$",
+            Pattern.CASE_INSENSITIVE);
 
-    private static String formatColonyCascadeLabel(Structure s) {
+    private static Optional<String> inferDefaultConstructionCategory(ColonisationDockEntry dock) {
+        if (dock == null) {
+            return Optional.of("Orbital");
+        }
+        if (isColonisationSurfaceStationType(dock.getStationType())) {
+            return Optional.of("Surface");
+        }
+        if (dock.getStationType() != null && !dock.getStationType().isBlank()) {
+            return Optional.of("Orbital");
+        }
+        String siteLabel = firstNonBlank(dock.getSiteNameLocalised(), dock.getStationNameRaw(), "").trim();
+        if (siteLabel.isEmpty()) {
+            return Optional.of("Orbital");
+        }
+        if (ORBITAL_SITE_NAME_PATTERN.matcher(siteLabel).matches()) {
+            return Optional.of("Orbital");
+        }
+        if (PLANETARY_SITE_NAME_PATTERN.matcher(siteLabel).matches()) {
+            return Optional.of("Surface");
+        }
+        return Optional.of("Orbital");
+    }
+
+    private static Optional<Structure> firstStructureForCategory(List<Structure> catalog, String category) {
+        if (catalog == null || category == null || category.isBlank()) {
+            return Optional.empty();
+        }
+        return catalog.stream()
+                .filter(s -> s != null && s.category != null && category.equalsIgnoreCase(s.category))
+                .min(Comparator
+                        .comparing((Structure s) -> s.type != null ? s.type : "", String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(s -> s.name != null ? s.name : "", String.CASE_INSENSITIVE_ORDER));
+    }
+
+    private void addTypeMenusForCategory(List<MenuItem> targetItems,
+                                         List<Structure> catalog,
+                                         String category,
+                                         Structure[] selection,
+                                         Runnable updateCascadeLabel,
+                                         long marketId,
+                                         Runnable refreshTip,
+                                         Runnable refreshColonyStatsIfDetailForSite) {
+        for (String typ : Colony.distinctTypes(catalog, category)) {
+            if (isSettlementStructureType(typ)) {
+                Menu settlementMenu = new Menu(typ);
+                Map<String, ArrayList<Structure>> byFamily = new LinkedHashMap<>();
+                for (Structure s : Colony.structuresFor(catalog, category, typ)) {
+                    String fam = settlementFamilyKey(s);
+                    byFamily.computeIfAbsent(fam, k -> new ArrayList<>()).add(s);
+                }
+                ArrayList<String> families = new ArrayList<>(byFamily.keySet());
+                families.sort(String.CASE_INSENSITIVE_ORDER);
+                for (String fam : families) {
+                    Menu famMenu = new Menu(fam);
+                    ArrayList<Structure> group = byFamily.get(fam);
+                    group.sort(Comparator.comparingInt(ColonisationPanelController::settlementTierPadSortKey));
+                    for (Structure s : group) {
+                        Structure chosen = s;
+                        String itemLabel = settlementTierPadLabel(s);
+                        MenuItem it = new MenuItem(itemLabel);
+                        it.setOnAction(e -> {
+                            selection[0] = chosen;
+                            updateCascadeLabel.run();
+                            preferencesService.setColonisationUserConstructionStructure(marketId, chosen);
+                            refreshTip.run();
+                            refreshColonyStatsIfDetailForSite.run();
+                        });
+                        famMenu.getItems().add(it);
+                    }
+                    settlementMenu.getItems().add(famMenu);
+                }
+                targetItems.add(settlementMenu);
+            } else {
+                Menu typMenu = new Menu(typ);
+                for (Structure s : Colony.structuresFor(catalog, category, typ)) {
+                    Structure chosen = s;
+                    String nm = s.name != null ? s.name : "";
+                    MenuItem it = new MenuItem(nm);
+                    it.setOnAction(e -> {
+                        selection[0] = chosen;
+                        updateCascadeLabel.run();
+                        preferencesService.setColonisationUserConstructionStructure(marketId, chosen);
+                        refreshTip.run();
+                        refreshColonyStatsIfDetailForSite.run();
+                    });
+                    typMenu.getItems().add(it);
+                }
+                targetItems.add(typMenu);
+            }
+        }
+    }
+
+    private static String formatColonyCascadeLabel(Structure s, boolean hideCategory) {
         String c = s.category != null ? s.category : "";
         String t = s.type != null ? s.type : "";
         String n = s.name != null ? s.name : "";
         if (isSettlementStructureType(s.type)) {
             String fam = settlementFamilyKey(s);
             String tail = settlementTierPadLabel(s);
-            return joinCascadeParts(c, t, fam, tail);
+            return hideCategory
+                    ? joinCascadeParts(t, fam, tail)
+                    : joinCascadeParts(c, t, fam, tail);
         }
-        return joinCascadeParts(c, t, n);
+        return hideCategory
+                ? joinCascadeParts(t, n)
+                : joinCascadeParts(c, t, n);
+    }
+
+    private String localizedConstructionSiteClass(ColonisationDockEntry dock) {
+        if (dock == null) {
+            return localizationService.getString("colonisation.detail.stationClassOrbital");
+        }
+        return isColonisationSurfaceStationType(dock.getStationType())
+                ? localizationService.getString("colonisation.detail.stationClassSurface")
+                : localizationService.getString("colonisation.detail.stationClassOrbital");
     }
 
     private static String joinCascadeParts(String... parts) {
