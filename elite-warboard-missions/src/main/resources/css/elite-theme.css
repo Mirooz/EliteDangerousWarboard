@@ -270,6 +270,58 @@
     -fx-padding: 0;
 }
 
+/* Panneau « Colonie (chantier) » sous l’onglet Fleet — aligné sur le détail architecte (carte + barre + ressources). */
+.colonisation-fleet-colony-root {
+    -fx-padding: 4 2 10 2;
+    -fx-spacing: 12px;
+}
+.colonisation-fleet-colony-card {
+    -fx-padding: 10px 12px;
+    -fx-spacing: 8px;
+    -fx-background-color: derive(-fx-elite-gray, -8%);
+    -fx-background-radius: 8px;
+    -fx-border-color: derive(-fx-elite-orange, -22%);
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+}
+.colonisation-fleet-colony-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.colonisation-fleet-colony-k {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-min-width: 56px;
+}
+.colonisation-fleet-colony-v {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+}
+.colonisation-fleet-colony-status-badge {
+    -fx-wrap-text: true;
+}
+.colonisation-fleet-colony-root .colonisation-section-subtitle {
+    -fx-padding: 2 0 0 0;
+}
+.colonisation-fleet-colony-root .colonisation-detail-progress-wrap {
+    -fx-padding: 0 0 2 0;
+}
+
+/* Même rendu que le panneau détail architecte (.progress-bar global) — fond gris, barre orange. */
+.colonisation-fleet-colony-root .colonisation-detail-progress-bar {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-width: 1;
+}
+.colonisation-fleet-colony-root .colonisation-detail-progress-bar .bar {
+    -fx-background-color: -fx-elite-orange;
+}
+.colonisation-fleet-colony-root .colonisation-detail-progress-label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
 .colonisation-search-pane {
     -fx-border-color: -fx-elite-cyan;
     -fx-border-width: 1px;

@@ -43,7 +43,8 @@
                                                 <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
-                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="46.0"/>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
@@ -68,13 +69,8 @@
                                             </HBox>
                                             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                                         styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame" VBox.vgrow="ALWAYS">
-                                                <GridPane fx:id="commanderCargoGrid" hgap="8.0" vgap="3.0"
-                                                          styleClass="cargo-minerals-grid,colonisation-fleet-market-grid,colonisation-commander-cargo-grid">
-                                                    <columnConstraints>
-                                                        <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
-                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="46.0"/>
-                                                    </columnConstraints>
-                                                </GridPane>
+                                                <VBox fx:id="commanderColonyVBox" spacing="10.0" maxWidth="Infinity"
+                                                      styleClass="colonisation-fleet-colony-root"/>
                                             </ScrollPane>
                                         </VBox>
                                     </VBox>

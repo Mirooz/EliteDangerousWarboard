@@ -53,29 +53,9 @@ public class ScanHandler implements JournalEventHandler {
             double surfacePressure = jsonNode.path("SurfacePressure").asDouble(0.0);
             boolean landable = jsonNode.path("Landable").asBoolean(false);
 
-            // Distance depuis l'arrivée
-            double distanceFromArrivalLS = jsonNode.path("DistanceFromArrivalLS").asDouble(0.0);
-
-            // Tidal lock et terraform state
-            boolean tidalLock = jsonNode.path("TidalLock").asBoolean(false);
             String terraformState = jsonNode.path("TerraformState").asText();
-            // Composition de l'atmosphère
-            if (jsonNode.has("AtmosphereComposition") && jsonNode.get("AtmosphereComposition").isArray()) {
-                jsonNode.get("AtmosphereComposition").forEach(comp -> {
-                    String name = comp.path("Name").asText();
-                    double percent = comp.path("Percent").asDouble(0.0);
-                    // Traiter la composition de l'atmosphère si nécessaire
-                });
-            }
             boolean hasRing = jsonNode.has("Rings");
-            // Composition (Ice, Rock, Metal)
-            if (jsonNode.has("Composition")) {
-                JsonNode composition = jsonNode.get("Composition");
-                double ice = composition.path("Ice").asDouble(0.0);
-                double rock = composition.path("Rock").asDouble(0.0);
-                double metal = composition.path("Metal").asDouble(0.0);
-                // Traiter la composition si nécessaire
-            }
+
 
             // Statut de découverte
             boolean wasDiscovered = jsonNode.path("WasDiscovered").asBoolean(false);
