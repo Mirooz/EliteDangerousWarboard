@@ -46,8 +46,8 @@
             <VBox spacing="6.0" alignment="BOTTOM_CENTER" HBox.hgrow="ALWAYS">
                 <Region prefHeight="18.0"/>
                 <HBox spacing="8.0" alignment="CENTER_RIGHT">
-                    <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearch" styleClass="elite-button"/>
                     <Button fx:id="moreFiltersButton" mnemonicParsing="false" onAction="#onMoreFilters" styleClass="elite-nav-button"/>
+                    <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearch" styleClass="elite-button"/>
                     <Button fx:id="closeButton" mnemonicParsing="false" onAction="#onClose" styleClass="elite-nav-button"/>
                 </HBox>
             </VBox>

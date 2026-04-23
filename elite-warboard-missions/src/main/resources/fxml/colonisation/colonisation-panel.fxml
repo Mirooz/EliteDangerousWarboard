@@ -137,10 +137,10 @@
                                                     </VBox>
                                                 </HBox>
                                                 <HBox spacing="8.0" alignment="CENTER_LEFT">
-                                                    <Button fx:id="searchColonisableButton" styleClass="elite-nav-button"/>
-                                                    <ProgressIndicator fx:id="searchLoadingIndicator" maxHeight="30.0" maxWidth="30.0" visible="false"/>
-                                                    <Region HBox.hgrow="ALWAYS"/>
                                                     <Button fx:id="searchMoreFiltersButton" mnemonicParsing="false" styleClass="elite-nav-button"/>
+                                                    <Region HBox.hgrow="ALWAYS"/>
+                                                    <ProgressIndicator fx:id="searchLoadingIndicator" maxHeight="30.0" maxWidth="30.0" visible="false"/>
+                                                    <Button fx:id="searchColonisableButton" styleClass="elite-nav-button"/>
                                                 </HBox>
                                             </VBox>
                                             <Label fx:id="searchErrorLabel" styleClass="footer-text" wrapText="true" visible="false" managed="false"/>

@@ -1744,9 +1744,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         else if (body instanceof PlaneteDetail)
             planetNode.getStyleClass().add("exploration-visual-planet");
 
-        // Clic → JSON (sauf planètes / lunes en vue architecte station : non cliquables)
+        // Clic → JSON (sauf en vue architecte station : étoiles / planètes / lunes non cliquables)
         planetNode.setOnMouseClicked(event -> {
-            if (colonisationStationClickHandler != null && body instanceof PlaneteDetail) {
+            if (colonisationStationClickHandler != null) {
                 event.consume();
                 return;
             }
