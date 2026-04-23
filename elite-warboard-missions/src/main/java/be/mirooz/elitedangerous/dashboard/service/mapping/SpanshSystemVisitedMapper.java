@@ -1,9 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.service.mapping;
 
+import be.mirooz.elitedangerous.backend.generated.model.AtmosphereComposition;
 import be.mirooz.elitedangerous.backend.generated.model.BodyResult;
 import be.mirooz.elitedangerous.backend.generated.model.Genus;
 import be.mirooz.elitedangerous.backend.generated.model.Material;
 import be.mirooz.elitedangerous.backend.generated.model.Parent;
+import be.mirooz.elitedangerous.backend.generated.model.Ring;
 import be.mirooz.elitedangerous.backend.generated.model.Signal;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponse;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponseDTO;
@@ -17,6 +19,7 @@ import be.mirooz.elitedangerous.service.BioSpeciesService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +34,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Convertit une charge utile Spansh bodies (DTO {@code /api/spansh/bodies/search}) vers {@link SystemVisited}.
  */
 @Slf4j
 public final class SpanshSystemVisitedMapper {
+
+    /** Rayon solaire (m), cohérent avec les scans journal (champ {@code Radius} en mètres). */
+    private static final double SOLAR_RADIUS_METERS = 6.957e8;
+
+    private static final Pattern SUBCLASS_AFTER_SPECTRAL =
+            Pattern.compile("(?i)[OBAFGKMNST](\\d)");
 
     private static final ObjectMapper MAPPER = createObjectMapper();
 
@@ -69,41 +80,8 @@ public final class SpanshSystemVisitedMapper {
         return visited;
     }
 
-    public static SystemVisited toSystemVisited(String spanshBodiesJson, String fallbackSystemName) throws IOException {
-        if (spanshBodiesJson == null || spanshBodiesJson.isBlank()) {
-            throw new IOException("Spansh bodies payload is empty");
-        }
-        JsonNode root = MAPPER.readTree(spanshBodiesJson);
-        if (root.has("spanshResponse") && root.get("spanshResponse").isObject()) {
-            SpanshSearchResponseDTO dto = MAPPER.treeToValue(root, SpanshSearchResponseDTO.class);
-            return toSystemVisited(dto, fallbackSystemName);
-        }
-        if (root.has("results") && root.get("results").isArray()) {
-            SpanshSearchResponse sr = MAPPER.treeToValue(root, SpanshSearchResponse.class);
-            SpanshSearchResponseDTO dto = new SpanshSearchResponseDTO();
-            dto.setSpanshResponse(sr);
-            return toSystemVisited(dto, fallbackSystemName);
-        }
-        throw new IOException("Unsupported Spansh bodies JSON: expected spanshResponse object or results array at root");
-    }
 
-    private static String resolveSystemName(SpanshSearchResponse sr, String fallback) {
-        if (sr.getReference() != null && sr.getReference().getName() != null && !sr.getReference().getName().isBlank()) {
-            return sr.getReference().getName().trim();
-        }
-        if (sr.getSearch() != null && sr.getSearch().getReferenceSystem() != null
-                && !sr.getSearch().getReferenceSystem().isBlank()) {
-            return sr.getSearch().getReferenceSystem().trim();
-        }
-        if (sr.getResults() != null) {
-            for (BodyResult br : sr.getResults()) {
-                if (br != null && br.getSystemName() != null && !br.getSystemName().isBlank()) {
-                    return br.getSystemName().trim();
-                }
-            }
-        }
-        return fallback != null && !fallback.isBlank() ? fallback.trim() : "Unknown";
-    }
+
 
     private static Collection<ACelesteBody> mapBodyResults(String systemName, List<BodyResult> results) {
         Collection<ACelesteBody> out = new ArrayList<>();
@@ -232,15 +210,18 @@ public final class SpanshSystemVisitedMapper {
     private static StarDetail toStar(
             String systemName, BodyResult br, Map<Long, Integer> id64ToBodyId, Map<String, BodyResult> nameIndex) {
         String starType = fallbackIfBlank(br.getSubtype(), br.getSpectralClass(), "Unknown");
+        List<ParentBody> parents = mapSpanshParents(br, systemName, id64ToBodyId, nameIndex);
+        long systemAddress = br.getSystemId64() != null ? br.getSystemId64() : valueOrZero(br.getId64());
+        String resolvedSystem = fallbackIfBlank(br.getSystemName(), systemName, "Unknown");
         return StarDetail.builder()
                 .timestamp(timestampOf(br))
-                .jsonNode(toJsonNode(br))
+                .jsonNode(starJournalJsonFromSpansh(br, resolvedSystem, parents))
                 .bodyName(fallbackIfBlank(br.getName(), "Unknown body", "Unknown body"))
-                .starSystem(systemName)
+                .starSystem(resolvedSystem)
                 .lsDistance(br.getDistanceToArrival())
-                .systemAddress(valueOrZero(br.getId64()))
+                .systemAddress(systemAddress)
                 .bodyID(valueOrZero(br.getBodyId()))
-                .parents(mapSpanshParents(br, systemName, id64ToBodyId, nameIndex))
+                .parents(parents)
                 .wasDiscovered(true)
                 .mapped(false)
                 .rings(br.getRings() != null && !br.getRings().isEmpty())
@@ -253,15 +234,20 @@ public final class SpanshSystemVisitedMapper {
     private static PlaneteDetail toPlanet(
             String systemName, BodyResult br, Map<Long, Integer> id64ToBodyId, Map<String, BodyResult> nameIndex) {
         String planetClassStr = fallbackIfBlank(br.getSubtype(), "Unknown", "Unknown");
+        List<ParentBody> parents = mapSpanshParents(br, systemName, id64ToBodyId, nameIndex);
+        String resolvedSystem = fallbackIfBlank(br.getSystemName(), systemName, "Unknown");
+        long systemAddress = br.getSystemId64() != null ? br.getSystemId64() : valueOrZero(br.getId64());
+        Double pressurePa = br.getSurfacePressure();
+        Double pressureAtm = pressurePa != null ? PlaneteDetail.pascalToAtm(pressurePa) : null;
+        Double gravityG = br.getGravity() != null ? PlaneteDetail.ms2ToG(br.getGravity()) : null;
         PlaneteDetail planete = PlaneteDetail.builder()
                 .timestamp(timestampOf(br))
-                .jsonNode(toJsonNode(br))
                 .bodyName(fallbackIfBlank(br.getName(), "Unknown body", "Unknown body"))
-                .starSystem(systemName)
+                .starSystem(resolvedSystem)
                 .lsDistance(br.getDistanceToArrival())
-                .systemAddress(valueOrZero(br.getId64()))
+                .systemAddress(systemAddress)
                 .bodyID(valueOrZero(br.getBodyId()))
-                .parents(mapSpanshParents(br, systemName, id64ToBodyId, nameIndex))
+                .parents(parents)
                 .wasDiscovered(true)
                 .wasMapped(true)
                 .mapped(false)
@@ -269,14 +255,22 @@ public final class SpanshSystemVisitedMapper {
                 .planetClass(BodyType.fromString(planetClassStr))
                 .massEM(br.getEarthMasses())
                 .temperature(br.getSurfaceTemperature())
-                .pressureAtm(br.getSurfacePressure())
-                .gravityG(br.getGravity())
+                .pressureAtm(pressureAtm)
+                .gravityG(gravityG)
                 .landable(Boolean.TRUE.equals(br.getIsLandable()))
                 .radius(valueOrZero(br.getRadius()))
                 .terraformable(isTerraformable(br.getTerraformingState()))
                 .materials(mapSpanshMaterials(br.getMaterials()))
+                .jsonNode(MAPPER.createObjectNode())
                 .build();
         injectSpanshExobio(planete, br);
+        planete.setJsonNode(planetJournalJsonFromSpansh(
+                br,
+                resolvedSystem,
+                parents,
+                planete.isWasDiscovered(),
+                planete.isWasMapped(),
+                planete.isWasFootfalled()));
         return planete;
     }
 
@@ -435,12 +429,249 @@ public final class SpanshSystemVisitedMapper {
         return OffsetDateTime.now().toString();
     }
 
-    private static JsonNode toJsonNode(BodyResult br) {
-        JsonNode node = MAPPER.valueToTree(br);
-        if (node instanceof ObjectNode objectNode) {
-            objectNode.put("_source", "SPANSH");
+    /**
+     * JSON façon événement journal {@code Scan} pour une étoile, à partir des champs Spansh disponibles.
+     * Les clés absentes de Spansh (ex. {@code AbsoluteMagnitude}, {@code AscendingNode}) ne sont pas ajoutées.
+     */
+    private static JsonNode starJournalJsonFromSpansh(
+            BodyResult br, String fallbackSystemName, List<ParentBody> parents) {
+        ObjectNode root = MAPPER.createObjectNode();
+        root.put("event", "Scan");
+        root.put("ScanType", "Detailed");
+        root.put("timestamp", timestampOf(br));
+        root.put("BodyName", fallbackIfBlank(br.getName(), "Unknown body", "Unknown body"));
+        root.put("BodyID", valueOrZero(br.getBodyId()));
+        String starSystem = fallbackIfBlank(br.getSystemName(), fallbackSystemName, "Unknown");
+        root.put("StarSystem", starSystem);
+        long systemAddress = br.getSystemId64() != null ? br.getSystemId64() : valueOrZero(br.getId64());
+        root.put("SystemAddress", systemAddress);
+        putOptionalDouble(root, "DistanceFromArrivalLS", br.getDistanceToArrival());
+
+        String spectral = br.getSpectralClass() != null ? br.getSpectralClass().trim() : "";
+        String subtype = br.getSubtype() != null ? br.getSubtype().trim() : "";
+        root.put("StarType", journalStarTypeFromSpansh(spectral, subtype));
+        root.put("Subclass", inferStarSubclass(spectral, subtype));
+        putOptionalDouble(root, "StellarMass", br.getSolarMasses());
+        putOptionalDouble(root, "Radius", starRadiusMetersFromSpansh(br));
+        putOptionalDouble(root, "Age_MY", br.getAge());
+        putOptionalDouble(root, "SurfaceTemperature", br.getSurfaceTemperature());
+        if (br.getLuminosityClass() != null && !br.getLuminosityClass().isBlank()) {
+            root.put("Luminosity", br.getLuminosityClass().trim());
         }
-        return node;
+        putOptionalDouble(root, "SemiMajorAxis", br.getSemiMajorAxis());
+        putOptionalDouble(root, "Eccentricity", br.getOrbitalEccentricity());
+        putOptionalDouble(root, "OrbitalInclination", br.getOrbitalInclination());
+        putOptionalDouble(root, "Periapsis", br.getArgOfPeriapsis());
+        putOptionalDouble(root, "OrbitalPeriod", br.getOrbitalPeriod());
+        putOptionalDouble(root, "RotationPeriod", br.getRotationalPeriod());
+        putOptionalDouble(root, "AxialTilt", br.getAxisTilt());
+
+        root.put("WasDiscovered", true);
+        root.put("WasMapped", false);
+        root.put("WasFootfalled", false);
+        root.put("_source", "SPANSH");
+
+        putJournalParentsArray(root, parents);
+        putJournalRingsFromBody(root, br);
+
+        return root;
+    }
+
+    /**
+     * JSON façon événement journal {@code Scan} pour une planète / lune, à partir des champs Spansh disponibles.
+     */
+    private static JsonNode planetJournalJsonFromSpansh(
+            BodyResult br,
+            String resolvedSystem,
+            List<ParentBody> parents,
+            boolean wasDiscovered,
+            boolean wasMapped,
+            boolean wasFootfalled) {
+        ObjectNode root = MAPPER.createObjectNode();
+        root.put("event", "Scan");
+        root.put("ScanType", "Detailed");
+        root.put("timestamp", timestampOf(br));
+        root.put("BodyName", fallbackIfBlank(br.getName(), "Unknown body", "Unknown body"));
+        root.put("BodyID", valueOrZero(br.getBodyId()));
+        root.put("StarSystem", resolvedSystem);
+        long systemAddress = br.getSystemId64() != null ? br.getSystemId64() : valueOrZero(br.getId64());
+        root.put("SystemAddress", systemAddress);
+        putOptionalDouble(root, "DistanceFromArrivalLS", br.getDistanceToArrival());
+
+        root.put("TidalLock", Boolean.TRUE.equals(br.getIsRotationalPeriodTidallyLocked()));
+        root.put("TerraformState", br.getTerraformingState() != null ? br.getTerraformingState() : "");
+        root.put("PlanetClass", fallbackIfBlank(br.getSubtype(), "Unknown", "Unknown"));
+        root.put("Atmosphere", br.getAtmosphere() != null ? br.getAtmosphere() : "");
+        root.put("Volcanism", br.getVolcanismType() != null ? br.getVolcanismType() : "");
+
+        putOptionalDouble(root, "MassEM", br.getEarthMasses());
+        putOptionalDouble(root, "Radius", br.getRadius());
+        putOptionalDouble(root, "SurfaceGravity", br.getGravity());
+        putOptionalDouble(root, "SurfaceTemperature", br.getSurfaceTemperature());
+        putOptionalDouble(root, "SurfacePressure", br.getSurfacePressure());
+        root.put("Landable", Boolean.TRUE.equals(br.getIsLandable()));
+
+        putOptionalDouble(root, "SemiMajorAxis", br.getSemiMajorAxis());
+        putOptionalDouble(root, "Eccentricity", br.getOrbitalEccentricity());
+        putOptionalDouble(root, "OrbitalInclination", br.getOrbitalInclination());
+        putOptionalDouble(root, "Periapsis", br.getArgOfPeriapsis());
+        putOptionalDouble(root, "OrbitalPeriod", br.getOrbitalPeriod());
+        putOptionalDouble(root, "RotationPeriod", br.getRotationalPeriod());
+        putOptionalDouble(root, "AxialTilt", br.getAxisTilt());
+
+        if (br.getReserveLevel() != null && !br.getReserveLevel().isBlank()) {
+            root.put("ReserveLevel", br.getReserveLevel().trim());
+        }
+
+        if (br.getAtmosphereComposition() != null && !br.getAtmosphereComposition().isEmpty()) {
+            ArrayNode arr = MAPPER.createArrayNode();
+            for (AtmosphereComposition ac : br.getAtmosphereComposition()) {
+                if (ac == null || ac.getName() == null || ac.getName().isBlank()) {
+                    continue;
+                }
+                ObjectNode o = MAPPER.createObjectNode();
+                o.put("Name", ac.getName().trim());
+                o.put("Percent", shareToJournalPercent(ac.getShare()));
+                arr.add(o);
+            }
+            if (!arr.isEmpty()) {
+                root.set("AtmosphereComposition", arr);
+            }
+        }
+
+        if (br.getMaterials() != null && !br.getMaterials().isEmpty()) {
+            ArrayNode marr = MAPPER.createArrayNode();
+            for (Material m : br.getMaterials()) {
+                if (m == null || m.getName() == null || m.getName().isBlank()) {
+                    continue;
+                }
+                ObjectNode o = MAPPER.createObjectNode();
+                o.put("Name", m.getName().trim());
+                o.put("Percent", shareToJournalPercent(m.getShare()));
+                marr.add(o);
+            }
+            if (!marr.isEmpty()) {
+                root.set("Materials", marr);
+            }
+        }
+
+        putJournalParentsArray(root, parents);
+        putJournalRingsFromBody(root, br);
+
+        root.put("WasDiscovered", wasDiscovered);
+        root.put("WasMapped", wasMapped);
+        root.put("WasFootfalled", wasFootfalled);
+        root.put("_source", "SPANSH");
+
+        return root;
+    }
+
+    private static void putJournalParentsArray(ObjectNode root, List<ParentBody> parents) {
+        if (parents == null || parents.isEmpty()) {
+            return;
+        }
+        ArrayNode parr = MAPPER.createArrayNode();
+        for (ParentBody pb : parents) {
+            if (pb == null) {
+                continue;
+            }
+            ObjectNode p = MAPPER.createObjectNode();
+            String t = pb.getType();
+            int id = pb.getBodyID();
+            if (t != null && t.equalsIgnoreCase("Planet")) {
+                p.put("Planet", id);
+            } else if (t != null && t.equalsIgnoreCase("Star")) {
+                p.put("Star", id);
+            } else {
+                p.put("Null", id);
+            }
+            parr.add(p);
+        }
+        if (!parr.isEmpty()) {
+            root.set("Parents", parr);
+        }
+    }
+
+    private static void putJournalRingsFromBody(ObjectNode root, BodyResult br) {
+        if (br.getRings() == null || br.getRings().isEmpty()) {
+            return;
+        }
+        ArrayNode rings = MAPPER.createArrayNode();
+        for (Ring ring : br.getRings()) {
+            if (ring == null) {
+                continue;
+            }
+            ObjectNode rn = MAPPER.createObjectNode();
+            if (ring.getName() != null) {
+                rn.put("Name", ring.getName());
+            }
+            if (ring.getType() != null) {
+                rn.put("RingClass", ring.getType());
+            }
+            putOptionalDouble(rn, "MassMT", ring.getMass());
+            putOptionalDouble(rn, "InnerRad", ring.getInnerRadius());
+            putOptionalDouble(rn, "OuterRad", ring.getOuterRadius());
+            rings.add(rn);
+        }
+        if (!rings.isEmpty()) {
+            root.set("Rings", rings);
+        }
+    }
+
+    /** Spansh {@code share} est souvent une fraction 0–1 ; le journal utilise un pourcentage. */
+    private static double shareToJournalPercent(Double share) {
+        if (share == null || share.isNaN() || share.isInfinite()) {
+            return 0d;
+        }
+        if (share >= 0d && share <= 1.0001d) {
+            return share * 100d;
+        }
+        return share;
+    }
+
+    private static String journalStarTypeFromSpansh(String spectral, String subtype) {
+        if (spectral != null && !spectral.isBlank()) {
+            String s = spectral.trim();
+            if (s.length() <= 4) {
+                return s;
+            }
+            return s.substring(0, Math.min(4, s.length()));
+        }
+        if (subtype != null && !subtype.isBlank()) {
+            String first = subtype.trim().split("\\s+")[0];
+            return first.replaceAll("\\d", "").trim();
+        }
+        return "Unknown";
+    }
+
+    private static int inferStarSubclass(String spectral, String subtype) {
+        String combined = (spectral != null ? spectral : "") + " " + (subtype != null ? subtype : "");
+        Matcher m = SUBCLASS_AFTER_SPECTRAL.matcher(combined);
+        if (m.find()) {
+            try {
+                return Integer.parseInt(m.group(1));
+            } catch (NumberFormatException ignored) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    private static Double starRadiusMetersFromSpansh(BodyResult br) {
+        if (br.getRadius() != null && br.getRadius() > 0 && !br.getRadius().isNaN()) {
+            return br.getRadius();
+        }
+        if (br.getSolarRadius() != null && br.getSolarRadius() > 0 && !br.getSolarRadius().isNaN()) {
+            return br.getSolarRadius() * SOLAR_RADIUS_METERS;
+        }
+        return null;
+    }
+
+    private static void putOptionalDouble(ObjectNode node, String key, Double value) {
+        if (value == null || value.isNaN() || value.isInfinite()) {
+            return;
+        }
+        node.put(key, value);
     }
 
     private static boolean isTerraformable(String terraformingState) {

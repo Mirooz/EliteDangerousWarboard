@@ -2251,7 +2251,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (root.getChildren() != null && !root.getChildren().isEmpty()) {
                 root.getChildren().forEach(child -> {
                     JsonTreeItem childValue = child.getValue();
-                    // Ne pas développer les arrays par défaut
+                    // Ne pas développer les arrays par défaut, sauf « Rings » (anneaux visibles tout de suite)
                     if (childValue != null && childValue.getValueType() != JsonTreeItem.JsonValueType.ARRAY) {
                         child.setExpanded(true);
                         // Ne pas développer le niveau suivant
@@ -2259,7 +2259,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             child.getChildren().forEach(grandChild -> grandChild.setExpanded(false));
                         }
                     } else {
-                        child.setExpanded(false);
+                        boolean ringsArray = childValue != null && "Rings".equalsIgnoreCase(childValue.getKey());
+                        child.setExpanded(ringsArray);
+                        if (ringsArray && child.getChildren() != null && !child.getChildren().isEmpty()) {
+                            child.getChildren().forEach(ringChild -> ringChild.setExpanded(true));
+                        }
                     }
                 });
             }
@@ -2307,9 +2311,31 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 }
             }
         } else if (node.isArray()) {
-            for (int i = 0; i < node.size(); i++) {
-                TreeItem<JsonTreeItem> child = buildJsonTree(node.get(i), "[" + i + "]");
-                item.getChildren().add(child);
+            if ("Rings".equalsIgnoreCase(key)) {
+                int ringCount = node.size();
+                for (int i = 0; i < ringCount; i++) {
+                    JsonNode ring = node.get(i);
+                    if (ring == null || ring.isNull()) {
+                        continue;
+                    }
+                    if (ring.isObject()) {
+                        Iterator<Map.Entry<String, JsonNode>> ringFields = ring.fields();
+                        while (ringFields.hasNext()) {
+                            Map.Entry<String, JsonNode> e = ringFields.next();
+                            String fk = e.getKey();
+                            String label = ringCount <= 1 ? fk : ("Ring " + (i + 1) + " — " + fk);
+                            item.getChildren().add(buildJsonTree(e.getValue(), label));
+                        }
+                    } else {
+                        String label = ringCount <= 1 ? "Ring" : ("Ring " + (i + 1));
+                        item.getChildren().add(buildJsonTree(ring, label));
+                    }
+                }
+            } else {
+                for (int i = 0; i < node.size(); i++) {
+                    TreeItem<JsonTreeItem> child = buildJsonTree(node.get(i), "[" + i + "]");
+                    item.getChildren().add(child);
+                }
             }
         }
 

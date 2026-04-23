@@ -491,6 +491,9 @@ public class PlaneteDetail extends ACelesteBody {
         if (spansh == null) {
             return;
         }
+        if (spansh.isRings()) {
+            setRings(true);
+        }
         if ((materials == null || materials.isEmpty())
                 && spansh.getMaterials() != null && !spansh.getMaterials().isEmpty()) {
             this.materials = new HashMap<>(spansh.getMaterials());
