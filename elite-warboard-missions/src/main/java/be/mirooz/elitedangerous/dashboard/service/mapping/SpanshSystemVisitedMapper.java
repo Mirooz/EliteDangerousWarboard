@@ -316,31 +316,35 @@ public final class SpanshSystemVisitedMapper {
                 continue;
             }
             try {
-                List<BioSpecies> matchingSpecies = BioSpeciesService.getInstance().getSpecies();
-                BioSpecies specie = matchingSpecies.stream()
-                        .filter(s -> s.getName().equalsIgnoreCase(g.getLocalisedName()))
-                        .filter(s -> s.getSpecieName().equalsIgnoreCase(g.getSpecies()))
-                        .filter(s -> s.getColor().equalsIgnoreCase(g.getVariant()))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalStateException("No matching Spansh species found for system: " + planete.getStarSystem() + ", name: " + g.getLocalisedName() +
-                                ", species: " + g.getSpecies() + ", variant: " + g.getVariant()));
+                BioSpecies specie;
+
+                if ("Brain".equals(g.getSpecies())) {
+                    specie = BioSpecies.brainTree();
+                } else {
+                    specie = BioSpeciesService.getInstance().getSpecies().stream()
+                            .filter(s -> s.getName().equalsIgnoreCase(g.getLocalisedName()))
+                            .filter(s -> s.getSpecieName().equalsIgnoreCase(g.getSpecies()))
+                            .filter(s -> s.getColor().equalsIgnoreCase(g.getVariant()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "No matching Spansh species found for system: " + planete.getStarSystem() +
+                                            ", name: " + g.getLocalisedName() +
+                                            ", species: " + g.getSpecies() +
+                                            ", variant: " + g.getVariant()
+                            ));
+                }
                 planete.setWasFootfalled(true);
                 planete.getConfirmedSpecies().stream()
                         .filter(s -> s.getId().equalsIgnoreCase(specie.getId()))
                         .findFirst()
-                        .orElseGet(() -> {
-                            assert specie != null;
-                            return planete.createNewSpecies(specie, genusCodex,specie.getFdevname(),true);
-                        });
-
-                SpeciesProbability speciesProbability = new SpeciesProbability(specie,100);
-                planete.getBioSpecies().add(new Scan(1, new ArrayList<>(List.of(speciesProbability))));
-                if (planete.getNumSpeciesDetected() == null){
-                    planete.setNumSpeciesDetected(1);
-                }
-                else {
-                    planete.setNumSpeciesDetected(planete.getNumSpeciesDetected() + 1);
-                }
+                        .orElseGet(() -> planete.createNewSpecies(specie, genusCodex, specie.getFdevname(), true));
+                SpeciesProbability speciesProbability = new SpeciesProbability(specie, 100);
+                planete.getBioSpecies().add(new Scan(1, List.of(speciesProbability)));
+                planete.setNumSpeciesDetected(
+                        planete.getNumSpeciesDetected() == null
+                                ? 1
+                                : planete.getNumSpeciesDetected() + 1
+                );
             }
             catch (Exception e){
                 log.error("Error while processing spansh exobio", e);
