@@ -465,6 +465,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EdsmBodiesResponse'
+  /api/spansh/bodies/search:
+    get:
+      tags:
+      - Spansh Controller
+      summary: Recherche directe des bodies Spansh par système
+      parameters:
+      - name: commanderName
+        in: query
+        schema:
+          type: string
+      - name: systemName
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpanshSearchResponseDTO'
   /api/spansh/expressway-to-exomastery:
     post:
       tags:
@@ -730,6 +751,9 @@ components:
     BodyResult:
       type: object
       properties:
+        age:
+          format: double
+          type: number
         arg_of_periapsis:
           format: double
           type: number
@@ -763,6 +787,10 @@ components:
         gravity:
           format: double
           type: number
+        genuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genus'
         id:
           type: string
         id64:
@@ -774,6 +802,19 @@ components:
           type: boolean
         is_rotational_period_tidally_locked:
           type: boolean
+        landmark_value:
+          format: int32
+          type: integer
+        landmarks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Landmark'
+        luminosity_class:
+          type: string
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/Material'
         name:
           type: string
         orbital_eccentricity:
@@ -795,16 +836,34 @@ components:
         radius:
           format: double
           type: number
+        reserve_level:
+          type: string
+        rings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ring'
         rotational_period:
           format: double
           type: number
         semi_major_axis:
           format: double
           type: number
+        signals:
+          type: array
+          items:
+            $ref: '#/components/schemas/Signal'
         solid_composition:
           type: array
           items:
             $ref: '#/components/schemas/SolidComposition'
+        solar_masses:
+          format: double
+          type: number
+        solar_radius:
+          format: double
+          type: number
+        spectral_class:
+          type: string
         subtype:
           type: string
         surface_pressure:
@@ -863,7 +922,7 @@ components:
         landmarks:
           type: array
           items:
-            $ref: '#/components/schemas/Landmark'
+            $ref: '#/components/schemas/Landmark1'
         name:
           type: string
         subtype:
@@ -1460,6 +1519,14 @@ components:
         volume:
           format: int32
           type: integer
+    ComparisonFilter:
+      type: object
+      properties:
+        comparison:
+          type: string
+        value:
+          type: array
+          items: {}
     EdColoniseColonisedStation:
       type: object
       properties:
@@ -1817,11 +1884,68 @@ components:
           type: integer
         message:
           type: string
+    Filter:
+      type: object
+      properties:
+        value:
+          type: array
+          items:
+            type: string
+    Filters:
+      type: object
+      properties:
+        atmosphere:
+          $ref: '#/components/schemas/Filter'
+        distance:
+          $ref: '#/components/schemas/RangeFilter'
+        distance_to_arrival:
+          $ref: '#/components/schemas/ComparisonFilter'
+        gravity:
+          $ref: '#/components/schemas/ComparisonFilter'
+        subtype:
+          $ref: '#/components/schemas/Filter'
+        updated_at:
+          $ref: '#/components/schemas/ComparisonFilter'
+        system_name:
+          $ref: '#/components/schemas/ScalarFilter'
+    Genus:
+      type: object
+      properties:
+        name:
+          type: string
+        species:
+          type: string
+        variant:
+          type: string
+        value:
+          format: int32
+          type: integer
     Instant:
       format: date-time
       type: string
       example: 2022-03-10T16:15:50Z
     Landmark:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        subtype:
+          type: string
+        type:
+          type: string
+        value:
+          format: int32
+          type: integer
+        variant:
+          type: string
+    Landmark1:
       type: object
       properties:
         count:
@@ -1858,6 +1982,14 @@ components:
           type: string
         export:
           $ref: '#/components/schemas/ArdentCommodityNearbyExport'
+    Material:
+      type: object
+      properties:
+        name:
+          type: string
+        share:
+          format: double
+          type: number
     MaxSellResponseDTO:
       type: object
       properties:
@@ -1937,6 +2069,13 @@ components:
           type: string
         type:
           type: string
+    RangeFilter:
+      type: object
+      properties:
+        min:
+          type: string
+        max:
+          type: string
     Reference:
       type: object
       properties:
@@ -1952,6 +2091,22 @@ components:
           format: double
           type: number
         z:
+          format: double
+          type: number
+    Ring:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        mass:
+          format: double
+          type: number
+        inner_radius:
+          format: double
+          type: number
+        outer_radius:
           format: double
           type: number
     RouteParameters:
@@ -1976,6 +2131,43 @@ components:
           type: string
         use_mapping_value:
           type: string
+    ScalarFilter:
+      type: object
+      properties:
+        value:
+          type: string
+    Search:
+      type: object
+      properties:
+        filters:
+          $ref: '#/components/schemas/Filters'
+        page:
+          format: int32
+          type: integer
+        reference_system:
+          type: string
+        reference_system_details:
+          $ref: '#/components/schemas/Reference'
+        size:
+          format: int32
+          type: integer
+        sort:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sort'
+    Signal:
+      type: object
+      properties:
+        type:
+          type: string
+        subtype:
+          type: string
+        count:
+          format: int32
+          type: integer
+        value:
+          format: int32
+          type: integer
     SolidComposition:
       type: object
       properties:
@@ -1984,27 +2176,15 @@ components:
         share:
           format: double
           type: number
-    SpanshComparisonFilter:
+    Sort:
       type: object
       properties:
-        comparison:
-          type: string
-        value:
-          type: array
-          items: {}
-    SpanshFilter:
+        distance:
+          $ref: '#/components/schemas/SortDirection'
+    SortDirection:
       type: object
       properties:
-        value:
-          type: array
-          items:
-            type: string
-    SpanshRangeFilter:
-      type: object
-      properties:
-        min:
-          type: string
-        max:
+        direction:
           type: string
     SpanshRouteRequestDTO:
       type: object
@@ -2045,21 +2225,6 @@ components:
           type: string
         status:
           type: string
-    SpanshSearchFilters:
-      type: object
-      properties:
-        atmosphere:
-          $ref: '#/components/schemas/SpanshFilter'
-        distance:
-          $ref: '#/components/schemas/SpanshRangeFilter'
-        distance_to_arrival:
-          $ref: '#/components/schemas/SpanshComparisonFilter'
-        gravity:
-          $ref: '#/components/schemas/SpanshComparisonFilter'
-        subtype:
-          $ref: '#/components/schemas/SpanshFilter'
-        updated_at:
-          $ref: '#/components/schemas/SpanshComparisonFilter'
     SpanshSearchRequestDTO:
       type: object
       properties:
@@ -2085,7 +2250,7 @@ components:
         search_reference:
           type: string
         search:
-          $ref: '#/components/schemas/SpanshSearchSaveResponse'
+          $ref: '#/components/schemas/Search'
     SpanshSearchResponseDTO:
       type: object
       properties:
@@ -2093,37 +2258,6 @@ components:
           type: string
         spanshResponse:
           $ref: '#/components/schemas/SpanshSearchResponse'
-        message:
-          type: string
-    SpanshSearchSaveResponse:
-      type: object
-      properties:
-        filters:
-          $ref: '#/components/schemas/SpanshSearchFilters'
-        page:
-          format: int32
-          type: integer
-        reference_system:
-          type: string
-        reference_system_details:
-          $ref: '#/components/schemas/Reference'
-        size:
-          format: int32
-          type: integer
-        sort:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpanshSort'
-    SpanshSort:
-      type: object
-      properties:
-        distance:
-          $ref: '#/components/schemas/SpanshSortDirection'
-    SpanshSortDirection:
-      type: object
-      properties:
-        direction:
-          type: string
     StartSessionRequest:
       type: object
       properties:

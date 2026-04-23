@@ -18,6 +18,8 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.SpanshSystemVisitedService;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -41,6 +43,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Circle;
 import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 import javafx.stage.Window;
@@ -109,11 +112,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private final Map<StarType, Image> starImages = new HashMap<>();
     private Image exobioImage;
     private Image mappedImage;
-    /** Icônes chantier colonisation (vue architecte) : alignées sur {@code /images/stations/}. */
+    /**
+     * Icônes chantier colonisation (vue architecte) : alignées sur {@code /images/stations/}.
+     */
     private Image colonisationStationPortOrbitalImage;
     private Image colonisationStationPortSurfaceImage;
-    /** Icône unique sur la carte dès qu’il y a au moins une colonie (orbital et/ou surface). */
+    /**
+     * Icône unique sur la carte dès qu’il y a au moins une colonie (orbital et/ou surface).
+     */
     private Image colonisationSettlementImage;
+    /**
+     * Évite une boucle infinie lors du re-display après hydratation Spansh.
+     */
+    private boolean spanshOnlineHydrationSuppressed;
     private SystemVisited currentSystem;
     private Map<Integer, BodyPosition> bodyPositions = new HashMap<>();
     private Scale zoomTransform;
@@ -153,6 +164,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             displaySystem(currentSystem);
         }
     }
+
     private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
     private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -165,9 +177,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private static final double DEFAULT_SPACING_X = USER_SPACING_MIN + (USER_SPACING_RANGE / 2.0);
     private static final double DEFAULT_SPACING_Y = USER_SPACING_MIN + (USER_SPACING_RANGE / 2.0);
 
-    /** Si non null, clic sur une puce station (carte architecte) → détail (marketId). */
+    /**
+     * Si non null, clic sur une puce station (carte architecte) → détail (marketId).
+     */
     private LongConsumer colonisationStationClickHandler;
-    /** Étiquettes chantier colonisation par {@code bodyID} (vue architecte). */
+    /**
+     * Étiquettes chantier colonisation par {@code bodyID} (vue architecte).
+     */
     private Map<Integer, List<ColonisationArchitectMapCaptionLine>> colonisationBodyCaptionLines = Map.of();
 
     @Override
@@ -189,7 +205,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             updateBodiesOverlayButtonText();
             updateTranslations();
         });
-        
+
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> {
             Platform.runLater(() -> {
@@ -722,30 +738,32 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             Platform.runLater(r);
         }
     }
-
+    public void displaySystem(SystemVisited system){
+        displaySystem(system,false);
+    }
     /**
      * Affiche les corps célestes d'un système dans la vue visuelle avec tri orrery et liens visuels
      */
-    public void displaySystem(SystemVisited system) {
+    public void displaySystem(SystemVisited system,boolean forceRefresh) {
         Platform.runLater(() -> {
             // Fermer le panneau JSON si un nouveau système est sélectionné
-            if (this.currentSystem != null && system != null && 
-                !this.currentSystem.equals(system)) {
+            if (this.currentSystem != null && system != null &&
+                    !this.currentSystem.equals(system)) {
                 closeJsonPanel();
             }
-            
+
             // Réinitialiser le corps JSON affiché si on change de système
-            if (system == null || (this.currentSystem != null && system != null && 
-                !this.currentSystem.equals(system))) {
+            if (system == null || (this.currentSystem != null && system != null &&
+                    !this.currentSystem.equals(system))) {
                 currentJsonBody = null;
             }
-            
+
             boolean systemSelectionChanged = this.currentSystem != system;
             this.currentSystem = system;
 
             // On reset le déplacement manuel uniquement quand on change de système sélectionné.
             // (Un refresh/re-render du même système, ex. slider spacing, garde la position courante.)
-            if (systemSelectionChanged) {
+            if (systemSelectionChanged || forceRefresh) {
                 panTranslateX = 0.0;
                 panTranslateY = 0.0;
                 if (bodiesGroup != null) {
@@ -753,7 +771,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     bodiesGroup.setTranslateY(0.0);
                 }
             }
-            
+
             // Mettre à jour le titre avec le nom du système
             if (systemTitleLabel != null) {
                 if (system != null && system.getSystemName() != null) {
@@ -762,25 +780,29 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));
                 }
             }
-            
+
             bodiesPane.getChildren().clear();
             bodyPositions.clear();
-            
+
             // Mettre à jour l'overlay si il est ouvert
             if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing()) {
-                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
-                                           showOnlyHighValueBodiesCheckBox.isSelected();
+                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
+                        showOnlyHighValueBodiesCheckBox.isSelected();
                 bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
             }
-            
+
             // Mettre à jour la liste des corps à gauche
             updateBodiesList(system);
-            
+
             // Le zoom optimal sera calculé après le positionnement des corps
 
-            if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
+            if (system == null) {
                 return;
             }
+            if (systemSelectionChanged)
+                scheduleSpanshOnlineDataHydration(system);
+
+
             // Créer une map pour lookup rapide
             Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
                     .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
@@ -813,7 +835,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // On les identifie d'abord pour éviter de les ajouter à la liste des étoiles principales
             Set<Integer> orbitingStarIds = new HashSet<>();
             Map<Integer, ACelesteBody> orbitingStarToParent = new HashMap<>();
-            
+
             for (ACelesteBody body : sortedBodies) {
                 if (body instanceof StarDetail) {
                     var parents = body.getParents();
@@ -821,7 +843,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Chercher si l'un des parents est une étoile (pas "Null")
                         ACelesteBody parentStar = null;
                         int maxBodyID = -1;
-                        
+
                         for (var parent : parents) {
                             if ("Null".equalsIgnoreCase(parent.getType())) {
                                 continue; // Ignorer les parents "Null"
@@ -832,15 +854,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 // (on cherche les étoiles principales, pas les étoiles en orbite)
                                 var parentStarParents = parentBody.getParents();
                                 boolean isMainStar = parentStarParents == null || parentStarParents.isEmpty() ||
-                                    parentStarParents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
-                                
+                                        parentStarParents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
+
                                 if (isMainStar && parent.getBodyID() > maxBodyID) {
                                     parentStar = parentBody;
                                     maxBodyID = parent.getBodyID();
                                 }
                             }
                         }
-                        
+
                         // Si cette étoile a une étoile principale comme parent, c'est une étoile en orbite
                         if (parentStar != null) {
                             orbitingStarIds.add(body.getBodyID());
@@ -858,10 +880,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     if (orbitingStarIds.contains(body.getBodyID())) {
                         continue;
                     }
-                    
+
                     var parents = body.getParents();
                     if (parents == null || parents.isEmpty() ||
-                        parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
+                            parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
                         stars.add(body);
                         starToDirectPlanets.put(body, new ArrayList<>());
                     }
@@ -872,7 +894,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             for (Map.Entry<Integer, ACelesteBody> entry : orbitingStarToParent.entrySet()) {
                 ACelesteBody orbitingStar = bodiesMap.get(entry.getKey());
                 ACelesteBody parentStar = entry.getValue();
-                
+
                 if (orbitingStar != null && parentStar != null && stars.contains(parentStar)) {
                     // Ajouter cette étoile comme "planète" en orbite autour de l'étoile parente
                     starToDirectPlanets.computeIfAbsent(parentStar, k -> new ArrayList<>()).add(orbitingStar);
@@ -890,9 +912,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         ACelesteBody directParent = null;
                         String directParentType = null;
                         int maxBodyID = -1;
-                        
+
                         Integer nullParentBodyID = null; // BodyID du parent "Null" si présent
-                        
+
                         for (var parent : parents) {
                             if ("Null".equalsIgnoreCase(parent.getType())) {
                                 // Sauvegarder le bodyID du parent "Null" pour créer un fake soleil partagé
@@ -908,19 +930,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 maxBodyID = parent.getBodyID();
                             }
                         }
-                        
+
                         // Si aucune planète n'a de parent réel (seulement "Null"), créer ou réutiliser un fake soleil
                         if (directParent == null && nullParentBodyID != null) {
                             // Créer un bodyID unique pour le fake soleil basé sur le bodyID du parent "Null"
                             // Utiliser un préfixe négatif pour éviter les conflits avec les vrais bodyIDs
                             int fakeStarBodyID = -1000000 - nullParentBodyID;
-                            
+
                             // Vérifier si ce fake soleil existe déjà (partagé par plusieurs planètes avec le même parent "Null")
                             StarDetail fakeStar = (StarDetail) bodiesMap.get(fakeStarBodyID);
                             if (fakeStar == null) {
                                 // Extraire le nom de l'étoile à partir du nom de la planète
                                 String starName = extractStarNameFromPlanetName(body);
-                                
+
                                 // Créer le fake soleil
                                 fakeStar = StarDetail.builder()
                                         .bodyName(starName)
@@ -934,18 +956,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         .wasMapped(false)
                                         .wasFootfalled(false)
                                         .build();
-                                
+
                                 // Ajouter le fake soleil à la map et à la liste des étoiles
                                 bodiesMap.put(fakeStarBodyID, fakeStar);
                                 stars.add(fakeStar);
                                 starToDirectPlanets.put(fakeStar, new ArrayList<>());
                             }
-                            
+
                             // Associer la planète au fake soleil (partagé avec d'autres planètes ayant le même parent "Null")
                             directParent = fakeStar;
                             directParentType = "Star";
                         }
-                        
+
                         if (directParent != null && directParentType != null) {
                             if ("Star".equalsIgnoreCase(directParentType) && directParent instanceof StarDetail) {
                                 // C'est une planète directe de l'étoile
@@ -957,7 +979,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 // ou si c'est déjà une lune (dans planetToMoons d'une autre planète)
                                 boolean isDirectPlanet = true;
                                 boolean isMoon = false;
-                                
+
                                 // Vérifier si le parent direct est déjà une lune (dans planetToMoons)
                                 for (var entry : planetToMoons.entrySet()) {
                                     if (entry.getValue().contains(directParent)) {
@@ -966,7 +988,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         break;
                                     }
                                 }
-                                
+
                                 // Si ce n'est pas déjà une lune, vérifier les parents du parent
                                 if (!isMoon) {
                                     var parentParents = directParent.getParents();
@@ -982,7 +1004,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         }
                                     }
                                 }
-                                
+
                                 if (isDirectPlanet && !isMoon) {
                                     // C'est une lune d'une planète directe
                                     planetToMoons.computeIfAbsent(directParent, k -> new ArrayList<>()).add(body);
@@ -1006,7 +1028,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Trouver le parent direct
                         ACelesteBody directParent = null;
                         int maxBodyID = -1;
-                        
+
                         for (var parent : parents) {
                             if ("Null".equalsIgnoreCase(parent.getType())) {
                                 continue;
@@ -1017,7 +1039,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 maxBodyID = parent.getBodyID();
                             }
                         }
-                        
+
                         // Si le parent direct est une lune (dans planetToMoons), alors ce corps est une sub-lune
                         if (directParent != null && directParent instanceof PlaneteDetail) {
                             for (var entry : planetToMoons.entrySet()) {
@@ -1058,11 +1080,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             .thenComparing(ACelesteBody::getBodyID));
                     int planetX = startX + horizontalSpacing;
                     int planetY = currentStarY;
-                    
+
                     // Ensuite, positionner chaque planète et ses lunes
                     for (int i = 0; i < directPlanets.size(); i++) {
                         ACelesteBody planet = directPlanets.get(i);
-                        
+
                         // Positionner la planète (ou étoile en orbite)
                         double planetSize = getBodySize(BodyHierarchyType.PLANET);
                         bodyPositions.put(planet.getBodyID(), new BodyPosition(planetX, planetY, planet, planetSize));
@@ -1071,17 +1093,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         Node planetView = createBodyImageView(planet, planetX, planetY, visualType);
                         bodiesPane.getChildren().add(planetView);
                         addBodyNameLabel(planet, planetX, planetY, visualType);
-                        
+
                         // Ajouter les icônes sous la planète (exobio et mapped)
                         addPlanetIcons(planet, planetX, planetY);
 
                         // Positionner les lunes de cette planète verticalement en dessous
                         // et calculer la position X maximale atteinte par les sub-lunes
                         int maxSubMoonX = planetX; // Position X maximale des sub-lunes
-                        
+
                         // Récupérer les lunes de cette planète
                         List<ACelesteBody> moons = planetToMoons.get(planet);
-                        
+
                         // Si c'est une étoile en orbite, récupérer aussi ses planètes depuis starToDirectPlanets
                         // et les traiter comme des "lunes" visuellement
                         if (planet instanceof StarDetail orbitingStar) {
@@ -1096,7 +1118,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 moons = allMoons;
                             }
                         }
-                        
+
                         if (moons != null && !moons.isEmpty()) {
                             int moonY = planetY + moonVerticalSpacing;
                             for (ACelesteBody moon : moons) {
@@ -1106,13 +1128,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 Node moonView = createBodyImageView(moon, planetX, moonY, BodyHierarchyType.MOON);
                                 bodiesPane.getChildren().add(moonView);
                                 addBodyNameLabel(moon, planetX, moonY, BodyHierarchyType.MOON);
-                                
+
                                 // Ajouter les icônes sous la lune (exobio et mapped)
                                 addPlanetIcons(moon, planetX, moonY);
 
                                 // Positionner les lunes de lune (sub-lunes) horizontalement à droite de la lune
                                 List<ACelesteBody> subMoons = moonToSubMoons.get(moon);
-                                
+
                                 // Si cette "lune" est en fait une planète (peut arriver pour les planètes d'étoiles en orbite),
                                 // récupérer aussi ses lunes depuis planetToMoons
                                 if (moon instanceof PlaneteDetail) {
@@ -1125,7 +1147,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         subMoons.addAll(planetMoons);
                                     }
                                 }
-                                
+
                                 if (subMoons != null && !subMoons.isEmpty()) {
                                     int subMoonX = planetX + subMoonHorizontalSpacing;
                                     for (ACelesteBody subMoon : subMoons) {
@@ -1134,10 +1156,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                         Node subMoonView = createBodyImageView(subMoon, subMoonX, moonY, BodyHierarchyType.SUB_MOON);
                                         bodiesPane.getChildren().add(subMoonView);
                                         addBodyNameLabel(subMoon, subMoonX, moonY, BodyHierarchyType.SUB_MOON);
-                                        
+
                                         // Ajouter les icônes sous la lune de lune (exobio et mapped)
                                         addPlanetIcons(subMoon, subMoonX, moonY);
-                                        
+
                                         subMoonX += subMoonHorizontalSpacing;
                                         maxSubMoonX = Math.max(maxSubMoonX, subMoonX);
                                     }
@@ -1158,7 +1180,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 moonY += moonVerticalSpacing;
                             }
                         }
-                        
+
                         // Calculer la position X pour la planète suivante
                         // Si cette planète a des sub-lunes, décaler la planète suivante pour qu'elle soit
                         // au-delà de la position maximale des sub-lunes, avec une marge de sécurité
@@ -1166,7 +1188,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             if (maxSubMoonX > planetX) {
                                 // Il y a des sub-lunes, positionner la planète suivante après la dernière sub-lune
                                 // avec une marge de sécurité (horizontalSpacing) pour éviter les superpositions
-                                planetX = maxSubMoonX ;
+                                planetX = maxSubMoonX;
                             } else {
                                 // Pas de sub-lunes, espacement normal
                                 planetX += horizontalSpacing;
@@ -1192,7 +1214,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (directPlanets != null && !directPlanets.isEmpty()) {
                     for (ACelesteBody planet : directPlanets) {
                         List<ACelesteBody> moons = planetToMoons.get(planet);
-                        
+
                         // Si c'est une étoile en orbite, récupérer aussi ses planètes
                         if (planet instanceof StarDetail orbitingStar) {
                             List<ACelesteBody> orbitingStarPlanets = starToDirectPlanets.get(orbitingStar);
@@ -1203,7 +1225,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 moons.addAll(orbitingStarPlanets);
                             }
                         }
-                        
+
                         if (moons != null && !moons.isEmpty()) {
                             // Calculer la position Y de la dernière lune
                             int lastMoonY = currentStarY + moonVerticalSpacing * moons.size();
@@ -1214,7 +1236,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 // Positionner la prochaine étoile en dessous de tout ce qui précède
                 currentStarY = maxHeightForThisStar + starVerticalSpacing;
             }
-            
+
             // Deuxième passe : traiter les lunes de lune qui n'ont pas été positionnées
             // (peut arriver si elles n'ont pas été correctement détectées dans la première passe)
             for (ACelesteBody body : sortedBodies) {
@@ -1248,11 +1270,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                             Node subMoonView = createBodyImageView(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
                                             bodiesPane.getChildren().add(subMoonView);
                                             addBodyNameLabel(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
-                                            
+
                                             // Ajouter les icônes sous la lune de lune (exobio et mapped)
                                             addPlanetIcons(body, subMoonX, subMoonY);
                                             addColonisationConstructionCaption(body, subMoonX, subMoonY, BodyHierarchyType.SUB_MOON);
-                                            
+
                                             maxX = Math.max(maxX, subMoonX + subMoonHorizontalSpacing);
                                         }
                                         break;
@@ -1267,6 +1289,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Dessiner les lignes de connexion
             drawConnectionsHierarchical(bodiesMap, stars, starToDirectPlanets, planetToMoons, moonToSubMoons);
 
+
             // Fixer une taille constante pour le pane (ne pas adapter au contenu)
             // Utiliser une taille fixe de 800x450 pour tous les systèmes
             double fixedWidth = 800;
@@ -1275,7 +1298,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             bodiesPane.setMinHeight(300);
             bodiesPane.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
             bodiesPane.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-            
+
             // Calculer et appliquer le zoom optimal pour afficher tout le contenu
             // Utiliser plusieurs Platform.runLater pour s'assurer que les dimensions sont mises à jour
 /*            bodiesScrollPane.viewportBoundsProperty().addListener((obs, oldVal, newVal) -> {
@@ -1289,26 +1312,137 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         });
     }
 
+    private static void mergeOnlineDataFromSpansh(SystemVisited target, SystemVisited spanshSource) {
+        if (target == null || spanshSource == null || spanshSource.getCelesteBodies() == null) {
+            return;
+        }
+        if (spanshSource.getCelesteBodies().isEmpty()) {
+            return;
+        }
+        if (target.getCelesteBodies() == null || target.getCelesteBodies().isEmpty()) {
+            target.setCelesteBodies(new ArrayList<>(spanshSource.getCelesteBodies()));
+            return;
+        }
+        Set<Integer> spanshIds = spanshSource.getCelesteBodies().stream()
+                .filter(Objects::nonNull)
+                .map(ACelesteBody::getBodyID)
+                .collect(Collectors.toSet());
+        if (spanshIds.isEmpty()) {
+            return;
+        }
+        List<ACelesteBody> merged = new ArrayList<>(target.getCelesteBodies());
+        Set<Integer> targetIds = merged.stream()
+                .filter(Objects::nonNull)
+                .map(ACelesteBody::getBodyID)
+                .collect(Collectors.toSet());
+        for (ACelesteBody b : merged) {
+            if (b != null && spanshIds.contains(b.getBodyID())) {
+                b.setOnlineData(true);
+            }
+        }
+        for (ACelesteBody fromSpansh : spanshSource.getCelesteBodies()) {
+            if (fromSpansh != null && !targetIds.contains(fromSpansh.getBodyID())) {
+                merged.add(fromSpansh);
+            }
+        }
+        target.setCelesteBodies(merged);
+    }
+
+    private void scheduleSpanshOnlineDataHydration(SystemVisited displayed) {
+        if (spanshOnlineHydrationSuppressed) {
+            return;
+        }
+        if (DashboardContext.getInstance().isBatchLoading()) {
+            return;
+        }
+        if (displayed == null || displayed.getSystemName() == null || displayed.getSystemName().isBlank()) {
+            return;
+        }
+        final String sysKey = displayed.getSystemName().trim();
+        Thread t = new Thread(() -> {
+            try {
+                SystemVisited spanshSv = SpanshSystemVisitedService.getInstance().fetchSystemVisited(sysKey);
+                Platform.runLater(() -> {
+                    if (currentSystem == null || currentSystem.getSystemName() == null) {
+                        return;
+                    }
+                    if (!sysKey.equalsIgnoreCase(currentSystem.getSystemName().trim())) {
+                        return;
+                    }
+                    mergeOnlineDataFromSpansh(currentSystem, spanshSv);
+                    spanshOnlineHydrationSuppressed = true;
+                    try {
+                        displaySystem(currentSystem);
+                    } finally {
+                        spanshOnlineHydrationSuppressed = false;
+                    }
+                    // Second passage après le prochain pulse layout : corps ajoutés par Spansh + zoom
+                    Platform.runLater(() -> {
+                        spanshOnlineHydrationSuppressed = true;
+                        try {
+                            displaySystem(currentSystem,true);
+                        } finally {
+                            spanshOnlineHydrationSuppressed = false;
+                        }
+                    });
+                });
+            } catch (Exception ignored) {
+                // Données optionnelles : pas de blocage UI si Spansh échoue
+            }
+        }, "spansh-bodies-online");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private Node maybeWrapOnlineDataRing(ACelesteBody body, double innerVisualSize, Node inner) {
+        if (!body.isOnlineData()) {
+            return inner;
+        }
+        StackPane wrap = new StackPane();
+        wrap.setPickOnBounds(false);
+        double ringRadius = innerVisualSize / 2 + 5;
+        Circle ring = new Circle(ringRadius);
+        ring.setFill(Color.TRANSPARENT);
+        ring.setStroke(Color.web("#007ACC"));
+        ring.setStrokeWidth(2.5);
+        wrap.getChildren().addAll(ring, inner);
+        StackPane.setAlignment(inner, Pos.CENTER);
+        return wrap;
+    }
+
     /**
-     * Retire le nom du système du début du bodyName
+     * Retire le nom du système du début du bodyName pour l'affichage (comme le journal : « A 1 »).
+     * <p>
+     * Spansh renvoie souvent le nom complet (« NomDuSystème A 1 ») alors que le journal met déjà {@code BodyName}
+     * court. Le préfixe doit matcher de façon insensible à la casse : {@code startsWith} strict échouait si la
+     * casse diffère entre {@code starSystem} et le début de {@code bodyName}.
      */
     private String getBodyNameWithoutSystem(ACelesteBody body) {
         String bodyName = body.getBodyName();
         String systemName = body.getStarSystem();
-        
-        if (systemName != null && bodyName != null && bodyName.startsWith(systemName)) {
-            // Retirer le nom du système et l'espace qui suit
-            String nameWithoutSystem = bodyName.substring(systemName.length()).trim();
-            // Si le nom commence par un espace, le retirer
+
+        if (systemName == null || bodyName == null) {
+            return bodyName;
+        }
+        String sys = systemName.trim();
+        String bn = bodyName.trim();
+        if (sys.isEmpty()) {
+            return bodyName;
+        }
+        if (bn.length() >= sys.length() && bn.regionMatches(true, 0, sys, 0, sys.length())) {
+            String nameWithoutSystem = bn.substring(sys.length()).trim();
             if (nameWithoutSystem.startsWith(" ")) {
-                nameWithoutSystem = nameWithoutSystem.substring(1);
+                nameWithoutSystem = nameWithoutSystem.substring(1).trim();
+            }
+            if (nameWithoutSystem.startsWith("-")) {
+                nameWithoutSystem = nameWithoutSystem.substring(1).trim();
             }
             return nameWithoutSystem.isEmpty() ? bodyName : nameWithoutSystem;
         }
-        
+
         return bodyName;
     }
-    
+
     /**
      * Charge les images par type de planète
      */
@@ -1325,6 +1459,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
         }
     }
+
     private void loadRingImage() {
         try {
             ringImageBack = new Image(getClass().getResourceAsStream("/images/exploration/ringback2.png"));
@@ -1333,6 +1468,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             System.err.println("Ring.png introuvable !");
         }
     }
+
     /**
      * Retourne le nom de l'image correspondant au type de planète
      */
@@ -1353,7 +1489,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             case UNKNOWN -> "gas.png"; // Par défaut
         };
     }
-    
+
     /**
      * Charge les images pour chaque type d'étoile
      */
@@ -1393,7 +1529,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             case SUB_MOON -> 30.0;    // Lunes de lune : 30px (encore plus petites)
         };
     }
-    
+
     /**
      * Crée une ImageView pour un corps céleste
      */
@@ -1403,35 +1539,36 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // image de base (planète seule)
         Image planetBase = getImageForBaseBody(body);
 
-        Node planetNode;
+        Node coreNode;
 
         // -----------------------------------------
         // 🔥 Ajouter les anneaux uniquement si body.isRings()
         // -----------------------------------------
         if (body instanceof PlaneteDetail planet && planet.isRings()) {
-            // planète + anneaux
-            planetNode = createPlanetWithRings(planetBase, ringImageBack, ringImageTop, size);
-
-            // Correction de position pour centrer la planète (pas l’anneau)
-            Platform.runLater(() -> {
-                double w = ((StackPane) planetNode).getWidth();
-                double h = ((StackPane) planetNode).getHeight();
-
-                planetNode.setLayoutX(x - size / 2 - (w - size) / 2);
-                planetNode.setLayoutY(y - size / 2 - (h - size) / 2);
-            });
-
+            coreNode = createPlanetWithRings(planetBase, ringImageBack, ringImageTop, size);
         } else {
-            // 🌑 Pas d’anneaux → juste l’ImageView normal
             ImageView iv = new ImageView(planetBase);
             iv.setPreserveRatio(true);
             iv.setFitWidth(size);
             iv.setFitHeight(size);
+            coreNode = iv;
+        }
 
-            iv.setLayoutX(x - size / 2);
-            iv.setLayoutY(y - size / 2);
+        Node planetNode = maybeWrapOnlineDataRing(body, size, coreNode);
 
-            planetNode = iv;
+        if (body instanceof PlaneteDetail planet && planet.isRings()) {
+            Platform.runLater(() -> {
+                if (!(planetNode instanceof StackPane sp)) {
+                    return;
+                }
+                double w = sp.getWidth();
+                double h = sp.getHeight();
+                sp.setLayoutX(x - size / 2 - (w - size) / 2);
+                sp.setLayoutY(y - size / 2 - (h - size) / 2);
+            });
+        } else {
+            planetNode.setLayoutX(x - size / 2);
+            planetNode.setLayoutY(y - size / 2);
         }
 
         // Tooltip
@@ -1568,7 +1705,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         return cm;
     }
 
-    /** Une ligne du menu « sites sur ce corps » : pastille port + libellé (survol géré en CSS sur le MenuItem parent). */
+    /**
+     * Une ligne du menu « sites sur ce corps » : pastille port + libellé (survol géré en CSS sur le MenuItem parent).
+     */
     private Node buildColonisationSitePickerMenuRow(ColonisationArchitectMapCaptionLine line, String orb, String surf) {
         String name = line.siteLabel() != null ? line.siteLabel().strip() : "";
         if (name.isEmpty()) {
@@ -1623,7 +1762,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         return row;
     }
 
-    /** Pastille carte : « N » + icône settlement. */
+    /**
+     * Pastille carte : « N » + icône settlement.
+     */
     private Node buildColonisationSettlementChip(int colonyCount) {
         HBox hb = new HBox(6);
         hb.setAlignment(Pos.CENTER_LEFT);
@@ -1710,16 +1851,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
 
         // Vérifier quelles icônes afficher
-        boolean hasExobio = exobioImage != null && 
-            ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
-             (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()));
-        
+        boolean hasExobio = exobioImage != null &&
+                ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
+                        (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()));
+
         // Vérifier si la planète respecte les conditions pour mapped
         // Si la planète est déjà mapped, on affiche toujours l'icône + V vert
         // Sinon, on affiche l'icône seulement si elle respecte les conditions (terraformable OU baseK > 50000)
         boolean shouldShowMappedIcon = false;
         boolean isMapped = planet.isMapped();
-        
+
         if (isMapped) {
             // Si la planète est déjà mapped, toujours afficher l'icône + V vert
             shouldShowMappedIcon = true;
@@ -1728,7 +1869,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             int baseK = planet.getPlanetClass().getBaseK();
             shouldShowMappedIcon = planet.isTerraformable() || baseK > 50000;
         }
-        
+
         if (!hasExobio && !shouldShowMappedIcon) {
             return; // Pas d'icônes à afficher
         }
@@ -1737,27 +1878,27 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         double iconSize = 14; // Taille des icônes
         double iconSpacing = 2; // Espacement vertical entre les icônes
         double padding = 3; // Padding du badge
-        
+
         // Créer un conteneur vertical pour les icônes
         VBox iconsContainer = new VBox(iconSpacing);
         iconsContainer.setAlignment(javafx.geometry.Pos.CENTER);
-        
+
         // Ajouter les icônes
         if (hasExobio) {
             // Créer un HBox pour l'icône exobio et le compteur
             HBox exobioContainer = new HBox(3);
             exobioContainer.setAlignment(javafx.geometry.Pos.CENTER);
-            
+
             ImageView exobioIcon = new ImageView(exobioImage);
             exobioIcon.setFitWidth(iconSize);
             exobioIcon.setFitHeight(iconSize);
             exobioIcon.setPreserveRatio(true);
             exobioContainer.getChildren().add(exobioIcon);
-            
+
             // Calculer le nombre d'espèces collectées et détectées
             int confirmedSpeciesCount = 0;
             int numSpeciesDetected = 0;
-            
+
             if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
                 confirmedSpeciesCount = (int) planet.getConfirmedSpecies().stream()
                         .filter(species -> species.isCollected())
@@ -1766,7 +1907,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (planet.getNumSpeciesDetected() != null) {
                 numSpeciesDetected = planet.getNumSpeciesDetected();
             }
-            
+
             // Déterminer la couleur selon le nombre d'espèces collectées
             String color;
             if (confirmedSpeciesCount == 0) {
@@ -1779,26 +1920,26 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 // Entre 1 et Y-1 → orange
                 color = "#FF8800";
             }
-            
+
             // Ajouter le label avec le format X/Y
             Label speciesCountLabel = new Label(String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected));
             speciesCountLabel.setStyle(String.format("-fx-text-fill: %s; -fx-font-size: 9px; -fx-font-weight: bold;", color));
             exobioContainer.getChildren().add(speciesCountLabel);
-            
+
             iconsContainer.getChildren().add(exobioContainer);
         }
-        
+
         if (shouldShowMappedIcon && mappedImage != null) {
             // Créer un HBox pour l'icône mapped et l'indicateur de statut
             HBox mappedContainer = new HBox(3);
             mappedContainer.setAlignment(javafx.geometry.Pos.CENTER);
-            
+
             ImageView mappedIcon = new ImageView(mappedImage);
             mappedIcon.setFitWidth(iconSize);
             mappedIcon.setFitHeight(iconSize);
             mappedIcon.setPreserveRatio(true);
             mappedContainer.getChildren().add(mappedIcon);
-            
+
             // Ajouter l'indicateur de statut (V vert si mapped, croix rouge si non mapped)
             Label statusLabel = new Label();
             if (isMapped) {
@@ -1809,32 +1950,32 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 statusLabel.setStyle("-fx-text-fill: #FF0000; -fx-font-size: 10px; -fx-font-weight: bold;");
             }
             mappedContainer.getChildren().add(statusLabel);
-            
+
             iconsContainer.getChildren().add(mappedContainer);
         }
-        
+
         // Créer un badge avec fond semi-transparent
         StackPane badge = new StackPane();
         badge.getChildren().add(iconsContainer);
-        
+
         // Fond du badge avec coins arrondis
         // Si exobio est présent, le badge doit être plus large pour accommoder l'icône + le compteur
         // Si mapped est présent, le badge doit être plus large pour accommoder l'icône + le statut
-        double badgeWidth = hasExobio ? 
-            (iconSize + 25 + (padding * 2)) : // icône + texte (~25px) + padding
-            (shouldShowMappedIcon ? (iconSize + 12 + (padding * 2)) : (iconSize + (padding * 2))); // icône + statut (~12px) + padding
-        double badgeHeight = ((hasExobio ? 1 : 0) + (shouldShowMappedIcon ? 1 : 0) > 1 ? 
-            (iconSize * 2) + iconSpacing : iconSize) + (padding * 2);
-        
+        double badgeWidth = hasExobio ?
+                (iconSize + 25 + (padding * 2)) : // icône + texte (~25px) + padding
+                (shouldShowMappedIcon ? (iconSize + 12 + (padding * 2)) : (iconSize + (padding * 2))); // icône + statut (~12px) + padding
+        double badgeHeight = ((hasExobio ? 1 : 0) + (shouldShowMappedIcon ? 1 : 0) > 1 ?
+                (iconSize * 2) + iconSpacing : iconSize) + (padding * 2);
+
         Rectangle background = new Rectangle(badgeWidth, badgeHeight);
         background.setArcWidth(8);
         background.setArcHeight(8);
         background.setFill(Color.rgb(0, 0, 0, 0.7)); // Fond noir semi-transparent
         background.setStroke(Color.rgb(255, 255, 255, 0.3)); // Bordure blanche légère
         background.setStrokeWidth(1);
-        
+
         badge.getChildren().add(0, background); // Ajouter le fond en premier
-        
+
         // Position du badge : en haut à droite de la planète
         // Les planètes sont rondes, donc on positionne le badge de manière à suivre la courbe
         // Récupérer la taille réelle du corps depuis bodyPositions
@@ -1843,22 +1984,22 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         double bodyRadius = bodySize / 2;
         double offsetX = 0; // Plus proche du bord de la planète
         double offsetY = 0; // Plus proche du bord de la planète
-        
+
         // Pour une forme ronde, utiliser un point légèrement en dessous de 45° pour un meilleur alignement visuel
         // Un angle d'environ 30-35° donne un meilleur positionnement pour le badge
         double angle = Math.PI / 3.5; // Environ 51° pour un positionnement plus naturel
         double tangentX = bodyRadius * Math.cos(angle);
         double tangentY = bodyRadius * Math.sin(angle);
-        
+
         // Positionner le badge de manière à ce que son coin bas gauche soit tangent au cercle
         // Le point de référence sur la planète est à : (planetX + tangentX, planetY - tangentY)
         // Le coin bas gauche du badge doit être légèrement décalé de ce point
         double badgeX = planetX + tangentX + offsetX; // Le badge commence à droite du point tangent
         double badgeY = planetY - tangentY - badgeHeight - offsetY; // Le badge est au-dessus du point tangent
-        
+
         badge.setLayoutX(badgeX);
         badge.setLayoutY(badgeY);
-        
+
         bodiesPane.getChildren().add(badge);
     }
 
@@ -1869,14 +2010,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (body == null) {
             return;
         }
-        
+
         // Obtenir le nom du body sans le nom du système
         String bodyName = getBodyNameWithoutSystem(body);
         // Ne pas afficher si le nom est null, vide, ou la chaîne "null"
         if (bodyName == null || bodyName.isEmpty() || "null".equalsIgnoreCase(bodyName.trim())) {
             return;
         }
-        
+
         // Pour les étoiles : si le nom est équivalent au nom du système, remplacer par "A"
         if (body instanceof StarDetail) {
             String systemName = body.getStarSystem();
@@ -1884,28 +2025,28 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 bodyName = "A";
             }
         }
-        
+
         // Créer le label
         Label nameLabel = new Label(bodyName);
         nameLabel.setStyle("-fx-text-fill: #FF8C00; -fx-font-size: 15px; -fx-font-weight: bold;");
-        
+
         // Calculer la position : en bas à droite du cercle, mais remonté vers le haut-gauche
         // Pour un cercle, utiliser un angle légèrement supérieur à 45° pour remonter
         double size = getBodySize(hierarchyType);
         double radius = size / 2;
-        
+
         // Angle d'environ 50-55° pour remonter vers le haut-gauche tout en restant en bas-droite
         double angle = Math.PI / 3.5; // Environ 51° pour remonter un peu
         double offsetX = radius * Math.cos(angle);
         double offsetY = radius * Math.sin(angle);
-        
+
         // Position du label : point sur le cercle + très petit décalage pour coller à la planète
         double labelX = x + offsetX + 2; // 2px d'espacement à droite (réduit pour coller)
         double labelY = y + offsetY - 2; // -2px pour remonter vers le haut
-        
+
         nameLabel.setLayoutX(labelX);
         nameLabel.setLayoutY(labelY);
-        
+
         bodiesPane.getChildren().add(nameLabel);
     }
 
@@ -1918,8 +2059,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
 
         // Si on clique sur le même corps et que le panneau est ouvert, le fermer
-        if (currentJsonBody != null && currentJsonBody.getBodyID() == body.getBodyID() && 
-            jsonDetailPanel.isVisible()) {
+        if (currentJsonBody != null && currentJsonBody.getBodyID() == body.getBodyID() &&
+                jsonDetailPanel.isVisible()) {
             closeJsonPanel();
             return;
         }
@@ -1933,7 +2074,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Configurer la cellule personnalisée pour le TreeView
         jsonTreeView.setCellFactory(treeView -> new JsonTreeCell());
-        
+
         // Construire le TreeView à partir du JSON
         JsonNode jsonNode = body.getJsonNode();
         if (jsonNode != null) {
@@ -1976,7 +2117,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private TreeItem<JsonTreeItem> buildJsonTree(JsonNode node, String key) {
         JsonTreeItem jsonItem = new JsonTreeItem(key, node);
         TreeItem<JsonTreeItem> item = new TreeItem<>(jsonItem);
-        
+
         if (node == null || node.isNull()) {
             return item;
         }
@@ -1992,10 +2133,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 Map.Entry<String, JsonNode> field = fields.next();
                 String fieldKey = field.getKey();
                 // Filtrer les champs event, timestamp, scantype, parents
-                if (!"event".equalsIgnoreCase(fieldKey) && 
-                    !"timestamp".equalsIgnoreCase(fieldKey) && 
-                    !"scantype".equalsIgnoreCase(fieldKey) &&
-                    !"parents".equalsIgnoreCase(fieldKey)) {
+                if (!"event".equalsIgnoreCase(fieldKey) &&
+                        !"timestamp".equalsIgnoreCase(fieldKey) &&
+                        !"scantype".equalsIgnoreCase(fieldKey) &&
+                        !"parents".equalsIgnoreCase(fieldKey)) {
                     TreeItem<JsonTreeItem> child = buildJsonTree(field.getValue(), fieldKey);
                     item.getChildren().add(child);
                 }
@@ -2006,7 +2147,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 item.getChildren().add(child);
             }
         }
-        
+
         return item;
     }
 
@@ -2026,10 +2167,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Dessine les lignes de connexion hiérarchique : étoile -> planètes (chaîne) et planète -> lunes (vertical) et lune -> lunes de lune (horizontal)
      */
     private void drawConnectionsHierarchical(Map<Integer, ACelesteBody> bodiesMap,
-                                            List<ACelesteBody> stars,
-                                            Map<ACelesteBody, List<ACelesteBody>> starToPlanets,
-                                            Map<ACelesteBody, List<ACelesteBody>> planetToMoons,
-                                            Map<ACelesteBody, List<ACelesteBody>> moonToSubMoons) {
+                                             List<ACelesteBody> stars,
+                                             Map<ACelesteBody, List<ACelesteBody>> starToPlanets,
+                                             Map<ACelesteBody, List<ACelesteBody>> planetToMoons,
+                                             Map<ACelesteBody, List<ACelesteBody>> moonToSubMoons) {
         for (ACelesteBody star : stars) {
             List<ACelesteBody> planets = starToPlanets.get(star);
             if (planets == null || planets.isEmpty()) {
@@ -2104,7 +2245,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Lignes entre lunes et leurs sub-lunes (horizontal)
                         for (ACelesteBody moon : moons) {
                             List<ACelesteBody> subMoons = moonToSubMoons.get(moon);
-                            
+
                             // Si cette "lune" est en fait une planète (peut arriver pour les planètes d'étoiles en orbite),
                             // récupérer aussi ses lunes depuis planetToMoons
                             if (moon instanceof PlaneteDetail) {
@@ -2117,7 +2258,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                     subMoons.addAll(planetMoons);
                                 }
                             }
-                            
+
                             if (subMoons != null && !subMoons.isEmpty()) {
                                 BodyPosition moonPos = bodyPositions.get(moon.getBodyID());
                                 if (moonPos != null) {
@@ -2172,7 +2313,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (parentBody instanceof StarDetail) {
                     var starParents = parentBody.getParents();
                     if (starParents == null || starParents.isEmpty() ||
-                        starParents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
+                            starParents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
                         return parentBody;
                     }
                 }
@@ -2203,7 +2344,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 .filter(body -> {
                     var parents = body.getParents();
                     return parents == null || parents.isEmpty() ||
-                           parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
+                            parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
                 })
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                 .collect(Collectors.toList());
@@ -2294,31 +2435,31 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (bodiesListContainer == null) {
             return;
         }
-        
+
         bodiesListContainer.getChildren().clear();
-        
+
         if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
             return;
         }
-        
+
         // Créer une map pour lookup rapide
         Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
                 .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
-        
+
         // Trier les corps hiérarchiquement
         List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
-        
+
         // Créer une map pour savoir si un corps a des frères suivants au même niveau
         Map<Integer, Boolean> hasNextSibling = new HashMap<>();
-        
+
         // Pour chaque corps, trouver son parent direct et vérifier s'il a des frères suivants
         for (int i = 0; i < sortedBodies.size(); i++) {
             ACelesteBody body = sortedBodies.get(i);
             int depth = calculateBodyDepth(body, bodiesMap);
-            
+
             // Trouver le parent direct (celui qui est à depth-1)
             ACelesteBody directParent = findDirectParent(body, bodiesMap, depth);
-            
+
             if (directParent != null) {
                 // Trouver tous les frères de ce corps (enfants du même parent au même niveau)
                 List<ACelesteBody> siblings = sortedBodies.stream()
@@ -2330,7 +2471,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         })
                         .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                         .collect(Collectors.toList());
-                
+
                 // Trouver l'index de ce corps dans ses frères
                 int siblingIndex = siblings.indexOf(body);
                 hasNextSibling.put(body.getBodyID(), siblingIndex >= 0 && siblingIndex < siblings.size() - 1);
@@ -2339,7 +2480,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 hasNextSibling.put(body.getBodyID(), false);
             }
         }
-        
+
         // Créer une map pour savoir si un parent a des frères suivants (pour les lignes verticales)
         Map<Integer, Boolean> parentHasNextSibling = new HashMap<>();
         for (ACelesteBody body : sortedBodies) {
@@ -2362,13 +2503,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                                 .collect(Collectors.toList());
                         int parentSiblingIndex = parentSiblings.indexOf(parentAtLevel);
-                        parentHasNextSibling.put(parentAtLevel.getBodyID(), 
+                        parentHasNextSibling.put(parentAtLevel.getBodyID(),
                                 parentSiblingIndex >= 0 && parentSiblingIndex < parentSiblings.size() - 1);
                     }
                 }
             }
         }
-        
+
         // Filtrer les corps si la checkbox est cochée
         List<ACelesteBody> filteredBodies = sortedBodies;
         if (showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected()) {
@@ -2383,13 +2524,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     .filter(body -> body.getBodyID() == filteredBodyID)
                     .collect(Collectors.toList());
         }
-        
+
         // Créer les cartes avec les lignes hiérarchiques
         for (int i = 0; i < filteredBodies.size(); i++) {
             ACelesteBody body = filteredBodies.get(i);
             int depth = calculateBodyDepth(body, bodiesMap);
             boolean hasNext = hasNextSibling.getOrDefault(body.getBodyID(), false);
-            
+
             // Créer une map pour chaque niveau de profondeur
             Map<Integer, Boolean> levelHasNext = new HashMap<>();
             for (int d = 0; d < depth; d++) {
@@ -2399,17 +2540,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 }
             }
             levelHasNext.put(depth, hasNext);
-            
+
             VBox card = createBodyCard(body, depth, levelHasNext, bodiesMap);
             if (card != null) {
                 bodiesListContainer.getChildren().add(card);
             }
         }
-        
+
         // Mettre à jour l'overlay et le popup si ils sont ouverts
         if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing() && system != null) {
-            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
-                                       showOnlyHighValueBodiesCheckBox.isSelected();
+            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
+                    showOnlyHighValueBodiesCheckBox.isSelected();
             bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
             // Recalculer la taille du popup si ouvert
             if (bodiesOverlayComponent.isPopupShowing()) {
@@ -2419,7 +2560,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
         }
     }
-    
+
     /**
      * Calcule la profondeur hiérarchique d'un corps (nombre de niveaux de parents)
      */
@@ -2428,7 +2569,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (parents == null || parents.isEmpty()) {
             return 0;
         }
-        
+
         int maxDepth = 0;
         for (var parent : parents) {
             if ("Null".equalsIgnoreCase(parent.getType())) {
@@ -2440,10 +2581,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 maxDepth = Math.max(maxDepth, parentDepth + 1);
             }
         }
-        
+
         return maxDepth;
     }
-    
+
     /**
      * Trouve le parent direct d'un corps (celui qui est à depth-1)
      */
@@ -2451,12 +2592,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (depth == 0) {
             return null;
         }
-        
+
         var parents = body.getParents();
         if (parents == null || parents.isEmpty()) {
             return null;
         }
-        
+
         // Trouver le parent qui a la profondeur depth-1
         for (var parent : parents) {
             if ("Null".equalsIgnoreCase(parent.getType())) {
@@ -2470,10 +2611,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Trouve le parent d'un corps à un niveau de profondeur donné
      */
@@ -2481,16 +2622,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (targetDepth < 0) {
             return null;
         }
-        
+
         int currentDepth = calculateBodyDepth(body, bodiesMap);
         if (targetDepth >= currentDepth) {
             return null;
         }
-        
+
         // Remonter la chaîne de parents jusqu'au niveau cible
         ACelesteBody current = body;
         int currentD = currentDepth;
-        
+
         while (currentD > targetDepth && current != null) {
             ACelesteBody parent = findDirectParent(current, bodiesMap, currentD);
             if (parent == null) {
@@ -2499,24 +2640,24 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             current = parent;
             currentD--;
         }
-        
+
         return (currentD == targetDepth) ? current : null;
     }
-    
+
     /**
      * Crée une carte pour un corps céleste avec toutes les informations
      */
     private VBox createBodyCard(ACelesteBody body, int depth, Map<Integer, Boolean> levelHasNext, Map<Integer, ACelesteBody> bodiesMap) {
         VBox card = new VBox(5);
         card.getStyleClass().add("exploration-body-card");
-        
+
         // Largeur adaptative : évite que le fond de carte dépasse visuellement le cadre orange
         // quand la scrollbar/paddings/indentation réduisent l'espace réel.
         card.setFillWidth(true);
         card.setMinWidth(Region.USE_COMPUTED_SIZE);
         card.setPrefWidth(Region.USE_COMPUTED_SIZE);
         card.setMaxWidth(Double.MAX_VALUE);
-        
+
         // Créer un conteneur pour les lignes hiérarchiques et le contenu
         HBox mainContainer = new HBox(0);
         mainContainer.setAlignment(javafx.geometry.Pos.TOP_LEFT);
@@ -2528,7 +2669,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         hierarchyLines.setPrefWidth(20 * depth);
         hierarchyLines.setMaxWidth(20 * depth);
 
-        
+
         // Contenu de la carte
         VBox cardContent = new VBox(5);
         cardContent.setPadding(new javafx.geometry.Insets(8));
@@ -2536,24 +2677,24 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         cardContent.setMinWidth(0);
         cardContent.setPrefWidth(Region.USE_COMPUTED_SIZE);
         HBox.setHgrow(cardContent, Priority.ALWAYS);
-        
+
         // Nom du corps
         HBox headerRow = new HBox(5);
         headerRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        
+
         String bodyName = getBodyNameWithoutSystem(body);
         Label nameLabel = new Label(bodyName);
         nameLabel.getStyleClass().add("exploration-body-card-name");
         nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
         headerRow.getChildren().add(nameLabel);
-        
+
         // Ajouter l'icône mapped si nécessaire (pour les planètes)
         if (body instanceof PlaneteDetail planet) {
             boolean isEdsmBody = isEdsmBody(body);
             // Vérifier si la planète respecte les conditions pour mapped
             boolean shouldShowMappedIcon = false;
             boolean isMapped = planet.isMapped();
-            
+
             if (isMapped) {
                 shouldShowMappedIcon = true;
             } else if (planet.getPlanetClass() != null) {
@@ -2564,14 +2705,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 // Sur les données EDSM, on masque les éléments liés à la body value/mapping local.
                 shouldShowMappedIcon = false;
             }
-            
+
             if (shouldShowMappedIcon && mappedImage != null) {
                 ImageView mappedIconView = new ImageView(mappedImage);
                 mappedIconView.setFitWidth(20);
                 mappedIconView.setFitHeight(20);
                 mappedIconView.setPreserveRatio(true);
                 headerRow.getChildren().add(mappedIconView);
-                
+
                 // Ajouter l'indicateur de statut
                 Label statusLabel = new Label();
                 if (isMapped) {
@@ -2582,7 +2723,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     statusLabel.setStyle("-fx-text-fill: #FF0000; -fx-font-size: 15px; -fx-font-weight: bold;");
                 }
                 headerRow.getChildren().add(statusLabel);
-                
+
                 // Ajouter "FIRST" si firstMapped (wasMapped est false)
                 if (!planet.isWasMapped()) {
                     Label firstMappedLabel = new Label(localizationService.getString("exploration.first"));
@@ -2591,7 +2732,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 }
                 //PRICE
                 //Simule la planete mappé
-                boolean mappedTemp =planet.isMapped();
+                boolean mappedTemp = planet.isMapped();
                 planet.setMapped(true);
                 long bodyValue = planet.computeBodyValue();
                 planet.setMapped(mappedTemp);
@@ -2599,12 +2740,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 price.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 14px; -fx-font-weight: bold;");
                 headerRow.getChildren().add(price);
             }
-            
+
             // Informations exobio (X/Y) - ajoutées dans le headerRow
             // Calculer le nombre d'espèces collectées et détectées
             int confirmedSpeciesCount = 0;
             int numSpeciesDetected = 0;
-            
+
             if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
                 confirmedSpeciesCount = (int) planet.getConfirmedSpecies().stream()
                         .filter(species -> species.isCollected())
@@ -2613,23 +2754,23 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (planet.getNumSpeciesDetected() != null) {
                 numSpeciesDetected = planet.getNumSpeciesDetected();
             }
-            
+
             // Afficher l'info exobio si nécessaire
-            if (exobioImage != null && 
-                ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
-                 (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()))) {
-                
+            if (exobioImage != null &&
+                    ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
+                            (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()))) {
+
                 // Espaceur pour pousser les éléments exobio vers la droite
                 Region spacer = new Region();
                 HBox.setHgrow(spacer, Priority.ALWAYS);
                 headerRow.getChildren().add(spacer);
-                
+
                 ImageView exobioIconView = new ImageView(exobioImage);
                 exobioIconView.setFitWidth(20);
                 exobioIconView.setFitHeight(20);
                 exobioIconView.setPreserveRatio(true);
                 headerRow.getChildren().add(exobioIconView);
-                
+
                 // Déterminer la couleur selon le nombre d'espèces collectées
                 String color;
                 if (confirmedSpeciesCount == 0) {
@@ -2639,17 +2780,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 } else {
                     color = "#FF8800";
                 }
-                
+
                 Label speciesCountLabel = new Label(String.format("%d/%d", confirmedSpeciesCount, numSpeciesDetected));
                 speciesCountLabel.setStyle(String.format(
-                    "-fx-text-fill: %s; " +
-                    "-fx-font-size: 15px; " +
-                    "-fx-font-weight: bold; " +
-                    "-fx-padding: 5px 10px;",
-                    color));
+                        "-fx-text-fill: %s; " +
+                                "-fx-font-size: 15px; " +
+                                "-fx-font-weight: bold; " +
+                                "-fx-padding: 5px 10px;",
+                        color));
                 speciesCountLabel.getStyleClass().add("exploration-body-exobio-count");
                 headerRow.getChildren().add(speciesCountLabel);
-                
+
                 // Ajouter un label si wasFootfalled est false (première découverte)
                 if (!planet.isWasFootfalled()) {
                     Label firstDiscoveryLabel = new Label(localizationService.getString("exploration.first"));
@@ -2658,19 +2799,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 }
             }
         }
-        
+
         cardContent.getChildren().add(headerRow);
-        
+
         // Informations exobio (X/Y) - seulement pour les planètes
         if (body instanceof PlaneteDetail planet) {
             // Liste des BioSpecies avec probabilités
             // Afficher si on a des bioSpecies OU des confirmedSpecies
             if ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
-                (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty())) {
+                    (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty())) {
                 VBox speciesList = new VBox(4);
                 speciesList.setPadding(new javafx.geometry.Insets(8, 8, 8, 8));
                 speciesList.getStyleClass().add("exploration-body-species-list");
-                
+
                 // Créer une map des confirmedSpecies par nom pour lookup rapide
                 Map<String, BioSpecies> confirmedSpeciesMap = new HashMap<>();
                 if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
@@ -2680,10 +2821,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         }
                     }
                 }
-                
+
                 // Set pour tracker les noms déjà traités avec confirmedSpecies
                 Set<String> processedConfirmedNames = new HashSet<>();
-                
+
                 // Prendre le scan le plus récent (niveau le plus élevé)
                 Scan latestScan = null;
                 if (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) {
@@ -2691,13 +2832,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             .max(Comparator.comparingInt(Scan::getScanNumber))
                             .orElse(null);
                 }
-                
+
                 if (latestScan != null && latestScan.getSpeciesProbabilities() != null) {
                     for (SpeciesProbability sp : latestScan.getSpeciesProbabilities()) {
                         BioSpecies bioSpecies = sp.getBioSpecies();
                         BioSpecies confirmedSpecies = null;
                         String bioSpeciesName = bioSpecies.getName();
-                        
+
                         // Vérifier si une confirmedSpecies a le même nom
                         if (bioSpeciesName != null && confirmedSpeciesMap.containsKey(bioSpeciesName)) {
                             // Si on n'a pas encore traité ce nom avec une confirmedSpecies, on le remplace
@@ -2709,12 +2850,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 continue;
                             }
                         }
-                        
+
                         HBox speciesRow = new HBox(8);
                         speciesRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                         speciesRow.setPadding(new javafx.geometry.Insets(4, 6, 4, 6));
                         speciesRow.getStyleClass().add("exploration-body-species-row");
-                        
+
                         // Afficher le nom (confirmedSpecies si disponible, sinon bioSpecies)
                         String speciesName;
                         if (confirmedSpecies != null) {
@@ -2722,21 +2863,20 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         } else {
                             speciesName = bioSpecies.getFullName();
                         }
-                        
+
                         Label speciesNameLabel = new Label(speciesName);
                         speciesNameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-text;");
                         speciesNameLabel.setMaxWidth(Double.MAX_VALUE);
                         speciesNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
                         HBox.setHgrow(speciesNameLabel, javafx.scene.layout.Priority.ALWAYS);
-                        
+
                         // Afficher ✓ ou ✗ si confirmedSpecies, sinon le pourcentage
                         Label statusLabel = new Label();
                         if (confirmedSpecies != null) {
                             if (confirmedSpecies.isCollected()) {
                                 statusLabel.setText("✓");
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
-                            }
-                            else if (confirmedSpecies.getSampleNumber() !=0){
+                            } else if (confirmedSpecies.getSampleNumber() != 0) {
                                 statusLabel.setText(confirmedSpecies.getSampleNumber() + "/3");
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-orange; -fx-font-weight: bold;");
                             } else {
@@ -2762,19 +2902,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         statusLabel.setMinWidth(0);
                         statusLabel.setPrefWidth(-1);
                         statusLabel.setMaxWidth(Double.MAX_VALUE);
-                        
+
                         // Calculer et afficher le prix
                         // Utiliser confirmedSpecies si disponible, sinon bioSpecies
                         BioSpecies speciesForPrice = (confirmedSpecies != null) ? confirmedSpecies : bioSpecies;
                         long price;
                         if (!planet.isWasFootfalled()) {
                             // Si wasFootfalled est false, prendre bonusValue
-                            price = speciesForPrice.getBonusValue() +  speciesForPrice.getBaseValue();
+                            price = speciesForPrice.getBonusValue() + speciesForPrice.getBaseValue();
                         } else {
                             // Sinon, prendre baseValue
                             price = speciesForPrice.getBaseValue();
                         }
-                        
+
                         Label priceLabel = new Label(String.format("%,d Cr", price));
                         priceLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
                         // S'assurer que le prix ne soit jamais coupé - pas de contrainte de largeur
@@ -2784,29 +2924,29 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         statusLabel.setMinWidth(Region.USE_PREF_SIZE);
                         priceLabel.setMinWidth(Region.USE_PREF_SIZE);
                         speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
-                        
+
                         // Vérifier si cette espèce est en cours d'analyse
                         boolean isAnalyzing = false;
                         ExplorationService explorationService = ExplorationService.getInstance();
                         if (explorationService.isBiologicalAnalysisInProgress() &&
-                            explorationService.getCurrentAnalysisPlanet() != null &&
-                            explorationService.getCurrentAnalysisPlanet().getBodyID() == planet.getBodyID() &&
-                            explorationService.getCurrentAnalysisSpecies() != null) {
-                            
+                                explorationService.getCurrentAnalysisPlanet() != null &&
+                                explorationService.getCurrentAnalysisPlanet().getBodyID() == planet.getBodyID() &&
+                                explorationService.getCurrentAnalysisSpecies() != null) {
+
                             BioSpecies currentSpecies = explorationService.getCurrentAnalysisSpecies();
                             BioSpecies speciesToCheck = (confirmedSpecies != null) ? confirmedSpecies : bioSpecies;
-                            
+
                             // Comparer les espèces par nom
                             if (speciesToCheck != null && currentSpecies != null &&
-                                speciesToCheck.getName() != null && currentSpecies.getName() != null &&
-                                speciesToCheck.getName().equals(currentSpecies.getName())) {
+                                    speciesToCheck.getName() != null && currentSpecies.getName() != null &&
+                                    speciesToCheck.getName().equals(currentSpecies.getName())) {
                                 isAnalyzing = true;
                             }
                         }
-                        
+
                         // Ajouter le speciesRow à la liste d'abord
                         speciesList.getChildren().add(speciesRow);
-                        
+
                         // Ensuite, si c'est en cours d'analyse, ajouter la bordure animée
                         if (isAnalyzing) {
                             Platform.runLater(() -> {
@@ -2815,109 +2955,108 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         }
                     }
                 }
-                
+
                 // Ajouter les espèces confirmées qui n'ont pas été prédites (pas dans le scan)
                 // Ce code s'exécute même s'il n'y a pas de scan (latestScan == null)
                 if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
-                        for (BioSpecies confirmedSpecies : planet.getConfirmedSpecies()) {
-                            String confirmedName = confirmedSpecies.getName();
-                            
-                            // Si cette espèce confirmée n'a pas été traitée (pas dans processedConfirmedNames),
-                            // c'est qu'elle n'était pas dans les prédictions, il faut l'ajouter
-                            if (confirmedName != null && !processedConfirmedNames.contains(confirmedName)) {
-                                HBox speciesRow = new HBox(8);
-                                speciesRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                                speciesRow.setPadding(new javafx.geometry.Insets(4, 6, 4, 6));
-                                speciesRow.getStyleClass().add("exploration-body-species-row");
-                                
-                                // Afficher le nom de l'espèce confirmée
-                                String speciesName = confirmedSpecies.getFullName();
-                                Label speciesNameLabel = new Label(speciesName);
-                                speciesNameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-text;");
-                                speciesNameLabel.setMaxWidth(Double.MAX_VALUE);
-                                speciesNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-                                HBox.setHgrow(speciesNameLabel, javafx.scene.layout.Priority.ALWAYS);
-                                
-                                // Afficher ✓ ou ✗ pour l'espèce confirmée
-                                Label statusLabel = new Label();
-                                if (confirmedSpecies.isCollected()) {
-                                    statusLabel.setText("✓");
-                                    statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
-                                }
-                                else if (confirmedSpecies.getSampleNumber() != 0) {
-                                    statusLabel.setText(confirmedSpecies.getSampleNumber() + "/3");
-                                    statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-orange; -fx-font-weight: bold;");
-                                } else {
-                                    statusLabel.setText("✗");
-                                    statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
-                                }
-                                
-                                statusLabel.setMinWidth(Region.USE_PREF_SIZE);
-                                
-                                // Calculer et afficher le prix
-                                long price;
-                                if (!planet.isWasFootfalled()) {
-                                    price = confirmedSpecies.getBonusValue() + confirmedSpecies.getBaseValue();
-                                } else {
-                                    price = confirmedSpecies.getBaseValue();
-                                }
-                                
-                                Label priceLabel = new Label(String.format("%,d Cr", price));
-                                priceLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
-                                priceLabel.setMinWidth(0);
-                                priceLabel.setPrefWidth(-1);
-                                priceLabel.setMaxWidth(Double.MAX_VALUE);
-                                priceLabel.setMinWidth(Region.USE_PREF_SIZE);
-                                
-                                speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
-                                
-                                // Vérifier si cette espèce est en cours d'analyse
-                                boolean isAnalyzing = false;
-                                ExplorationService explorationService = ExplorationService.getInstance();
-                                if (explorationService.isBiologicalAnalysisInProgress() &&
+                    for (BioSpecies confirmedSpecies : planet.getConfirmedSpecies()) {
+                        String confirmedName = confirmedSpecies.getName();
+
+                        // Si cette espèce confirmée n'a pas été traitée (pas dans processedConfirmedNames),
+                        // c'est qu'elle n'était pas dans les prédictions, il faut l'ajouter
+                        if (confirmedName != null && !processedConfirmedNames.contains(confirmedName)) {
+                            HBox speciesRow = new HBox(8);
+                            speciesRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                            speciesRow.setPadding(new javafx.geometry.Insets(4, 6, 4, 6));
+                            speciesRow.getStyleClass().add("exploration-body-species-row");
+
+                            // Afficher le nom de l'espèce confirmée
+                            String speciesName = confirmedSpecies.getFullName();
+                            Label speciesNameLabel = new Label(speciesName);
+                            speciesNameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-text;");
+                            speciesNameLabel.setMaxWidth(Double.MAX_VALUE);
+                            speciesNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+                            HBox.setHgrow(speciesNameLabel, javafx.scene.layout.Priority.ALWAYS);
+
+                            // Afficher ✓ ou ✗ pour l'espèce confirmée
+                            Label statusLabel = new Label();
+                            if (confirmedSpecies.isCollected()) {
+                                statusLabel.setText("✓");
+                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #00FF00; -fx-font-weight: bold;");
+                            } else if (confirmedSpecies.getSampleNumber() != 0) {
+                                statusLabel.setText(confirmedSpecies.getSampleNumber() + "/3");
+                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-orange; -fx-font-weight: bold;");
+                            } else {
+                                statusLabel.setText("✗");
+                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
+                            }
+
+                            statusLabel.setMinWidth(Region.USE_PREF_SIZE);
+
+                            // Calculer et afficher le prix
+                            long price;
+                            if (!planet.isWasFootfalled()) {
+                                price = confirmedSpecies.getBonusValue() + confirmedSpecies.getBaseValue();
+                            } else {
+                                price = confirmedSpecies.getBaseValue();
+                            }
+
+                            Label priceLabel = new Label(String.format("%,d Cr", price));
+                            priceLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
+                            priceLabel.setMinWidth(0);
+                            priceLabel.setPrefWidth(-1);
+                            priceLabel.setMaxWidth(Double.MAX_VALUE);
+                            priceLabel.setMinWidth(Region.USE_PREF_SIZE);
+
+                            speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
+
+                            // Vérifier si cette espèce est en cours d'analyse
+                            boolean isAnalyzing = false;
+                            ExplorationService explorationService = ExplorationService.getInstance();
+                            if (explorationService.isBiologicalAnalysisInProgress() &&
                                     explorationService.getCurrentAnalysisPlanet() != null &&
                                     explorationService.getCurrentAnalysisPlanet().getBodyID() == planet.getBodyID() &&
                                     explorationService.getCurrentAnalysisSpecies() != null) {
-                                    
-                                    BioSpecies currentSpecies = explorationService.getCurrentAnalysisSpecies();
-                                    
-                                    // Comparer les espèces par nom
-                                    if (confirmedSpecies != null && currentSpecies != null &&
+
+                                BioSpecies currentSpecies = explorationService.getCurrentAnalysisSpecies();
+
+                                // Comparer les espèces par nom
+                                if (confirmedSpecies != null && currentSpecies != null &&
                                         confirmedSpecies.getName() != null && currentSpecies.getName() != null &&
                                         confirmedSpecies.getName().equals(currentSpecies.getName())) {
-                                        isAnalyzing = true;
-                                    }
-                                }
-                                
-                                // Ajouter le speciesRow à la liste
-                                speciesList.getChildren().add(speciesRow);
-                                
-                                // Si c'est en cours d'analyse, ajouter la bordure animée
-                                if (isAnalyzing) {
-                                    Platform.runLater(() -> {
-                                        addBorder(speciesRow);
-                                    });
+                                    isAnalyzing = true;
                                 }
                             }
+
+                            // Ajouter le speciesRow à la liste
+                            speciesList.getChildren().add(speciesRow);
+
+                            // Si c'est en cours d'analyse, ajouter la bordure animée
+                            if (isAnalyzing) {
+                                Platform.runLater(() -> {
+                                    addBorder(speciesRow);
+                                });
+                            }
                         }
+                    }
                 }
-                
+
                 if (!speciesList.getChildren().isEmpty()) {
                     cardContent.getChildren().add(speciesList);
                 }
             }
         }
-        
+
         // Assembler le tout
         if (depth > 0) {
             mainContainer.getChildren().add(hierarchyLines);
         }
         mainContainer.getChildren().add(cardContent);
         card.getChildren().add(mainContainer);
-        
+
         return card;
     }
-    
+
     /**
      * Classe pour stocker la position d'un corps
      */
@@ -2944,19 +3083,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Vérifier l'exobiologie
         if (body instanceof PlaneteDetail planet) {
             boolean hasExobio = (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
-                               (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty());
-            
+                    (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty());
+
             if (hasExobio) {
                 return true;
             }
-            
+
             // Vérifier si mappable (terraformable ou baseK > 50000)
             if (planet.getPlanetClass() != null) {
                 int baseK = planet.getPlanetClass().getBaseK();
                 return planet.isTerraformable() || baseK > 50000;
             }
         }
-        
+
         return false;
     }
 
@@ -2977,7 +3116,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             showOnlyHighValueBodiesCheckBox.setSelected(false);
         }
     }
-    
+
     /**
      * Gère le changement de la checkbox de filtre
      */
@@ -2985,28 +3124,28 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private void onFilterChanged() {
         if (currentSystem != null) {
             updateBodiesList(currentSystem);
-            
+
             // Mettre à jour l'overlay si il est ouvert
             if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing()) {
-                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
-                                           showOnlyHighValueBodiesCheckBox.isSelected();
+                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
+                        showOnlyHighValueBodiesCheckBox.isSelected();
                 bodiesOverlayComponent.updateContent(currentSystem, showOnlyHighValue);
             }
         }
     }
-    
+
     /**
      * Affiche ou ferme l'overlay des corps d'exploration
      */
     @FXML
     private void showBodiesOverlay() {
         if (bodiesOverlayComponent != null) {
-            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
-                                       showOnlyHighValueBodiesCheckBox.isSelected();
-            
+            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
+                    showOnlyHighValueBodiesCheckBox.isSelected();
+
             CommanderStatus commanderStatus = CommanderStatus.getInstance();
             boolean isOnFoot = commanderStatus.isOnFoot();
-            
+
             if (isOnFoot) {
                 // Si on est à pied, utiliser le popup
                 // Si l'overlay est ouvert, le fermer
@@ -3038,10 +3177,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (bodiesOverlayComponent.isShowing()) {
                     bodiesOverlayComponent.closeOverlay();
                 } else {
-                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue,true);
+                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, true);
                 }
             }
-            
+
             updateBodiesOverlayButtonText();
         }
     }
@@ -3054,10 +3193,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (bodiesOverlayComponent == null || currentSystem == null) {
                 return;
             }
-            
-            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null && 
-                                       showOnlyHighValueBodiesCheckBox.isSelected();
-            
+
+            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
+                    showOnlyHighValueBodiesCheckBox.isSelected();
+
             if (isOnFoot) {
                 // Si on est à pied, fermer l'overlay et ouvrir le popup
                 if (bodiesOverlayComponent.isOverlayShowing()) {
@@ -3076,14 +3215,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 // Si on n'est plus à pied, fermer le popup et ouvrir l'overlay
                 if (bodiesOverlayComponent.isPopupShowing()) {
                     bodiesOverlayComponent.closePopup();
-                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue,false);
+                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, false);
                 }
             }
-            
+
             updateBodiesOverlayButtonText();
         });
     }
-    
+
     /**
      * Met à jour le texte du bouton overlay selon l'état de la fenêtre
      */
@@ -3104,7 +3243,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             bodiesOverlayButton.setText(icon + " " + text);
         }
     }
-    
+
     /**
      * Crée la liste des corps pour l'overlay (similaire à updateBodiesList mais retourne un VBox)
      */
@@ -3112,7 +3251,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         VBox container = new VBox(5);
         container.setSpacing(5);
         container.setPadding(new javafx.geometry.Insets(5));
-        
+
         // Ajouter le radar s'il est visible dans le panel de gauche
         // Toujours vérifier l'état actuel du radar principal pour s'assurer qu'on crée le bon radar
         if (radarComponent != null && radarComponent.getRadarPane() != null) {
@@ -3129,65 +3268,65 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         needNewRadar = true;
                     }
                 }
-                
+
                 // Recréer le radar si nécessaire (après une transition on foot par exemple)
                 if (needNewRadar) {
                     overlayRadarComponent = new RadarComponent();
                 }
-                
+
                 // Toujours s'assurer que le radar de l'overlay est visible et initialisé
                 overlayRadarComponent.showRadar();
-                
+
                 Pane overlayRadarPane = overlayRadarComponent.getRadarPane();
-                
+
                 // Détacher le radar de son ancien parent s'il en a un
                 Parent oldParent = overlayRadarPane.getParent();
                 if (oldParent instanceof Pane) {
                     ((Pane) oldParent).getChildren().remove(overlayRadarPane);
                 }
-                
+
                 // Retirer le cadre noir (fond et bordure) dans l'overlay/popup
                 overlayRadarPane.setStyle("-fx-background-color: transparent;");
-                
+
                 // Débinder l'ancien binding s'il existe
                 overlayRadarPane.prefWidthProperty().unbind();
-                
+
                 // Faire en sorte que le radar prenne la largeur du container
                 // Utiliser un binding au lieu d'un listener pour éviter les fuites mémoire
                 // Le binding sera automatiquement nettoyé quand le container sera détaché
                 overlayRadarPane.prefWidthProperty().bind(
-                    container.widthProperty().subtract(10) // -10 pour le padding
+                        container.widthProperty().subtract(10) // -10 pour le padding
                 );
-                
+
                 // S'assurer que le radar est visible avant de l'ajouter
                 overlayRadarPane.setVisible(true);
                 overlayRadarPane.setManaged(true);
-                
+
                 // S'assurer que le radar a une hauteur minimale pour être visible
                 overlayRadarPane.setPrefHeight(200);
                 overlayRadarPane.setMinHeight(200);
                 overlayRadarPane.setMaxHeight(200);
-                
+
                 container.getChildren().add(overlayRadarPane);
-                
+
                 // Forcer la mise à jour du radar après l'ajout pour s'assurer qu'il est dessiné
                 Platform.runLater(() -> {
                     overlayRadarComponent.forceUpdate();
                 });
             }
         }
-        
+
         if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
             return container;
         }
-        
+
         // Créer une map pour lookup rapide
         Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
                 .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
-        
+
         // Trier les corps hiérarchiquement
         List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
-        
+
         // Filtrer les corps si nécessaire (seulement les high value)
         List<ACelesteBody> filteredBodies = sortedBodies;
         if (showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected()) {
@@ -3195,14 +3334,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     .filter(this::isHighValueBody)
                     .collect(Collectors.toList());
         }
-        
+
         // Appliquer le filtre de bodyID si actif (pour n'afficher que le corps approché avec exobio non collecté)
         if (filteredBodyID != null && CommanderStatus.getInstance().getCurrentStarSystem().equals(system.getSystemName())) {
             filteredBodies = filteredBodies.stream()
                     .filter(body -> body.getBodyID() == filteredBodyID)
                     .collect(Collectors.toList());
         }
-        
+
         // Créer les cartes pour chaque corps
         for (ACelesteBody body : filteredBodies) {
             int depth = calculateBodyDepth(body, bodiesMap);
@@ -3211,7 +3350,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             for (int d = 0; d <= depth; d++) {
                 levelHasNext.put(d, false);
             }
-            
+
             VBox card = createBodyCard(body, depth, levelHasNext, bodiesMap);
             if (card != null) {
                 // Ajouter le style overlay
@@ -3219,10 +3358,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 container.getChildren().add(card);
             }
         }
-        
+
         return container;
     }
-    
+
     /**
      * Ajoute une bordure verte autour d'un HBox pour indiquer qu'une espèce est en cours d'analyse
      */
@@ -3243,7 +3382,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             currentSystem = null;
         });
     }
-    
+
     /**
      * Implémentation de BodyFilterListener
      * Filtre la liste des corps pour n'afficher que le corps approché avec exobio non collecté
@@ -3258,7 +3397,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
         });
     }
-    
+
     /**
      * Met à jour toutes les traductions de l'interface
      */
@@ -3282,12 +3421,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             spacingVerticalLabel.setText(localizationService.getString("exploration.spacing.vertical"));
         }
     }
-    
+
     /**
      * Extrait le numéro du corps céleste à partir de son nom.
      * Par exemple : "System AB 1" -> 1, "System A 2" -> 2, "System 3" -> 3
      * Si aucun numéro n'est trouvé, retourne Integer.MAX_VALUE pour placer ces corps à la fin.
-     * 
+     *
      * @param body Le corps céleste dont on veut extraire le numéro
      * @return Le numéro extrait, ou Integer.MAX_VALUE si aucun numéro n'est trouvé
      */
@@ -3296,7 +3435,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (bodyName == null || bodyName.isEmpty()) {
             return Integer.MAX_VALUE;
         }
-        
+
         // Extraire le dernier nombre du nom (généralement après le dernier espace)
         String[] parts = bodyName.split("\\s+");
         if (parts.length > 0) {
@@ -3314,25 +3453,25 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 }
             }
         }
-        
+
         return Integer.MAX_VALUE;
     }
 
     /**
      * Extrait le nom de l'étoile à partir du nom de la planète.
      * Si la planète s'appelle "nom_systeme AB 1", retourne "nom_systeme AB".
-     * 
+     *
      * @param planet Le corps céleste (planète) dont on veut extraire le nom de l'étoile
      * @return Le nom de l'étoile extrait (nom_systeme + nom_étoile), ou "null" si l'extraction échoue
      */
     private String extractStarNameFromPlanetName(ACelesteBody planet) {
         String bodyName = planet.getBodyName();
         String systemName = planet.getStarSystem();
-        
+
         if (bodyName == null || systemName == null) {
             return systemName != null ? systemName + " null" : "null";
         }
-        
+
         // Retirer le nom du système du début du bodyName
         String nameWithoutSystem = bodyName;
         if (bodyName.startsWith(systemName)) {
@@ -3342,11 +3481,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 nameWithoutSystem = nameWithoutSystem.substring(1);
             }
         }
-        
+
         if (nameWithoutSystem.isEmpty()) {
             return systemName + " null";
         }
-        
+
         // Extraire la partie avant le dernier espace et le numéro
         // Par exemple : "AB 1" -> "AB", "A 2" -> "A", "ABC 3" -> "ABC"
         String[] parts = nameWithoutSystem.split("\\s+");
@@ -3364,7 +3503,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         } else {
             starNamePart = nameWithoutSystem;
         }
-        
+
         // Retourner le nom du système + le nom de l'étoile
         return systemName + " " + starNamePart;
     }
