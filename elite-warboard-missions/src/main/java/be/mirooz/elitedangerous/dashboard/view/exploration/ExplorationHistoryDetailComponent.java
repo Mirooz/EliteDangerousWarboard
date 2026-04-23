@@ -213,11 +213,19 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         // Mettre à jour les informations "on hold"
         updateOnHoldInfo();
-        
-        // Mettre à jour la liste des systèmes visités
+
+        rebuildSystemCardsForCurrentSale();
+    }
+
+    /**
+     * Reconstruit toutes les cartes système du groupe affiché (ex. après Spansh : icônes exobio / mapped, compteurs).
+     */
+    private void rebuildSystemCardsForCurrentSale() {
+        if (systemsList == null || selectedSale == null) {
+            return;
+        }
         systemsList.getChildren().clear();
-        systemCardMap.clear(); // Réinitialiser la map
-        // Réinitialiser la sélection si le système sélectionné n'est plus dans la nouvelle liste
+        systemCardMap.clear();
         if (selectedSystem != null && selectedSale.getSystemsVisited() != null) {
             boolean systemStillExists = selectedSale.getSystemsVisited().stream()
                     .anyMatch(s -> s.equals(selectedSystem));
@@ -225,14 +233,13 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
                 selectedSystem = null;
             }
         }
-
-        selectedSale.getSystemsVisited().stream()
-                .sorted(Comparator.comparing(SystemVisited::getLastVisitedTime).reversed())
-                .map(this::createSystemCardDirectly)
-                .filter(Objects::nonNull)
-                .forEach(card -> systemsList.getChildren().add(card));
-        
-        // Mettre à jour l'affichage de la sélection après avoir créé toutes les cartes
+        if (selectedSale.getSystemsVisited() != null) {
+            selectedSale.getSystemsVisited().stream()
+                    .sorted(Comparator.comparing(SystemVisited::getLastVisitedTime).reversed())
+                    .map(this::createSystemCardDirectly)
+                    .filter(Objects::nonNull)
+                    .forEach(card -> systemsList.getChildren().add(card));
+        }
         refreshSystemCardsSelection();
     }
     
@@ -662,27 +669,24 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     }
 
     /**
-     * Met à jour nombre de corps et total Cr sur les cartes déjà affichées (même instance {@link SystemVisited}).
+     * Après un merge Spansh (ou toute évolution de {@code celesteBodies}) : recalcule les totaux du groupe
+     * et reconstruit entièrement les cartes système (pas seulement corps / Cr).
      */
     public void refreshSystemCardBodiesCounts() {
         Runnable r = () -> {
-            for (Map.Entry<VBox, SystemVisited> entry : systemCardMap.entrySet()) {
-                VBox card = entry.getKey();
-                SystemVisited system = entry.getValue();
-                if (card == null || system == null) {
-                    continue;
-                }
-                Object bodiesRef = card.getProperties().get(CARD_PROP_BODIES_COUNT_LABEL);
-                if (bodiesRef instanceof Label bodiesCountLabel) {
-                    bodiesCountLabel.setText(String.format(
-                            localizationService.getString("exploration.bodies_count"),
-                            system.getNumBodies()));
-                }
-                Object valueRef = card.getProperties().get(CARD_PROP_VALUE_CR_LABEL);
-                if (valueRef instanceof Label valueLabel) {
-                    valueLabel.setText(String.format("%,d Cr", computeSystemCardGrandCr(system)));
-                }
+            if (selectedSale == null) {
+                return;
             }
+            long totalWithExobio = calculateTotalWithExobio(selectedSale);
+            if (totalEarningsLabel != null) {
+                totalEarningsLabel.setText(String.format("%,d Cr", totalWithExobio));
+            }
+            if (systemsCountLabel != null && selectedSale.getSystemsVisited() != null) {
+                systemsCountLabel.setText(String.format(
+                        localizationService.getString("exploration.systems_count"),
+                        selectedSale.getSystemsVisited().size()));
+            }
+            rebuildSystemCardsForCurrentSale();
         };
         if (Platform.isFxApplicationThread()) {
             r.run();

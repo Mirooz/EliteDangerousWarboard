@@ -91,6 +91,9 @@ public class PlaneteDetail extends ACelesteBody {
             if (matchingSpecies.isEmpty()) {
                 SpeciesProbability brainTreeProbability = new SpeciesProbability(BioSpecies.brainTree(), 100.0);
                 this.bioSpecies.add(new Scan(level, new ArrayList<>(List.of(brainTreeProbability))));
+                if (numSpeciesDetected == null){
+                    this.setNumSpeciesDetected(1);
+                }
                 return;
             }
 
@@ -367,30 +370,36 @@ public class PlaneteDetail extends ACelesteBody {
             if (scanTypeBio == null) return;
 
             BioSpecies matchingSpecies = findMatchingSpecies(scanOrganicData);
-            if (matchingSpecies == null) return;
-
-            BioSpecies specie = confirmedSpecies.stream()
-                    .filter(s -> s.getId().equalsIgnoreCase(matchingSpecies.getId()))
-                    .findFirst()
-                    .orElseGet(() -> createNewSpecies(matchingSpecies, scanOrganicData));
 
 
-            // Actions selon le type
-            handleScanTypeActions(scanTypeBio, specie);
-            // Ajoute le scan type
-            specie.addScanType(scanTypeBio);
-            if (scanTypeBio.equals(ScanTypeBio.ANALYSE)){
-                // Si la planète a des exobio non collectés, filtrer la liste pour n'afficher que cette planète
-                if (this.getNumSpeciesDetected() != null && this.getNumSpeciesDetected() > this.getConfirmedSpecies().stream().filter(BioSpecies::isCollected).count()) {
-                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(bodyID);
-                } else {
-                    // Sinon, désactiver le filtre
-                    ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(null);
-                }
-            }
+
+            processScanType(scanTypeBio, matchingSpecies,scanOrganicData.getGenus(), scanOrganicData.getVariant(), scanOrganicData.isWasLogged());
 
         } catch (Exception e) {
             System.err.println("❌ Erreur addConfirmedSpecies: " + e.getMessage());
+        }
+    }
+
+    public void processScanType(ScanTypeBio scanTypeBio, BioSpecies matchingSpecies,String genus,String variant, boolean wasLogged) {
+        if (matchingSpecies == null)
+            return;
+        BioSpecies specie = confirmedSpecies.stream()
+                .filter(s -> s.getId().equalsIgnoreCase(matchingSpecies.getId()))
+                .findFirst()
+                .orElseGet(() -> createNewSpecies(matchingSpecies, genus,variant,wasLogged));
+
+        // Actions selon le type
+        handleScanTypeActions(scanTypeBio, specie);
+        // Ajoute le scan type
+        specie.addScanType(scanTypeBio);
+        if (scanTypeBio.equals(ScanTypeBio.ANALYSE)) {
+            // Si la planète a des exobio non collectés, filtrer la liste pour n'afficher que cette planète
+            if (this.getNumSpeciesDetected() != null && this.getNumSpeciesDetected() > this.getConfirmedSpecies().stream().filter(BioSpecies::isCollected).count()) {
+                ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(bodyID);
+            } else {
+                // Sinon, désactiver le filtre
+                ExplorationRefreshNotificationService.getInstance().notifyBodyFilter(null);
+            }
         }
     }
 
@@ -411,7 +420,7 @@ public class PlaneteDetail extends ACelesteBody {
         }
     }
 
-    private BioSpecies createNewSpecies(BioSpecies base, ScanOrganicData scanData) {
+    public BioSpecies createNewSpecies(BioSpecies base, String genus, String variant, boolean wasLogged) {
         BioSpecies newSpecie = BioSpecies.builder()
                 .name(base.getName())
                 .specieName(base.getSpecieName())
@@ -424,9 +433,9 @@ public class PlaneteDetail extends ACelesteBody {
                 .colorConditionName(base.getColorConditionName())
                 .id(base.getId())
                 .histogramData(base.getHistogramData())
-                .genus(scanData.getGenus())
-                .variantLocalised(scanData.getVariantLocalised())
-                .wasLogged(scanData.isWasLogged())
+                .genus(genus)
+                .variantLocalised(variant)
+                .wasLogged(wasLogged)
                 .collected(false)
                 .build();
 
@@ -471,6 +480,46 @@ public class PlaneteDetail extends ACelesteBody {
         // flags comme avant :
         this.wasDiscovered |= src.wasDiscovered;
         this.wasFootfalled |= src.wasFootfalled;
+    }
+
+    /**
+     * Quand le même {@code bodyID} existe déjà côté journal et côté Spansh, la fusion ne remplace pas le corps :
+     * on recopie ici matériaux + exobio issus de Spansh si la planète affichée n’a pas encore ce qu’attend la vue
+     * ({@code SystemVisualViewComponent} : listes {@code bioSpecies} / {@code confirmedSpecies}).
+     */
+    public void mergeSpanshEnrichmentIfAbsent(PlaneteDetail spansh) {
+        if (spansh == null) {
+            return;
+        }
+        if ((materials == null || materials.isEmpty())
+                && spansh.getMaterials() != null && !spansh.getMaterials().isEmpty()) {
+            this.materials = new HashMap<>(spansh.getMaterials());
+        }
+        if (lacksExobioForSystemView() && spanshHasExobioPayload(spansh)) {
+            if (spansh.getNumSpeciesDetected() != null) {
+                this.numSpeciesDetected = spansh.getNumSpeciesDetected();
+            }
+            if (spansh.getBioSpecies() != null && !spansh.getBioSpecies().isEmpty()) {
+                this.bioSpecies = new ArrayList<>(spansh.getBioSpecies());
+            }
+            if (spansh.getConfirmedSpecies() != null && !spansh.getConfirmedSpecies().isEmpty()) {
+                this.confirmedSpecies = new ArrayList<>(spansh.getConfirmedSpecies());
+            }
+        }
+    }
+
+    /** Même critère que l’icône exobio dans {@code SystemVisualViewComponent#addPlanetIcons}. */
+    private boolean lacksExobioForSystemView() {
+        boolean hasBio = bioSpecies != null && !bioSpecies.isEmpty();
+        boolean hasConfirmed = confirmedSpecies != null && !confirmedSpecies.isEmpty();
+        return !hasBio && !hasConfirmed;
+    }
+
+    private static boolean spanshHasExobioPayload(PlaneteDetail spansh) {
+        boolean hasBio = spansh.getBioSpecies() != null && !spansh.getBioSpecies().isEmpty();
+        boolean hasConfirmed = spansh.getConfirmedSpecies() != null && !spansh.getConfirmedSpecies().isEmpty();
+        boolean hasCount = spansh.getNumSpeciesDetected() != null && spansh.getNumSpeciesDetected() > 0;
+        return hasBio || hasConfirmed || hasCount;
     }
 
     @Override

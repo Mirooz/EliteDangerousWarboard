@@ -1383,6 +1383,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (spanshSource.getCelesteBodies().isEmpty()) {
             return;
         }
+        Map<Integer, ACelesteBody> spanshByBodyId = spanshSource.getCelesteBodies().stream()
+                .filter(Objects::nonNull)
+                .filter(b -> b.getBodyID() != 0)
+                .collect(Collectors.toMap(ACelesteBody::getBodyID, b -> b, (a, b) -> a));
+
         if (target.getCelesteBodies() == null || target.getCelesteBodies().isEmpty()) {
             target.setCelesteBodies(new ArrayList<>(spanshSource.getCelesteBodies()));
             return;
@@ -1402,6 +1407,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         for (ACelesteBody fromSpansh : spanshSource.getCelesteBodies()) {
             if (fromSpansh != null && !targetIds.contains(fromSpansh.getBodyID())) {
                 merged.add(fromSpansh);
+            }
+        }
+        for (ACelesteBody body : merged) {
+            if (body instanceof PlaneteDetail targetPlanet) {
+                ACelesteBody spanshBody = spanshByBodyId.get(body.getBodyID());
+                if (spanshBody instanceof PlaneteDetail spanshPlanet) {
+                    targetPlanet.mergeSpanshEnrichmentIfAbsent(spanshPlanet);
+                }
             }
         }
         target.setCelesteBodies(merged);

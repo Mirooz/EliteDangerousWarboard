@@ -1,23 +1,28 @@
 package be.mirooz.elitedangerous.dashboard.service.mapping;
 
 import be.mirooz.elitedangerous.backend.generated.model.BodyResult;
+import be.mirooz.elitedangerous.backend.generated.model.Genus;
+import be.mirooz.elitedangerous.backend.generated.model.Material;
 import be.mirooz.elitedangerous.backend.generated.model.Parent;
+import be.mirooz.elitedangerous.backend.generated.model.Signal;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponse;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponseDTO;
+import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.biologic.BodyType;
+import be.mirooz.elitedangerous.biologic.ScanTypeBio;
 import be.mirooz.elitedangerous.biologic.StarType;
-import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
-import be.mirooz.elitedangerous.dashboard.model.exploration.ParentBody;
-import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
-import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
-import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
+import be.mirooz.elitedangerous.dashboard.model.exploration.*;
+import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
+import be.mirooz.elitedangerous.service.BioSpeciesService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,10 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Convertit une charge utile Spansh bodies (DTO {@code /api/spansh/bodies/search}) vers {@link SystemVisited}.
  */
+@Slf4j
 public final class SpanshSystemVisitedMapper {
 
     private static final ObjectMapper MAPPER = createObjectMapper();
@@ -246,7 +253,7 @@ public final class SpanshSystemVisitedMapper {
     private static PlaneteDetail toPlanet(
             String systemName, BodyResult br, Map<Long, Integer> id64ToBodyId, Map<String, BodyResult> nameIndex) {
         String planetClassStr = fallbackIfBlank(br.getSubtype(), "Unknown", "Unknown");
-        return PlaneteDetail.builder()
+        PlaneteDetail planete = PlaneteDetail.builder()
                 .timestamp(timestampOf(br))
                 .jsonNode(toJsonNode(br))
                 .bodyName(fallbackIfBlank(br.getName(), "Unknown body", "Unknown body"))
@@ -267,8 +274,154 @@ public final class SpanshSystemVisitedMapper {
                 .landable(Boolean.TRUE.equals(br.getIsLandable()))
                 .radius(valueOrZero(br.getRadius()))
                 .terraformable(isTerraformable(br.getTerraformingState()))
+                .materials(mapSpanshMaterials(br.getMaterials()))
                 .build();
+        injectSpanshExobio(planete, br);
+        return planete;
     }
+
+    /** Matériaux Spansh : clés en minuscules (aligné sur les conditions bio surface). */
+    private static Map<String, Double> mapSpanshMaterials(List<Material> materials) {
+        if (materials == null || materials.isEmpty()) {
+            return null;
+        }
+        Map<String, Double> out = new HashMap<>();
+        for (Material m : materials) {
+            if (m == null || m.getName() == null || m.getName().isBlank()) {
+                continue;
+            }
+            String key = m.getName().trim().toLowerCase(Locale.ROOT);
+            double share = m.getShare() != null ? m.getShare() : 0d;
+            out.put(key, share);
+        }
+        return out.isEmpty() ? null : out;
+    }
+
+    /**
+     * Applique signaux biologiques Spansh (FSS + SAA) sur la planète et notifie le {@link BiologicalSignalProcessor}
+     * pour les corps déjà présents dans le registre.
+     */
+    private static void injectSpanshExobio(PlaneteDetail planete, BodyResult br)  {
+        List<Genus> genuses = br.getGenuses();
+        if (genuses == null || genuses.isEmpty()) {
+            return;
+        }
+        for (Genus g : genuses) {
+            if (g == null) {
+                continue;
+            }
+            Optional<String> genusCodexOpt = spanshGenusToJournalCodex(g);
+            if (genusCodexOpt.isEmpty()) {
+                continue;
+            }
+            String genusCodex = genusCodexOpt.get();
+            if (!isSaaGenusCodex(genusCodex)) {
+                continue;
+            }
+            if (g.getLocalisedName() == null || g.getLocalisedName().isBlank()){
+                continue;
+            }
+            try {
+                List<BioSpecies> matchingSpecies = BioSpeciesService.getInstance().getSpecies();
+                BioSpecies specie = matchingSpecies.stream()
+                        .filter(s -> s.getName().equalsIgnoreCase(g.getLocalisedName()))
+                        .filter(s -> s.getSpecieName().equalsIgnoreCase(g.getSpecies()))
+                        .filter(s -> s.getColor().equalsIgnoreCase(g.getVariant()))
+                        .findFirst().orElse(null);
+                planete.setWasFootfalled(true);
+                planete.getConfirmedSpecies().stream()
+                        .filter(s -> s.getId().equalsIgnoreCase(specie.getId()))
+                        .findFirst()
+                        .orElseGet(() -> planete.createNewSpecies(specie, genusCodex,specie.getFdevname(),true));
+
+                SpeciesProbability speciesProbability = new SpeciesProbability(specie,100);
+                planete.getBioSpecies().add(new Scan(1, new ArrayList<>(List.of(speciesProbability))));
+                if (planete.getNumSpeciesDetected() == null){
+                    planete.setNumSpeciesDetected(1);
+                }
+                else {
+                    planete.setNumSpeciesDetected(planete.getNumSpeciesDetected() + 1);
+                }
+            }
+            catch (Exception e){
+                log.error("Error while processing spansh exobio", e);
+            }
+        }
+    }
+
+    private static int inferBioCountFromGenuses(List<Genus> genuses) {
+        int sum = 0;
+        for (Genus g : genuses) {
+            if (g != null && g.getValue() != null) {
+                sum += g.getValue();
+            }
+        }
+        if (sum > 0) {
+            return sum;
+        }
+        return Math.max(1, genuses.size());
+    }
+
+    private static boolean speciesExistsWithFdev(String fdev) {
+        if (fdev == null || fdev.isBlank()) {
+            return false;
+        }
+        try {
+            return BioSpeciesService.getInstance().getSpecies().stream()
+                    .anyMatch(s -> s.getFdevname() != null && fdev.equalsIgnoreCase(s.getFdevname()));
+        } catch (URISyntaxException | IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Codex genre au format journal / SAASignalsFound : {@code $Codex_Ent_<Famille>_Genus_Name;}.
+     */
+    private static Optional<String> spanshGenusToJournalCodex(Genus g) {
+        String raw = g.getName();
+        if (raw == null || raw.isBlank()) {
+            return Optional.empty();
+        }
+        String t = raw.trim();
+        if (t.startsWith("$Codex_")) {
+            return Optional.of(normalizeCodexSemicolon(t));
+        }
+        String token = toCodexFamilyToken(t);
+        if (token.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of("$Codex_Ent_" + token + "_Genus_Name;");
+    }
+
+    private static String normalizeCodexSemicolon(String codex) {
+        String c = codex.trim();
+        return c.endsWith(";") ? c : c + ";";
+    }
+
+    private static String toCodexFamilyToken(String raw) {
+        String[] words = raw.trim().split("[\\s\\-_]+");
+        StringBuilder sb = new StringBuilder();
+        for (String w : words) {
+            if (w.isEmpty()) {
+                continue;
+            }
+            sb.append(Character.toUpperCase(w.charAt(0)));
+            if (w.length() > 1) {
+                sb.append(w.substring(1).toLowerCase(Locale.ROOT));
+            }
+        }
+        return sb.toString();
+    }
+
+    private static boolean isSaaGenusCodex(String genusCodex) {
+        String[] parts = genusCodex.split("_");
+        return parts.length > 3 && "Genus".equalsIgnoreCase(parts[3]);
+    }
+
+
+
+
+
 
     private static String timestampOf(BodyResult br) {
         if (br.getUpdatedAt() != null) {

@@ -1709,6 +1709,8 @@ components:
       properties:
         name:
           type: string
+        localisedName:
+          type: string
         species:
           type: string
         variant:
@@ -1954,14 +1956,9 @@ components:
     Signal:
       type: object
       properties:
-        type:
-          type: string
-        subtype:
+        name:
           type: string
         count:
-          format: int32
-          type: integer
-        value:
           format: int32
           type: integer
     SolidComposition:

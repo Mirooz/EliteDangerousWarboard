@@ -42,7 +42,6 @@ public class SAASignalsFoundHandler implements JournalEventHandler {
         try {
             String bodyName = jsonNode.path("BodyName").asText();
             int bodyID = jsonNode.path("BodyID").asInt();
-            long systemAddress = jsonNode.path("SystemAddress").asLong();
 
             // Vérifier si l'événement contient des signaux biologiques
             if (jsonNode.has("Signals") && jsonNode.get("Signals").isArray()) {
@@ -69,7 +68,7 @@ public class SAASignalsFoundHandler implements JournalEventHandler {
                         }
                         
                         // Ajouter le signal avec niveau 2 et les genuses
-                        signalProcessor.addPendingBiologicalSignal(bodyID, systemAddress, bodyName, count, 2, genuses);
+                        signalProcessor.addPendingBiologicalSignal(bodyID, bodyName, count, 2, genuses);
                         System.out.printf("🌱 Signal biologique SAA détecté: %s (BodyID: %d, Count: %d, Genuses: %s)%n", 
                                 bodyName, bodyID, count, genuses);
                     }

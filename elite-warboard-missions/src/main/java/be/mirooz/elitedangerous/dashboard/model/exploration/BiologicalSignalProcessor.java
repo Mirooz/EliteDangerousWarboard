@@ -46,16 +46,16 @@ public class BiologicalSignalProcessor {
      * Ajoute un signal biologique en attente (niveau 1 - FSSBodySignals).
      * Démarre le scheduler si ce n'est pas déjà fait.
      */
-    public synchronized void addPendingBiologicalSignal(int bodyID, long systemAddress, String bodyName, int count, int level) {
-        addPendingBiologicalSignal(bodyID, systemAddress, bodyName, count, level, null);
+    public synchronized void addPendingBiologicalSignal(int bodyID, String bodyName, int count, int level) {
+        addPendingBiologicalSignal(bodyID, bodyName, count, level, null);
     }
 
     /**
      * Ajoute un signal biologique en attente avec genuses (niveau 2 - SAASignalsFound).
      * Démarre le scheduler si ce n'est pas déjà fait.
      */
-    public synchronized void addPendingBiologicalSignal(int bodyID, long systemAddress, String bodyName, int count, int level, List<String> genuses) {
-        PendingBiologicalSignal signal = new PendingBiologicalSignal(bodyID, systemAddress, bodyName, count, level, genuses);
+    public synchronized void addPendingBiologicalSignal(int bodyID, String bodyName, int count, int level, List<String> genuses) {
+        PendingBiologicalSignal signal = new PendingBiologicalSignal(bodyID, bodyName, count, level, genuses);
 
         System.out.printf("📋 Signal biologique (niveau %d) ajouté à la file d'attente: BodyID=%d, BodyName=%s%n", level, bodyID, bodyName);
         // Démarrer le scheduler si ce n'est pas déjà fait
@@ -114,15 +114,13 @@ public class BiologicalSignalProcessor {
     @Data
     private static class PendingBiologicalSignal {
         private final int bodyID;
-        private final long systemAddress;
         private final String bodyName;
         private final int count;
         private final int level; // 1 pour FSSBodySignals, 2 pour SAASignalsFound
         private final List<String> genuses; // null pour level 1, liste des genuses pour level 2
 
-        public PendingBiologicalSignal(int bodyID, long systemAddress, String bodyName, int count, int level, List<String> genuses) {
+        public PendingBiologicalSignal(int bodyID, String bodyName, int count, int level, List<String> genuses) {
             this.bodyID = bodyID;
-            this.systemAddress = systemAddress;
             this.bodyName = bodyName;
             this.count = count;
             this.level = level;
