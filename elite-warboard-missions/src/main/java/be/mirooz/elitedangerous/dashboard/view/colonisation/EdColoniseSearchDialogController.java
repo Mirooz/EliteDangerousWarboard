@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.view.colonisation;
 
-import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseBackendApiFacade;
+import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseStarSystemSearchQuery;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseColonisedSystemRef;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSearchResult;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseSystemCounts;
@@ -50,8 +50,6 @@ import java.util.ResourceBundle;
  */
 public class EdColoniseSearchDialogController implements Initializable {
 
-    private static final int MAX_DISTANCE_SOL_LY = 2770;
-
     private static final int MAX_NEIGHBORS_SHOWN = 3;
 
     @FXML
@@ -69,6 +67,8 @@ public class EdColoniseSearchDialogController implements Initializable {
     @FXML
     private Spinner<Integer> minRingsSpinner;
     @FXML
+    private Button moreFiltersButton;
+    @FXML
     private Label maxDistanceSolLabel;
     @FXML
     private Spinner<Integer> maxDistanceSolSpinner;
@@ -84,6 +84,8 @@ public class EdColoniseSearchDialogController implements Initializable {
     private Label errorLabel;
     @FXML
     private StackPane dialogPopupLayer;
+
+    private EdColoniseSearchAdvancedSnapshot advancedSnapshot = EdColoniseSearchAdvancedSnapshot.defaults();
 
     private final EdColoniseService edColoniseService = EdColoniseService.getInstance();
     private final SpanshSystemVisitedService spanshSystemVisitedService = SpanshSystemVisitedService.getInstance();
@@ -142,25 +144,38 @@ public class EdColoniseSearchDialogController implements Initializable {
         dialogTitleLabel.setText(localizationService.getString("colonisation.edcolonise.dialog.title"));
         dialogSubtitleLabel.setText(localizationService.getString("colonisation.edcolonise.dialog.subtitle"));
         descriptionLabel.setText(localizationService.getString("colonisation.edcolonise.dialog.description"));
-        minLandablesLabel.setText(localizationService.getString("colonisation.edcolonise.field.minLandables"));
-        minRingsLabel.setText(localizationService.getString("colonisation.edcolonise.field.minRings"));
-        maxDistanceSolLabel.setText(localizationService.getString("colonisation.edcolonise.field.maxDistanceSol"));
+        if (minLandablesLabel != null) {
+            minLandablesLabel.setText(localizationService.getString("colonisation.edcolonise.metric.landables"));
+        }
+        if (minRingsLabel != null) {
+            minRingsLabel.setText(localizationService.getString("colonisation.edcolonise.metric.rings"));
+        }
+        maxDistanceSolLabel.setText(localizationService.getString("colonisation.edcolonise.field.maxDistanceSolShort"));
         searchButton.setText(localizationService.getString("colonisation.edcolonise.search"));
         closeButton.setText(localizationService.getString("colonisation.edcolonise.close"));
+        if (moreFiltersButton != null) {
+            moreFiltersButton.setText(localizationService.getString("colonisation.edcolonise.moreFilters"));
+        }
+    }
+
+    @FXML
+    private void onMoreFilters() {
+        Window owner = moreFiltersButton != null && moreFiltersButton.getScene() != null
+                ? moreFiltersButton.getScene().getWindow()
+                : null;
+        EdColoniseAdvancedFiltersPopup.show(owner, localizationService, advancedSnapshot,
+                snap -> advancedSnapshot = snap);
     }
 
     @FXML
     private void onSearch() {
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
-        int distLy = Math.min(MAX_DISTANCE_SOL_LY, Math.max(1, maxDistanceSolSpinner.getValue()));
-        if (maxDistanceSolSpinner.getValue() != distLy) {
-            maxDistanceSolSpinner.getValueFactory().setValue(distLy);
-        }
-        EdColoniseBackendApiFacade.SearchParams params = new EdColoniseBackendApiFacade.SearchParams(
-                distLy,
-                Math.max(0, minLandablesSpinner.getValue()),
-                Math.max(0, minRingsSpinner.getValue()));
+        int minLand = minLandablesSpinner != null ? minLandablesSpinner.getValue() : 0;
+        int minRing = minRingsSpinner != null ? minRingsSpinner.getValue() : 0;
+        int maxLy = maxDistanceSolSpinner != null ? maxDistanceSolSpinner.getValue() : 800;
+        EdColoniseStarSystemSearchQuery params = EdColoniseSearchFilterForm.mergeMainAndAdvanced(
+                minLand, minRing, maxLy, advancedSnapshot);
         searching(true);
         Thread t = new Thread(() -> {
             try {
@@ -293,6 +308,7 @@ public class EdColoniseSearchDialogController implements Initializable {
 
     private VBox buildRightColumn(EdColoniseStarSystemSearchResult r) {
         VBox col = new VBox(6);
+        col.setFillWidth(false);
         col.setMaxWidth(Double.MAX_VALUE);
 
         Label neighTitle = new Label(localizationService.getString("colonisation.edcolonise.neighbors.title"));

@@ -3517,6 +3517,89 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.9), 20, 0, 0, 5);
 }
 
+.edcolonise-filter-geq {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+    -fx-min-width: 22px;
+    -fx-alignment: center;
+}
+
+/* Filtres avancés ED Colonise (dialogue DialogComponent) */
+.edcolonise-advanced-filters-root .edcolonise-advanced-form-panel {
+    -fx-background-color: #141a22;
+    -fx-border-color: #00c8d4;
+    -fx-border-width: 1;
+}
+
+.edcolonise-advanced-filters-root .edcolonise-advanced-field {
+    -fx-background-color: #1c2430;
+    -fx-border-color: #00c8d4;
+}
+
+.edcolonise-advanced-filters-root .elite-textfield {
+    -fx-background-color: #1c2430;
+    -fx-border-color: #00c8d4;
+    -fx-text-fill: #f0f4f8;
+}
+
+.edcolonise-advanced-filters-root .elite-textfield:focused {
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2px;
+}
+
+.edcolonise-advanced-filters-root .elite-combobox {
+    -fx-background-color: #1c2430;
+    -fx-border-color: #00c8d4;
+}
+
+.edcolonise-advanced-filters-root .elite-combobox:focused {
+    -fx-border-color: -fx-elite-orange;
+}
+
+.edcolonise-advanced-filters-root .elite-combobox .list-cell {
+    -fx-text-fill: #7dffec;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.edcolonise-advanced-filters-root .elite-combobox .arrow-button {
+    -fx-background-color: #253040;
+}
+
+.edcolonise-advanced-filters-root .edcolonise-advanced-spinner {
+    -fx-background-color: #1c2430;
+    -fx-border-color: #00c8d4;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-pref-width: 102px;
+}
+
+.edcolonise-advanced-filters-root .edcolonise-advanced-spinner:focused {
+    -fx-border-color: -fx-elite-orange;
+}
+
+.edcolonise-advanced-filters-root .edcolonise-advanced-spinner .text-field {
+    -fx-text-fill: #7dffec;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-color: #121820;
+}
+
+.edcolonise-advanced-filters-root .edcolonise-advanced-spinner .increment-arrow-button,
+.edcolonise-advanced-filters-root .edcolonise-advanced-spinner .decrement-arrow-button {
+    -fx-background-color: #253040;
+    -fx-border-color: transparent;
+}
+
+.edcolonise-advanced-filters-root .edcolonise-advanced-spinner .increment-arrow-button:hover,
+.edcolonise-advanced-filters-root .edcolonise-advanced-spinner .decrement-arrow-button:hover {
+    -fx-background-color: #304050;
+}
+
+
 .dialog-header {
     -fx-background-color: -fx-elite-darker;
     -fx-padding: 15;

@@ -7,28 +7,51 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 public class DialogComponent {
 
     private final String fxmlPath;
+    private final Pane preloadedRoot;
     private final String cssPath;
     private final String title;
     private final double width;
     private final double height;
 
     private Stage stage;
+
+    /** Dialogue chargé depuis un FXML (ex. configuration). */
     public DialogComponent(String fxmlPath, String cssPath, String title, double width, double height) {
         this.fxmlPath = fxmlPath;
+        this.preloadedRoot = null;
         this.cssPath = cssPath;
         this.title = title;
         this.width = width;
         this.height = height;
     }
 
-    public void init(Stage owner) {
+    /** Même rendu que la config : contenu déjà construit (racine type {@code StackPane} + styles {@code config-dialog}). */
+    public DialogComponent(Pane rootContent, String cssPath, String title, double width, double height) {
+        this.fxmlPath = null;
+        this.preloadedRoot = rootContent;
+        this.cssPath = cssPath;
+        this.title = title;
+        this.width = width;
+        this.height = height;
+    }
+
+    public void init(Window owner) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Pane content = loader.load();
+            Pane content;
+            if (fxmlPath != null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+                content = loader.load();
+            } else {
+                if (preloadedRoot == null) {
+                    throw new IllegalStateException("No dialog content");
+                }
+                content = preloadedRoot;
+            }
 
             Scene scene = new Scene(content, width, height);
             if (cssPath != null) {
@@ -40,19 +63,28 @@ public class DialogComponent {
             this.stage.setScene(scene);
 
             this.stage.initModality(Modality.WINDOW_MODAL);
-            this.stage.initOwner(owner);
+            if (owner != null) {
+                this.stage.initOwner(owner);
+            }
             this.stage.setAlwaysOnTop(false);
             this.stage.requestFocus();
             this.stage.setResizable(false);
             this.stage.initStyle(StageStyle.TRANSPARENT);
 
         } catch (Exception e) {
-            throw new RuntimeException("Erreur lors de l'initialisation du dialogue : " + fxmlPath, e);
+            String id = fxmlPath != null ? fxmlPath : "(contenu direct)";
+            throw new RuntimeException("Erreur lors de l'initialisation du dialogue : " + id, e);
         }
     }
 
+    public Stage getStage() {
+        return stage;
+    }
+
     public void showAndWait() {
-        if (stage == null) throw new IllegalStateException("Dialog not initialized");
+        if (stage == null) {
+            throw new IllegalStateException("Dialog not initialized");
+        }
         stage.centerOnScreen();
         stage.showAndWait();
     }

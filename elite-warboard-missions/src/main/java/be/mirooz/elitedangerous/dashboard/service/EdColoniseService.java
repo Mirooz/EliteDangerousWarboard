@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseBackendApiFacade;
+import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseStarSystemSearchQuery;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSearchResponse;
 
 import java.io.IOException;
@@ -21,8 +22,8 @@ public final class EdColoniseService {
         return INSTANCE;
     }
 
-    public EdColoniseStarSystemSearchResponse searchColonisableStarSystems(EdColoniseBackendApiFacade.SearchParams params)
+    public EdColoniseStarSystemSearchResponse searchColonisableStarSystems(EdColoniseStarSystemSearchQuery query)
             throws IOException {
-        return backend.searchStarSystems(params);
+        return backend.searchStarSystems(query);
     }
 }

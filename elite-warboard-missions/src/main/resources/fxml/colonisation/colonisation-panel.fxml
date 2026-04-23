@@ -112,25 +112,37 @@
                                             <padding>
                                                 <Insets top="10.0" right="10.0" bottom="10.0" left="4.0"/>
                                             </padding>
-                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
-                                                <Label fx:id="searchMinLandablesLabel" styleClass="config-label"/>
-                                                <Spinner fx:id="searchMinLandablesSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="100"
-                                                         styleClass="config-spinner"/>
-                                            </HBox>
-                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
-                                                <Label fx:id="searchMinRingsLabel" styleClass="config-label"/>
-                                                <Spinner fx:id="searchMinRingsSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="100"
-                                                         styleClass="config-spinner"/>
-                                            </HBox>
-                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
-                                                <Label fx:id="searchMaxDistanceSolLabel" styleClass="config-label"/>
-                                                <Spinner fx:id="searchMaxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="110"
-                                                         styleClass="config-spinner"/>
-                                            </HBox>
-                                            <HBox spacing="8.0" alignment="CENTER_LEFT">
-                                                <Button fx:id="searchColonisableButton" styleClass="elite-nav-button"/>
-                                                <ProgressIndicator fx:id="searchLoadingIndicator" maxHeight="30.0" maxWidth="30.0" visible="false"/>
-                                            </HBox>
+                                            <VBox spacing="8.0" maxWidth="Infinity">
+                                                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                                    <VBox spacing="4.0" minWidth="108.0" prefWidth="132.0">
+                                                        <Label fx:id="searchMinLandablesLabel" styleClass="config-label" wrapText="true"/>
+                                                        <HBox spacing="6.0" alignment="CENTER_LEFT">
+                                                            <Label text="≥" styleClass="edcolonise-filter-geq"/>
+                                                            <Spinner fx:id="searchMinLandablesSpinner" editable="true" min="0" max="61" initialValue="0" prefWidth="92"
+                                                                     styleClass="config-spinner"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                    <VBox spacing="4.0" minWidth="108.0" prefWidth="132.0">
+                                                        <Label fx:id="searchMinRingsLabel" styleClass="config-label" wrapText="true"/>
+                                                        <HBox spacing="6.0" alignment="CENTER_LEFT">
+                                                            <Label text="≥" styleClass="edcolonise-filter-geq"/>
+                                                            <Spinner fx:id="searchMinRingsSpinner" editable="true" min="0" max="26" initialValue="0" prefWidth="92"
+                                                                     styleClass="config-spinner"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                    <VBox spacing="4.0" minWidth="118.0" prefWidth="148.0">
+                                                        <Label fx:id="searchMaxDistanceSolLabel" styleClass="config-label" wrapText="true"/>
+                                                        <Spinner fx:id="searchMaxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="100"
+                                                                 styleClass="config-spinner"/>
+                                                    </VBox>
+                                                </HBox>
+                                                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                                                    <Button fx:id="searchColonisableButton" styleClass="elite-nav-button"/>
+                                                    <ProgressIndicator fx:id="searchLoadingIndicator" maxHeight="30.0" maxWidth="30.0" visible="false"/>
+                                                    <Region HBox.hgrow="ALWAYS"/>
+                                                    <Button fx:id="searchMoreFiltersButton" mnemonicParsing="false" styleClass="elite-nav-button"/>
+                                                </HBox>
+                                            </VBox>
                                             <Label fx:id="searchErrorLabel" styleClass="footer-text" wrapText="true" visible="false" managed="false"/>
                                             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                                         styleClass="colonisation-architect-scroll,colonisation-detail-scroll" VBox.vgrow="ALWAYS">

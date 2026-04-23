@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.view.colonisation;
 
-import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseBackendApiFacade;
+import be.mirooz.elitedangerous.backend.edcolonise.EdColoniseStarSystemSearchQuery;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseColonisedSystemRef;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSearchResult;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseSystemCounts;
@@ -56,9 +56,11 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
@@ -179,6 +181,8 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private Spinner<Integer> searchMinRingsSpinner;
     @FXML
+    private Button searchMoreFiltersButton;
+    @FXML
     private Label searchMaxDistanceSolLabel;
     @FXML
     private Spinner<Integer> searchMaxDistanceSolSpinner;
@@ -243,6 +247,7 @@ public class ColonisationPanelController implements Initializable {
     private Long architectMapOverlayDockMarketId;
     private final List<BorderPane> searchResultCards = new ArrayList<>();
     private BorderPane selectedSearchResultCard;
+    private EdColoniseSearchAdvancedSnapshot coloniseSearchAdvancedSnapshot = EdColoniseSearchAdvancedSnapshot.defaults();
 
     private static final int MAX_DISTANCE_SOL_LY = 2770;
     private static final int MAX_NEIGHBORS_SHOWN = 3;
@@ -335,6 +340,9 @@ public class ColonisationPanelController implements Initializable {
     private void initColonisationSearchTab() {
         if (searchColonisableButton != null) {
             searchColonisableButton.setOnAction(e -> onSearchColonisableSystems());
+        }
+        if (searchMoreFiltersButton != null) {
+            searchMoreFiltersButton.setOnAction(e -> onSearchMoreFilters());
         }
         if (searchMapContainer != null) {
             try {
@@ -495,13 +503,16 @@ public class ColonisationPanelController implements Initializable {
             architectColonisableSearchTab.setText(localizationService.getString("colonisation.tab.findColonisable"));
         }
         if (searchMinLandablesLabel != null) {
-            searchMinLandablesLabel.setText(localizationService.getString("colonisation.edcolonise.field.minLandables"));
+            searchMinLandablesLabel.setText(localizationService.getString("colonisation.edcolonise.metric.landables"));
         }
         if (searchMinRingsLabel != null) {
-            searchMinRingsLabel.setText(localizationService.getString("colonisation.edcolonise.field.minRings"));
+            searchMinRingsLabel.setText(localizationService.getString("colonisation.edcolonise.metric.rings"));
         }
         if (searchMaxDistanceSolLabel != null) {
-            searchMaxDistanceSolLabel.setText(localizationService.getString("colonisation.edcolonise.field.maxDistanceSol"));
+            searchMaxDistanceSolLabel.setText(localizationService.getString("colonisation.edcolonise.field.maxDistanceSolShort"));
+        }
+        if (searchMoreFiltersButton != null) {
+            searchMoreFiltersButton.setText(localizationService.getString("colonisation.edcolonise.moreFilters"));
         }
         if (searchColonisableButton != null) {
             searchColonisableButton.setText(localizationService.getString("colonisation.edcolonise.search"));
@@ -1451,19 +1462,26 @@ public class ColonisationPanelController implements Initializable {
         suggestedBuyStations = List.of();
     }
 
+    private void onSearchMoreFilters() {
+        Window owner = searchMoreFiltersButton != null && searchMoreFiltersButton.getScene() != null
+                ? searchMoreFiltersButton.getScene().getWindow()
+                : null;
+        EdColoniseAdvancedFiltersPopup.show(owner, localizationService, coloniseSearchAdvancedSnapshot,
+                snap -> coloniseSearchAdvancedSnapshot = snap);
+    }
+
     private void onSearchColonisableSystems() {
         if (searchErrorLabel != null) {
             searchErrorLabel.setVisible(false);
             searchErrorLabel.setManaged(false);
         }
-        int distLy = Math.min(MAX_DISTANCE_SOL_LY, Math.max(1, searchMaxDistanceSolSpinner.getValue()));
-        if (searchMaxDistanceSolSpinner.getValue() != distLy) {
-            searchMaxDistanceSolSpinner.getValueFactory().setValue(distLy);
-        }
-        EdColoniseBackendApiFacade.SearchParams params = new EdColoniseBackendApiFacade.SearchParams(
-                distLy,
-                Math.max(0, searchMinLandablesSpinner.getValue()),
-                Math.max(0, searchMinRingsSpinner.getValue()));
+        int minLand = searchMinLandablesSpinner != null ? searchMinLandablesSpinner.getValue() : 0;
+        int minRing = searchMinRingsSpinner != null ? searchMinRingsSpinner.getValue() : 0;
+        int distLy = searchMaxDistanceSolSpinner != null
+                ? Math.min(MAX_DISTANCE_SOL_LY, Math.max(1, searchMaxDistanceSolSpinner.getValue()))
+                : Math.min(MAX_DISTANCE_SOL_LY, 800);
+        EdColoniseStarSystemSearchQuery params = EdColoniseSearchFilterForm.mergeMainAndAdvanced(
+                minLand, minRing, distLy, coloniseSearchAdvancedSnapshot);
         setSearchBusy(true);
         Thread t = new Thread(() -> {
             try {
@@ -1610,6 +1628,7 @@ public class ColonisationPanelController implements Initializable {
             return null;
         }
         VBox col = new VBox(4);
+        col.setFillWidth(false);
         col.setAlignment(Pos.TOP_RIGHT);
         col.getStyleClass().add("colonisation-search-neighbors-column");
         col.setMaxWidth(188);

@@ -21,28 +21,36 @@
 
         <Label fx:id="descriptionLabel" styleClass="tab-description" wrapText="true" maxWidth="860"/>
 
-        <HBox spacing="20.0" alignment="CENTER_LEFT" styleClass="config-panel">
-            <HBox spacing="8.0" alignment="CENTER_LEFT">
-                <Label fx:id="minLandablesLabel" styleClass="config-label"/>
-                <Spinner fx:id="minLandablesSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="90"
-                         styleClass="config-spinner"/>
-            </HBox>
-            <HBox spacing="8.0" alignment="CENTER_LEFT">
-                <Label fx:id="minRingsLabel" styleClass="config-label"/>
-                <Spinner fx:id="minRingsSpinner" editable="true" min="0" max="100" initialValue="0" prefWidth="90"
-                         styleClass="config-spinner"/>
-            </HBox>
-            <HBox spacing="8.0" alignment="CENTER_LEFT">
-                <Label fx:id="maxDistanceSolLabel" styleClass="config-label"/>
+        <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="config-panel">
+            <VBox spacing="6.0" minWidth="140.0" prefWidth="168.0">
+                <Label fx:id="minLandablesLabel" styleClass="config-label" wrapText="true"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="≥" styleClass="edcolonise-filter-geq"/>
+                    <Spinner fx:id="minLandablesSpinner" editable="true" min="0" max="61" initialValue="0" prefWidth="100"
+                             styleClass="config-spinner"/>
+                </HBox>
+            </VBox>
+            <VBox spacing="6.0" minWidth="140.0" prefWidth="168.0">
+                <Label fx:id="minRingsLabel" styleClass="config-label" wrapText="true"/>
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="≥" styleClass="edcolonise-filter-geq"/>
+                    <Spinner fx:id="minRingsSpinner" editable="true" min="0" max="26" initialValue="0" prefWidth="100"
+                             styleClass="config-spinner"/>
+                </HBox>
+            </VBox>
+            <VBox spacing="6.0" minWidth="150.0" prefWidth="200.0">
+                <Label fx:id="maxDistanceSolLabel" styleClass="config-label" wrapText="true"/>
                 <Spinner fx:id="maxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="110"
                          styleClass="config-spinner"/>
-            </HBox>
-        </HBox>
-
-        <HBox spacing="12.0" alignment="CENTER_RIGHT">
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearch" styleClass="elite-button"/>
-            <Button fx:id="closeButton" mnemonicParsing="false" onAction="#onClose" styleClass="elite-nav-button"/>
+            </VBox>
+            <VBox spacing="6.0" alignment="BOTTOM_CENTER" HBox.hgrow="ALWAYS">
+                <Region prefHeight="18.0"/>
+                <HBox spacing="8.0" alignment="CENTER_RIGHT">
+                    <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearch" styleClass="elite-button"/>
+                    <Button fx:id="moreFiltersButton" mnemonicParsing="false" onAction="#onMoreFilters" styleClass="elite-nav-button"/>
+                    <Button fx:id="closeButton" mnemonicParsing="false" onAction="#onClose" styleClass="elite-nav-button"/>
+                </HBox>
+            </VBox>
         </HBox>
 
         <StackPane VBox.vgrow="ALWAYS" minHeight="280">
