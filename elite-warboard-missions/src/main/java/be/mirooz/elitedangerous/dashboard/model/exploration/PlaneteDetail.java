@@ -471,7 +471,6 @@ public class PlaneteDetail extends ACelesteBody {
         this.wasMapped |= src.wasMapped;
         this.wasDiscovered |= src.wasDiscovered;
         this.wasFootfalled |= src.wasFootfalled;
-        this.onlineData = false;
     }
 
     @Override

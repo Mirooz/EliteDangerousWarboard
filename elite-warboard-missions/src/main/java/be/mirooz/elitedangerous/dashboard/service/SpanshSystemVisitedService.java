@@ -48,7 +48,6 @@ public final class SpanshSystemVisitedService {
         String key = systemName.trim();
         SystemVisited cached = systemVisitedByName.get(key);
         if (cached != null) {
-            LOG.info("Spansh: pas d'appel réseau (cache mémoire) pour le système « {} »", key);
             return cached;
         }
         SpanshSearchResponseDTO dto = fetchSpanshBodiesSearch(key);

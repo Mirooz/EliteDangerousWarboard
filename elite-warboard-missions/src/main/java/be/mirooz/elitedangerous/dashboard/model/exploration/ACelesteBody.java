@@ -38,9 +38,5 @@ public abstract class ACelesteBody {
     protected boolean wasFootfalled;
     protected boolean wasDiscovered;
 
-    /** Données complétées depuis Spansh (API) ; repasse à false après un Scan journal. */
-    @Builder.Default
-    protected boolean onlineData = false;
-
     public abstract long computeBodyValue();
 }

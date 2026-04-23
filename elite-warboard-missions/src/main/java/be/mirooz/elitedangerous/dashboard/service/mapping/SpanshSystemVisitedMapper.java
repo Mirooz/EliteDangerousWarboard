@@ -61,7 +61,6 @@ public final class SpanshSystemVisitedMapper {
                 .sold(false)
                 .celesteBodies(bodies)
                 .build();
-        markOnlineData(visited);
         return visited;
     }
 
@@ -86,19 +85,7 @@ public final class SpanshSystemVisitedMapper {
     }
 
     private static SystemVisited toSystemVisitedFromEdsm(EdsmBodiesResponse response, String fallbackSystemName) {
-        SystemVisited visited = EdsmSystemVisitedMapper.toSystemVisited(response, fallbackSystemName);
-        markOnlineData(visited);
-        return visited;
-    }
-
-    private static void markOnlineData(SystemVisited visited) {
-        if (visited.getCelesteBodies() != null) {
-            for (ACelesteBody b : visited.getCelesteBodies()) {
-                if (b != null) {
-                    b.setOnlineData(true);
-                }
-            }
-        }
+        return EdsmSystemVisitedMapper.toSystemVisited(response, fallbackSystemName);
     }
 
     private static String resolveSystemName(SpanshSearchResponse sr, String fallback) {
@@ -136,7 +123,7 @@ public final class SpanshSystemVisitedMapper {
         return out;
     }
 
-    /** Permet de résoudre les parents Spansh ({@link Parent#getId64()}) vers un {@link ParentBody#bodyID} journal. */
+    /** Permet de résoudre les parents Spansh ({@link Parent#getId64()}) vers un  journal. */
     private static Map<Long, Integer> buildId64ToBodyId(List<BodyResult> results) {
         Map<Long, Integer> map = new HashMap<>();
         for (BodyResult r : results) {
@@ -313,7 +300,7 @@ public final class SpanshSystemVisitedMapper {
         if (normalized.isBlank()) {
             return false;
         }
-        return normalized.contains("terraform");
+        return !normalized.contains("not");
     }
 
     private static String fallbackIfBlank(String value, String fallback, String defaultValue) {

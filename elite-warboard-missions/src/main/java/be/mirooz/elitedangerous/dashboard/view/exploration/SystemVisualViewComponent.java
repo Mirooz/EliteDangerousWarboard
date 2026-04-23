@@ -125,6 +125,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Évite une boucle infinie lors du re-display après hydratation Spansh.
      */
     private boolean spanshOnlineHydrationSuppressed;
+
+    /**
+     * Si {@code true}, attend la réponse Spansh avant d'afficher l'orrery et la liste des corps (chargement).
+     */
+    public static final boolean SEARCH_SPANSH_EXPLORATION = true;
+
     private SystemVisited currentSystem;
     private Map<Integer, BodyPosition> bodyPositions = new HashMap<>();
     private Scale zoomTransform;
@@ -791,17 +797,35 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
             }
 
+            if (system == null) {
+                restoreExplorationBodiesHeader();
+                updateBodiesList(null);
+                return;
+            }
+
+            boolean awaitSpansh = SEARCH_SPANSH_EXPLORATION
+                    && systemSelectionChanged
+                    && !forceRefresh
+                    && !DashboardContext.getInstance().isBatchLoading();
+
+            if (awaitSpansh) {
+                if (systemBodiesLabel != null) {
+                    systemBodiesLabel.setText(localizationService.getString("exploration.spansh_loading"));
+                }
+                showSpanshExplorationLoadingState();
+                scheduleSpanshOnlineDataHydration(system);
+                return;
+            }
+
+            restoreExplorationBodiesHeader();
             // Mettre à jour la liste des corps à gauche
             updateBodiesList(system);
 
             // Le zoom optimal sera calculé après le positionnement des corps
 
-            if (system == null) {
-                return;
-            }
-            if (systemSelectionChanged)
+            if (systemSelectionChanged) {
                 scheduleSpanshOnlineDataHydration(system);
-
+            }
 
             // Créer une map pour lookup rapide
             Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
@@ -1312,6 +1336,28 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         });
     }
 
+    private void restoreExplorationBodiesHeader() {
+        if (systemBodiesLabel != null) {
+            systemBodiesLabel.setText(localizationService.getString("exploration.system_bodies"));
+        }
+    }
+
+    private void showSpanshExplorationLoadingState() {
+        if (bodiesListContainer != null) {
+            bodiesListContainer.getChildren().clear();
+            Label loadingLabel = new Label(localizationService.getString("exploration.spansh_loading"));
+            loadingLabel.setWrapText(true);
+            bodiesListContainer.getChildren().add(loadingLabel);
+        }
+        if (bodiesPane != null) {
+            ProgressIndicator indicator = new ProgressIndicator();
+            indicator.setMaxSize(96, 96);
+            StackPane holder = new StackPane(indicator);
+            holder.setMinSize(400, 280);
+            bodiesPane.getChildren().add(holder);
+        }
+    }
+
     private static void mergeOnlineDataFromSpansh(SystemVisited target, SystemVisited spanshSource) {
         if (target == null || spanshSource == null || spanshSource.getCelesteBodies() == null) {
             return;
@@ -1335,11 +1381,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 .filter(Objects::nonNull)
                 .map(ACelesteBody::getBodyID)
                 .collect(Collectors.toSet());
-        for (ACelesteBody b : merged) {
-            if (b != null && spanshIds.contains(b.getBodyID())) {
-                b.setOnlineData(true);
-            }
-        }
         for (ACelesteBody fromSpansh : spanshSource.getCelesteBodies()) {
             if (fromSpansh != null && !targetIds.contains(fromSpansh.getBodyID())) {
                 merged.add(fromSpansh);
@@ -1387,7 +1428,31 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     });
                 });
             } catch (Exception ignored) {
-                // Données optionnelles : pas de blocage UI si Spansh échoue
+                if (!SEARCH_SPANSH_EXPLORATION) {
+                    return;
+                }
+                Platform.runLater(() -> {
+                    if (displayed == null || currentSystem == null || currentSystem.getSystemName() == null) {
+                        return;
+                    }
+                    if (!sysKey.equalsIgnoreCase(currentSystem.getSystemName().trim())) {
+                        return;
+                    }
+                    spanshOnlineHydrationSuppressed = true;
+                    try {
+                        displaySystem(currentSystem, true);
+                    } finally {
+                        spanshOnlineHydrationSuppressed = false;
+                    }
+                    Platform.runLater(() -> {
+                        spanshOnlineHydrationSuppressed = true;
+                        try {
+                            displaySystem(currentSystem, true);
+                        } finally {
+                            spanshOnlineHydrationSuppressed = false;
+                        }
+                    });
+                });
             }
         }, "spansh-bodies-online");
         t.setDaemon(true);
@@ -1395,19 +1460,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     private Node maybeWrapOnlineDataRing(ACelesteBody body, double innerVisualSize, Node inner) {
-        if (!body.isOnlineData()) {
-            return inner;
-        }
-        StackPane wrap = new StackPane();
-        wrap.setPickOnBounds(false);
-        double ringRadius = innerVisualSize / 2 + 5;
-        Circle ring = new Circle(ringRadius);
-        ring.setFill(Color.TRANSPARENT);
-        ring.setStroke(Color.web("#007ACC"));
-        ring.setStrokeWidth(2.5);
-        wrap.getChildren().addAll(ring, inner);
-        StackPane.setAlignment(inner, Pos.CENTER);
-        return wrap;
+        return inner;
     }
 
     /**
