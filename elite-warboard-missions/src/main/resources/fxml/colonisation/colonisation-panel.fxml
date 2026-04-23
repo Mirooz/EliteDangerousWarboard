@@ -71,7 +71,7 @@
                                     </HBox>
                                     <CheckBox fx:id="fleetAvoidPlanetaryLandingCheckBox" wrapText="true" maxWidth="Infinity"
                                               styleClass="fleet-carrier-checkbox" selected="true"/>
-                                    <CheckBox fx:id="fleetLargePadOnlyCheckBox" wrapText="true" maxWidth="Infinity"
+                                    <CheckBox fx:id="fleetLargePadOnlyCheckBox" text="Large pads" wrapText="true" maxWidth="Infinity"
                                               styleClass="fleet-carrier-checkbox" selected="true"/>
                                     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                                 styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame"

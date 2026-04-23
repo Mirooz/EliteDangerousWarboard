@@ -542,7 +542,7 @@ public class ColonisationPanelController implements Initializable {
             fleetAvoidPlanetaryLandingCheckBox.setText(localizationService.getString("colonisation.fleet.optimalMarket.avoidPlanetary"));
         }
         if (fleetLargePadOnlyCheckBox != null) {
-            fleetLargePadOnlyCheckBox.setText(localizationService.getString("colonisation.fleet.optimalMarket.largePadOnly"));
+            fleetLargePadOnlyCheckBox.setText("Large pads");
         }
         if (fleetFindOptimalMarketButton != null) {
             fleetFindOptimalMarketButton.setText(localizationService.getString("colonisation.fleet.optimalMarket.findButton"));

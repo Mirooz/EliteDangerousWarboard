@@ -8,15 +8,19 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import net.java.games.input.Controller;
 import net.java.games.input.ControllerEnvironment;
 
@@ -41,10 +45,7 @@ public class ConfigDialogController implements Initializable {
     private Label languageSectionLabel;
 
     @FXML
-    private RadioButton frenchRadioButton;
-
-    @FXML
-    private RadioButton englishRadioButton;
+    private ComboBox<LanguageOption> languageComboBox;
 
     @FXML
     private Button saveButton;
@@ -164,14 +165,9 @@ public class ConfigDialogController implements Initializable {
         windowToggleService.pause();
         
         updateTranslations();
-        
-        // Initialiser la sélection selon la langue actuelle
-        if (localizationService.isFrench()) {
-            frenchRadioButton.setSelected(true);
-        } else {
-            englishRadioButton.setSelected(true);
-        }
-        
+
+        setupLanguageComboBox();
+
         // Initialiser le champ du dossier journal
         journalFolderTextField.setText(preferencesService.getJournalFolder());
         
@@ -384,18 +380,86 @@ public class ConfigDialogController implements Initializable {
         }
     }
 
-    @FXML
-    private void selectFrench() {
-        englishRadioButton.setSelected(false);
-        localizationService.setLanguage("fr");
-        updateTranslations();
+    /**
+     * Représente une langue sélectionnable dans la combo (code + libellé affiché).
+     */
+    public static final class LanguageOption {
+        private final String code;
+        private final String displayName;
+
+        public LanguageOption(String code, String displayName) {
+            this.code = code;
+            this.displayName = displayName;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof LanguageOption)) return false;
+            LanguageOption that = (LanguageOption) o;
+            return code.equalsIgnoreCase(that.code);
+        }
+
+        @Override
+        public int hashCode() {
+            return code.toLowerCase().hashCode();
+        }
     }
 
-    @FXML
-    private void selectEnglish() {
-        frenchRadioButton.setSelected(false);
-        localizationService.setLanguage("en");
-        updateTranslations();
+    private void setupLanguageComboBox() {
+        if (languageComboBox == null) {
+            return;
+        }
+
+        languageComboBox.setItems(FXCollections.observableArrayList(
+                new LanguageOption("en", "English"),
+                new LanguageOption("fr", "Français"),
+                new LanguageOption("de", "Deutsch"),
+                new LanguageOption("es", "Español"),
+                new LanguageOption("it", "Italiano")
+        ));
+
+        Callback<ListView<LanguageOption>, ListCell<LanguageOption>> cellFactory = lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(LanguageOption item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    HBox box = new HBox(8.0);
+                    box.setAlignment(Pos.CENTER_LEFT);
+                    box.getChildren().addAll(
+                            FlagFactory.createFlag(item.getCode()),
+                            new Label(item.getDisplayName())
+                    );
+                    setGraphic(box);
+                    setText(null);
+                }
+            }
+        };
+        languageComboBox.setCellFactory(cellFactory);
+        languageComboBox.setButtonCell(cellFactory.call(null));
+
+        // Sélection initiale selon la locale courante
+        String current = localizationService.getCurrentLanguageCode();
+        for (LanguageOption opt : languageComboBox.getItems()) {
+            if (opt.getCode().equalsIgnoreCase(current)) {
+                languageComboBox.getSelectionModel().select(opt);
+                break;
+            }
+        }
+        if (languageComboBox.getSelectionModel().getSelectedItem() == null) {
+            languageComboBox.getSelectionModel().selectFirst();
+        }
     }
 
     @FXML
@@ -435,13 +499,12 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private void saveConfig() {
         // Sauvegarder la langue sélectionnée
-        if (frenchRadioButton.isSelected()) {
-            preferencesService.setLanguage("fr");
-            localizationService.setLanguage("fr");
-        } else {
-            preferencesService.setLanguage("en");
-            localizationService.setLanguage("en");
-        }
+        LanguageOption selectedLang = (languageComboBox != null)
+                ? languageComboBox.getSelectionModel().getSelectedItem()
+                : null;
+        String langCode = (selectedLang != null) ? selectedLang.getCode() : localizationService.getCurrentLanguageCode();
+        preferencesService.setLanguage(langCode);
+        localizationService.setLanguage(langCode);
         
         // Sauvegarder le dossier journal
         String newJournalFolder = journalFolderTextField.getText();

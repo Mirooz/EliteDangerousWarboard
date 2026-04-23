@@ -36,9 +36,9 @@ public class LocalizationService {
         try {
             this.currentBundle = ResourceBundle.getBundle("messages", locale);
         } catch (Exception e) {
-            // Fallback vers le français si la locale demandée n'existe pas
-            this.currentBundle = ResourceBundle.getBundle("messages", Locale.FRENCH);
-            this.currentLocale = Locale.FRENCH;
+            // Fallback vers l'anglais si la locale demandée n'existe pas
+            this.currentBundle = ResourceBundle.getBundle("messages", Locale.ENGLISH);
+            this.currentLocale = Locale.ENGLISH;
         }
         // Notifier tous les listeners du changement de langue
         notifyLanguageChange(locale);
@@ -53,13 +53,39 @@ public class LocalizationService {
             case "english":
                 setLocale(Locale.ENGLISH);
                 break;
+            case "de":
+            case "german":
+            case "deutsch":
+                setLocale(Locale.GERMAN);
+                break;
+            case "es":
+            case "spanish":
+            case "español":
+                setLocale(new Locale("es"));
+                break;
+            case "it":
+            case "italian":
+            case "italiano":
+                setLocale(Locale.ITALIAN);
+                break;
             case "fr":
             case "french":
             case "français":
-            default:
                 setLocale(Locale.FRENCH);
                 break;
+            default:
+                setLocale(Locale.ENGLISH);
+                break;
         }
+    }
+
+    /**
+     * Récupère le code court (fr/en/de/es/it) de la locale courante
+     */
+    public String getCurrentLanguageCode() {
+        if (currentLocale == null) return "en";
+        String lang = currentLocale.getLanguage();
+        return (lang == null || lang.isEmpty()) ? "en" : lang;
     }
 
     /**

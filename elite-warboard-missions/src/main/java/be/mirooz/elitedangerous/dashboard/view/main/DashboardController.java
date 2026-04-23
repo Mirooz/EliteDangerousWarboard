@@ -475,7 +475,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void openConfigDialog() {
         Stage primaryStage = (Stage) configButton.getScene().getWindow();
 
-        DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 900, 850);
+        DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 820, 620);
 
         dialog.init(primaryStage);
         dialog.showAndWait();

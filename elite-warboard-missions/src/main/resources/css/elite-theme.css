@@ -2536,6 +2536,69 @@
     -fx-background-color: -fx-elite-cyan;
 }
 
+/* ComboBox de configuration (sélecteur de langue) */
+.config-combo {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.config-combo:hover {
+    -fx-border-color: -fx-elite-cyan;
+}
+
+.config-combo .arrow,
+.config-combo .arrow-button {
+    -fx-background-color: transparent;
+}
+.config-combo .arrow {
+    -fx-background-color: -fx-elite-orange;
+}
+.config-combo:hover .arrow {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Cellule affichée dans le bouton (sélection courante) */
+.config-combo .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-elite-text;
+    -fx-padding: 2 6 2 6;
+}
+.config-combo .list-cell .label {
+    -fx-text-fill: -fx-elite-text;
+}
+
+/* Popup déroulant */
+.config-combo .combo-box-popup .list-view {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1;
+}
+.config-combo .combo-box-popup .list-view .list-cell {
+    -fx-background-color: -fx-elite-dark;
+    -fx-text-fill: -fx-elite-text;
+    -fx-padding: 4 8 4 8;
+}
+.config-combo .combo-box-popup .list-view .list-cell .label {
+    -fx-text-fill: -fx-elite-text;
+}
+.config-combo .combo-box-popup .list-view .list-cell:filled:hover,
+.config-combo .combo-box-popup .list-view .list-cell:filled:selected,
+.config-combo .combo-box-popup .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-cyan;
+}
+.config-combo .combo-box-popup .list-view .list-cell:filled:hover .label,
+.config-combo .combo-box-popup .list-view .list-cell:filled:selected .label {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
 /* Boutons de configuration */
 .config-save-button {
     -fx-background-color: -fx-elite-gray;

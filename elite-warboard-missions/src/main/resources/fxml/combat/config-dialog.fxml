@@ -8,9 +8,10 @@
 <StackPane xmlns="http://javafx.com/javafx/11.0.1"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="be.mirooz.elitedangerous.dashboard.view.main.ConfigDialogController"
-           styleClass="config-dialog">
+           styleClass="config-dialog"
+           alignment="CENTER">
 
-    <VBox spacing="20.0" styleClass="config-content">
+    <VBox spacing="14.0" styleClass="config-content" StackPane.alignment="CENTER">
         <padding>
             <Insets bottom="5.0" left="10.0" right="5.0" top="10.0"/>
         </padding>
@@ -28,10 +29,7 @@
             <Label fx:id="languageSectionLabel" text="LANGUE" styleClass="config-section-title"/>
             
             <HBox alignment="CENTER_LEFT" spacing="15.0">
-                <RadioButton fx:id="frenchRadioButton" text="Français" 
-                           onAction="#selectFrench" styleClass="config-radio"/>
-                <RadioButton fx:id="englishRadioButton" text="English" 
-                           onAction="#selectEnglish" styleClass="config-radio"/>
+                <ComboBox fx:id="languageComboBox" styleClass="config-combo" prefWidth="180"/>
             </HBox>
         </VBox>
 
