@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class DockedHandler implements JournalEventHandler {
@@ -18,6 +19,8 @@ public class DockedHandler implements JournalEventHandler {
     @Override
     public void handle(JsonNode jsonNode) {
         try {
+
+            CapiApiService.getInstance().sendMarketDatas(jsonNode);
             if (colonisationService.handleDocked(jsonNode)) {
                 ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
             }

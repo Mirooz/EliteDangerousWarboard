@@ -15,6 +15,5 @@ public class MarketHandler implements JournalEventHandler {
 
     @Override
     public void handle(JsonNode event) {
-        CapiApiService.getInstance().sendMarketDatas(event);
     }
 }
