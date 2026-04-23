@@ -5,7 +5,7 @@ import be.mirooz.elitedangerous.backend.generated.model.EdColoniseColonisedSyste
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseStarSystemSearchResult;
 import be.mirooz.elitedangerous.backend.generated.model.EdColoniseSystemCounts;
 import be.mirooz.elitedangerous.dashboard.service.EdColoniseService;
-import be.mirooz.elitedangerous.dashboard.service.EdsmService;
+import be.mirooz.elitedangerous.dashboard.service.SpanshSystemVisitedService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
@@ -86,7 +86,7 @@ public class EdColoniseSearchDialogController implements Initializable {
     private StackPane dialogPopupLayer;
 
     private final EdColoniseService edColoniseService = EdColoniseService.getInstance();
-    private final EdsmService edsmService = EdsmService.getInstance();
+    private final SpanshSystemVisitedService spanshSystemVisitedService = SpanshSystemVisitedService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
@@ -364,15 +364,15 @@ public class EdColoniseSearchDialogController implements Initializable {
         String systemName = r != null ? r.getSystemName() : null;
         Thread t = new Thread(() -> {
             try {
-                var visited = edsmService.fetchSystemVisited(systemName);
+                var visited = spanshSystemVisitedService.fetchSystemVisited(systemName);
                 Platform.runLater(() -> openSystemVisualDetailWindow(visited));
             } catch (Exception ex) {
-                String message = "EDSM details fetch failed for system '"
+                String message = "Spansh details fetch failed for system '"
                         + (systemName != null ? systemName : "—")
                         + "': " + ex.getMessage();
                 System.err.println(message);
             }
-        }, "edsm-system-details");
+        }, "spansh-system-details");
         t.setDaemon(true);
         t.start();
     }

@@ -55,8 +55,8 @@ public enum StarType {
     }
 
     /**
-     * Retourne le nom du fichier image correspondant au type d'étoile
-     * Les images sont basées sur celles disponibles sur EDSM
+     * Retourne le nom du fichier image correspondant au type d'étoile.
+     *
      * @return le nom du fichier image (ex: "Star_G.png")
      */
     public String getImageName() {

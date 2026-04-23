@@ -1,7 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service.mapping;
 
 import be.mirooz.elitedangerous.backend.generated.model.BodyResult;
-import be.mirooz.elitedangerous.backend.generated.model.EdsmBodiesResponse;
 import be.mirooz.elitedangerous.backend.generated.model.Parent;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponse;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponseDTO;
@@ -15,7 +14,6 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -29,7 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Convertit une charge utile Spansh bodies (JSON legacy EDSM-like ou DTO {@code /api/spansh/bodies/search}) vers {@link SystemVisited}.
+ * Convertit une charge utile Spansh bodies (DTO {@code /api/spansh/bodies/search}) vers {@link SystemVisited}.
  */
 public final class SpanshSystemVisitedMapper {
 
@@ -79,13 +77,7 @@ public final class SpanshSystemVisitedMapper {
             dto.setSpanshResponse(sr);
             return toSystemVisited(dto, fallbackSystemName);
         }
-        ObjectNode normalized = normalize(root, fallbackSystemName);
-        EdsmBodiesResponse response = MAPPER.treeToValue(normalized, EdsmBodiesResponse.class);
-        return toSystemVisitedFromEdsm(response, fallbackSystemName);
-    }
-
-    private static SystemVisited toSystemVisitedFromEdsm(EdsmBodiesResponse response, String fallbackSystemName) {
-        return EdsmSystemVisitedMapper.toSystemVisited(response, fallbackSystemName);
+        throw new IOException("Unsupported Spansh bodies JSON: expected spanshResponse object or results array at root");
     }
 
     private static String resolveSystemName(SpanshSearchResponse sr, String fallback) {
@@ -326,57 +318,4 @@ public final class SpanshSystemVisitedMapper {
         return value != null ? value : 0d;
     }
 
-    /**
-     * Normalise plusieurs variantes de payload vers le shape attendu: { "name": "...", "bodies": [...] }.
-     */
-    private static ObjectNode normalize(JsonNode root, String fallbackSystemName) {
-        ObjectNode out = MAPPER.createObjectNode();
-        if (root == null || root.isNull()) {
-            out.put("name", fallbackName(fallbackSystemName));
-            out.set("bodies", MAPPER.createArrayNode());
-            return out;
-        }
-
-        JsonNode directName = root.get("name");
-        JsonNode directBodies = root.get("bodies");
-        if (directName != null && directBodies != null && directBodies.isArray()) {
-            out.put("name", directName.asText(fallbackName(fallbackSystemName)));
-            out.set("bodies", directBodies);
-            return out;
-        }
-
-        JsonNode systemNode = root.get("system");
-        if (systemNode != null && systemNode.isObject()) {
-            String name = textOrNull(systemNode.get("name"));
-            if (name == null || name.isBlank()) {
-                name = textOrNull(root.get("name"));
-            }
-            out.put("name", name != null && !name.isBlank() ? name : fallbackName(fallbackSystemName));
-            JsonNode nestedBodies = systemNode.get("bodies");
-            if (nestedBodies != null && nestedBodies.isArray()) {
-                out.set("bodies", nestedBodies);
-            } else if (directBodies != null && directBodies.isArray()) {
-                out.set("bodies", directBodies);
-            } else {
-                out.set("bodies", MAPPER.createArrayNode());
-            }
-            return out;
-        }
-
-        out.put("name", textOrNull(directName) != null ? directName.asText() : fallbackName(fallbackSystemName));
-        out.set("bodies", directBodies instanceof ArrayNode ? directBodies : MAPPER.createArrayNode());
-        return out;
-    }
-
-    private static String fallbackName(String fallbackSystemName) {
-        return fallbackSystemName != null && !fallbackSystemName.isBlank() ? fallbackSystemName : "Unknown";
-    }
-
-    private static String textOrNull(JsonNode node) {
-        if (node == null || node.isNull()) {
-            return null;
-        }
-        String v = node.asText(null);
-        return v != null && !v.isBlank() ? v : null;
-    }
 }

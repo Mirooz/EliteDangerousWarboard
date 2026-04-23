@@ -26,7 +26,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierS
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
 import be.mirooz.elitedangerous.dashboard.service.EdColoniseService;
-import be.mirooz.elitedangerous.dashboard.service.EdsmService;
+import be.mirooz.elitedangerous.dashboard.service.SpanshSystemVisitedService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
@@ -194,7 +194,7 @@ public class ColonisationPanelController implements Initializable {
     private VBox searchMapContainer;
     private final ColonisationService colonisationService = ColonisationService.getInstance();
     private final EdColoniseService edColoniseService = EdColoniseService.getInstance();
-    private final EdsmService edsmService = EdsmService.getInstance();
+    private final SpanshSystemVisitedService spanshSystemVisitedService = SpanshSystemVisitedService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final CarrierTradeService carrierTradeService = CarrierTradeService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -1384,7 +1384,7 @@ public class ColonisationPanelController implements Initializable {
         architectSystemVisualView.setPendingSystemTitle(requestedSystem);
         Thread t = new Thread(() -> {
             try {
-                var visited = edsmService.fetchSystemVisited(requestedSystem);
+                var visited = spanshSystemVisitedService.fetchSystemVisited(requestedSystem);
                 Map<Integer, String> bodyNames = new HashMap<>();
                 if (visited != null && visited.getCelesteBodies() != null) {
                     for (var body : visited.getCelesteBodies()) {
@@ -1421,7 +1421,7 @@ public class ColonisationPanelController implements Initializable {
                     refreshConstructionDetailPanel();
                 });
             }
-        }, "ed-colonise-architect-map-load");
+        }, "spansh-colonise-architect-map-load");
         t.setDaemon(true);
         t.start();
     }
@@ -1643,7 +1643,7 @@ public class ColonisationPanelController implements Initializable {
         setSelectedSearchResultCard(selectedCard);
         Thread t = new Thread(() -> {
             try {
-                var visited = edsmService.fetchSystemVisited(candidate.getSystemName());
+                var visited = spanshSystemVisitedService.fetchSystemVisited(candidate.getSystemName());
                 Platform.runLater(() -> {
                     if (searchSystemVisualView != null) {
                         searchSystemVisualView.displaySystem(visited);
@@ -1658,7 +1658,7 @@ public class ColonisationPanelController implements Initializable {
                     }
                 });
             }
-        }, "ed-colonise-map-load");
+        }, "spansh-colonise-map-load");
         t.setDaemon(true);
         t.start();
     }
