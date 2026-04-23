@@ -342,6 +342,7 @@ public class ColonisationPanelController implements Initializable {
                 Parent content = loader.load();
                 searchSystemVisualView = loader.getController();
                 searchSystemVisualView.setBodiesListPanelVisible(false);
+                searchSystemVisualView.setExplorationValueIndicatorsSuppressed(true);
                 searchMapContainer.getChildren().setAll(content);
                 VBox.setVgrow(content, Priority.ALWAYS);
             } catch (Exception e) {
@@ -361,6 +362,7 @@ public class ColonisationPanelController implements Initializable {
             Parent content = loader.load();
             architectSystemVisualView = loader.getController();
             architectSystemVisualView.setBodiesListPanelVisible(false);
+            architectSystemVisualView.setExplorationValueIndicatorsSuppressed(true);
             architectSystemVisualView.setColonisationArchitectBodyCaptions(Map.of());
             architectSystemVisualView.setColonisationArchitectStationClickHandler(null);
             architectSystemMapRoot = new StackPane(content);

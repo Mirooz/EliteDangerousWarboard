@@ -371,6 +371,7 @@ public class EdColoniseSearchDialogController implements Initializable {
                 Parent content = loader.load();
                 SystemVisualViewComponent controller = loader.getController();
                 controller.setBodiesListPanelVisible(false);
+                controller.setExplorationValueIndicatorsSuppressed(true);
                 controller.setPendingSystemTitle(systemName);
                 controller.showSpanshLoadingPlaceholder();
 

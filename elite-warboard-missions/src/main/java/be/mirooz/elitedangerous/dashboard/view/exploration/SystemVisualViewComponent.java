@@ -209,6 +209,19 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     private Map<Integer, List<ColonisationArchitectMapCaptionLine>> colonisationBodyCaptionLines = Map.of();
 
+    /**
+     * Vues colonisation / recherche colonisable : pas de pastilles exobio ni « high value / mappable » sur la carte
+     * ni dans les cartes liste (ni filtre liste sur ces corps).
+     */
+    private boolean suppressExplorationValueIndicators;
+
+    private boolean isHighValueBodyListFilterActive() {
+        if (suppressExplorationValueIndicators) {
+            return false;
+        }
+        return showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected();
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // S'abonner au service de notification
@@ -514,8 +527,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             radarComponent.getRadarPane().visibleProperty().addListener((obs, oldVal, newVal) -> {
                 // Mettre à jour l'overlay/popup si ouvert
                 if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing() && currentSystem != null) {
-                    boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
-                            showOnlyHighValueBodiesCheckBox.isSelected();
+                    boolean showOnlyHighValue = isHighValueBodyListFilterActive();
                     bodiesOverlayComponent.updateContent(currentSystem, showOnlyHighValue);
                     // Recalculer la taille du popup si ouvert
                     if (bodiesOverlayComponent.isPopupShowing()) {
@@ -759,6 +771,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     /**
+     * Masque indicateurs d’exploration (exobio, planète « mappable » / forte valeur) sur la carte et dans les cartes corps.
+     * À activer pour les vues système intégrées au module colonisation.
+     */
+    public void setExplorationValueIndicatorsSuppressed(boolean suppressed) {
+        this.suppressExplorationValueIndicators = suppressed;
+    }
+
+    /**
      * Met à jour le titre du système tout de suite (ex. pendant un chargement asynchrone).
      */
     public void setPendingSystemTitle(String systemName) {
@@ -827,8 +847,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
             // Mettre à jour l'overlay si il est ouvert
             if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing()) {
-                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
-                        showOnlyHighValueBodiesCheckBox.isSelected();
+                boolean showOnlyHighValue = isHighValueBodyListFilterActive();
                 bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
             }
 
@@ -1990,6 +2009,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Ajoute les icônes exobio et mapped en haut à droite d'une planète dans un badge
      */
     private void addPlanetIcons(ACelesteBody body, double planetX, double planetY) {
+        if (suppressExplorationValueIndicators) {
+            return;
+        }
         if (!(body instanceof PlaneteDetail planet)) {
             return;
         }
@@ -2655,7 +2677,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Filtrer les corps si la checkbox est cochée
         List<ACelesteBody> filteredBodies = sortedBodies;
-        if (showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected()) {
+        if (isHighValueBodyListFilterActive()) {
             filteredBodies = sortedBodies.stream()
                     .filter(this::isHighValueBody)
                     .collect(Collectors.toList());
@@ -2692,8 +2714,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Mettre à jour l'overlay et le popup si ils sont ouverts
         if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing() && system != null) {
-            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
-                    showOnlyHighValueBodiesCheckBox.isSelected();
+            boolean showOnlyHighValue = isHighValueBodyListFilterActive();
             bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
             // Recalculer la taille du popup si ouvert
             if (bodiesOverlayComponent.isPopupShowing()) {
@@ -2832,7 +2853,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         headerRow.getChildren().add(nameLabel);
 
         // Ajouter l'icône mapped si nécessaire (pour les planètes)
-        if (body instanceof PlaneteDetail planet) {
+        if (body instanceof PlaneteDetail planet && !suppressExplorationValueIndicators) {
             // Vérifier si la planète respecte les conditions pour mapped
             boolean shouldShowMappedIcon = false;
             boolean isMapped = planet.isMapped();
@@ -2941,7 +2962,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         cardContent.getChildren().add(headerRow);
 
         // Informations exobio (X/Y) - seulement pour les planètes
-        if (body instanceof PlaneteDetail planet) {
+        if (body instanceof PlaneteDetail planet && !suppressExplorationValueIndicators) {
             // Liste des BioSpecies avec probabilités
             // Afficher si on a des bioSpecies OU des confirmedSpecies
             if ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
@@ -3255,8 +3276,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
             // Mettre à jour l'overlay si il est ouvert
             if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing()) {
-                boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
-                        showOnlyHighValueBodiesCheckBox.isSelected();
+                boolean showOnlyHighValue = isHighValueBodyListFilterActive();
                 bodiesOverlayComponent.updateContent(currentSystem, showOnlyHighValue);
             }
         }
@@ -3268,8 +3288,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     @FXML
     private void showBodiesOverlay() {
         if (bodiesOverlayComponent != null) {
-            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
-                    showOnlyHighValueBodiesCheckBox.isSelected();
+            boolean showOnlyHighValue = isHighValueBodyListFilterActive();
 
             CommanderStatus commanderStatus = CommanderStatus.getInstance();
             boolean isOnFoot = commanderStatus.isOnFoot();
@@ -3322,8 +3341,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 return;
             }
 
-            boolean showOnlyHighValue = showOnlyHighValueBodiesCheckBox != null &&
-                    showOnlyHighValueBodiesCheckBox.isSelected();
+            boolean showOnlyHighValue = isHighValueBodyListFilterActive();
 
             if (isOnFoot) {
                 // Si on est à pied, fermer l'overlay et ouvrir le popup
@@ -3457,7 +3475,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Filtrer les corps si nécessaire (seulement les high value)
         List<ACelesteBody> filteredBodies = sortedBodies;
-        if (showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected()) {
+        if (isHighValueBodyListFilterActive()) {
             filteredBodies = sortedBodies.stream()
                     .filter(this::isHighValueBody)
                     .collect(Collectors.toList());
