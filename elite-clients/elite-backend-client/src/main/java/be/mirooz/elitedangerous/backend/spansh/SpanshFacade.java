@@ -70,7 +70,7 @@ public class SpanshFacade {
             logSpanshDone("apiSpanshSearchesStratumPost", t0);
             return out;
         } catch (ApiException e) {
-            logSpanshFailure("apiSpanshSearchesStratumPost", mode != null ? mode.name() : "null", e, t0);
+            logSpanshFailure("apiSpanshSearchesStratumPost", e);
             throw new Exception("Erreur Spansh (" + mode + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
         }
     }
@@ -90,7 +90,7 @@ public class SpanshFacade {
             logSpanshDone("apiSpanshRoutes*" + (mode != null ? "(" + mode + ")" : ""), t0);
             return out;
         } catch (ApiException e) {
-            logSpanshFailure("searchSpanshRoute", mode != null ? mode.name() : "null", e, t0);
+            logSpanshFailure("searchSpanshRoute", e);
             throw new Exception("Erreur Spansh (" + mode + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
         }
     }
@@ -106,7 +106,7 @@ public class SpanshFacade {
             }
             throw new Exception("Réponse invalide : spanshResponse est null");
         } catch (ApiException e) {
-            logSpanshFailure("apiSpanshRoutesGuidGet", "job=" + job, e, t0);
+            logSpanshFailure("apiSpanshRoutesGuidGet", e);
             throw new Exception("Erreur Spansh (results, job: " + job + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
         }
     }
@@ -122,7 +122,7 @@ public class SpanshFacade {
             }
             throw new Exception("Réponse invalide : spanshResponse est null");
         } catch (ApiException e) {
-            logSpanshFailure("apiSpanshRoutesGuidGet", "guid=" + guid, e, t0);
+            logSpanshFailure("apiSpanshRoutesGuidGet", e);
             if (e.getCode() == 500 && isExpiredGuidPayload(e.getResponseBody())) {
                 throw new SpanshGuidExpiredException(
                         "Le GUID Spansh a expiré ou n'est plus valide. Une nouvelle demande est nécessaire.");
@@ -139,7 +139,7 @@ public class SpanshFacade {
             logSpanshDone("apiSpanshSearchesGuidGet", t0);
             return out;
         } catch (ApiException e) {
-            logSpanshFailure("apiSpanshSearchesGuidGet", "guid=" + guid, e, t0);
+            logSpanshFailure("apiSpanshSearchesGuidGet", e);
             if (e.getCode() == 500 && isExpiredGuidPayload(e.getResponseBody())) {
                 throw new SpanshGuidExpiredException(
                         "Le GUID Spansh a expiré ou n'est plus valide. Une nouvelle demande est nécessaire.");
@@ -167,7 +167,7 @@ public class SpanshFacade {
             logSpanshDone("apiSpanshBodiesSearchGet", t0);
             return out;
         } catch (ApiException e) {
-            logSpanshFailure("apiSpanshBodiesSearchGet", "systemName=" + sys, e, t0);
+            logSpanshFailure("apiSpanshBodiesSearchGet", e);
             throw new Exception("Erreur Spansh (bodies/search, système: " + systemName + "): HTTP "
                     + e.getCode() + " - " + e.getMessage(), e);
         }
@@ -185,11 +185,26 @@ public class SpanshFacade {
         LOG.info("Spansh: " + operation + " — terminé en " + ms + " ms");
     }
 
-    private static void logSpanshFailure(String operation, String context, ApiException e, long startNanos) {
-        long ms = (System.nanoTime() - startNanos) / 1_000_000L;
-        LOG.log(Level.WARNING,
-                String.format("Spansh: %s — échec après %d ms (%s) HTTP %d: %s",
-                        operation, ms, context, e.getCode(), e.getMessage()),
-                e);
+    /**
+     * Une seule ligne, sans {@link Throwable} passé au logger → pas de stack JUL.
+     * Contenu minimal : opération client, code HTTP, cause racine (ex. {@code ConnectException}).
+     */
+    private static void logSpanshFailure(String operation, ApiException e) {
+        int code = e != null ? e.getCode() : 0;
+        // Cause directe (souvent ConnectException) — pas la toute dernière (souvent ClosedChannelException).
+        String cause = immediateCauseSimpleName(e);
+        // Ne pas utiliser LOG.log(level, msg, e) : le 3ᵉ argument imprime toute la pile.
+        LOG.warning(String.format("SpanshFacade %s HTTP_%d %s", operation, code, cause));
+    }
+
+    private static String immediateCauseSimpleName(Throwable t) {
+        if (t == null) {
+            return "?";
+        }
+        Throwable c = t.getCause();
+        if (c != null) {
+            return c.getClass().getSimpleName();
+        }
+        return t.getClass().getSimpleName();
     }
 }

@@ -57,6 +57,7 @@ public class ExplorationController implements Initializable,IBatchListener {
             FXMLLoader visualLoader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-visual-view.fxml"));
             VBox visualPanel = visualLoader.load();
             systemVisualView = visualLoader.getController();
+            SystemVisualViewComponent.setPrimaryInstance(systemVisualView);
             if (systemVisualViewContainer != null) {
                 systemVisualViewContainer.getChildren().add(visualPanel);
             }

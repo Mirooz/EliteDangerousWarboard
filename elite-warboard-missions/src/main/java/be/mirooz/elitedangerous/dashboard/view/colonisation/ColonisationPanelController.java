@@ -1382,6 +1382,7 @@ public class ColonisationPanelController implements Initializable {
         }
         final String requestedSystem = starSystem.trim();
         architectSystemVisualView.setPendingSystemTitle(requestedSystem);
+        architectSystemVisualView.showSpanshLoadingPlaceholder();
         Thread t = new Thread(() -> {
             try {
                 var visited = spanshSystemVisitedService.fetchSystemVisited(requestedSystem);
@@ -1399,7 +1400,7 @@ public class ColonisationPanelController implements Initializable {
                         return;
                     }
                     if (architectSystemVisualView != null) {
-                        architectSystemVisualView.displaySystem(visited);
+                        architectSystemVisualView.displaySystem(visited, true);
                     }
                     architectBodyNamesById.clear();
                     architectBodyNamesById.putAll(bodyNames);
@@ -1641,16 +1642,22 @@ public class ColonisationPanelController implements Initializable {
             return;
         }
         setSelectedSearchResultCard(selectedCard);
+        if (searchSystemVisualView != null) {
+            searchSystemVisualView.showSpanshLoadingPlaceholder();
+        }
         Thread t = new Thread(() -> {
             try {
                 var visited = spanshSystemVisitedService.fetchSystemVisited(candidate.getSystemName());
                 Platform.runLater(() -> {
                     if (searchSystemVisualView != null) {
-                        searchSystemVisualView.displaySystem(visited);
+                        searchSystemVisualView.displaySystem(visited, true);
                     }
                 });
             } catch (Exception ex) {
                 Platform.runLater(() -> {
+                    if (searchSystemVisualView != null) {
+                        searchSystemVisualView.displaySystem(null);
+                    }
                     if (searchErrorLabel != null) {
                         searchErrorLabel.setText(localizationService.getString("colonisation.edcolonise.error") + " " + ex.getMessage());
                         searchErrorLabel.setVisible(true);

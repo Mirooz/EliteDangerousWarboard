@@ -127,6 +127,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private boolean spanshOnlineHydrationSuppressed;
 
     /**
+     * Chargement Spansh : placé sur le {@link StackPane} qui enveloppe le {@link #bodiesScrollPane},
+     * <strong>en dehors</strong> de {@link #bodiesGroup} pour ne pas subir zoom / pan.
+     */
+    private StackPane spanshLoadingLayer;
+
+    /**
      * Si {@code true}, attend la réponse Spansh avant d'afficher l'orrery et la liste des corps (chargement).
      */
     public static final boolean SEARCH_SPANSH_EXPLORATION = true;
@@ -180,7 +186,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
-    private static SystemVisualViewComponent instance;
+    /** Vue exploration principale uniquement (évite d’écraser l’instance en ouvrant d’autres FXML colonisation / dialogues). */
+    private static volatile SystemVisualViewComponent primaryInstance;
+
+    /**
+     * Enregistre la vue système du module exploration pour {@link #getInstance()} (zoom fenêtre, etc.).
+     */
+    public static void setPrimaryInstance(SystemVisualViewComponent view) {
+        primaryInstance = view;
+    }
     private static final String PREF_SYSTEM_VIEW_SPACING_X = "exploration.systemView.spacing.horizontal";
     private static final String PREF_SYSTEM_VIEW_SPACING_Y = "exploration.systemView.spacing.vertical";
     private static final double DEFAULT_SPACING_X = USER_SPACING_MIN + (USER_SPACING_RANGE / 2.0);
@@ -197,8 +211,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Enregistrer l'instance pour permettre l'accès depuis d'autres composants
-        instance = this;
         // S'abonner au service de notification
         ExplorationRefreshNotificationService notificationService = ExplorationRefreshNotificationService.getInstance();
         notificationService.addBodyFilterListener(this);
@@ -686,10 +698,29 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     /**
-     * Retourne l'instance actuelle du SystemVisualViewComponent (peut être null)
+     * Instance « principale » exploration ({@link #setPrimaryInstance}) ; peut être null.
      */
     public static SystemVisualViewComponent getInstance() {
-        return instance;
+        return primaryInstance;
+    }
+
+    /**
+     * Liste + orrery : libellé Spansh + indicateur (même rendu que l’attente intégrée au module exploration).
+     * À appeler sur le thread JavaFX avant un {@code fetchSystemVisited} asynchrone hors de ce composant.
+     */
+    public void showSpanshLoadingPlaceholder() {
+        Runnable r = () -> {
+            bodyPositions.clear();
+            if (systemBodiesLabel != null) {
+                systemBodiesLabel.setText(localizationService.getString("exploration.spansh_loading"));
+            }
+            showSpanshExplorationLoadingState();
+        };
+        if (Platform.isFxApplicationThread()) {
+            r.run();
+        } else {
+            Platform.runLater(r);
+        }
     }
 
     @Override
@@ -755,6 +786,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     public void displaySystem(SystemVisited system,boolean forceRefresh) {
         Platform.runLater(() -> {
+            hideSpanshLoadingLayer();
             // Fermer le panneau JSON si un nouveau système est sélectionné
             if (this.currentSystem != null && system != null &&
                     !this.currentSystem.equals(system)) {
@@ -812,10 +844,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     && !DashboardContext.getInstance().isBatchLoading();
 
             if (awaitSpansh) {
-                if (systemBodiesLabel != null) {
-                    systemBodiesLabel.setText(localizationService.getString("exploration.spansh_loading"));
-                }
-                showSpanshExplorationLoadingState();
+                showSpanshLoadingPlaceholder();
                 scheduleSpanshOnlineDataHydration(system);
                 return;
             }
@@ -1361,19 +1390,53 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     private void showSpanshExplorationLoadingState() {
+        if (bodiesPane != null) {
+            bodiesPane.getChildren().clear();
+        }
         if (bodiesListContainer != null) {
             bodiesListContainer.getChildren().clear();
             Label loadingLabel = new Label(localizationService.getString("exploration.spansh_loading"));
             loadingLabel.setWrapText(true);
             bodiesListContainer.getChildren().add(loadingLabel);
         }
-        if (bodiesPane != null) {
+        showSpanshLoadingLayerOnHost();
+    }
+
+    private void hideSpanshLoadingLayer() {
+        if (spanshLoadingLayer != null) {
+            spanshLoadingLayer.setVisible(false);
+            spanshLoadingLayer.setManaged(false);
+        }
+    }
+
+    /**
+     * Couvre le panneau droit (scroll + fond) et centre le spinner, sans passer par le zoom de l’orrery.
+     */
+    private void showSpanshLoadingLayerOnHost() {
+        if (bodiesScrollPane == null) {
+            return;
+        }
+        Parent rawParent = bodiesScrollPane.getParent();
+        if (!(rawParent instanceof StackPane host)) {
+            return;
+        }
+        if (spanshLoadingLayer == null) {
             ProgressIndicator indicator = new ProgressIndicator();
             indicator.setMaxSize(96, 96);
-            StackPane holder = new StackPane(indicator);
-            holder.setMinSize(400, 280);
-            bodiesPane.getChildren().add(holder);
+            spanshLoadingLayer = new StackPane(indicator);
+            StackPane.setAlignment(indicator, Pos.CENTER);
+            spanshLoadingLayer.setPickOnBounds(true);
+            spanshLoadingLayer.setStyle("-fx-background-color: transparent;");
+            spanshLoadingLayer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            int scrollIdx = host.getChildren().indexOf(bodiesScrollPane);
+            if (scrollIdx < 0) {
+                host.getChildren().add(spanshLoadingLayer);
+            } else {
+                host.getChildren().add(scrollIdx + 1, spanshLoadingLayer);
+            }
         }
+        spanshLoadingLayer.setVisible(true);
+        spanshLoadingLayer.setManaged(true);
     }
 
     private static void mergeOnlineDataFromSpansh(SystemVisited target, SystemVisited spanshSource) {
@@ -3440,6 +3503,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     private void clearDisplay() {
         Platform.runLater(() -> {
+            hideSpanshLoadingLayer();
             bodiesPane.getChildren().clear();
             if (bodiesListContainer != null) {
                 bodiesListContainer.getChildren().clear();

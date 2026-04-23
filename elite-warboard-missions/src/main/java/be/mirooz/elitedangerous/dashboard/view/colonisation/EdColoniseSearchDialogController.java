@@ -362,44 +362,56 @@ public class EdColoniseSearchDialogController implements Initializable {
 
     private void showDetails(EdColoniseStarSystemSearchResult r) {
         String systemName = r != null ? r.getSystemName() : null;
-        Thread t = new Thread(() -> {
-            try {
-                var visited = spanshSystemVisitedService.fetchSystemVisited(systemName);
-                Platform.runLater(() -> openSystemVisualDetailWindow(visited));
-            } catch (Exception ex) {
-                String message = "Spansh details fetch failed for system '"
-                        + (systemName != null ? systemName : "—")
-                        + "': " + ex.getMessage();
-                System.err.println(message);
-            }
-        }, "spansh-system-details");
-        t.setDaemon(true);
-        t.start();
-    }
-
-    private void openSystemVisualDetailWindow(be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited visited) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-visual-view.fxml"));
-            Parent content = loader.load();
-            SystemVisualViewComponent controller = loader.getController();
-            controller.setBodiesListPanelVisible(false);
-            controller.displaySystem(visited);
-
-            Scene scene = new Scene(content, 1380, 840);
-            scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-
-            Stage detailStage = new Stage();
-            detailStage.setTitle(localizationService.getString("colonisation.edcolonise.details.title")
-                    + " - " + (visited != null ? visited.getSystemName() : "—"));
-            detailStage.setScene(scene);
-            detailStage.setResizable(true);
-            if (closeButton != null && closeButton.getScene() != null) {
-                detailStage.initOwner(closeButton.getScene().getWindow());
-            }
-            detailStage.show();
-        } catch (Exception ex) {
-            System.err.println("Unable to open exploration detail window: " + ex.getMessage());
+        if (systemName == null || systemName.isBlank()) {
+            return;
         }
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-visual-view.fxml"));
+                Parent content = loader.load();
+                SystemVisualViewComponent controller = loader.getController();
+                controller.setBodiesListPanelVisible(false);
+                controller.setPendingSystemTitle(systemName);
+                controller.showSpanshLoadingPlaceholder();
+
+                Scene scene = new Scene(content, 1380, 840);
+                scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
+
+                Stage detailStage = new Stage();
+                detailStage.setTitle(localizationService.getString("colonisation.edcolonise.details.title") + " - " + systemName);
+                detailStage.setScene(scene);
+                detailStage.setResizable(true);
+                if (closeButton != null && closeButton.getScene() != null) {
+                    detailStage.initOwner(closeButton.getScene().getWindow());
+                }
+                detailStage.show();
+
+                Thread t = new Thread(() -> {
+                    try {
+                        var visited = spanshSystemVisitedService.fetchSystemVisited(systemName);
+                        Platform.runLater(() -> {
+                            if (!detailStage.isShowing()) {
+                                return;
+                            }
+                            controller.displaySystem(visited, true);
+                            detailStage.setTitle(localizationService.getString("colonisation.edcolonise.details.title")
+                                    + " - " + (visited != null && visited.getSystemName() != null
+                                    ? visited.getSystemName() : systemName));
+                        });
+                    } catch (Exception ex) {
+                        String message = "Spansh details fetch failed for system '"
+                                + systemName
+                                + "': " + ex.getMessage();
+                        System.err.println(message);
+                        Platform.runLater(detailStage::close);
+                    }
+                }, "spansh-system-details");
+                t.setDaemon(true);
+                t.start();
+            } catch (Exception ex) {
+                System.err.println("Unable to open exploration detail window: " + ex.getMessage());
+            }
+        });
     }
 
     private String formatLastUpdate(OffsetDateTime t) {
