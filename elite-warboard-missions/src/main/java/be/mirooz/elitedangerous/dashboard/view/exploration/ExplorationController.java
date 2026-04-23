@@ -83,6 +83,7 @@ public class ExplorationController implements Initializable,IBatchListener {
         if (explorationHistoryDetail != null && systemVisualView != null) {
             // Quand un système est cliqué dans le détail, l'afficher dans la vue visuelle
             explorationHistoryDetail.setOnSystemSelected(systemVisualView::displaySystem);
+            systemVisualView.setAfterSpanshBodiesMerged(explorationHistoryDetail::refreshSystemCardBodiesCounts);
         }
     }
 

@@ -37,6 +37,9 @@ import java.util.stream.Collectors;
  */
 public class ExplorationHistoryDetailComponent implements Initializable, IRefreshable, IBatchListener {
 
+    private static final String CARD_PROP_BODIES_COUNT_LABEL = "explorationHistoryBodiesCountLabel";
+    private static final String CARD_PROP_VALUE_CR_LABEL = "explorationHistoryValueCrLabel";
+
     @FXML
     private Button previousButton;
     @FXML
@@ -391,7 +394,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             mainRow.getChildren().add(systemNameLabel);
         }
         
-        // 2. Nombre de corps
+        // 2. Nombre de corps (référence conservée pour mise à jour quand celesteBodies évolue, ex. Spansh)
         Label bodiesCountLabel = new Label(String.format(localizationService.getString("exploration.bodies_count"), system.getNumBodies()));
         bodiesCountLabel.getStyleClass().add("exploration-bodies-count");
         bodiesCountLabel.setPrefWidth(80);
@@ -544,33 +547,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         }
         
         // 6. Valeur en Cr (corps célestes + exobio collectés)
-        // Utiliser le snapshot créé plus haut
-        long totalValue = bodiesSnapshot.stream()
-                .mapToLong(ACelesteBody::computeBodyValue)
-                .sum();
-        
-        // Calculer le prix total des exobio collectés
-        long exobioValue = 0;
-        // Utiliser le snapshot créé plus haut
-        for (ACelesteBody body : bodiesSnapshot) {
-            if (body instanceof PlaneteDetail planet) {
-                if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
-                    for (BioSpecies species : planet.getConfirmedSpecies()) {
-                        if (species.isCollected()) {
-                            // Utiliser bonusValue si wasFootfalled est false, sinon baseValue
-                            if (!planet.isWasFootfalled()) {
-                                exobioValue += species.getBonusValue() + species.getBaseValue();
-                            } else {
-                                exobioValue += species.getBaseValue();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Afficher le total (corps célestes + exobio)
-        long grandTotal = totalValue + exobioValue;
+        long grandTotal = computeSystemCardGrandCr(system);
         Label valueLabel = new Label(String.format("%,d Cr", grandTotal));
         valueLabel.getStyleClass().add("exploration-system-value");
         valueLabel.setPrefWidth(120);
@@ -604,6 +581,9 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
             root.getChildren().add(iconsRow);
         }
         
+        root.getProperties().put(CARD_PROP_BODIES_COUNT_LABEL, bodiesCountLabel);
+        root.getProperties().put(CARD_PROP_VALUE_CR_LABEL, valueLabel);
+
         // Associer la carte au système dans la map
         systemCardMap.put(root, system);
         
@@ -652,9 +632,67 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
         
         return total;
     }
-    
+
     /**
-     * Met à jour l'état de sélection de toutes les cartes système
+     * Total affiché sur la carte système : valeur des corps + exobio collectés (même logique que la carte).
+     */
+    private static long computeSystemCardGrandCr(SystemVisited system) {
+        if (system == null || system.getCelesteBodies() == null) {
+            return 0;
+        }
+        List<ACelesteBody> bodiesSnapshot = new ArrayList<>(system.getCelesteBodies());
+        long totalValue = bodiesSnapshot.stream().mapToLong(ACelesteBody::computeBodyValue).sum();
+        long exobioValue = 0;
+        for (ACelesteBody body : bodiesSnapshot) {
+            if (body instanceof PlaneteDetail planet) {
+                if (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()) {
+                    for (BioSpecies species : planet.getConfirmedSpecies()) {
+                        if (species.isCollected()) {
+                            if (!planet.isWasFootfalled()) {
+                                exobioValue += species.getBonusValue() + species.getBaseValue();
+                            } else {
+                                exobioValue += species.getBaseValue();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return totalValue + exobioValue;
+    }
+
+    /**
+     * Met à jour nombre de corps et total Cr sur les cartes déjà affichées (même instance {@link SystemVisited}).
+     */
+    public void refreshSystemCardBodiesCounts() {
+        Runnable r = () -> {
+            for (Map.Entry<VBox, SystemVisited> entry : systemCardMap.entrySet()) {
+                VBox card = entry.getKey();
+                SystemVisited system = entry.getValue();
+                if (card == null || system == null) {
+                    continue;
+                }
+                Object bodiesRef = card.getProperties().get(CARD_PROP_BODIES_COUNT_LABEL);
+                if (bodiesRef instanceof Label bodiesCountLabel) {
+                    bodiesCountLabel.setText(String.format(
+                            localizationService.getString("exploration.bodies_count"),
+                            system.getNumBodies()));
+                }
+                Object valueRef = card.getProperties().get(CARD_PROP_VALUE_CR_LABEL);
+                if (valueRef instanceof Label valueLabel) {
+                    valueLabel.setText(String.format("%,d Cr", computeSystemCardGrandCr(system)));
+                }
+            }
+        };
+        if (Platform.isFxApplicationThread()) {
+            r.run();
+        } else {
+            Platform.runLater(r);
+        }
+    }
+
+    /**
+     * Met à jour l'état de sélection de toutes les cartes système.
      */
     private void refreshSystemCardsSelection() {
         for (Map.Entry<VBox, SystemVisited> entry : systemCardMap.entrySet()) {

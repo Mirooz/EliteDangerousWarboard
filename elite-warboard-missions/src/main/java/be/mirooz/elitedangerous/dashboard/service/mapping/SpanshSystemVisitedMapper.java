@@ -264,6 +264,7 @@ public final class SpanshSystemVisitedMapper {
                 .bodyID(valueOrZero(br.getBodyId()))
                 .parents(mapSpanshParents(br, systemName, id64ToBodyId, nameIndex))
                 .wasDiscovered(true)
+                .wasMapped(true)
                 .mapped(false)
                 .rings(br.getRings() != null && !br.getRings().isEmpty())
                 .planetClass(BodyType.fromString(planetClassStr))

@@ -466,9 +466,9 @@ public class PlaneteDetail extends ACelesteBody {
         this.materials = src.materials;
         this.rings = src.rings;
         this.jsonNode = src.jsonNode;
+        this.wasMapped = src.wasMapped;
 
         // flags comme avant :
-        this.wasMapped |= src.wasMapped;
         this.wasDiscovered |= src.wasDiscovered;
         this.wasFootfalled |= src.wasFootfalled;
     }

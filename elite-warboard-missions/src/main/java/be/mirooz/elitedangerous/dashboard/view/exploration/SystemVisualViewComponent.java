@@ -131,6 +131,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     public static final boolean SEARCH_SPANSH_EXPLORATION = true;
 
+    /** Appelé sur le thread JavaFX juste après {@link #mergeOnlineDataFromSpansh} (liste d’historique, etc.). */
+    private Runnable afterSpanshBodiesMerged;
+
     private SystemVisited currentSystem;
     private Map<Integer, BodyPosition> bodyPositions = new HashMap<>();
     private Scale zoomTransform;
@@ -1342,6 +1345,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
     }
 
+    public void setAfterSpanshBodiesMerged(Runnable afterSpanshBodiesMerged) {
+        this.afterSpanshBodiesMerged = afterSpanshBodiesMerged;
+    }
+
+    private void notifyAfterSpanshBodiesMerged() {
+        if (afterSpanshBodiesMerged == null) {
+            return;
+        }
+        try {
+            afterSpanshBodiesMerged.run();
+        } catch (Exception ignored) {
+            // ne pas bloquer l’UI exploration
+        }
+    }
+
     private void showSpanshExplorationLoadingState() {
         if (bodiesListContainer != null) {
             bodiesListContainer.getChildren().clear();
@@ -1411,6 +1429,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         return;
                     }
                     mergeOnlineDataFromSpansh(currentSystem, spanshSv);
+                    notifyAfterSpanshBodiesMerged();
                     spanshOnlineHydrationSuppressed = true;
                     try {
                         displaySystem(currentSystem);
