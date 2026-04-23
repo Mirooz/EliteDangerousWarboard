@@ -130,10 +130,18 @@
                                                                      styleClass="config-spinner"/>
                                                         </HBox>
                                                     </VBox>
-                                                    <VBox spacing="4.0" minWidth="118.0" prefWidth="148.0">
+                                                    <VBox spacing="4.0" minWidth="100.0" prefWidth="108.0" maxWidth="108.0">
                                                         <Label fx:id="searchMaxDistanceSolLabel" styleClass="config-label" wrapText="true"/>
                                                         <Spinner fx:id="searchMaxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="100"
                                                                  styleClass="config-spinner"/>
+                                                    </VBox>
+                                                    <VBox alignment="BOTTOM_LEFT">
+                                                        <Button fx:id="searchHelpButton" mnemonicParsing="false" focusTraversable="false"
+                                                                styleClass="nav-route-info-button" minWidth="24.0" maxWidth="24.0" minHeight="24.0" maxHeight="24.0">
+                                                            <graphic>
+                                                                <Label text="?" styleClass="nav-route-info-icon"/>
+                                                            </graphic>
+                                                        </Button>
                                                     </VBox>
                                                 </HBox>
                                                 <HBox spacing="8.0" alignment="CENTER_LEFT">

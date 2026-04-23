@@ -189,6 +189,8 @@ public class ColonisationPanelController implements Initializable {
     @FXML
     private Button searchColonisableButton;
     @FXML
+    private Button searchHelpButton;
+    @FXML
     private ProgressIndicator searchLoadingIndicator;
     @FXML
     private Label searchErrorLabel;
@@ -236,6 +238,7 @@ public class ColonisationPanelController implements Initializable {
     private volatile boolean fleetOptimalMarketSearchInProgress;
     private final Map<String, Color> fleetCargoRowHighlightByMergeKey = new HashMap<>();
     private Tooltip fleetOptimalMarketHelpTooltip;
+    private Tooltip searchHelpTooltip;
 
     private boolean suppressArchitectComboListener;
 
@@ -343,6 +346,16 @@ public class ColonisationPanelController implements Initializable {
         }
         if (searchMoreFiltersButton != null) {
             searchMoreFiltersButton.setOnAction(e -> onSearchMoreFilters());
+        }
+        if (searchHelpButton != null) {
+            searchHelpTooltip = new Tooltip();
+            searchHelpTooltip.setWrapText(true);
+            searchHelpTooltip.setMaxWidth(360);
+            searchHelpTooltip.setShowDelay(Duration.millis(200));
+            searchHelpTooltip.setShowDuration(Duration.minutes(3));
+            searchHelpTooltip.setHideDelay(Duration.millis(800));
+            searchHelpTooltip.setText(localizationService.getString("colonisation.edcolonise.search.helpTooltip"));
+            searchHelpButton.setTooltip(searchHelpTooltip);
         }
         if (searchMapContainer != null) {
             try {
@@ -516,6 +529,9 @@ public class ColonisationPanelController implements Initializable {
         }
         if (searchColonisableButton != null) {
             searchColonisableButton.setText(localizationService.getString("colonisation.edcolonise.search"));
+        }
+        if (searchHelpTooltip != null) {
+            searchHelpTooltip.setText(localizationService.getString("colonisation.edcolonise.search.helpTooltip"));
         }
         if (updateTradeStationButton != null) {
             updateTradeStationButton.setText(localizationService.getString("colonisation.updateTradeStation"));
