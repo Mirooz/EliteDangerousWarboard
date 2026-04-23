@@ -1049,7 +1049,7 @@
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
-    -fx-padding: 2 0;
+    -fx-padding: 1 1 1 1;
 }
 
 /* Menus contextuels génériques (champs texte, etc.) — discret */
@@ -1129,6 +1129,7 @@
 /* Menu « choix du site » sur la carte (CustomMenuItem) : survol uniquement sous la souris (pas :focused seul) + curseur main */
 .context-menu .menu-item.colonisation-site-picker-menu-item {
     -fx-cursor: hand;
+    -fx-padding: 0 1px 0 1px;
 }
 .context-menu .menu-item.colonisation-site-picker-menu-item:focused {
     -fx-background-color: transparent;
@@ -1142,9 +1143,22 @@
     -fx-background-color: rgba(255, 107, 0, 0.22);
 }
 .context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row {
-    -fx-padding: 4px 10px 4px 8px;
+    -fx-padding: 8px 10px 8px 8px;
     -fx-alignment: center-left;
     -fx-cursor: hand;
+}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-gap-thin-below {
+    -fx-border-color: transparent transparent #0a0a0a transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+.context-menu .menu-item.colonisation-site-picker-surface-orbital-separator {
+    -fx-padding: 2 0 4 0;
+}
+.context-menu .menu-item.colonisation-site-picker-surface-orbital-separator .separator .line {
+    -fx-border-color: derive(-fx-elite-orange, -4%) derive(-fx-elite-orange, -4%) derive(-fx-elite-orange, -18%) derive(-fx-elite-orange, -4%);
+    -fx-border-width: 1px 0 2px 0;
+    -fx-padding: 2 6 2 6;
+    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(255, 120, 0, 0.35) 18%, rgba(255, 120, 0, 0.55) 50%, rgba(255, 120, 0, 0.35) 82%, transparent 100%);
 }
 .context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-icon-wrap {
     -fx-padding: 4px 5px;
@@ -1177,19 +1191,14 @@
     -fx-text-fill: #9defff;
 }
 
-.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-complete {
-    -fx-background-color: derive(-fx-elite-success, -42%);
-    -fx-background-radius: 6px;
-}
+.context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-complete,
 .context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-incomplete {
-    -fx-background-color: derive(-fx-elite-orange, -32%);
-    -fx-background-radius: 6px;
+    -fx-background-color: #000000;
+    -fx-background-radius: 1px;
 }
-.context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-row.colonisation-site-picker-row-status-complete {
-    -fx-background-color: derive(-fx-elite-success, -30%);
-}
+.context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-row.colonisation-site-picker-row-status-complete,
 .context-menu .menu-item.colonisation-site-picker-menu-item:hover .colonisation-site-picker-row.colonisation-site-picker-row-status-incomplete {
-    -fx-background-color: derive(-fx-elite-orange, -22%);
+    -fx-background-color: #0a0a0a;
 }
 .context-menu .menu-item.colonisation-site-picker-menu-item .colonisation-site-picker-row.colonisation-site-picker-row-status-complete .colonisation-site-picker-icon-wrap {
     -fx-border-color: -fx-elite-success;

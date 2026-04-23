@@ -113,7 +113,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private Image exobioImage;
     private Image mappedImage;
     /**
-     * Icônes chantier colonisation (vue architecte) : alignées sur {@code /images/stations/}.
+     * Icônes chantier colonisation (vue architecte) : surface {@code settlement.png}, orbital {@code orbital.png}.
      */
     private Image colonisationStationPortOrbitalImage;
     private Image colonisationStationPortSurfaceImage;
@@ -270,28 +270,22 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             System.err.println("Erreur lors du chargement de l'image mapped.png: " + e.getMessage());
         }
         try {
-            var o = getClass().getResourceAsStream("/images/stations/port.png");
-            if (o != null) {
-                colonisationStationPortOrbitalImage = new Image(o);
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur chargement images/stations/port.png: " + e.getMessage());
-        }
-        try {
-            var s = getClass().getResourceAsStream("/images/stations/planetport.png");
-            if (s != null) {
-                colonisationStationPortSurfaceImage = new Image(s);
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur chargement images/stations/planetport.png: " + e.getMessage());
-        }
-        try {
             var settlement = getClass().getResourceAsStream("/images/colonisation/settlement.png");
             if (settlement != null) {
-                colonisationSettlementImage = new Image(settlement);
+                Image sImg = new Image(settlement);
+                colonisationSettlementImage = sImg;
+                colonisationStationPortSurfaceImage = sImg;
             }
         } catch (Exception e) {
             System.err.println("Erreur chargement images/colonisation/settlement.png: " + e.getMessage());
+        }
+        try {
+            var orbital = getClass().getResourceAsStream("/images/colonisation/orbital.png");
+            if (orbital != null) {
+                colonisationStationPortOrbitalImage = new Image(orbital);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur chargement images/colonisation/orbital.png: " + e.getMessage());
         }
 
         // Charger les images par type de planète
@@ -1855,27 +1849,76 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         cm.getStyleClass().add("colonisation-colony-cascade-popup");
         String orb = localizationService.getString("colonisation.architect.siteOrbital");
         String surf = localizationService.getString("colonisation.architect.siteSurface");
+
+        List<ColonisationArchitectMapCaptionLine> surface = new ArrayList<>();
+        List<ColonisationArchitectMapCaptionLine> orbital = new ArrayList<>();
         for (ColonisationArchitectMapCaptionLine line : lines) {
-            Node row = buildColonisationSitePickerMenuRow(line, orb, surf);
-            CustomMenuItem it = new CustomMenuItem(row, true);
-            it.getStyleClass().addAll("colonisation-colony-cascade-menu-item", "colonisation-site-picker-menu-item");
-            it.setMnemonicParsing(false);
-            long mid = line.marketId();
-            it.setOnAction(e -> {
-                if (colonisationStationClickHandler != null) {
-                    colonisationStationClickHandler.accept(mid);
-                }
-                cm.hide();
-            });
-            cm.getItems().add(it);
+            if (line == null) {
+                continue;
+            }
+            if (line.surfacePort()) {
+                surface.add(line);
+            } else {
+                orbital.add(line);
+            }
+        }
+
+        boolean bothKinds = !surface.isEmpty() && !orbital.isEmpty();
+
+        for (int i = 0; i < surface.size(); i++) {
+            SitePickerRowBorder border = i < surface.size() - 1 ? SitePickerRowBorder.THIN_BELOW : SitePickerRowBorder.NONE;
+            cm.getItems().add(createColonisationSitePickerMenuItem(cm, surface.get(i), orb, surf, border));
+        }
+        if (bothKinds) {
+            SeparatorMenuItem sep = new SeparatorMenuItem();
+            sep.getStyleClass().add("colonisation-site-picker-surface-orbital-separator");
+            cm.getItems().add(sep);
+        }
+        for (int i = 0; i < orbital.size(); i++) {
+            ColonisationArchitectMapCaptionLine line = orbital.get(i);
+            SitePickerRowBorder border = i < orbital.size() - 1
+                    ? SitePickerRowBorder.THIN_BELOW
+                    : SitePickerRowBorder.NONE;
+            cm.getItems().add(createColonisationSitePickerMenuItem(cm, line, orb, surf, border));
         }
         return cm;
+    }
+
+    private enum SitePickerRowBorder {
+        /** Pas de trait sous la ligne. */
+        NONE,
+        /** Trait fin noir entre deux entrées du même type. */
+        THIN_BELOW
+    }
+
+    private CustomMenuItem createColonisationSitePickerMenuItem(
+            ContextMenu cm,
+            ColonisationArchitectMapCaptionLine line,
+            String orb,
+            String surf,
+            SitePickerRowBorder bottomBorder) {
+        Node row = buildColonisationSitePickerMenuRow(line, orb, surf, bottomBorder);
+        CustomMenuItem it = new CustomMenuItem(row, true);
+        it.getStyleClass().addAll("colonisation-colony-cascade-menu-item", "colonisation-site-picker-menu-item");
+        it.setMnemonicParsing(false);
+        long mid = line.marketId();
+        it.setOnAction(e -> {
+            if (colonisationStationClickHandler != null) {
+                colonisationStationClickHandler.accept(mid);
+            }
+            cm.hide();
+        });
+        return it;
     }
 
     /**
      * Une ligne du menu « sites sur ce corps » : pastille port + libellé (survol géré en CSS sur le MenuItem parent).
      */
-    private Node buildColonisationSitePickerMenuRow(ColonisationArchitectMapCaptionLine line, String orb, String surf) {
+    private Node buildColonisationSitePickerMenuRow(
+            ColonisationArchitectMapCaptionLine line,
+            String orb,
+            String surf,
+            SitePickerRowBorder bottomBorder) {
         String name = line.siteLabel() != null ? line.siteLabel().strip() : "";
         if (name.isEmpty()) {
             name = "—";
@@ -1885,6 +1928,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         HBox row = new HBox(10);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add("colonisation-site-picker-row");
+        if (bottomBorder == SitePickerRowBorder.THIN_BELOW) {
+            row.getStyleClass().add("colonisation-site-picker-row-gap-thin-below");
+        }
         if (line.status() == ConstructionStatus.COMPLETE) {
             row.getStyleClass().add("colonisation-site-picker-row-status-complete");
         } else {
