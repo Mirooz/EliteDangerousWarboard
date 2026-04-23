@@ -25,6 +25,18 @@ public enum StarType {
         this.kValue = kValue;
     }
 
+    public static StarType getStarType(String label) {
+        if (label == null || label.isBlank()) return STAR;
+        if ( label.equals("Black Hole")) return  BLACK_HOLE;
+        if (label.equals("Neutron Star")) return NEUTRON_STAR;
+        if (label.startsWith("D")) return WHITE_DWARF;
+        if (label.startsWith("L") || label.startsWith("T") || label.startsWith("Y"))
+            return BROWN_DWARF;
+        if (label.startsWith("W"))
+            return WOLF_RAYET;
+        // fallback (O, B, A, F, G, K, M, TTS…)
+        return STAR;
+    }
     public static StarType fromString(String value) {
         if (value == null || value.isBlank()) return STAR;
 

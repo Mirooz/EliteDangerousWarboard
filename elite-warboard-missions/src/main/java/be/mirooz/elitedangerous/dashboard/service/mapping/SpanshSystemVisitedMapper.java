@@ -245,7 +245,7 @@ public final class SpanshSystemVisitedMapper {
                 .mapped(false)
                 .rings(br.getRings() != null && !br.getRings().isEmpty())
                 .starTypeString(starType)
-                .starType(StarType.fromString(starType))
+                .starType(StarType.getStarType(starType))
                 .stellarMass(valueOrZero(br.getSolarMasses()))
                 .build();
     }
@@ -327,12 +327,17 @@ public final class SpanshSystemVisitedMapper {
                         .filter(s -> s.getName().equalsIgnoreCase(g.getLocalisedName()))
                         .filter(s -> s.getSpecieName().equalsIgnoreCase(g.getSpecies()))
                         .filter(s -> s.getColor().equalsIgnoreCase(g.getVariant()))
-                        .findFirst().orElse(null);
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("No matching Spansh species found for system: " + planete.getStarSystem() + ", name: " + g.getLocalisedName() +
+                                ", species: " + g.getSpecies() + ", variant: " + g.getVariant()));
                 planete.setWasFootfalled(true);
                 planete.getConfirmedSpecies().stream()
                         .filter(s -> s.getId().equalsIgnoreCase(specie.getId()))
                         .findFirst()
-                        .orElseGet(() -> planete.createNewSpecies(specie, genusCodex,specie.getFdevname(),true));
+                        .orElseGet(() -> {
+                            assert specie != null;
+                            return planete.createNewSpecies(specie, genusCodex,specie.getFdevname(),true);
+                        });
 
                 SpeciesProbability speciesProbability = new SpeciesProbability(specie,100);
                 planete.getBioSpecies().add(new Scan(1, new ArrayList<>(List.of(speciesProbability))));
