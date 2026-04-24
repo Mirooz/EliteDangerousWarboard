@@ -234,11 +234,10 @@ final class EddnEventMappers {
         if (file == null || !file.isObject()) {
             return null;
         }
-        long eventMarketId = raw.path("MarketID").asLong(-1);
-        long fileMarketId = file.path("MarketID").asLong(-2);
-        if (eventMarketId > 0 && fileMarketId > 0 && eventMarketId != fileMarketId) {
-            return null; // fichier pas encore à jour pour ce marché
+        if (!matchingMarketIds(raw, file)) {
+            return null;
         }
+        long fileMarketId = file.path("MarketID").asLong(-1);
         JsonNode commodities = file.path("Items");
         if (!commodities.isArray() || commodities.isEmpty()) {
             return null;
@@ -248,7 +247,7 @@ final class EddnEventMappers {
         msg.put("timestamp", file.path("timestamp").asText(raw.path("timestamp").asText()));
         msg.put("systemName", file.path("StarSystem").asText(commanderStatus.getCurrentStarSystem()));
         msg.put("stationName", file.path("StationName").asText(commanderStatus.getCurrentStationName()));
-        msg.put("marketId", fileMarketId > 0 ? fileMarketId : eventMarketId);
+        msg.put("marketId", fileMarketId);
         JsonNode carrierDockingAccess = file.path("CarrierDockingAccess");
         if (!carrierDockingAccess.isMissingNode()) {
             msg.set("carrierDockingAccess", carrierDockingAccess);
@@ -277,11 +276,10 @@ final class EddnEventMappers {
         if (file == null || !file.isObject()) {
             return null;
         }
-        long eventMarketId = raw.path("MarketID").asLong(-1);
-        long fileMarketId = file.path("MarketID").asLong(-2);
-        if (eventMarketId > 0 && fileMarketId > 0 && eventMarketId != fileMarketId) {
+        if (!matchingMarketIds(raw, file)) {
             return null;
         }
+        long fileMarketId = file.path("MarketID").asLong(-1);
         JsonNode items = file.path("Items");
         if (!items.isArray() || items.isEmpty()) {
             return null;
@@ -301,7 +299,7 @@ final class EddnEventMappers {
         msg.put("timestamp", file.path("timestamp").asText(raw.path("timestamp").asText()));
         msg.put("systemName", file.path("StarSystem").asText(commanderStatus.getCurrentStarSystem()));
         msg.put("stationName", file.path("StationName").asText(commanderStatus.getCurrentStationName()));
-        msg.put("marketId", fileMarketId > 0 ? fileMarketId : eventMarketId);
+        msg.put("marketId", fileMarketId);
         msg.put("horizons", Boolean.TRUE.equals(commanderStatus.getHorizons()));
         msg.put("odyssey", Boolean.TRUE.equals(commanderStatus.getOdyssey()));
         msg.set("modules", modules);
@@ -313,11 +311,10 @@ final class EddnEventMappers {
         if (file == null || !file.isObject()) {
             return null;
         }
-        long eventMarketId = raw.path("MarketID").asLong(-1);
-        long fileMarketId = file.path("MarketID").asLong(-2);
-        if (eventMarketId > 0 && fileMarketId > 0 && eventMarketId != fileMarketId) {
+        if (!matchingMarketIds(raw, file)) {
             return null;
         }
+        long fileMarketId = file.path("MarketID").asLong(-1);
         JsonNode priceList = file.path("PriceList");
         if (!priceList.isArray() || priceList.isEmpty()) {
             return null;
@@ -337,7 +334,7 @@ final class EddnEventMappers {
         msg.put("timestamp", file.path("timestamp").asText(raw.path("timestamp").asText()));
         msg.put("systemName", file.path("StarSystem").asText(commanderStatus.getCurrentStarSystem()));
         msg.put("stationName", file.path("StationName").asText(commanderStatus.getCurrentStationName()));
-        msg.put("marketId", fileMarketId > 0 ? fileMarketId : eventMarketId);
+        msg.put("marketId", fileMarketId);
         msg.put("horizons", Boolean.TRUE.equals(commanderStatus.getHorizons()));
         msg.put("odyssey", Boolean.TRUE.equals(commanderStatus.getOdyssey()));
         msg.set("ships", ships);
@@ -377,6 +374,23 @@ final class EddnEventMappers {
     // ==================================================================
     //  Helpers
     // ==================================================================
+
+    /**
+     * Vérifie que le {@code MarketID} de l'event journal et celui du fichier compagnon
+     * (Market.json / Outfitting.json / Shipyard.json) sont bien présents ET identiques.
+     *
+     * <p>Si les deux divergent, c'est que le fichier compagnon n'a pas encore été rafraîchi
+     * par le jeu pour le marché du dernier event — publier dans cet état enverrait des données
+     * obsolètes (commodities d'un autre marché) à EDDN. On refuse donc la publication.</p>
+     *
+     * <p>Un {@code MarketID} absent (ou non-numérique) est également un signal d'incohérence :
+     * on refuse aussi — mieux vaut un event perdu qu'une donnée fausse côté EDDN.</p>
+     */
+    private static boolean matchingMarketIds(JsonNode raw, JsonNode file) {
+        long eventMarketId = raw.path("MarketID").asLong(-1);
+        long fileMarketId = file.path("MarketID").asLong(-2);
+        return eventMarketId > 0 && fileMarketId > 0 && eventMarketId == fileMarketId;
+    }
 
     private <T> T enrichAndConvert(JsonNode raw,
                                    Class<T> pojoClass,

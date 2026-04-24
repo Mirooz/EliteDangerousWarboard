@@ -989,10 +989,38 @@ components:
           type: string
         StarSystem:
           type: string
+        SystemAddress:
+          format: int64
+          type: integer
         Taxi:
           type: boolean
         Multicrew:
           type: boolean
+        StationFaction:
+          $ref: '#/components/schemas/StationFaction'
+        StationGovernment:
+          type: string
+        StationGovernment_Localised:
+          type: string
+        StationServices:
+          type: array
+          items:
+            type: string
+        StationEconomy:
+          type: string
+        StationEconomy_Localised:
+          type: string
+        StationEconomies:
+          type: array
+          items:
+            $ref: '#/components/schemas/StationEconomy'
+        DistFromStarLS:
+          format: double
+          type: number
+        ActiveFine:
+          type: boolean
+        LandingPads:
+          $ref: '#/components/schemas/LandingPads'
     CapiFcBartenderFinances:
       type: object
       properties:
@@ -1771,6 +1799,18 @@ components:
       format: date-time
       type: string
       example: 2022-03-10T16:15:50Z
+    LandingPads:
+      type: object
+      properties:
+        Small:
+          format: int32
+          type: integer
+        Medium:
+          format: int32
+          type: integer
+        Large:
+          format: int32
+          type: integer
     Landmark:
       type: object
       properties:
@@ -2116,6 +2156,23 @@ components:
           format: int64
           type: integer
         message:
+          type: string
+    StationEconomy:
+      type: object
+      properties:
+        Name:
+          type: string
+        Name_Localised:
+          type: string
+        Proportion:
+          format: double
+          type: number
+    StationFaction:
+      type: object
+      properties:
+        Name:
+          type: string
+        FactionState:
           type: string
     SystemResult:
       type: object
