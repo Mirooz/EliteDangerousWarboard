@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnJournalPublisher;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -74,6 +75,7 @@ public abstract class AbstractJumpHandler implements JournalEventHandler {
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de " + getJumpLabel() + ": " + e.getMessage());
         }
+        EddnJournalPublisher.getInstance().publish(jsonNode);
     }
 }
 

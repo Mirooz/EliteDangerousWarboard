@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProcessor;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnJournalPublisher;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -57,6 +58,7 @@ public class FSSBodySignalsHandler implements JournalEventHandler {
             System.err.println("❌ Erreur lors du traitement de l'événement FSSBodySignals: " + e.getMessage());
             e.printStackTrace();
         }
+        EddnJournalPublisher.getInstance().publish(jsonNode);
     }
 }
 

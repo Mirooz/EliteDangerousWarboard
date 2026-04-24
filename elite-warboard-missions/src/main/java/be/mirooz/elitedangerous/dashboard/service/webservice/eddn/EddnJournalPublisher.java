@@ -1,6 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
 
-import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.eddn.EddnSchemas;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,20 +10,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Set;
 
 /**
- * Observateur branché sur {@link JournalEventDispatcher#addPreDispatchListener} : reçoit chaque
- * événement journal (batch et live), détermine son schéma EDDN, enrichit le message avec le
- * contexte commandant si nécessaire, puis délègue à {@link EddnUploader} qui filtre les champs
- * personnels et publie.
+ * Point d'entrée unique de publication EDDN : invoqué par chaque {@code JournalEventHandler}
+ * dont l'événement est relayé à EDDN. Détermine le schéma cible, enrichit le message avec le
+ * contexte commandant, puis délègue à {@link EddnUploader} qui filtre les champs personnels
+ * et envoie effectivement au gateway.
  *
  * <p>Les événements {@code Docked}, {@code FSDJump}, {@code Location}, {@code CarrierJump},
  * {@code Scan}, {@code SAASignalsFound} vont sous le schéma générique {@code journal/v1}.
  * Les autres événements ont chacun leur schéma dédié.</p>
  *
  * <p>{@code NavRoute}, {@code Market}, {@code Outfitting}, {@code Shipyard} ne contiennent pas
- * la donnée utile dans l'event : on déclenche une lecture du fichier compagnon (
- * {@link EddnJournalFileReader}).</p>
+ * la donnée utile dans l'event : on déclenche une lecture du fichier compagnon
+ * ({@link EddnJournalFileReader}).</p>
  */
-public final class EddnJournalListener {
+public final class EddnJournalPublisher {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -33,17 +32,23 @@ public final class EddnJournalListener {
             "Docked", "FSDJump", "Location", "CarrierJump", "Scan", "SAASignalsFound"
     );
 
+    private static final EddnJournalPublisher INSTANCE = new EddnJournalPublisher();
+
     private final EddnUploader uploader = EddnUploader.getInstance();
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
 
-    public static EddnJournalListener install() {
-        EddnJournalListener listener = new EddnJournalListener();
-        JournalEventDispatcher.getInstance().addPreDispatchListener(listener::onEvent);
-        return listener;
+    private EddnJournalPublisher() {
     }
 
-    /** Visible pour test / main loop. */
-    public void onEvent(JsonNode jsonNode) {
+    public static EddnJournalPublisher getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Point d'entrée unique : à appeler depuis un {@code JournalEventHandler} une fois son traitement
+     * métier effectué. Ne lève jamais, ne bloque jamais l'appelant.
+     */
+    public void publish(JsonNode jsonNode) {
         if (jsonNode == null || !jsonNode.isObject()) {
             return;
         }
@@ -220,16 +225,32 @@ public final class EddnJournalListener {
             return;
         }
         msg.set("commodities", filtered);
+        // Augmentations EDDN (cf. README-EDDN-schemas : horizons/odyssey flags).
+        ensureHorizonsOdyssey(msg);
         uploader.publishMessage(EddnSchemas.COMMODITY_V3, msg);
     }
 
+    /**
+     * Règles d'élision EDDN (commodity/3) pour Market.json :
+     * <ul>
+     *   <li>Skip si {@code Category}/{@code categoryname} contient {@code NonMarketable} (limpets, etc.).</li>
+     *   <li>Skip si {@code Legality} est renseigné (commodity pas normalement tradée à ce marché).</li>
+     *   <li>Skip si aucun {@code Name}.</li>
+     * </ul>
+     */
     private boolean shouldSkipCommodity(JsonNode c) {
         if (c == null || !c.isObject()) {
             return true;
         }
-        // EDDN exige de ne pas publier les commodities non marchandes (rares, temporaires missions, etc.)
         String category = c.path("Category").asText("");
+        if (category.isEmpty()) {
+            category = c.path("categoryname").asText(""); // variante CAPI
+        }
         if (category.toLowerCase().contains("nonmarketable")) {
+            return true;
+        }
+        String legality = c.path("Legality").asText("");
+        if (!legality.isBlank()) {
             return true;
         }
         return !c.has("Name");
@@ -237,7 +258,7 @@ public final class EddnJournalListener {
 
     private ObjectNode buildCommodityEntry(JsonNode src) {
         ObjectNode out = MAPPER.createObjectNode();
-        out.put("name", src.path("Name").asText().toLowerCase());
+        out.put("name", cleanCommoditySymbol(src.path("Name").asText()));
         out.put("meanPrice", src.path("MeanPrice").asInt(0));
         out.put("buyPrice", src.path("BuyPrice").asInt(0));
         out.put("sellPrice", src.path("SellPrice").asInt(0));
@@ -250,6 +271,32 @@ public final class EddnJournalListener {
             out.set("statusFlags", statusFlags);
         }
         return out;
+    }
+
+    /**
+     * Nettoie le symbole commodity tel que retourné par {@code Market.json} / journal :
+     * <pre>
+     *   "$gold_name;"        -> "gold"
+     *   "$HydrogenFuel_Name;"-> "hydrogenfuel"
+     *   "Gold"               -> "gold"   (déjà clean)
+     * </pre>
+     * EDDN (schéma commodity/3) attend un symbole minuscule sans le wrapper {@code $..._name;}.
+     */
+    private static String cleanCommoditySymbol(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim().toLowerCase();
+        if (s.startsWith("$")) {
+            s = s.substring(1);
+        }
+        if (s.endsWith(";")) {
+            s = s.substring(0, s.length() - 1);
+        }
+        if (s.endsWith("_name")) {
+            s = s.substring(0, s.length() - "_name".length());
+        }
+        return s;
     }
 
     private void publishOutfittingFromFile(JsonNode raw) {

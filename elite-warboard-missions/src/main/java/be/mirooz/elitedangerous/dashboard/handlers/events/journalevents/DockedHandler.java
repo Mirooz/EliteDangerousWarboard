@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSt
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnJournalPublisher;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class DockedHandler implements JournalEventHandler {
@@ -34,5 +35,6 @@ public class DockedHandler implements JournalEventHandler {
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Location: " + e.getMessage());
         }
+        EddnJournalPublisher.getInstance().publish(jsonNode);
     }
 }

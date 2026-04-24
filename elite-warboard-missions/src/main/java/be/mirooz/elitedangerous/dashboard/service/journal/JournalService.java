@@ -13,7 +13,6 @@ import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
-import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnJournalListener;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -57,9 +56,6 @@ public class JournalService {
     private AnalyticsService analyticsService = AnalyticsService.getInstance();
     private JournalService() {
         this.dispatcher = JournalEventDispatcher.getInstance();
-        // Branche le client EDDN sur le dispatcher dès le boot du service.
-        // Le listener gate sur isBatchLoading() + préférence : aucun envoi pendant le replay.
-        EddnJournalListener.install();
     }
 
     private static final JournalService INSTANCE = new JournalService();
