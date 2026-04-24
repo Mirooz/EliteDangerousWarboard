@@ -44,6 +44,11 @@
         <plugins>
             <!--
               1) Téléchargement des schémas JSON Schema EDDN depuis eddn.edcd.io.
+
+                 Configuration placée au niveau racine du plugin (hors <executions>) pour pouvoir
+                 déclencher le download en double-cliquant sur "antrun:run" dans le panneau Maven
+                 d'IntelliJ — même pattern que elite-backend-client (download OpenAPI).
+
                  usetimestamp=true : ne retélécharge un schéma que s'il a été modifié côté serveur.
                  ignoreerrors=true : le build ne casse pas en offline si les schémas sont déjà présents.
             -->
@@ -51,58 +56,49 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>fetch-eddn-schemas</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <echo message="Fetching EDDN JSON schemas from ${eddn.schemas.base}/ into ${eddn.schemas.dir}"/>
-                                <mkdir dir="${eddn.schemas.dir}"/>
-                                <!-- On renomme les fichiers vers des noms courts ("approachsettlement.json" etc.) pour que
-                                     jsonschema2pojo génère des noms de classes propres. -->
-                                <get dest="${eddn.schemas.dir}/approachsettlement.json"  src="${eddn.schemas.base}/approachsettlement-v1.0.json"  usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/codexentry.json"          src="${eddn.schemas.base}/codexentry-v1.0.json"          usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/commodity.json"           src="${eddn.schemas.base}/commodity-v3.0.json"           usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/dockingdenied.json"       src="${eddn.schemas.base}/dockingdenied-v1.0.json"       usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/dockinggranted.json"      src="${eddn.schemas.base}/dockinggranted-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/fcmaterials_capi.json"    src="${eddn.schemas.base}/fcmaterials_capi-v1.0.json"    usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/fcmaterials_journal.json" src="${eddn.schemas.base}/fcmaterials_journal-v1.0.json" usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/fssallbodiesfound.json"   src="${eddn.schemas.base}/fssallbodiesfound-v1.0.json"   usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/fssbodysignals.json"      src="${eddn.schemas.base}/fssbodysignals-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/fssdiscoveryscan.json"    src="${eddn.schemas.base}/fssdiscoveryscan-v1.0.json"    usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/fsssignaldiscovered.json" src="${eddn.schemas.base}/fsssignaldiscovered-v1.0.json" usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/journal.json"             src="${eddn.schemas.base}/journal-v1.0.json"             usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/navbeaconscan.json"       src="${eddn.schemas.base}/navbeaconscan-v1.0.json"       usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/navroute.json"            src="${eddn.schemas.base}/navroute-v1.0.json"            usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/outfitting.json"          src="${eddn.schemas.base}/outfitting-v2.0.json"          usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/scanbarycentre.json"      src="${eddn.schemas.base}/scanbarycentre-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
-                                <get dest="${eddn.schemas.dir}/shipyard.json"            src="${eddn.schemas.base}/shipyard-v2.0.json"            usetimestamp="true" ignoreerrors="true"/>
+                <configuration>
+                    <target>
+                        <echo message="Fetching EDDN JSON schemas from ${eddn.schemas.base}/ into ${eddn.schemas.dir}"/>
+                        <mkdir dir="${eddn.schemas.dir}"/>
+                        <!-- On renomme les fichiers vers des noms courts ("approachsettlement.json" etc.) pour que
+                             jsonschema2pojo génère des noms de classes propres. -->
+                        <get dest="${eddn.schemas.dir}/approachsettlement.json"  src="${eddn.schemas.base}/approachsettlement-v1.0.json"  usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/codexentry.json"          src="${eddn.schemas.base}/codexentry-v1.0.json"          usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/commodity.json"           src="${eddn.schemas.base}/commodity-v3.0.json"           usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/dockingdenied.json"       src="${eddn.schemas.base}/dockingdenied-v1.0.json"       usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/dockinggranted.json"      src="${eddn.schemas.base}/dockinggranted-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/fcmaterials_capi.json"    src="${eddn.schemas.base}/fcmaterials_capi-v1.0.json"    usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/fcmaterials_journal.json" src="${eddn.schemas.base}/fcmaterials_journal-v1.0.json" usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/fssallbodiesfound.json"   src="${eddn.schemas.base}/fssallbodiesfound-v1.0.json"   usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/fssbodysignals.json"      src="${eddn.schemas.base}/fssbodysignals-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/fssdiscoveryscan.json"    src="${eddn.schemas.base}/fssdiscoveryscan-v1.0.json"    usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/fsssignaldiscovered.json" src="${eddn.schemas.base}/fsssignaldiscovered-v1.0.json" usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/journal.json"             src="${eddn.schemas.base}/journal-v1.0.json"             usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/navbeaconscan.json"       src="${eddn.schemas.base}/navbeaconscan-v1.0.json"       usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/navroute.json"            src="${eddn.schemas.base}/navroute-v1.0.json"            usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/outfitting.json"          src="${eddn.schemas.base}/outfitting-v2.0.json"          usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/scanbarycentre.json"      src="${eddn.schemas.base}/scanbarycentre-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
+                        <get dest="${eddn.schemas.dir}/shipyard.json"            src="${eddn.schemas.base}/shipyard-v2.0.json"            usetimestamp="true" ignoreerrors="true"/>
 
-                                <!--
-                                  Patch commodity/3 : la définition 'levelType' ("enum": [0, 1, 2, 3, ""]) mélange
-                                  int et string vide, ce que jsonschema2pojo dégrade en enum Java String (value(),
-                                  @JsonValue String) — ce qui sérialise "3" au lieu de 3 et fait rejeter la requête
-                                  par la gateway EDDN (400 "'3' is not one of [0, 1, 2, 3, '']").
+                        <!--
+                          Patch commodity/3 : la définition 'levelType' ("enum": [0, 1, 2, 3, ""]) mélange
+                          int et string vide, ce que jsonschema2pojo dégrade en enum Java String (value(),
+                          @JsonValue String) — ce qui sérialise "3" au lieu de 3 et fait rejeter la requête
+                          par la gateway EDDN (400 "'3' is not one of [0, 1, 2, 3, '']").
 
-                                  On remplace la définition par un simple "type": "integer" AVANT que
-                                  jsonschema2pojo la lise. Les ints stockBracket/demandBracket deviennent Long
-                                  et restent sérialisés comme JSON numbers. Le cas "" (CAPI edge case, jamais
-                                  rencontré via Market.json) est accepté pragmatiquement comme 0.
+                          On remplace la définition par un simple "type": "integer" AVANT que
+                          jsonschema2pojo la lise. Les ints stockBracket/demandBracket deviennent Long
+                          et restent sérialisés comme JSON numbers. Le cas "" (CAPI edge case, jamais
+                          rencontré via Market.json) est accepté pragmatiquement comme 0.
 
-                                  Idempotent : la regex ne matchera plus après remplacement.
-                                -->
-                                <replaceregexp file="${eddn.schemas.dir}/commodity.json"
-                                               match='"enum"\s*:\s*\[\s*0\s*,\s*1\s*,\s*2\s*,\s*3\s*,\s*""\s*\]'
-                                               replace='"type": "integer"'
-                                               flags="g"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
+                          Idempotent : la regex ne matchera plus après remplacement.
+                        -->
+                        <replaceregexp file="${eddn.schemas.dir}/commodity.json"
+                                       match='"enum"\s*:\s*\[\s*0\s*,\s*1\s*,\s*2\s*,\s*3\s*,\s*""\s*\]'
+                                       replace='"type": "integer"'
+                                       flags="g"/>
+                    </target>
+                </configuration>
             </plugin>
 
             <!--
