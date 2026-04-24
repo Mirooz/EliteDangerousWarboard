@@ -119,7 +119,7 @@ public enum BodyType {
             case "Water world" -> {
                 return WATER_WORLD;
             }
-            case "Ice body" -> {
+            case "Icy body" -> {
                 return ICY;
             }
             case "Rocky body" -> {
