@@ -151,24 +151,29 @@ public class SpanshFacade {
     /**
      * Recherche des corps d'un système via {@code GET /api/spansh/bodies/search} (client généré {@link SpanshControllerApi#apiSpanshBodiesSearchGet}).
      *
-     * @param systemName nom du système (requis)
+     * @param systemName    nom du système (requis si {@code systemId64} absent)
+     * @param systemId64    identifiant 64 bits du système (journal {@code SystemAddress} ou EdColonise {@code systemID}) — optionnel mais recommandé
      * @param commanderName nom du commandant (query optionnelle côté backend)
      */
-    public SpanshSearchResponseDTO searchSpanshBodiesBySystem(String systemName, String commanderName) throws Exception {
-        if (systemName == null || systemName.isBlank()) {
-            throw new IllegalArgumentException("systemName ne peut pas être vide");
+    public SpanshSearchResponseDTO searchSpanshBodiesBySystem(String systemName, Long systemId64, String commanderName) throws Exception {
+        boolean hasName = systemName != null && !systemName.isBlank();
+        boolean hasId = systemId64 != null && systemId64 != 0L;
+        if (!hasName && !hasId) {
+            throw new IllegalArgumentException("systemName ou systemId64 requis");
         }
         long t0 = System.nanoTime();
-        String sys = systemName.trim();
+        String sys = hasName ? systemName.trim() : null;
         String cmd = commanderName != null && !commanderName.isBlank() ? commanderName : "(none)";
-        LOG.info("Spansh: apiSpanshBodiesSearchGet(systemName=" + sys + ", commanderName=" + cmd + ") — démarrage");
+        Long id = hasId ? systemId64 : null;
+        LOG.info("Spansh: apiSpanshBodiesSearchGet(systemName=" + sys + ", systemId64=" + id
+                + ", commanderName=" + cmd + ") — démarrage");
         try {
-            SpanshSearchResponseDTO out = spanshApi.apiSpanshBodiesSearchGet(commanderName, sys);
+            SpanshSearchResponseDTO out = spanshApi.apiSpanshBodiesSearchGet(commanderName, id, sys);
             logSpanshDone("apiSpanshBodiesSearchGet", t0);
             return out;
         } catch (ApiException e) {
             logSpanshFailure("apiSpanshBodiesSearchGet", e);
-            throw new Exception("Erreur Spansh (bodies/search, système: " + systemName + "): HTTP "
+            throw new Exception("Erreur Spansh (bodies/search, système: " + sys + ", id64: " + id + "): HTTP "
                     + e.getCode() + " - " + e.getMessage(), e);
         }
     }
@@ -176,8 +181,15 @@ public class SpanshFacade {
     /**
      * Surcharge sans commandant (query {@code commanderName} absente).
      */
+    public SpanshSearchResponseDTO searchSpanshBodiesBySystem(String systemName, Long systemId64) throws Exception {
+        return searchSpanshBodiesBySystem(systemName, systemId64, null);
+    }
+
+    /**
+     * Surcharge legacy : recherche par nom uniquement (sans identifiant 64 bits).
+     */
     public SpanshSearchResponseDTO searchSpanshBodiesBySystem(String systemName) throws Exception {
-        return searchSpanshBodiesBySystem(systemName, null);
+        return searchSpanshBodiesBySystem(systemName, null, null);
     }
 
     private static void logSpanshDone(String operation, long startNanos) {

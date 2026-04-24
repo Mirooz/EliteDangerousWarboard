@@ -30,28 +30,40 @@ public final class SpanshSystemVisitedService {
     }
 
     public SpanshSearchResponseDTO fetchSpanshBodiesSearch(String systemName) throws IOException {
-        if (systemName == null || systemName.isBlank()) {
-            throw new IOException("System name is blank");
+        return fetchSpanshBodiesSearch(systemName, null);
+    }
+
+    public SpanshSearchResponseDTO fetchSpanshBodiesSearch(String systemName, Long systemId64) throws IOException {
+        boolean hasName = systemName != null && !systemName.isBlank();
+        boolean hasId = systemId64 != null && systemId64 != 0L;
+        if (!hasName && !hasId) {
+            throw new IOException("System name and id are blank");
         }
-        String key = systemName.trim();
+        String key = hasName ? systemName.trim() : null;
         try {
-            return spanshFacade.searchSpanshBodiesBySystem(key);
+            return spanshFacade.searchSpanshBodiesBySystem(key, hasId ? systemId64 : null);
         } catch (Exception e) {
-            throw new IOException("Spansh bodies/search failed for system: " + key, e);
+            throw new IOException("Spansh bodies/search failed for system: " + key + " (id64=" + systemId64 + ")", e);
         }
     }
 
     public SystemVisited fetchSystemVisited(String systemName) throws IOException {
-        if (systemName == null || systemName.isBlank()) {
-            throw new IOException("System name is blank");
+        return fetchSystemVisited(systemName, null);
+    }
+
+    public SystemVisited fetchSystemVisited(String systemName, Long systemId64) throws IOException {
+        boolean hasName = systemName != null && !systemName.isBlank();
+        boolean hasId = systemId64 != null && systemId64 != 0L;
+        if (!hasName && !hasId) {
+            throw new IOException("System name and id are blank");
         }
-        String key = systemName.trim();
+        String key = hasName ? systemName.trim() : ("#" + systemId64);
         SystemVisited cached = systemVisitedByName.get(key);
         if (cached != null) {
             return cached;
         }
-        SpanshSearchResponseDTO dto = fetchSpanshBodiesSearch(key);
-        SystemVisited fresh = SpanshSystemVisitedMapper.toSystemVisited(dto, key);
+        SpanshSearchResponseDTO dto = fetchSpanshBodiesSearch(hasName ? systemName : null, hasId ? systemId64 : null);
+        SystemVisited fresh = SpanshSystemVisitedMapper.toSystemVisited(dto, hasName ? key : null);
         SystemVisited previous = systemVisitedByName.putIfAbsent(key, fresh);
         return previous != null ? previous : fresh;
     }

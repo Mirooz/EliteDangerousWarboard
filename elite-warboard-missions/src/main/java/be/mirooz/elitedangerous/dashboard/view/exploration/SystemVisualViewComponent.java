@@ -1496,6 +1496,26 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         target.setCelesteBodies(merged);
     }
 
+    /**
+     * Extrait l'identifiant 64 bits du système ({@code SystemAddress} des journaux Elite) à partir
+     * du premier corps céleste connu. Retourne {@code null} si aucun corps n'a d'adresse valide.
+     */
+    private static Long extractSystemAddress(SystemVisited sv) {
+        if (sv == null || sv.getCelesteBodies() == null) {
+            return null;
+        }
+        for (var body : sv.getCelesteBodies()) {
+            if (body == null) {
+                continue;
+            }
+            long addr = body.getSystemAddress();
+            if (addr != 0L) {
+                return addr;
+            }
+        }
+        return null;
+    }
+
     private void scheduleSpanshOnlineDataHydration(SystemVisited displayed) {
         if (spanshOnlineHydrationSuppressed) {
             return;
@@ -1507,9 +1527,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             return;
         }
         final String sysKey = displayed.getSystemName().trim();
+        final Long sysId64 = extractSystemAddress(displayed);
         Thread t = new Thread(() -> {
             try {
-                SystemVisited spanshSv = SpanshSystemVisitedService.getInstance().fetchSystemVisited(sysKey);
+                SystemVisited spanshSv = SpanshSystemVisitedService.getInstance().fetchSystemVisited(sysKey, sysId64);
                 Platform.runLater(() -> {
                     if (currentSystem == null || currentSystem.getSystemName() == null) {
                         return;

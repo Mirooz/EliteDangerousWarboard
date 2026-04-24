@@ -458,6 +458,11 @@ paths:
         in: query
         schema:
           type: string
+      - name: systemId64
+        in: query
+        schema:
+          format: int64
+          type: integer
       - name: systemName
         in: query
         schema:

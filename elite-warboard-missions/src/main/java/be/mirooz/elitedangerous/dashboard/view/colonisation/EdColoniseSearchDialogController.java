@@ -381,6 +381,7 @@ public class EdColoniseSearchDialogController implements Initializable {
         if (systemName == null || systemName.isBlank()) {
             return;
         }
+        final Long systemId64 = r.getSystemID();
         Platform.runLater(() -> {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/exploration/system-visual-view.fxml"));
@@ -405,7 +406,7 @@ public class EdColoniseSearchDialogController implements Initializable {
 
                 Thread t = new Thread(() -> {
                     try {
-                        var visited = spanshSystemVisitedService.fetchSystemVisited(systemName);
+                        var visited = spanshSystemVisitedService.fetchSystemVisited(systemName, systemId64);
                         Platform.runLater(() -> {
                             if (!detailStage.isShowing()) {
                                 return;

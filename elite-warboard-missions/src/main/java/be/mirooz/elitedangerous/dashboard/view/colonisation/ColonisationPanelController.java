@@ -1410,11 +1410,16 @@ public class ColonisationPanelController implements Initializable {
             return;
         }
         final String requestedSystem = starSystem.trim();
+        final Long requestedSystemId64 = (selectedArchitectArch != null
+                && Objects.equals(selectedArchitectArch.getStarSystem(), requestedSystem)
+                && selectedArchitectArch.getSystemAddress() != 0L)
+                        ? selectedArchitectArch.getSystemAddress()
+                        : null;
         architectSystemVisualView.setPendingSystemTitle(requestedSystem);
         architectSystemVisualView.showSpanshLoadingPlaceholder();
         Thread t = new Thread(() -> {
             try {
-                var visited = spanshSystemVisitedService.fetchSystemVisited(requestedSystem);
+                var visited = spanshSystemVisitedService.fetchSystemVisited(requestedSystem, requestedSystemId64);
                 Map<Integer, String> bodyNames = new HashMap<>();
                 if (visited != null && visited.getCelesteBodies() != null) {
                     for (var body : visited.getCelesteBodies()) {
@@ -1682,9 +1687,10 @@ public class ColonisationPanelController implements Initializable {
         if (searchSystemVisualView != null) {
             searchSystemVisualView.showSpanshLoadingPlaceholder();
         }
+        final Long candidateSystemId64 = candidate.getSystemID();
         Thread t = new Thread(() -> {
             try {
-                var visited = spanshSystemVisitedService.fetchSystemVisited(candidate.getSystemName());
+                var visited = spanshSystemVisitedService.fetchSystemVisited(candidate.getSystemName(), candidateSystemId64);
                 Platform.runLater(() -> {
                     if (searchSystemVisualView != null) {
                         searchSystemVisualView.displaySystem(visited, true);
