@@ -78,6 +78,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -943,21 +944,6 @@ public class ColonisationPanelController implements Initializable {
             showArchitectMapConstructionOverlay(site);
             return;
         }
-    }
-
-    private ConstructionSiteRow constructionSiteRowFromDock(ColonisationDockEntry site) {
-        String sys = site.getStarSystem() != null ? site.getStarSystem() : selectedArchitectStarSystem;
-        ColonisationConstruction c = site.getConstruction();
-        String siteLabel = site.getSiteNameLocalised();
-        if (siteLabel == null || siteLabel.isBlank()) {
-            siteLabel = site.getStationNameRaw() != null ? site.getStationNameRaw() : "";
-        }
-        return new ConstructionSiteRow(
-                sys != null ? sys : "",
-                site.getMarketId(),
-                siteLabel,
-                c != null ? c.getConstructionProgress() : 0,
-                c != null ? c.getStatus() : ConstructionStatus.IN_PROGRESS);
     }
 
     private void selectConstructionRow(ConstructionSiteRow row) {
@@ -2349,6 +2335,11 @@ public class ColonisationPanelController implements Initializable {
             if (selectedConstructionRow != null && selectedConstructionRow.getMarketId() == marketId) {
                 Platform.runLater(this::refreshConstructionDetailPanel);
             }
+            // L'overlay de la carte contient aussi le dropdown + la section « Impact » : on le reconstruit
+            // si c'est le même site que celui actuellement ouvert.
+            if (architectMapOverlayDockMarketId != null && architectMapOverlayDockMarketId == marketId) {
+                Platform.runLater(this::refreshArchitectMapConstructionOverlayIfOpen);
+            }
         };
 
         Runnable rebuildCascadeMenu = () -> {
@@ -3714,7 +3705,9 @@ public class ColonisationPanelController implements Initializable {
     }
 
     public static final class ConstructionSiteRow {
+        @Getter
         private final String starSystem;
+        @Getter
         private final long marketId;
         private final String siteLabel;
         private final double progress;
@@ -3726,30 +3719,6 @@ public class ColonisationPanelController implements Initializable {
             this.siteLabel = siteLabel;
             this.progress = progress;
             this.status = status;
-        }
-
-        public String getStarSystem() {
-            return starSystem;
-        }
-
-        public long getMarketId() {
-            return marketId;
-        }
-
-        public String getSiteLabel() {
-            return siteLabel;
-        }
-
-        public ConstructionStatus getConstructionStatus() {
-            return status;
-        }
-
-        public String getProgressLabel() {
-            double p = progress;
-            if (p >= 0 && p <= 1.0) {
-                p = p * 100.0;
-            }
-            return String.format("%.1f %%", p);
         }
 
     }
