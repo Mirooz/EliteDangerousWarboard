@@ -106,17 +106,47 @@ public enum BodyType {
 
     public static BodyType getBodyType(String value) {
         if(value == null) return UNKNOWN;
-        if(value.equals("Earth-like world")) return EARTHLIKE;
-        if(value.equals("Water world")) return WATER_WORLD;
-        if(value.equals("Ice body")) return ICY;
-        if(value.equals("Rocky body")) return ROCKY;
-        if(value.equals("Rocky Ice world")) return ROCKY_ICE;
-        if(value.equals("Ammonia world")) return AMMONIA;
-        if(value.equals("Class I gas giant")) return GAS_GIANT_I;
-        if(value.equals("Class II gas giant")) return GAS_GIANT_II;
-        if(value.equals("Class III gas giant")) return GAS_GIANT_III;
-        if(value.equals("Class IV gas giant")) return GAS_GIANT_IV;
-        if(value.equals("Class V gas giant")) return GAS_GIANT_V;
+        switch (value) {
+            case "Metal-rich body" -> {
+                return METAL_RICH;
+            }
+            case "High metal content world" -> {
+                return HIGH_METAL_CONTENT;
+            }
+            case "Earth-like world" -> {
+                return EARTHLIKE;
+            }
+            case "Water world" -> {
+                return WATER_WORLD;
+            }
+            case "Ice body" -> {
+                return ICY;
+            }
+            case "Rocky body" -> {
+                return ROCKY;
+            }
+            case "Rocky Ice world" -> {
+                return ROCKY_ICE;
+            }
+            case "Ammonia world" -> {
+                return AMMONIA;
+            }
+            case "Class I gas giant" -> {
+                return GAS_GIANT_I;
+            }
+            case "Class II gas giant" -> {
+                return GAS_GIANT_II;
+            }
+            case "Class III gas giant" -> {
+                return GAS_GIANT_III;
+            }
+            case "Class IV gas giant" -> {
+                return GAS_GIANT_IV;
+            }
+            case "Class V gas giant" -> {
+                return GAS_GIANT_V;
+            }
+        }
         if(value.contains("Helium rich gas giant")) return HELIUM_RICH_GG;
         if(value.contains("Helium gas giant")) return HELIUM_GG;
         if(value.contains("gas giant")) return GAS_GIANT;
