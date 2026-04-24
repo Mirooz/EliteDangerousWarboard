@@ -1,6 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +25,9 @@ public abstract class ACelesteBody {
 
     protected String timestamp;
 
-    @JsonIgnore
+    // JsonNode est un type natif Jackson : il est (dé)sérialisé directement en arbre JSON
+    // sans subir le default-typing polymorphique. Conservé pour permettre l'affichage
+    // "JSON brut" du body dans la vue exploration.
     protected JsonNode jsonNode;
     protected Double lsDistance;
     // Informations de base
