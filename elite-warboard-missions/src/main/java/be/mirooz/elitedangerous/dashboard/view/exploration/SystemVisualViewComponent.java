@@ -799,6 +799,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Affiche les corps célestes d'un système dans la vue visuelle avec tri orrery et liens visuels
      */
     public void displaySystem(SystemVisited system,boolean forceRefresh) {
+        if (DashboardContext.getInstance().isBatchLoading()) {
+            return;
+        }
         Platform.runLater(() -> {
             hideSpanshLoadingLayer();
             // Fermer le panneau JSON si un nouveau système est sélectionné
@@ -2690,6 +2693,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Met à jour la liste des corps à gauche
      */
     private void updateBodiesList(SystemVisited system) {
+
+        if (DashboardContext.getInstance().isBatchLoading()){
+            return;
+        }
         if (bodiesListContainer == null) {
             return;
         }
