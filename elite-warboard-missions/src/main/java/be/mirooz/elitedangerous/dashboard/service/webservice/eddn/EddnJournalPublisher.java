@@ -159,6 +159,13 @@ public final class EddnJournalPublisher {
 
     private void publishJournalSchema(JsonNode raw) {
         ObjectNode msg = (ObjectNode) raw.deepCopy();
+        String event = msg.path("event").asText("");
+        // Spec journal-README : on Location, Latitude/Longitude sont des données personnelles à exclure.
+        // (Note : pour ApproachSettlement, au contraire, elles DOIVENT être présentes — autre schéma.)
+        if ("Location".equals(event)) {
+            msg.remove("Latitude");
+            msg.remove("Longitude");
+        }
         ensureStarSystem(msg);
         ensureStarPosAndSystemAddress(msg);
         ensureHorizonsOdyssey(msg);
@@ -202,9 +209,19 @@ public final class EddnJournalPublisher {
      * EDDN conforme au schéma {@code fsssignaldiscovered/1} qui exige un tableau {@code signals[]}
      * et interdit les champs {@code SignalName / SignalType / IsStation / ...} au top-level.
      */
+    /** Valeurs {@code USSType} dont le signal ne doit JAMAIS être publié (spec EDDN). */
+    private static final String USS_TYPE_MISSION_TARGET = "$USS_Type_MissionTarget;";
+
+    /** Champs à supprimer de chaque signal (spec EDDN : PII + éphémères). */
+    private static final Set<String> FSS_SIGNAL_DROP_FIELDS = Set.of("TimeRemaining");
+
     private void publishFssSignalDiscovered(JsonNode raw) {
         if (!raw.has("SignalName")) {
             return; // schéma : SignalName est requis dans l'item
+        }
+        // Spec : drop l'event entier si USSType == $USS_Type_MissionTarget; (personnel au joueur).
+        if (USS_TYPE_MISSION_TARGET.equals(raw.path("USSType").asText(""))) {
+            return;
         }
         ObjectNode msg = MAPPER.createObjectNode();
         msg.put("timestamp", raw.path("timestamp").asText());
@@ -215,9 +232,14 @@ public final class EddnJournalPublisher {
 
         ObjectNode signal = MAPPER.createObjectNode();
         raw.fields().forEachRemaining(e -> {
-            if (!FSS_SIGNAL_TOP_LEVEL_FIELDS.contains(e.getKey())) {
-                signal.set(e.getKey(), e.getValue());
+            String key = e.getKey();
+            if (FSS_SIGNAL_TOP_LEVEL_FIELDS.contains(key)) {
+                return;
             }
+            if (FSS_SIGNAL_DROP_FIELDS.contains(key)) {
+                return;
+            }
+            signal.set(key, e.getValue());
         });
         if (!signal.has("timestamp")) {
             signal.put("timestamp", raw.path("timestamp").asText());
@@ -371,7 +393,7 @@ public final class EddnJournalPublisher {
         }
         for (JsonNode m : items) {
             String name = m.path("Name").asText("");
-            if (name.isEmpty() || isNonShipModule(name)) {
+            if (name.isEmpty() || !isEddnOutfittingModule(name)) {
                 continue;
             }
             modules.add(name.toLowerCase());
@@ -383,12 +405,18 @@ public final class EddnJournalPublisher {
         uploader.publishMessage(EddnSchemas.OUTFITTING_V2, msg);
     }
 
-    /** EDDN outfitting exclut les modules SRV / fighter / prototypes. Filtre minimal, peu intrusif. */
-    private boolean isNonShipModule(String name) {
+    /**
+     * Spec outfitting-README : ne garder QUE les modules matching
+     * {@code Hpt_*} (hardpoints / utilities), {@code Int_*} (internals) ou {@code *_Armour_*} (armour).
+     * Les cosmétiques (bobbleheads, decals, paintjobs, shipkits) sont explicitement rejetés par le schéma.
+     * Exclusion historique : {@code Int_PlanetApproachSuite}.
+     */
+    private boolean isEddnOutfittingModule(String name) {
         String n = name.toLowerCase();
-        return n.contains("_fighter_")
-                || n.contains("testbuggy")
-                || n.startsWith("hpt_cargomissilepod");
+        if (n.equals("int_planetapproachsuite")) {
+            return false;
+        }
+        return n.startsWith("hpt_") || n.startsWith("int_") || n.contains("_armour_");
     }
 
     private void publishShipyardFromFile(JsonNode raw) {
