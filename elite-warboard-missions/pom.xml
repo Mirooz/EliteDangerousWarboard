@@ -79,6 +79,11 @@
             <artifactId>elite-backend-client</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous</groupId>
+            <artifactId>elite-eddn-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- JavaFX Controls -->
         <dependency>
             <groupId>org.openjfx</groupId>

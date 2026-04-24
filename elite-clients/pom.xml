@@ -20,6 +20,7 @@
     <modules>
         <module>ardent-api-client</module>
         <module>elite-backend-client</module>
+        <module>elite-eddn-client</module>
         <module>edtools-client</module>
         <module>siriuscorp-client</module>
     </modules>

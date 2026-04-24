@@ -3,30 +3,23 @@ package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
+import be.mirooz.elitedangerous.eddn.EddnClient;
+import be.mirooz.elitedangerous.eddn.EddnUploaderId;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
 /**
- * Façade haut niveau pour publier sur EDDN.
+ * Façade warboard pour publier sur EDDN.
  *
- * <p>Responsabilités :</p>
- * <ul>
- *   <li>gater les envois ({@link DashboardContext#isBatchLoading()}, toggle préférences,
- *       présence FID/gameversion) ;</li>
- *   <li>construire l'enveloppe ({@link EddnEnvelope}) et la retirer des champs personnels
- *       ({@link EddnPersonalDataStripper}) ;</li>
- *   <li>empiler dans une file bornée consommée par un unique worker daemon pour sérialiser
- *       les uploads et ne pas bloquer les threads appelants (UI / dispatch journal).</li>
- * </ul>
+ * <p>Singleton léger qui, à chaque appel :</p>
+ * <ol>
+ *   <li>gate sur {@link DashboardContext#isBatchLoading()} (pas d'envoi pendant le replay journal),</li>
+ *   <li>gate sur la préférence {@code eddn.enabled} (toggle utilisateur, défaut on),</li>
+ *   <li>récupère FID, gameversion/gamebuild sur {@link CommanderStatus},</li>
+ *   <li>délègue à l'{@link EddnClient} du module {@code elite-eddn-client} (queue, strip, enveloppe, POST gzip).</li>
+ * </ol>
  */
 public final class EddnUploader {
-
-    private static final int QUEUE_CAPACITY = 1024;
-    private static final long WORKER_POLL_TIMEOUT_MS = 1_000L;
 
     public static final String PREF_EDDN_ENABLED = "eddn.enabled";
 
@@ -36,26 +29,17 @@ public final class EddnUploader {
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final PreferencesService preferences = PreferencesService.getInstance();
 
-    private final BlockingQueue<ObjectNode> queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
-    private final Thread worker;
-    private volatile boolean running = true;
+    private final EddnClient client = new EddnClient(EddnAppInfo.SOFTWARE_NAME, EddnAppInfo.version());
 
-    private EddnUploader() {
-        this.worker = new Thread(this::workerLoop, "eddn-uploader");
-        this.worker.setDaemon(true);
-        this.worker.start();
-    }
+    private EddnUploader() {}
 
     public static EddnUploader getInstance() {
         return INSTANCE;
     }
 
     /**
-     * Empile un message (corps du {@code message} EDDN, sans l'enveloppe) pour publication.
-     * Peut être appelé depuis n'importe quel thread ; non bloquant.
-     *
-     * @param schemaRef une constante de {@link EddnSchemas}
-     * @param message   payload strict du schéma (doit être un {@link ObjectNode} pour permettre le stripping)
+     * Publie un message correspondant à {@code schemaRef} (constante de {@code EddnSchemas}).
+     * Non bloquant. Droppé silencieusement si les gates ne sont pas satisfaits.
      */
     public void publishMessage(String schemaRef, ObjectNode message) {
         if (schemaRef == null || message == null) {
@@ -64,36 +48,28 @@ public final class EddnUploader {
         if (!isPublishingAllowed()) {
             return;
         }
-        String fid = commanderStatus.getFID();
-        String uploaderId = EddnUploaderId.fromFid(fid);
+        String uploaderId = EddnUploaderId.fromFid(commanderStatus.getFID());
         if (uploaderId == null) {
             return;
         }
-
-        EddnPersonalDataStripper.stripInPlace(message);
-
-        ObjectNode envelope = EddnEnvelope.build(
+        client.publish(
                 schemaRef,
                 uploaderId,
                 commanderStatus.getGameVersion(),
                 commanderStatus.getGameBuild(),
                 message
         );
-
-        if (!queue.offer(envelope)) {
-            System.err.println("EDDN: file pleine, message " + schemaRef + " supprimé.");
-        }
     }
 
     /**
-     * Raccourci quand on dispose déjà d'un {@link JsonNode} quelconque (ex. nœud journal brut).
-     * Un {@link ObjectNode} sera dupliqué, les autres types seront ignorés (EDDN attend un objet).
+     * Raccourci quand on dispose déjà d'un {@link JsonNode} quelconque. Les types autres que
+     * {@link ObjectNode} sont ignorés (EDDN attend un objet).
      */
     public void publishMessage(String schemaRef, JsonNode message) {
         if (message == null || !message.isObject()) {
             return;
         }
-        publishMessage(schemaRef, ((ObjectNode) message.deepCopy()));
+        publishMessage(schemaRef, (ObjectNode) message);
     }
 
     public boolean isEnabled() {
@@ -105,17 +81,8 @@ public final class EddnUploader {
         preferences.setPreference(PREF_EDDN_ENABLED, Boolean.toString(enabled));
     }
 
-    /**
-     * Appelé au shutdown JVM (optionnel, le worker est daemon).
-     */
-    public void shutdown() {
-        running = false;
-        worker.interrupt();
-    }
-
-    /** Pour inspection / logs. */
     public int queueSize() {
-        return queue.size();
+        return client.queueSize();
     }
 
     private boolean isPublishingAllowed() {
@@ -132,22 +99,5 @@ public final class EddnUploader {
         String gv = commanderStatus.getGameVersion();
         String gb = commanderStatus.getGameBuild();
         return gv != null && !gv.isBlank() && gb != null && !gb.isBlank();
-    }
-
-    private void workerLoop() {
-        while (running) {
-            try {
-                ObjectNode envelope = queue.poll(WORKER_POLL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-                if (envelope == null) {
-                    continue;
-                }
-                EddnClient.getInstance().post(envelope);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            } catch (Exception e) {
-                System.err.println("EDDN worker : " + e.getMessage());
-            }
-        }
     }
 }

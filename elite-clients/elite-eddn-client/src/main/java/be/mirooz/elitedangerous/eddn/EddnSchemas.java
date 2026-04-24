@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
+package be.mirooz.elitedangerous.eddn;
 
 /**
  * Références de schémas publiés sur EDDN (https://eddn.edcd.io/schemas/).

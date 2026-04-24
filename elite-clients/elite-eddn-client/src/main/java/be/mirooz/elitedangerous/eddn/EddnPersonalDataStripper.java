@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
+package be.mirooz.elitedangerous.eddn;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

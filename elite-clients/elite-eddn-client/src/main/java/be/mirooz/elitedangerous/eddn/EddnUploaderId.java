@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
+package be.mirooz.elitedangerous.eddn;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

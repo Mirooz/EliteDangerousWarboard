@@ -1,4 +1,4 @@
-package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
+package be.mirooz.elitedangerous.eddn;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,14 +15,18 @@ public final class EddnEnvelope {
     private EddnEnvelope() {}
 
     /**
-     * @param schemaRef   constante de {@link EddnSchemas}
-     * @param uploaderId  hash stable du FID (non null/non vide)
-     * @param gameVersion (optionnel) valeur de l'event {@code LoadGame}/{@code Fileheader}
-     * @param gameBuild   (optionnel) idem
-     * @param message     nœud contenant les champs du schéma (sans le wrapper "message")
+     * @param schemaRef       constante de {@link EddnSchemas}
+     * @param uploaderId      hash stable du FID (non null/non vide)
+     * @param softwareName    nom de l'application qui émet (ex. {@code "Elite Warboard"})
+     * @param softwareVersion version de l'application émettrice
+     * @param gameVersion     (optionnel) valeur de l'event {@code LoadGame}/{@code Fileheader}
+     * @param gameBuild       (optionnel) idem
+     * @param message         nœud contenant les champs du schéma (sans le wrapper "message")
      */
     public static ObjectNode build(String schemaRef,
                                    String uploaderId,
+                                   String softwareName,
+                                   String softwareVersion,
                                    String gameVersion,
                                    String gameBuild,
                                    JsonNode message) {
@@ -31,8 +35,8 @@ public final class EddnEnvelope {
 
         ObjectNode header = MAPPER.createObjectNode();
         header.put("uploaderID", uploaderId);
-        header.put("softwareName", EddnAppInfo.SOFTWARE_NAME);
-        header.put("softwareVersion", EddnAppInfo.version());
+        header.put("softwareName", softwareName);
+        header.put("softwareVersion", softwareVersion);
         if (gameVersion != null && !gameVersion.isBlank()) {
             header.put("gameversion", gameVersion);
         }

@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
 
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.eddn.EddnSchemas;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
