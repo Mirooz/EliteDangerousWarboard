@@ -252,7 +252,7 @@ public final class SpanshSystemVisitedMapper {
                 .wasMapped(true)
                 .mapped(false)
                 .rings(br.getRings() != null && !br.getRings().isEmpty())
-                .planetClass(BodyType.fromString(planetClassStr))
+                .planetClass(BodyType.getBodyType(planetClassStr))
                 .massEM(br.getEarthMasses())
                 .temperature(br.getSurfaceTemperature())
                 .pressureAtm(pressureAtm)
