@@ -1141,6 +1141,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 Node starView = createBodyImageView(star, startX, currentStarY, BodyHierarchyType.STAR);
                 bodiesPane.getChildren().add(starView);
                 addBodyNameLabel(star, startX, currentStarY, BodyHierarchyType.STAR);
+                addColonisationConstructionCaption(star, startX, currentStarY, BodyHierarchyType.STAR);
 
                 // Positionner les planètes directes de cette étoile en chaîne horizontale à droite
                 List<ACelesteBody> directPlanets = starToDirectPlanets.get(star);
@@ -1784,7 +1785,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Marqueur colonisation (vue architecte) : nombre de colonies puis icône {@code settlement.png} en haut à droite du corps.
      */
     private void addColonisationConstructionCaption(ACelesteBody body, double cx, double cy, BodyHierarchyType hierarchyType) {
-        if (!(body instanceof PlaneteDetail)) {
+        if (!(body instanceof PlaneteDetail) && !(body instanceof StarDetail)) {
             return;
         }
         int bodyId = body.getBodyID();

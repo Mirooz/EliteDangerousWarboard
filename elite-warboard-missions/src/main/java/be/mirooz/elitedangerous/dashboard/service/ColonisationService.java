@@ -82,9 +82,6 @@ public class ColonisationService {
         registry.applyConstructionDepot(marketId, construction, starSystem, bodyId);
     }
 
-    public List<String> getArchitectStarSystems() {
-        return registry.getArchitectStarSystems();
-    }
 
     public List<ColonisationArchitectSystem> getArchitectSystems() {
         return registry.getArchitectSystems();
@@ -104,42 +101,12 @@ public class ColonisationService {
         setCurrentConstructionByMarketId(marketId);
     }
 
-    public ColonisationConstruction getCurrentConstruction() {
-        return registry.getCurrentConstruction();
-    }
-
-    /** Ressources du chantier courant avec quantités encore à livrer. */
-    public List<ConstructionResourceRemaining> getActualConstruction() {
-        return registry.getActualConstruction();
-    }
 
     public ColonisationDockEntry getCurrentConstructionSite() {
         return registry.getCurrentConstructionSite();
     }
 
-    /**
-     * Appelle {@link ArdentBackendApiFacade#suggestBuyStations} pour les commodités encore à livrer sur tous les sites
-     * du même projet architecte que le chantier courant ; référence système = premier chantier enregistré sur ce projet.
-     *
-     * @return stations suggérées (liste vide si pas de chantier courant, pas de système, ou rien à acheter)
-     */
-    public List<NearbyExportsBestStationResult> suggestBuyStationsForCurrentConstruction() throws IOException {
-        return suggestBuyStationsForCurrentConstruction(false);
-    }
 
-    public List<NearbyExportsBestStationResult> suggestBuyStationsForCurrentConstruction(boolean avoidPlanetaryLanding)
-            throws IOException {
-        ColonisationDockEntry site = registry.getCurrentConstructionSite();
-        if (site == null) {
-            return List.of();
-        }
-        ColonisationArchitectSystem arch = registry.findArchitectSystemContaining(site.getMarketId());
-        if (arch == null) {
-            return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null, false);
-        }
-        String systemName = resolveSystemNameFromArchitectFirstConstruction(arch);
-        return suggestBuyStationsForConstructionDocks(arch.getSites(), avoidPlanetaryLanding, systemName, false);
-    }
 
     /**
      * Suggestions d’achat pour un ou plusieurs sites : commodités = somme des tonnages restants par nom cargo ;
@@ -151,13 +118,6 @@ public class ColonisationService {
         return suggestBuyStationsForConstructionDocks(docks, avoidPlanetaryLanding, null, false);
     }
 
-    /**
-     * Suggestions d’achat pour le site donné (équivalent à une liste d’un seul élément).
-     */
-    public List<NearbyExportsBestStationResult> suggestBuyStationsForDock(ColonisationDockEntry site)
-            throws IOException {
-        return suggestBuyStationsForDock(site, false);
-    }
 
     public List<NearbyExportsBestStationResult> suggestBuyStationsForDock(ColonisationDockEntry site,
             boolean avoidPlanetaryLanding) throws IOException {
@@ -211,16 +171,6 @@ public class ColonisationService {
         return List.copyOf(response.getBestStations());
     }
 
-    /**
-     * Recherche de stations d’export (achat pour le joueur) autour d’un système de référence pour une liste de commodités arbitraires
-     * (ex. manquants sur le Fleet Carrier).
-     */
-    public List<NearbyExportsBestStationResult> suggestBuyStationsForCommodityRequests(
-            String referenceSystemName,
-            List<CommodityRequest> commodities,
-            boolean avoidPlanetaryLanding) throws IOException {
-        return suggestBuyStationsForCommodityRequests(referenceSystemName, commodities, avoidPlanetaryLanding, false);
-    }
 
     public List<NearbyExportsBestStationResult> suggestBuyStationsForCommodityRequests(
             String referenceSystemName,
@@ -240,26 +190,6 @@ public class ColonisationService {
             return List.of();
         }
         return List.copyOf(response.getBestStations());
-    }
-
-    private static String resolveSystemNameFromArchitectFirstConstruction(ColonisationArchitectSystem arch) {
-        if (arch == null) {
-            return "";
-        }
-        Long firstId = arch.getFirstConstructionMarketId();
-        if (firstId != null) {
-            ColonisationDockEntry site = arch.getSiteByMarketId(firstId);
-            if (site != null && site.getStarSystem() != null && !site.getStarSystem().isBlank()) {
-                return site.getStarSystem().trim();
-            }
-        }
-        for (ColonisationDockEntry e : arch.getSites()) {
-            if (e != null && e.getStarSystem() != null && !e.getStarSystem().isBlank()) {
-                return e.getStarSystem().trim();
-            }
-        }
-        String s = arch.getStarSystem();
-        return s != null ? s.trim() : "";
     }
 
     /** Nom de système pour l’API : celui de la première entrée de la liste de chantiers. */

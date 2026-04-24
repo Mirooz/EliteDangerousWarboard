@@ -736,6 +736,22 @@ components:
         share:
           format: double
           type: number
+    Belt:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        mass:
+          format: double
+          type: number
+        inner_radius:
+          format: double
+          type: number
+        outer_radius:
+          format: double
+          type: number
     BodyResult:
       type: object
       properties:
@@ -754,6 +770,10 @@ components:
         axis_tilt:
           format: double
           type: number
+        belts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Belt'
         body_id:
           format: int32
           type: integer
