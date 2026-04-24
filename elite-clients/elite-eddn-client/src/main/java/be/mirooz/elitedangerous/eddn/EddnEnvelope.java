@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.eddn;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -26,6 +27,10 @@ public final class EddnEnvelope {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            // treeToValue(...) convertit un ObjectNode enrichi vers un POJO typé EDDN : on veut que
+            // tout champ inconnu (ex. _Localised résiduel, champ hors-schéma) soit silencieusement
+            // droppé pour les schémas stricts (additionalProperties: false) au lieu de lever.
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .setDateFormat(isoUtcDateFormat())
             .setTimeZone(TimeZone.getTimeZone("UTC"));
 

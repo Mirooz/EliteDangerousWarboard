@@ -18,7 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Client EDDN : file d'attente + worker daemon + POST gzip vers {@code https://eddn.edcd.io:4430/upload/}.
+ * Client EDDN : file d'attente + worker daemon + POST gzip vers la gateway EDDN configurée
+ * dans {@code elite-eddn-client-<app.profile>.properties} ({@link EddnBundledProperties#KEY_UPLOAD_URL}).
  *
  * <p>Un seul thread de travail consomme la file : les envois sont sérialisés pour limiter les pics.
  * Les appelants ne sont jamais bloqués (enqueue non-bloquant, drop du message si file pleine).</p>
@@ -30,7 +31,12 @@ import java.util.zip.GZIPOutputStream;
  */
 public final class EddnClient {
 
-    private static final String GATEWAY_URL = "https://eddn.edcd.io:4430/upload/";
+    /**
+     * Fallback si le properties du module est introuvable (profile mal paramétré, ressource shaded
+     * out, …) : on pointe sur LIVE pour que l'upload reste fonctionnel.
+     */
+    private static final String DEFAULT_GATEWAY_URL = "https://eddn.edcd.io:4430/upload/";
+
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
     private static final int DEFAULT_QUEUE_CAPACITY = 1024;
     private static final long WORKER_POLL_TIMEOUT_MS = 1_000L;
@@ -39,6 +45,9 @@ public final class EddnClient {
 
     private final String softwareName;
     private final String softwareVersion;
+    private final String gatewayUrl;
+    /** Label concis de l'endpoint cible ({@code live} / {@code beta} / {@code dev}) pour les logs. */
+    private final String endpointLabel;
 
     private final HttpClient httpClient;
     private final ObjectMapper mapper = EddnEnvelope.mapper();
@@ -47,19 +56,26 @@ public final class EddnClient {
     private final Thread worker;
     private volatile boolean running = true;
 
+    /** Cible la gateway résolue via {@link EddnBundledProperties} selon {@code app.profile}. */
     public EddnClient(String softwareName, String softwareVersion) {
-        this(softwareName, softwareVersion, DEFAULT_QUEUE_CAPACITY);
+        this(softwareName, softwareVersion, DEFAULT_QUEUE_CAPACITY,
+                EddnBundledProperties.get(EddnBundledProperties.KEY_UPLOAD_URL, DEFAULT_GATEWAY_URL));
     }
 
-    public EddnClient(String softwareName, String softwareVersion, int queueCapacity) {
+    public EddnClient(String softwareName, String softwareVersion, int queueCapacity, String gatewayUrl) {
         if (softwareName == null || softwareName.isBlank()) {
             throw new IllegalArgumentException("softwareName must not be blank");
         }
         if (softwareVersion == null || softwareVersion.isBlank()) {
             throw new IllegalArgumentException("softwareVersion must not be blank");
         }
+        if (gatewayUrl == null || gatewayUrl.isBlank()) {
+            throw new IllegalArgumentException("gatewayUrl must not be blank");
+        }
         this.softwareName = softwareName;
         this.softwareVersion = softwareVersion;
+        this.gatewayUrl = gatewayUrl;
+        this.endpointLabel = resolveEndpointLabel(gatewayUrl);
         this.queue = new ArrayBlockingQueue<>(queueCapacity);
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
@@ -181,7 +197,7 @@ public final class EddnClient {
             byte[] gzipped = gzip(json);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(GATEWAY_URL))
+                    .uri(URI.create(gatewayUrl))
                     .timeout(REQUEST_TIMEOUT)
                     .header("Content-Type", "application/json; charset=utf-8")
                     .header("Content-Encoding", "gzip")
@@ -192,15 +208,40 @@ public final class EddnClient {
             int status = response.statusCode();
             String schemaRef = envelope.path("$schemaRef").asText("?");
             if (status == 200) {
-                System.out.println("EDDN: envoyé " + schemaRef + " (" + gzipped.length + " o gzip)");
+                System.out.println("EDDN: envoyé " + schemaRef + " (" + endpointLabel + ", " + gzipped.length + " o gzip)");
                 return;
             }
-            System.err.println("EDDN: rejet " + status + " pour " + schemaRef
+            System.err.println("EDDN: rejet " + status + " pour " + schemaRef + " (" + endpointLabel + ")"
                     + (response.body() == null ? "" : " : " + truncate(response.body(), 500)));
         } catch (IOException e) {
-            System.err.println("EDDN: erreur réseau POST : " + e.getMessage());
+            System.err.println("EDDN: erreur réseau POST (" + endpointLabel + ") : " + e.getMessage());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Dérive un label concis ({@code live} / {@code beta} / {@code dev}) à partir de l'URL gateway.
+     * Utilisé uniquement pour enrichir les logs d'envoi — pas de logique métier.
+     */
+    private static String resolveEndpointLabel(String url) {
+        try {
+            String host = URI.create(url).getHost();
+            if (host == null) {
+                return url;
+            }
+            if (host.startsWith("beta.")) {
+                return "beta";
+            }
+            if (host.startsWith("dev.")) {
+                return "dev";
+            }
+            if (host.equals("eddn.edcd.io")) {
+                return "live";
+            }
+            return host;
+        } catch (IllegalArgumentException e) {
+            return url;
         }
     }
 

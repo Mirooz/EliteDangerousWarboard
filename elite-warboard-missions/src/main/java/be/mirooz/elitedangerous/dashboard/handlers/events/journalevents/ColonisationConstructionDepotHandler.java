@@ -30,9 +30,6 @@ public class ColonisationConstructionDepotHandler implements JournalEventHandler
             long marketId = jsonNode.path("MarketID").asLong();
 
             if (!colonisationService.isBeaconDeployed(starSystem)) {
-                System.out.println("Colonisation: ColonisationConstructionDepot ignoré tant que "
-                        + "ColonisationBeaconDeployed n'a pas été reçu (MarketID=" + marketId
-                        + (starSystem.isEmpty() ? "" : ", système=« " + starSystem + " »") + ")");
                 return;
             }
 
