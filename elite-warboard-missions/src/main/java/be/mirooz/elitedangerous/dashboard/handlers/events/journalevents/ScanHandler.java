@@ -7,7 +7,6 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
-import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnJournalPublisher;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
@@ -167,7 +166,6 @@ public class ScanHandler implements JournalEventHandler {
             System.err.println("❌ Erreur lors du traitement de l'événement Scan: " + e.getMessage());
             e.printStackTrace();
         }
-        EddnJournalPublisher.getInstance().publish(jsonNode);
     }
 
     /**

@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.dispatcher;
 
+import be.mirooz.elitedangerous.dashboard.handlers.events.EddnPublishingEventHandlerDecorator;
 import be.mirooz.elitedangerous.dashboard.handlers.events.LoggingEventHandlerDecorator;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.DefaultJournalEventHandler;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.JournalEventHandler;
@@ -14,7 +15,14 @@ public class JournalEventDispatcher {
     // Instance unique (singleton)
     private static final JournalEventDispatcher INSTANCE = new JournalEventDispatcher();
 
-    private final JournalEventHandler defaultHandler = new DefaultJournalEventHandler();
+    /**
+     * Handler utilisé pour les events qu'aucun handler métier ne couvre.
+     * Décoré par {@link EddnPublishingEventHandlerDecorator} : ça permet aux events purement
+     * "relais EDDN" (ApproachSettlement, CodexEntry, DockingDenied/Granted, Location, etc.)
+     * d'être publiés sans avoir à créer un handler dédié.
+     */
+    private final JournalEventHandler defaultHandler =
+            new EddnPublishingEventHandlerDecorator(new DefaultJournalEventHandler());
     public static JournalEventDispatcher getInstance() {
         return INSTANCE;
     }
@@ -38,9 +46,12 @@ public class JournalEventDispatcher {
                     }
                 });
 
-        // Étape 2 : décoration
+        // Étape 2 : décoration. Ordre d'exécution (extérieur -> intérieur) :
+        //   Logging -> EddnPublishing -> handler métier.
+        // => log de l'event, puis handler, puis publication EDDN, puis refreshUI (fin du log).
         tempHandlers.forEach((key, handler) ->
-                handlers.put(key, new LoggingEventHandlerDecorator(handler))
+                handlers.put(key, new LoggingEventHandlerDecorator(
+                        new EddnPublishingEventHandlerDecorator(handler)))
         );
     }
     public void dispatch(JsonNode jsonNode) {
