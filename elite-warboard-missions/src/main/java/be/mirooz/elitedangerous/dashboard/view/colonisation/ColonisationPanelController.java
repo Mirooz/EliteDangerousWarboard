@@ -613,6 +613,8 @@ public class ColonisationPanelController implements Initializable {
             }
         }
 
+        sortSystemsByLastBeaconDeployed(systemsWithSites);
+
         if (architectSystemComboBox != null) {
             suppressArchitectComboListener = true;
             try {
@@ -820,6 +822,28 @@ public class ColonisationPanelController implements Initializable {
         } finally {
             suppressArchitectComboListener = false;
         }
+    }
+
+    /**
+     * Trie les systèmes architecte en ordre inverse de réception de {@code ColonisationBeaconDeployed}
+     * (le plus récent en premier). Les systèmes sans balise déployée connue conservent leur position relative
+     * en fin de liste.
+     */
+    private void sortSystemsByLastBeaconDeployed(List<ColonisationArchitectSystem> systems) {
+        if (systems == null || systems.size() <= 1) {
+            return;
+        }
+        List<String> beaconOrder = colonisationService.getBeaconDeploymentOrder();
+        Map<String, Integer> rankByStarSystem = new HashMap<>();
+        for (int i = 0; i < beaconOrder.size(); i++) {
+            rankByStarSystem.put(beaconOrder.get(i), i);
+        }
+        int unknownRank = Integer.MIN_VALUE;
+        systems.sort((a, b) -> {
+            Integer ra = rankByStarSystem.getOrDefault(a.getStarSystem(), unknownRank);
+            Integer rb = rankByStarSystem.getOrDefault(b.getStarSystem(), unknownRank);
+            return Integer.compare(rb, ra); // ordre décroissant : le dernier reçu en premier
+        });
     }
 
     private Map<Integer, List<ColonisationArchitectMapCaptionLine>> buildColonisationCaptionsByBody(ColonisationArchitectSystem arch) {

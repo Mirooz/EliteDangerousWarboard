@@ -11,6 +11,7 @@ import lombok.Synchronized;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -24,6 +25,13 @@ public class ColonisationRegistry {
 
     /** Clé = nom de système journal ; ordre = première activité colonisation sur ce système. */
     private final LinkedHashMap<String, ColonisationArchitectSystem> architectByStarSystem = new LinkedHashMap<>();
+
+    /**
+     * Systèmes pour lesquels {@code ColonisationBeaconDeployed} a été reçu, dans l’ordre chronologique de réception
+     * (une nouvelle réception pour un même système le déplace en fin de collection). Tant qu’un système n’y figure pas,
+     * les événements {@code ColonisationConstructionDepot} associés sont ignorés.
+     */
+    private final LinkedHashSet<String> beaconDeployedSystems = new LinkedHashSet<>();
 
     /**
      * Site (même instance que dans {@link ColonisationArchitectSystem}) dont la {@link ColonisationDockEntry#getConstruction()}
@@ -45,7 +53,31 @@ public class ColonisationRegistry {
     /** Enregistre le système comme projet architecte (balise déployée). */
     @Synchronized
     public void recordArchitectBeaconDeployed(String starSystem) {
+        if (starSystem == null || starSystem.isBlank()) {
+            return;
+        }
+        // Réinsertion pour que la dernière réception positionne le système en fin de collection.
+        beaconDeployedSystems.remove(starSystem);
+        beaconDeployedSystems.add(starSystem);
         ensureArchitectSystem(starSystem);
+    }
+
+    /** {@code true} si {@code ColonisationBeaconDeployed} a déjà été reçu pour ce système. */
+    @Synchronized
+    public boolean isBeaconDeployed(String starSystem) {
+        if (starSystem == null || starSystem.isBlank()) {
+            return false;
+        }
+        return beaconDeployedSystems.contains(starSystem);
+    }
+
+    /**
+     * Ordre chronologique de réception des {@code ColonisationBeaconDeployed} (plus ancien en tête, plus récent en queue).
+     * La collection retournée est une copie immuable.
+     */
+    @Synchronized
+    public List<String> getBeaconDeploymentOrder() {
+        return List.copyOf(new ArrayList<>(beaconDeployedSystems));
     }
 
     /** Liste ordonnée des systèmes architecte (noms). */
@@ -68,6 +100,9 @@ public class ColonisationRegistry {
                                        ColonisationConstruction construction,
                                        String starSystem,
                                        Long bodyId) {
+        if (!isBeaconDeployed(starSystem)) {
+            return;
+        }
         ColonisationArchitectSystem sys = ensureArchitectSystem(starSystem);
         if (sys == null) {
             return;
@@ -161,6 +196,7 @@ public class ColonisationRegistry {
     @Synchronized
     public void clear() {
         architectByStarSystem.clear();
+        beaconDeployedSystems.clear();
         currentConstruction = null;
     }
 }

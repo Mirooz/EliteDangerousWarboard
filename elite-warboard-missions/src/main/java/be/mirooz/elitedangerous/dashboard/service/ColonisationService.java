@@ -75,6 +75,16 @@ public class ColonisationService {
         registry.recordArchitectBeaconDeployed(starSystem);
     }
 
+    /** {@code true} si {@code ColonisationBeaconDeployed} a été reçu pour ce système dans la session courante. */
+    public boolean isBeaconDeployed(String starSystem) {
+        return registry.isBeaconDeployed(starSystem);
+    }
+
+    /** Ordre chronologique de réception des {@code ColonisationBeaconDeployed} (plus ancien en tête). */
+    public List<String> getBeaconDeploymentOrder() {
+        return registry.getBeaconDeploymentOrder();
+    }
+
     public void applyConstructionDepot(long marketId,
                                        ColonisationConstruction construction,
                                        String starSystem,

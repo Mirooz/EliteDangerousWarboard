@@ -28,6 +28,14 @@ public class ColonisationConstructionDepotHandler implements JournalEventHandler
             String timestamp = jsonNode.path("timestamp").asText("");
             String starSystem = ColonisationJournalContext.resolveStarSystem(jsonNode, commanderStatus);
             long marketId = jsonNode.path("MarketID").asLong();
+
+            if (!colonisationService.isBeaconDeployed(starSystem)) {
+                System.out.println("Colonisation: ColonisationConstructionDepot ignoré tant que "
+                        + "ColonisationBeaconDeployed n'a pas été reçu (MarketID=" + marketId
+                        + (starSystem.isEmpty() ? "" : ", système=« " + starSystem + " »") + ")");
+                return;
+            }
+
             double progress = jsonNode.path("ConstructionProgress").asDouble();
             ConstructionStatus status = ConstructionStatus.fromJournalBooleans(
                     jsonNode.path("ConstructionComplete").asBoolean(false),
