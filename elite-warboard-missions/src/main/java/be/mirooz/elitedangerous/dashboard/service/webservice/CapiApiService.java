@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice;
 
 import be.mirooz.elitedangerous.backend.capi.CapiFacade;
+import be.mirooz.elitedangerous.backend.capi.CapiWaitApprovalResponse;
 import be.mirooz.elitedangerous.backend.capi.UnauthorizedException;
 import be.mirooz.elitedangerous.backend.generated.model.CapiApiErrorBody;
 import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierDto;
@@ -12,6 +13,7 @@ import be.mirooz.elitedangerous.backend.generated.model.CapiProfileDto;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthConnectedNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,17 +30,26 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class CapiApiService {
 
     private static final CapiApiService INSTANCE = new CapiApiService();
     private static final long MARKET_MIN_INTERVAL_MS = 1000L;
 
+    /** Budget total côté client : le serveur tient 60 s, on relance tant que la somme reste sous ce plafond. */
+    private static final long APPROVAL_WAIT_TOTAL_BUDGET_MS = TimeUnit.MINUTES.toMillis(15);
+    /** Petit backoff entre 2 tentatives en cas d'erreur réseau imprévue (hors timeout serveur normal). */
+    private static final long APPROVAL_WAIT_ERROR_BACKOFF_MS = 2_000L;
+
     private final CapiFacade capiFacade = CapiFacade.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Object marketRateLimitLock = new Object();
     private boolean authPromptVisible = false;
     private long lastMarketSendAtMs = 0L;
+    /** Empêche plusieurs boucles de long polling concurrentes pour un même commandant. */
+    private final AtomicBoolean waitingForApproval = new AtomicBoolean(false);
 
     private CapiApiService() {}
 
@@ -267,11 +278,86 @@ public final class CapiApiService {
             CapiLoginDto response = capiFacade.requestAuthentication(fid);
             String loginUrl = extractLoginUrl(response);
             openBrowser(loginUrl);
+            startWaitingForApproval(fid);
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
         } catch (IOException e) {
             System.err.println("CAPI market: erreur requestAuthentication: " + e.getMessage());
         }
+    }
+
+    /**
+     * Lance une boucle de long polling sur {@code GET /api/capi/wait-approval} (hold serveur 60 s)
+     * jusqu'à réception de {@code approved=true} ou expiration du budget total de 15 min.
+     *
+     * <ul>
+     *     <li>Sur succès : rafraîchit le fleet carrier et affiche un toast « CAPI connected ».</li>
+     *     <li>Sur expiration : réaffiche la popup d'approbation via {@link #promptAuthenticationApproval()}.</li>
+     *     <li>Une seule boucle active par instance : les appels concurrents sont ignorés.</li>
+     * </ul>
+     */
+    private void startWaitingForApproval(String fid) {
+        if (fid == null || fid.isBlank()) {
+            return;
+        }
+        if (!waitingForApproval.compareAndSet(false, true)) {
+            return;
+        }
+        Thread worker = new Thread(() -> runApprovalWaitLoop(fid), "capi-wait-approval");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private void runApprovalWaitLoop(String fid) {
+        try {
+            long deadlineMs = System.currentTimeMillis() + APPROVAL_WAIT_TOTAL_BUDGET_MS;
+            while (System.currentTimeMillis() < deadlineMs) {
+                try {
+                    CapiWaitApprovalResponse resp = capiFacade.waitApproval(fid);
+                    if (resp.isApproved()) {
+                        System.out.println("CAPI market: approbation reçue via wait-approval (fid=" + fid + ")");
+                        onApprovalReceived();
+                        return;
+                    }
+                    // approved=false (timeout serveur attendu ou réponse négative) → on reboucle sans attendre
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (IOException ioe) {
+                    System.err.println("CAPI market: wait-approval erreur: " + ioe.getMessage());
+                    try {
+                        Thread.sleep(APPROVAL_WAIT_ERROR_BACKOFF_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+            }
+            System.out.println("CAPI market: wait-approval budget expiré (15 min), réaffichage de la popup");
+            promptAuthenticationApproval();
+        } finally {
+            waitingForApproval.set(false);
+        }
+    }
+
+    private void onApprovalReceived() {
+        fetchFleetCarrierData();
+        Platform.runLater(() -> {
+            try {
+                Window ownerWindow = getBestOwnerWindow();
+                if (!(ownerWindow instanceof Stage ownerStage)) {
+                    return;
+                }
+                Scene scene = ownerStage.getScene();
+                StackPane popupContainer = findPopupContainer(scene != null ? scene.getRoot() : null);
+                if (popupContainer == null) {
+                    return;
+                }
+                new CapiAuthConnectedNotificationComponent(popupContainer);
+            } catch (Exception e) {
+                System.err.println("CAPI market: erreur affichage toast CAPI connected: " + e.getMessage());
+            }
+        });
     }
 
     private String extractLoginUrl(CapiLoginDto response) {

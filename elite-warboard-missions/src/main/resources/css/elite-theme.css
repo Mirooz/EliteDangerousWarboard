@@ -3581,6 +3581,23 @@
     -fx-background-color: rgba(0, 174, 239, 0.1);
 }
 
+/* Toast « CAPI connected » affiché après réception du callback OAuth Frontier */
+.capi-auth-connected-notification {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-success;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 174, 239, 0.5), 12, 0, 0, 2);
+}
+
+.capi-auth-connected-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-success;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
 /* Styles pour la fenêtre de dialogue de recherche massacre - Style Elite Dangerous */
 .dialog-content {
     -fx-background-color: -fx-elite-dark;

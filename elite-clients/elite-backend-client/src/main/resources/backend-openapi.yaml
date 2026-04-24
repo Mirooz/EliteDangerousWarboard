@@ -224,6 +224,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CapiProfileDto'
+  /api/capi/wait-approval:
+    get:
+      tags:
+      - Capi Controller
+      summary: Long polling d'approbation OAuth Frontier pour un fid
+      description: "Bloque jusqu'a 60s en attendant la reception du callback OAuth\
+        \ pour ce fid. Reponse 200 avec { approved: true, fid } si approuve (y compris\
+        \ si le callback est arrive jusqu'a 30s avant la requete), 200 avec { approved:\
+        \ false, timeout: true } sinon. Une nouvelle requete pour un fid deja en attente\
+        \ libere la precedente en timeout."
+      parameters:
+      - name: fid
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: {}
   /api/edcolonise/star-systems:
     get:
       tags:

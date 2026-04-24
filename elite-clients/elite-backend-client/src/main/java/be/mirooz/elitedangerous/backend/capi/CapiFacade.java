@@ -15,18 +15,32 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 public final class CapiFacade {
+
+    /** Doit être strictement supérieur au hold serveur (60 s) pour laisser le serveur répondre. */
+    private static final Duration WAIT_APPROVAL_REQUEST_TIMEOUT = Duration.ofSeconds(70);
 
     private static final CapiFacade INSTANCE = new CapiFacade();
 
     private final CapiControllerApi capiApi;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final String backendBaseUrl;
+    private final HttpClient longPollingHttpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
     private CapiFacade() {
-        String baseUrl = BackendBundledProperties.get("backend.base-url", "http://localhost:8080");
+        this.backendBaseUrl = BackendBundledProperties.get("backend.base-url", "http://localhost:8080");
         ApiClient apiClient = new ApiClient();
-        apiClient.updateBaseUri(baseUrl);
+        apiClient.updateBaseUri(backendBaseUrl);
         this.capiApi = new CapiControllerApi(apiClient);
     }
 
@@ -59,6 +73,42 @@ public final class CapiFacade {
             handleApiException(e, "profile");
             throw new AssertionError("unreachable");
         }
+    }
+
+    /**
+     * Long polling : bloque côté serveur jusqu'à 60 s en attente du callback OAuth Frontier
+     * pour ce {@code fid}. À relancer en boucle côté appelant jusqu'à {@code approved=true}
+     * ou expiration du budget total (15 min typiquement).
+     *
+     * <p>Ne passe pas par le {@link CapiControllerApi} généré : l'appel direct via
+     * {@link HttpClient} permet un timeout explicite de 70 s adapté au hold serveur.
+     */
+    public CapiWaitApprovalResponse waitApproval(String fid) throws IOException, InterruptedException {
+        if (fid == null || fid.isBlank()) {
+            throw new IOException("fid manquant pour waitApproval");
+        }
+        URI uri = URI.create(backendBaseUrl + "/api/capi/wait-approval?fid="
+                + URLEncoder.encode(fid, StandardCharsets.UTF_8));
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .header("Accept", "application/json")
+                .timeout(WAIT_APPROVAL_REQUEST_TIMEOUT)
+                .GET()
+                .build();
+        HttpResponse<String> response = longPollingHttpClient.send(
+                request, HttpResponse.BodyHandlers.ofString());
+        int status = response.statusCode();
+        String body = response.body();
+        if (status == 400) {
+            throw new IOException("CAPI wait-approval: requête rejetée (400) - " + body);
+        }
+        if (status != 200) {
+            throw new IOException("CAPI wait-approval: HTTP " + status + " - " + body);
+        }
+        JsonNode root = mapper.readTree(body != null ? body : "{}");
+        boolean approved = root.path("approved").asBoolean(false);
+        boolean timeout = root.path("timeout").asBoolean(false);
+        String respondedFid = root.path("fid").asText(null);
+        return new CapiWaitApprovalResponse(approved, timeout, respondedFid);
     }
 
     public CapiFleetCarrierDto fetchFleetCarrier(String commanderName, String fid, String language) throws IOException {
