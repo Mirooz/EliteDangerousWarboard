@@ -79,10 +79,12 @@ public final class EddnJournalPublisher {
                 publishEnriched(EddnSchemas.CODEX_ENTRY_V1, raw, true, true);
                 break;
             case "DockingDenied":
-                publishEnriched(EddnSchemas.DOCKING_DENIED_V1, raw, true, false);
+                // Schéma n'accepte PAS StarSystem ni StarPos : uniquement station / market / reason.
+                publishEnriched(EddnSchemas.DOCKING_DENIED_V1, raw, false, false);
                 break;
             case "DockingGranted":
-                publishEnriched(EddnSchemas.DOCKING_GRANTED_V1, raw, true, false);
+                // Schéma n'accepte PAS StarSystem ni StarPos : uniquement station / market / pad.
+                publishEnriched(EddnSchemas.DOCKING_GRANTED_V1, raw, false, false);
                 break;
             case "FCMaterials":
                 publishEnriched(EddnSchemas.FC_MATERIALS_JOURNAL_V1, raw, false, false);
@@ -97,7 +99,7 @@ public final class EddnJournalPublisher {
                 publishEnriched(EddnSchemas.FSS_DISCOVERY_SCAN_V1, raw, true, true);
                 break;
             case "FSSSignalDiscovered":
-                publishEnriched(EddnSchemas.FSS_SIGNAL_DISCOVERED_V1, raw, true, true);
+                publishFssSignalDiscovered(raw);
                 break;
             case "NavBeaconScan":
                 publishEnriched(EddnSchemas.NAV_BEACON_SCAN_V1, raw, true, true);
@@ -184,6 +186,51 @@ public final class EddnJournalPublisher {
         }
         ensureHorizonsOdyssey(msg);
         uploader.publishMessage(schemaRef, msg);
+    }
+
+    /**
+     * Champs systémiques du message EDDN {@code fsssignaldiscovered/1}. Tout le reste
+     * (SignalName, SignalType, IsStation, USSType, ThreatLevel, SpawningFaction, ...) doit
+     * être déplacé dans l'élément du tableau {@code signals[]}.
+     */
+    private static final Set<String> FSS_SIGNAL_TOP_LEVEL_FIELDS = Set.of(
+            "timestamp", "event", "SystemAddress", "StarSystem", "StarPos", "horizons", "odyssey"
+    );
+
+    /**
+     * Transforme l'event journal {@code FSSSignalDiscovered} (un seul signal à plat) en message
+     * EDDN conforme au schéma {@code fsssignaldiscovered/1} qui exige un tableau {@code signals[]}
+     * et interdit les champs {@code SignalName / SignalType / IsStation / ...} au top-level.
+     */
+    private void publishFssSignalDiscovered(JsonNode raw) {
+        if (!raw.has("SignalName")) {
+            return; // schéma : SignalName est requis dans l'item
+        }
+        ObjectNode msg = MAPPER.createObjectNode();
+        msg.put("timestamp", raw.path("timestamp").asText());
+        msg.put("event", "FSSSignalDiscovered");
+        if (raw.has("SystemAddress")) {
+            msg.set("SystemAddress", raw.get("SystemAddress"));
+        }
+
+        ObjectNode signal = MAPPER.createObjectNode();
+        raw.fields().forEachRemaining(e -> {
+            if (!FSS_SIGNAL_TOP_LEVEL_FIELDS.contains(e.getKey())) {
+                signal.set(e.getKey(), e.getValue());
+            }
+        });
+        if (!signal.has("timestamp")) {
+            signal.put("timestamp", raw.path("timestamp").asText());
+        }
+
+        ArrayNode signals = MAPPER.createArrayNode();
+        signals.add(signal);
+        msg.set("signals", signals);
+
+        ensureStarSystem(msg);
+        ensureStarPosAndSystemAddress(msg);
+        ensureHorizonsOdyssey(msg);
+        uploader.publishMessage(EddnSchemas.FSS_SIGNAL_DISCOVERED_V1, msg);
     }
 
     // ------------------------------------------------------------------
