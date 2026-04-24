@@ -6,8 +6,8 @@ import be.mirooz.elitedangerous.backend.capi.UnauthorizedException;
 import be.mirooz.elitedangerous.backend.generated.model.CapiApiErrorBody;
 import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierDto;
 import be.mirooz.elitedangerous.backend.generated.model.CapiLoginDto;
+import be.mirooz.elitedangerous.backend.generated.model.CapiDockedEvent;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketDto;
-import be.mirooz.elitedangerous.backend.generated.model.CapiMarketEvent;
 import be.mirooz.elitedangerous.backend.generated.model.CapiMarketProxyRequest;
 import be.mirooz.elitedangerous.backend.generated.model.CapiProfileDto;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
@@ -57,7 +57,7 @@ public final class CapiApiService {
         return INSTANCE;
     }
 
-    public void sendMarketDatas(JsonNode journalMarketEvent) {
+    public void sendMarketDatas(JsonNode journalDockedEvent) {
         if (DashboardContext.getInstance().isBatchLoading()) {
             return;
         }
@@ -66,9 +66,9 @@ public final class CapiApiService {
         }
         try {
             CommanderStatus s = CommanderStatus.getInstance();
-            CapiMarketEvent event = objectMapper.convertValue(
-                    journalMarketEvent,
-                    CapiMarketEvent.class
+            CapiDockedEvent event = objectMapper.convertValue(
+                    journalDockedEvent,
+                    CapiDockedEvent.class
             );
             CapiMarketProxyRequest payload = new CapiMarketProxyRequest()
                     .fid(s.getFID())

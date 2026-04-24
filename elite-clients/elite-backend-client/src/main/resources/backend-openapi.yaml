@@ -967,6 +967,32 @@ components:
         details:
           type: object
           additionalProperties: {}
+    CapiDockedEvent:
+      required:
+      - event
+      - MarketID
+      type: object
+      properties:
+        timestamp:
+          type: string
+        event:
+          pattern: (?i)^Docked$
+          type: string
+        MarketID:
+          format: int64
+          type: integer
+        StationName:
+          type: string
+        StationType:
+          type: string
+        CarrierDockingAccess:
+          type: string
+        StarSystem:
+          type: string
+        Taxi:
+          type: boolean
+        Multicrew:
+          type: boolean
     CapiFcBartenderFinances:
       type: object
       properties:
@@ -1447,28 +1473,6 @@ components:
           $ref: '#/components/schemas/CapiMarketProxyResponse'
         error:
           $ref: '#/components/schemas/CapiApiErrorBody'
-    CapiMarketEvent:
-      required:
-      - event
-      - MarketID
-      type: object
-      properties:
-        timestamp:
-          type: string
-        event:
-          pattern: (?i)^Market$
-          type: string
-        MarketID:
-          format: int64
-          type: integer
-        StationName:
-          type: string
-        StationType:
-          type: string
-        CarrierDockingAccess:
-          type: string
-        StarSystem:
-          type: string
     CapiMarketProxyRequest:
       required:
       - fid
@@ -1483,7 +1487,7 @@ components:
           pattern: \S
           type: string
         event:
-          $ref: '#/components/schemas/CapiMarketEvent'
+          $ref: '#/components/schemas/CapiDockedEvent'
     CapiMarketProxyResponse:
       type: object
       properties:

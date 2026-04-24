@@ -25,6 +25,11 @@ public class CommanderStatus {
     private Boolean isOnline;
     private boolean isOnFoot = false;
 
+    /** Dernier {@code SystemAddress} connu (FSDJump / Location / CarrierJump). Requis par certains schémas EDDN. */
+    private Long currentSystemAddress;
+    /** Dernière position galactique connue (x,y,z) en années-lumière. {@code null} tant que non reçue. */
+    private double[] currentStarPos;
+
     /** Depuis LoadGame / Fileheader (en-tête EDDN). */
     private String gameVersion;
     private String gameBuild;
@@ -93,5 +98,13 @@ public class CommanderStatus {
 
     public void setOdyssey(Boolean odyssey) {
         this.odyssey = odyssey;
+    }
+
+    public void setCurrentSystemAddress(Long value) {
+        this.currentSystemAddress = value;
+    }
+
+    public void setCurrentStarPos(double[] value) {
+        this.currentStarPos = value;
     }
 }

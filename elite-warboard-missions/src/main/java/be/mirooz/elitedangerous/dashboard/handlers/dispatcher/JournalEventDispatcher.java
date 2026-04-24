@@ -8,6 +8,8 @@ import org.reflections.Reflections;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 public class JournalEventDispatcher {
 
@@ -19,6 +21,9 @@ public class JournalEventDispatcher {
         return INSTANCE;
     }
     private final Map<String, JournalEventHandler> handlers = new HashMap<>();
+
+    /** Observateurs appelés sur chaque {@link JsonNode} avant le routage vers les handlers (ex. client EDDN). */
+    private final List<Consumer<JsonNode>> preDispatchListeners = new CopyOnWriteArrayList<>();
 
     private JournalEventDispatcher() {
         String packageName = JournalEventHandler.class.getPackageName();
@@ -45,9 +50,26 @@ public class JournalEventDispatcher {
     }
     public void dispatch(JsonNode jsonNode) {
         String event = jsonNode.get("event").asText();
+        for (Consumer<JsonNode> listener : preDispatchListeners) {
+            try {
+                listener.accept(jsonNode);
+            } catch (Exception e) {
+                System.err.println("Pre-dispatch listener error (" + event + ") : " + e.getMessage());
+            }
+        }
         JournalEventHandler handler = handlers.getOrDefault(event, defaultHandler);
         if (handler != null) {
             handler.handle(jsonNode);
+        }
+    }
+
+    /**
+     * Enregistre un observateur appelé sur chaque événement journal (batch et live), avant les handlers métier.
+     * L'ordre d'enregistrement est préservé ; les exceptions sont attrapées et ne bloquent pas le dispatch.
+     */
+    public void addPreDispatchListener(Consumer<JsonNode> listener) {
+        if (listener != null) {
+            preDispatchListeners.add(listener);
         }
     }
 }
