@@ -440,6 +440,7 @@
                                         <tstamp>
                                             <format property="CURRENT_DATE" pattern="yyyy-MM-dd"/>
                                         </tstamp>
+                                        <!--suppress UnresolvedMavenProperty -->
                                         <replaceregexp file="${project.basedir}/flatpak/be.mirooz.EliteWarboard.metainfo.xml"
                                                        match='&lt;release\s+version="[^"]*"\s+date="[^"]*"\s*/&gt;'
                                                        replace='&lt;release version="${project.version}" date="${CURRENT_DATE}"/&gt;'
