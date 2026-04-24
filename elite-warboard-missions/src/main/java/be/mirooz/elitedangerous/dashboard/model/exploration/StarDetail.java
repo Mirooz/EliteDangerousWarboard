@@ -3,14 +3,18 @@ package be.mirooz.elitedangerous.dashboard.model.exploration;
 import be.mirooz.elitedangerous.biologic.StarType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
  * Détails d'une étoile scannée dans Elite Dangerous.
+ *
+ * <p>{@link NoArgsConstructor} requis pour la désérialisation Jackson (cf. {@link ACelesteBody}).</p>
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
+@NoArgsConstructor
 public class StarDetail extends ACelesteBody {
 
     private String starTypeString;

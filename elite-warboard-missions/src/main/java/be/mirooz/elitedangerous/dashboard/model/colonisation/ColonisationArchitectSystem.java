@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.colonisation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -29,7 +31,11 @@ public class ColonisationArchitectSystem {
         return firstConstructionMarketId;
     }
 
-    public ColonisationArchitectSystem(String starSystem) {
+    // @JsonCreator + @JsonProperty : explicite le property-based creator pour Jackson.
+    // Le flag -parameters seul ne suffit pas tant que jackson-module-parameter-names n'est
+    // pas enregistré sur l'ObjectMapper (et la dépendance n'est pas dans le pom).
+    @JsonCreator
+    public ColonisationArchitectSystem(@JsonProperty("starSystem") String starSystem) {
         this.starSystem = starSystem != null ? starSystem : "";
     }
 

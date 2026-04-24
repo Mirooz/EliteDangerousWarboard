@@ -114,6 +114,15 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.15.2</version>
         </dependency>
+        <!-- Permet à Jackson de lire les noms de paramètres de constructeurs via l'attribut
+             bytecode MethodParameters (activé par maven-compiler-plugin avec <parameters>true).
+             Ça évite d'ajouter @JsonCreator + @JsonProperty sur chaque POJO Lombok @Value /
+             @AllArgsConstructor persisté (ColonisationConstruction, ConstructionResource, etc.). -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-parameter-names</artifactId>
+            <version>2.15.2</version>
+        </dependency>
 
         <!-- HTTP Client -->
         <dependency>
@@ -163,6 +172,10 @@
                     <source>17</source>
                     <target>17</target>
                     <encoding>UTF-8</encoding>
+                    <!-- Requis pour que Jackson puisse deserialiser les @Value / @AllArgsConstructor
+                         (ColonisationConstruction, ConstructionResource, ...) sans ajouter
+                         manuellement @JsonCreator sur chaque POJO domaine. -->
+                    <parameters>true</parameters>
                 </configuration>
             </plugin>
             <plugin>

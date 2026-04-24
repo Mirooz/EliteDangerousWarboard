@@ -128,6 +128,20 @@ public class PlaneteRegistry {
         );
     }
 
+    /** Restaure l'état complet depuis un snapshot persisté. */
+    public void applyFullPersistedSnapshot(Map<Integer, ACelesteBody> bodies, String currentStarSystem) {
+        planetesMap.clear();
+        if (bodies != null) {
+            planetesMap.putAll(bodies);
+        }
+        this.currentStarSystem = currentStarSystem;
+    }
+
+    /** Expose une copie plate de la map interne pour la sérialisation. */
+    public Map<Integer, ACelesteBody> snapshotPlanetesMap() {
+        return new LinkedHashMap<>(planetesMap);
+    }
+
     /**
      * Retourne une liste triée des corps célestes organisée hiérarchiquement :
      * - Les soleils sont placés à gauche (en premier)

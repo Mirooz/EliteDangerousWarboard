@@ -99,4 +99,24 @@ public class DestroyedShipsRegistery {
     public Map<String, Integer> getCombatBondPerFaction() {
         return combatBondPerFaction;
     }
+
+    /**
+     * Restauration en bloc depuis un snapshot persisté. Pas de recomputation : les agrégats
+     * ({@link #totalBountyEarned}, {@link #totalConflictBounty}, maps par faction) sont
+     * copiés tels quels pour coller à l'état affiché au moment du save.
+     */
+    public void applyFullPersistedSnapshot(java.util.List<DestroyedShip> shipsNewestFirst,
+                                           Map<String, Integer> bountyPerFaction,
+                                           Map<String, Integer> combatBondPerFaction,
+                                           int totalBountyEarned,
+                                           int totalConflictBounty) {
+        this.destroyedShips.clear();
+        if (shipsNewestFirst != null) {
+            this.destroyedShips.addAll(shipsNewestFirst);
+        }
+        this.bountyPerFaction = bountyPerFaction != null ? new HashMap<>(bountyPerFaction) : new HashMap<>();
+        this.combatBondPerFaction = combatBondPerFaction != null ? new HashMap<>(combatBondPerFaction) : new HashMap<>();
+        this.totalBountyEarned = totalBountyEarned;
+        this.totalConflictBounty = totalConflictBounty;
+    }
 }

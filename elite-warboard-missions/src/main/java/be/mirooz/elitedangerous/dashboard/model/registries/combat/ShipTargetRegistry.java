@@ -41,4 +41,12 @@ public class ShipTargetRegistry {
     public void clear() {
         targetMap.clear();
     }
+
+    /** Restaure l'ensemble des targets à partir d'un snapshot persisté. */
+    public synchronized void applyFullPersistedSnapshot(Map<String, ShipTarget> snapshot) {
+        targetMap.clear();
+        if (snapshot != null) {
+            targetMap.putAll(snapshot);
+        }
+    }
 }

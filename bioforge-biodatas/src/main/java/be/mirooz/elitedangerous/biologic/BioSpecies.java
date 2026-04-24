@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.biologic;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,6 +26,10 @@ public class BioSpecies {
     VariantMethods variantMethod;
     String colorConditionName;
     String id;
+    // Données de référentiel statique (chargées via BioSpeciesFactory au démarrage).
+    // Pas utile à la persistance + contient une Map<VolcanicBodyType, Double> qui ne dispose
+    // pas de KeyDeserializer Jackson (clé = POJO composite), d'où l'exclusion explicite.
+    @JsonIgnore
     BioSpeciesFactory.HistogramData histogramData;
 
     //Scan

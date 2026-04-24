@@ -107,4 +107,47 @@ public class CommanderStatus {
     public void setCurrentStarPos(double[] value) {
         this.currentStarPos = value;
     }
+
+    /**
+     * Restauration depuis un snapshot persisté. Utilisé exclusivement par le
+     * {@code PersistenceService} ; le composant UI est mis à jour via les setters.
+     */
+    public synchronized void applyFullPersistedSnapshot(
+            String currentStarSystem,
+            String currentStationName,
+            String currentBodyName,
+            Long currentBodyId,
+            String commanderName,
+            String FID,
+            Boolean isOnline,
+            boolean isOnFoot,
+            Long currentSystemAddress,
+            double[] currentStarPos,
+            String gameVersion,
+            String gameBuild,
+            Boolean horizons,
+            Boolean odyssey,
+            CommanderShip ship) {
+        this.currentStarSystem = currentStarSystem;
+        this.currentStationName = currentStationName;
+        this.currentBodyName = currentBodyName;
+        this.currentBodyId = currentBodyId;
+        this.commanderName = commanderName;
+        this.FID = FID;
+        this.isOnline = isOnline;
+        this.isOnFoot = isOnFoot;
+        this.currentSystemAddress = currentSystemAddress;
+        this.currentStarPos = currentStarPos;
+        this.gameVersion = gameVersion;
+        this.gameBuild = gameBuild;
+        this.horizons = horizons;
+        this.odyssey = odyssey;
+        this.ship = ship;
+
+        if (commanderName != null) component.setCommanderName(commanderName);
+        if (FID != null) component.setFID(FID);
+        if (currentStarSystem != null) component.setCurrentStarSystem(currentStarSystem);
+        if (currentStationName != null) component.setCurrentStationName(currentStationName);
+        if (isOnline != null) component.setOnline(isOnline);
+    }
 }

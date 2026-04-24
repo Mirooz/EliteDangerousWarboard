@@ -153,4 +153,23 @@ public class MiningStatRegistry {
     public void clearCompletedStats() {
         miningStats.removeIf(stat -> !stat.isActive());
     }
+
+    /** Restaure l'état complet depuis un snapshot persisté. */
+    public void applyFullPersistedSnapshot(List<MiningStat> statsList, MiningStat currentMiningSession) {
+        miningStats.clear();
+        if (statsList != null) {
+            miningStats.addAll(statsList);
+        }
+        this.currentMiningSession = currentMiningSession;
+    }
+
+    /** Expose une copie plate de la liste pour la sérialisation. */
+    public List<MiningStat> snapshotMiningStats() {
+        return new ArrayList<>(miningStats);
+    }
+
+    /** Renvoie la session courante brute (non Optional) pour la sérialisation. */
+    public MiningStat snapshotCurrentMiningSession() {
+        return currentMiningSession;
+    }
 }

@@ -63,6 +63,19 @@ public class ProspectedAsteroidRegistry {
         // Notifier les listeners
         notifyRegistryCleared();
     }
+
+    /** Restauration silencieuse depuis un snapshot (aucune notification émise). */
+    public synchronized void applyFullPersistedSnapshot(java.util.List<ProspectedAsteroid> snapshot) {
+        registry.clear();
+        if (snapshot != null) {
+            for (ProspectedAsteroid a : snapshot) {
+                if (a != null) registry.addLast(a);
+            }
+            while (registry.size() > MAX_SIZE) {
+                registry.removeFirst();
+            }
+        }
+    }
     
     /**
      * Ajoute un listener pour les changements du registre

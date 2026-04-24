@@ -93,4 +93,17 @@ public class SystemVisitedRegistry {
     public int size() {
         return systems.size();
     }
+
+    /** Restaure l'état complet depuis un snapshot persisté. */
+    public void applyFullPersistedSnapshot(java.util.Map<String, SystemVisited> snapshot) {
+        systems.clear();
+        if (snapshot != null) {
+            systems.putAll(snapshot);
+        }
+    }
+
+    /** Expose une copie plate du lookup pour la sérialisation. */
+    public java.util.Map<String, SystemVisited> snapshotSystems() {
+        return new java.util.LinkedHashMap<>(systems);
+    }
 }

@@ -6,9 +6,11 @@ import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRe
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.*;
@@ -21,8 +23,10 @@ import java.util.stream.Stream;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
+@NoArgsConstructor
 public class PlaneteDetail extends ACelesteBody {
 
+    @JsonIgnore
     private final ExplorationService explorationService = ExplorationService.getInstance();
     // Propriétés spécifiques à une planète
     private BodyType planetClass;

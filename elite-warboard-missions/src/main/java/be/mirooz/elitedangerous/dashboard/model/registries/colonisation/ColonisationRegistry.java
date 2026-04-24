@@ -199,4 +199,43 @@ public class ColonisationRegistry {
         beaconDeployedSystems.clear();
         currentConstruction = null;
     }
+
+    /** Restaure l'intégralité de l'état depuis un snapshot persisté. */
+    @Synchronized
+    public void applyFullPersistedSnapshot(
+            LinkedHashMap<String, ColonisationArchitectSystem> architects,
+            LinkedHashSet<String> beaconOrder,
+            Long currentConstructionMarketId) {
+        architectByStarSystem.clear();
+        beaconDeployedSystems.clear();
+        currentConstruction = null;
+        if (architects != null) {
+            architectByStarSystem.putAll(architects);
+        }
+        if (beaconOrder != null) {
+            beaconDeployedSystems.addAll(beaconOrder);
+        }
+        if (currentConstructionMarketId != null) {
+            currentConstruction = findDockEntryByMarketId(currentConstructionMarketId);
+        }
+    }
+
+    /** Expose le MarketID du chantier courant pour la sérialisation. */
+    @Synchronized
+    public Long getCurrentConstructionMarketId() {
+        if (currentConstruction == null) return null;
+        return currentConstruction.getMarketId();
+    }
+
+    /** Expose la map interne (ordonnée) pour la sérialisation. */
+    @Synchronized
+    public LinkedHashMap<String, ColonisationArchitectSystem> snapshotArchitectByStarSystem() {
+        return new LinkedHashMap<>(architectByStarSystem);
+    }
+
+    /** Expose l'ordre des balises déployées pour la sérialisation. */
+    @Synchronized
+    public LinkedHashSet<String> snapshotBeaconDeployedSystems() {
+        return new LinkedHashSet<>(beaconDeployedSystems);
+    }
 }

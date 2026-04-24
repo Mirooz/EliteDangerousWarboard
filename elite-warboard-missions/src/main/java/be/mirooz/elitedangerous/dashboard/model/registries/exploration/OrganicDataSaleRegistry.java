@@ -100,5 +100,20 @@ public class OrganicDataSaleRegistry {
     public int size() {
         return sales.size();
     }
+
+    /** Restaure l'état complet depuis un snapshot persisté. */
+    public void applyFullPersistedSnapshot(List<OrganicDataSale> salesList,
+                                           OrganicDataOnHold currentOrganicDataOnHold) {
+        sales.clear();
+        if (salesList != null) {
+            sales.addAll(salesList);
+        }
+        this.currentOrganicDataOnHold = currentOrganicDataOnHold;
+    }
+
+    /** Expose une copie plate des ventes pour la sérialisation. */
+    public List<OrganicDataSale> snapshotSales() {
+        return new java.util.ArrayList<>(sales);
+    }
 }
 

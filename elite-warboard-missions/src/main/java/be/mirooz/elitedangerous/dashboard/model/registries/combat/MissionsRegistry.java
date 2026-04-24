@@ -35,6 +35,14 @@ public class MissionsRegistry {
         globalMissionMap.clear();
     }
 
+    /** Restaure l'ensemble des missions à partir d'un snapshot persisté. */
+    public void applyFullPersistedSnapshot(java.util.Map<String, Mission> snapshot) {
+        globalMissionMap.clear();
+        if (snapshot != null) {
+            globalMissionMap.putAll(snapshot);
+        }
+    }
+
     public void setActiveMissionsToFailed(){
         globalMissionMap.forEach((s, mission) -> {
             if(mission.isActive()){

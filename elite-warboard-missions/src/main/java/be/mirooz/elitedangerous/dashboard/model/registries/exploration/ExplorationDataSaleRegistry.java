@@ -110,5 +110,22 @@ public class ExplorationDataSaleRegistry {
     public int size() {
         return sales.size();
     }
+
+    /** Restaure l'état complet depuis un snapshot persisté. */
+    public void applyFullPersistedSnapshot(List<ExplorationDataSale> salesList,
+                                           ExplorationDataSale currentSale,
+                                           ExplorationDataOnHold explorationDataOnHold) {
+        sales.clear();
+        if (salesList != null) {
+            sales.addAll(salesList);
+        }
+        this.currentSale = currentSale;
+        this.explorationDataOnHold = explorationDataOnHold;
+    }
+
+    /** Expose une copie plate des ventes pour la sérialisation. */
+    public List<ExplorationDataSale> snapshotSales() {
+        return new java.util.ArrayList<>(sales);
+    }
 }
 

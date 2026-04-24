@@ -1,65 +1,271 @@
 package be.mirooz.elitedangerous.dashboard.service.persistence;
 
 import be.mirooz.elitedangerous.dashboard.persistence.CarrierStatusStore;
+import be.mirooz.elitedangerous.dashboard.persistence.ColonisationRegistryStore;
+import be.mirooz.elitedangerous.dashboard.persistence.CommanderStatusStore;
+import be.mirooz.elitedangerous.dashboard.persistence.DestroyedShipsStore;
+import be.mirooz.elitedangerous.dashboard.persistence.ExplorationDataSaleRegistryStore;
+import be.mirooz.elitedangerous.dashboard.persistence.ExplorationModeStore;
+import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
+import be.mirooz.elitedangerous.dashboard.persistence.JournalCursorStore;
+import be.mirooz.elitedangerous.dashboard.persistence.MiningStatRegistryStore;
+import be.mirooz.elitedangerous.dashboard.persistence.MissionsStore;
+import be.mirooz.elitedangerous.dashboard.persistence.NavRouteRegistryStore;
+import be.mirooz.elitedangerous.dashboard.persistence.NavRouteTargetStore;
+import be.mirooz.elitedangerous.dashboard.persistence.OrganicDataSaleRegistryStore;
+import be.mirooz.elitedangerous.dashboard.persistence.PlaneteRegistryStore;
+import be.mirooz.elitedangerous.dashboard.persistence.ProspectedAsteroidStore;
+import be.mirooz.elitedangerous.dashboard.persistence.RegistryStore;
+import be.mirooz.elitedangerous.dashboard.persistence.ShipTargetStore;
+import be.mirooz.elitedangerous.dashboard.persistence.SystemVisitedRegistryStore;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * Orchestrateur unique de la persistance des registries + curseur de reprise des journaux.
+ *
+ * <p>Responsabilités :</p>
+ * <ul>
+ *   <li>enregistrer tous les {@link RegistryStore} du module et leur déléguer save/load/delete,</li>
+ *   <li>mémoriser le {@link JournalCursor} courant (dernier event dispatché) et le persister,</li>
+ *   <li>proposer un save debouncé ({@link #saveAllDebounced()}) pour ne pas réécrire à chaque
+ *       event quand le stream de journaux tourne à plein régime,</li>
+ *   <li>flusher un save en attente via un shutdown hook JVM,</li>
+ *   <li>supprimer automatiquement tous les fichiers persistés en cas d'erreur de
+ *       désérialisation → fallback vers un full replay des journaux.</li>
+ * </ul>
+ */
 public class PersistenceService {
 
     private static final PersistenceService INSTANCE = new PersistenceService();
+
+    /** Fenêtre de coalescing des saves debouncés. */
+    private static final long DEBOUNCE_DELAY_MS = 2_000L;
 
     public static PersistenceService getInstance() {
         return INSTANCE;
     }
 
-    private final CarrierStatusStore carrierStatusStore;
-    private final Path persistenceFile;
+    private final Path baseDir;
+    private final List<RegistryStore> stores = new ArrayList<>();
+    private final JournalCursorStore cursorStore;
+
+    private final ScheduledExecutorService scheduler =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "PersistenceService-scheduler");
+                t.setDaemon(true);
+                return t;
+            });
+    private volatile ScheduledFuture<?> pendingSave;
 
     private PersistenceService() {
+        this.baseDir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
+        this.cursorStore = new JournalCursorStore(baseDir.resolve("journal-cursor.json"));
 
-        this.persistenceFile = Paths.get(
-                System.getProperty("user.home"),
-                ".elite-warboard",
-                "carrier-status.json"
-        );
+        // Phase 1 : fleetcarrier
+        stores.add(new CarrierStatusStore(baseDir.resolve("carrier-status.json")));
+        // Phase 2 : registries simples
+        stores.add(new CommanderStatusStore(baseDir.resolve("commander-status.json")));
+        stores.add(new ExplorationModeStore(baseDir.resolve("exploration-mode.json")));
+        stores.add(new NavRouteTargetStore(baseDir.resolve("nav-route-target.json")));
+        stores.add(new ShipTargetStore(baseDir.resolve("ship-targets.json")));
+        stores.add(new ProspectedAsteroidStore(baseDir.resolve("prospected-asteroids.json")));
+        stores.add(new MissionsStore(baseDir.resolve("missions.json")));
+        stores.add(new DestroyedShipsStore(baseDir.resolve("destroyed-ships.json")));
+        // Phase 3 : registries lourds
+        stores.add(new ColonisationRegistryStore(baseDir.resolve("colonisation-registry.json")));
+        stores.add(new PlaneteRegistryStore(baseDir.resolve("planete-registry.json")));
+        stores.add(new SystemVisitedRegistryStore(baseDir.resolve("system-visited-registry.json")));
+        stores.add(new NavRouteRegistryStore(baseDir.resolve("nav-route-registry.json")));
+        stores.add(new ExplorationDataSaleRegistryStore(baseDir.resolve("exploration-data-sale-registry.json")));
+        stores.add(new OrganicDataSaleRegistryStore(baseDir.resolve("organic-data-sale-registry.json")));
+        stores.add(new MiningStatRegistryStore(baseDir.resolve("mining-stat-registry.json")));
 
-        this.carrierStatusStore = new CarrierStatusStore(persistenceFile);
+        Runtime.getRuntime().addShutdownHook(new Thread(this::flushOnShutdown,
+                "PersistenceService-shutdown"));
     }
 
-    // -------- API --------
+    // -------- Resume API --------
 
-    public void load() {
+    /**
+     * Charge tous les registries + le curseur.
+     *
+     * @return {@code true} si un curseur valide a été chargé ET que tous les registries ont
+     *         pu être restaurés ; {@code false} sinon (auquel cas l'appelant doit faire un
+     *         full replay des journaux).
+     */
+    public boolean loadAll() {
+        boolean cursorLoaded;
         try {
-            boolean loaded = carrierStatusStore.loadIfExists();
-            if (loaded) {
-                System.out.println("CarrierStatus chargé depuis " + persistenceFile);
-            } else {
-                System.out.println("Aucun fichier trouvé : " + persistenceFile);
+            cursorLoaded = cursorStore.loadIfExists();
+        } catch (Exception e) {
+            System.err.println("[Persistence] Echec du chargement du curseur, fallback full replay");
+            e.printStackTrace();
+            deleteAll();
+            return false;
+        }
+        if (!cursorLoaded) {
+            System.out.println("[Persistence] Pas de curseur — full replay des journaux");
+            // Pas de curseur → même si des snapshots existaient, on ne sait pas jusqu'où
+            // ils étaient à jour. On nettoie pour repartir propre sur full replay.
+            deleteAllSnapshotsOnly();
+            return false;
+        }
+
+        // Chargement indulgent : on continue même si un store échoue, on logue clairement
+        // quel fichier pose problème plutôt que tout jeter silencieusement.
+        boolean anyFailure = false;
+        for (RegistryStore store : stores) {
+            try {
+                boolean loaded = store.loadIfExists();
+                if (loaded) {
+                    System.out.println("[Persistence] " + store.name() + " restauré");
+                } else {
+                    System.out.println("[Persistence] " + store.name() + " absent — première init");
+                }
+            } catch (Exception e) {
+                anyFailure = true;
+                System.err.println("[Persistence] Echec restauration " + store.name()
+                        + " : " + e.getMessage());
+                e.printStackTrace();
             }
+        }
+
+        if (anyFailure) {
+            System.err.println("[Persistence] Au moins un store n'a pas pu être restauré → "
+                    + "purge + fallback full replay pour éviter un état incohérent");
+            deleteAll();
+            return false;
+        }
+
+        JournalCursor cursor = cursorStore.getCursor();
+        System.out.println("[Persistence] Cursor restauré : " + cursor.getLastJournalFile()
+                + " @ " + cursor.getLastTimestamp());
+        return true;
+    }
+
+    /** Accès au curseur courant pour piloter la reprise dans {@code JournalService}. */
+    public JournalCursor getCursor() {
+        return cursorStore.getCursor();
+    }
+
+    /**
+     * Met à jour le curseur en mémoire — appelé par le dispatcher à chaque event dispatché
+     * hors batch.
+     */
+    public void updateCursor(String lastTimestamp, String lastJournalFile) {
+        cursorStore.updateInMemory(lastTimestamp, lastJournalFile);
+    }
+
+    // -------- Save API --------
+
+    /** Sauve tous les stores + le curseur, de façon synchrone. */
+    public synchronized void saveAllNow() {
+        cancelPendingSave();
+        doSaveAll();
+    }
+
+    /**
+     * Planifie un save global dans {@value #DEBOUNCE_DELAY_MS} ms. Les appels successifs
+     * dans la fenêtre sont coalescés en une seule écriture disque.
+     */
+    public synchronized void saveAllDebounced() {
+        cancelPendingSave();
+        pendingSave = scheduler.schedule(this::doSaveAll, DEBOUNCE_DELAY_MS, TimeUnit.MILLISECONDS);
+    }
+
+    /** Supprime tous les fichiers persistés (snapshots + curseur). */
+    public synchronized void deleteAll() {
+        cancelPendingSave();
+        for (RegistryStore store : stores) {
+            try {
+                store.deleteIfExists();
+            } catch (Exception e) {
+                System.err.println("[Persistence] Suppression " + store.name() + " KO : " + e.getMessage());
+            }
+        }
+        try {
+            cursorStore.deleteIfExists();
         } catch (Exception e) {
-            System.err.println("Erreur chargement persistence");
-            e.printStackTrace();
+            System.err.println("[Persistence] Suppression cursor KO : " + e.getMessage());
         }
     }
 
+    // -------- Backward-compat (ancien PersistenceService) --------
+
+    /** @deprecated utiliser {@link #loadAll()}. Conservé pour les anciens appels. */
+    @Deprecated
+    public void load() {
+        loadAll();
+    }
+
+    /** @deprecated utiliser {@link #saveAllNow()} ou {@link #saveAllDebounced()}. */
+    @Deprecated
     public void save() {
+        saveAllNow();
+    }
+
+    /** @deprecated utiliser {@link #deleteAll()}. */
+    @Deprecated
+    public void delete() {
+        deleteAll();
+    }
+
+    // -------- Internals --------
+
+    private void doSaveAll() {
         try {
-            carrierStatusStore.save();
-            System.out.println("CarrierStatus sauvegardé dans " + persistenceFile);
+            for (RegistryStore store : stores) {
+                try {
+                    store.save();
+                } catch (Exception e) {
+                    System.err.println("[Persistence] Save " + store.name() + " KO : " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            cursorStore.save();
         } catch (Exception e) {
-            System.err.println("Erreur sauvegarde persistence");
+            System.err.println("[Persistence] Save global KO");
             e.printStackTrace();
         }
     }
 
-    public void delete() {
+    private void deleteAllSnapshotsOnly() {
+        for (RegistryStore store : stores) {
+            try {
+                store.deleteIfExists();
+            } catch (Exception ignored) {
+                // best effort
+            }
+        }
+    }
+
+    private void cancelPendingSave() {
+        if (pendingSave != null) {
+            pendingSave.cancel(false);
+            pendingSave = null;
+        }
+    }
+
+    private void flushOnShutdown() {
         try {
-            carrierStatusStore.deleteIfExists();
-            System.out.println("Fichier supprimé : " + persistenceFile);
+            // Politique "save only on shutdown" : même si le close handler de l'app a déjà
+            // sauvé, on re-sauve ici par sécurité (pas d'opération coûteuse si l'état n'a
+            // pas changé, et ça couvre les fermetures non propres type Ctrl+C / kill).
+            cancelPendingSave();
+            System.out.println("[Persistence] Sauvegarde finale (shutdown hook)...");
+            doSaveAll();
         } catch (Exception e) {
-            System.err.println("Erreur suppression persistence");
-            e.printStackTrace();
+            System.err.println("[Persistence] Flush shutdown KO : " + e.getMessage());
+        } finally {
+            scheduler.shutdownNow();
         }
     }
 }

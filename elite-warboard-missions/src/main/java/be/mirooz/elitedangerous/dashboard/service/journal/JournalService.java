@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.journal;
 
+import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalFileTracker;
 import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
@@ -84,11 +86,11 @@ public class JournalService {
             List<Mission> missions = parseAllJournalFiles();
 
             // Données fleet CAPI : après tout le chargement journal (ordres, stocks journal, etc.)
+            // Le fallback "load depuis disque" a disparu : parseAllJournalFiles() a déjà
+            // appelé PersistenceService.loadAll() en amont si un snapshot valide existait.
             if (profileOk && !CarrierTradeService.getInstance()
                     .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
                 CapiApiService.getInstance().fetchFleetCarrierData();
-            } else {
-                PersistenceService.getInstance().load();
             }
 
             return missions;
@@ -246,9 +248,25 @@ public class JournalService {
                 return new ArrayList<>();
             }
 
-            // Traiter les fichiers dans l'ordre chronologique (plus ancien en premier)
-            // Les fichiers sont déjà triés par date décroissante, on les inverse
-            dispatchAllEvents(journalFiles);
+            // Tente une reprise incrémentale si un curseur + snapshots valides existent
+            // ~/.elite-warboard/. Sinon on retombe sur le replay complet.
+            boolean resumed = PersistenceService.getInstance().loadAll();
+            if (resumed) {
+                JournalCursor cursor = PersistenceService.getInstance().getCursor();
+                String lastFile = cursor.getLastJournalFile();
+                if (lastFile != null && !lastFile.isBlank()) {
+                    // Les noms Journal.YYYY-MM-DDTHHMMSS.NN.log sont lexico-chrono.
+                    journalFiles = journalFiles.stream()
+                            .filter(f -> f.getName().compareTo(lastFile) >= 0)
+                            .collect(Collectors.toList());
+                }
+                System.out.println("[JournalService] Resume depuis " + lastFile
+                        + " @ " + cursor.getLastTimestamp()
+                        + " (" + journalFiles.size() + " fichiers à scanner)");
+                dispatchIncremental(journalFiles, cursor.getLastTimestamp());
+            } else {
+                dispatchAllEvents(journalFiles);
+            }
 
             if (!journalFiles.isEmpty()) {
                 File latestJournal = journalFiles.get(journalFiles.size() - 1);
@@ -265,14 +283,36 @@ public class JournalService {
     }
 
     private void dispatchAllEvents(List<File> journalFiles) {
+        dispatchBatch(journalFiles, null);
+    }
+
+    /**
+     * Rejoue tous les events dont le timestamp est strictement postérieur à
+     * {@code lastTimestamp}. Les events antérieurs ou égaux sont supposés avoir déjà été
+     * appliqués lors d'une session précédente et sont ignorés.
+     */
+    private void dispatchIncremental(List<File> journalFiles, String lastTimestamp) {
+        dispatchBatch(journalFiles, lastTimestamp);
+    }
+
+    private void dispatchBatch(List<File> journalFiles, String minExclusiveTimestamp) {
         DashboardContext.getInstance().setBatchLoading(true);
         for (File journalFile : journalFiles) {
-
+            // On trace le fichier courant pour que le dispatcher renseigne correctement le
+            // curseur avec le nom du journal en cours.
+            JournalFileTracker.getInstance().setCurrentFile(journalFile);
             try {
                 List<String> lines = Files.readAllLines(journalFile.toPath(), StandardCharsets.UTF_8);
                 for (String line : lines) {
                     try {
                         JsonNode jsonNode = objectMapper.readTree(line);
+                        if (minExclusiveTimestamp != null) {
+                            JsonNode ts = jsonNode.get("timestamp");
+                            if (ts != null && !ts.isNull()
+                                    && ts.asText().compareTo(minExclusiveTimestamp) <= 0) {
+                                continue;
+                            }
+                        }
                         dispatcher.dispatch(jsonNode);
                     } catch (Exception e) {
                         // Ignorer les lignes malformées
@@ -283,6 +323,10 @@ public class JournalService {
             }
         }
         DashboardContext.getInstance().setBatchLoading(false);
+
+        // Pas de save ici : la politique est "save only on shutdown" (close handler de
+        // EliteDashboardApp + shutdown hook JVM). Le curseur en mémoire a été mis à jour
+        // par le dispatcher à chaque event ; il sera flushé à la fermeture de l'app.
 
         ColonisationService.getInstance().loadPersistedUiStateAfterJournalBatch();
         CargoEventNotificationService.getInstance().notifyCargoEvent();

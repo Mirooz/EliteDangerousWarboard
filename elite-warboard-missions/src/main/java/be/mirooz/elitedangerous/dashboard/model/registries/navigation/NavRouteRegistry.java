@@ -132,5 +132,25 @@ public class NavRouteRegistry {
             clearRouteForMode(ExplorationMode.FREE_EXPLORATION);
         }
     }
+
+    /** Restaure les routes persistées (par mode d'exploration). */
+    public void applyFullPersistedSnapshot(Map<ExplorationMode, NavRoute> snapshot) {
+        if (snapshot == null) return;
+        for (Map.Entry<ExplorationMode, NavRoute> e : snapshot.entrySet()) {
+            setRouteForMode(e.getValue(), e.getKey());
+        }
+    }
+
+    /** Expose une copie plate des routes pour la sérialisation. */
+    public Map<ExplorationMode, NavRoute> snapshotRoutes() {
+        Map<ExplorationMode, NavRoute> out = new HashMap<>();
+        for (Map.Entry<ExplorationMode, ObjectProperty<NavRoute>> e : routeMap.entrySet()) {
+            NavRoute r = e.getValue().get();
+            if (r != null) {
+                out.put(e.getKey(), r);
+            }
+        }
+        return out;
+    }
 }
 

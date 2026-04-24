@@ -1,24 +1,24 @@
 package be.mirooz.elitedangerous.dashboard.persistence;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class CarrierStatusStore implements RegistryStore {
+public class CommanderStatusStore implements RegistryStore {
 
     private final Path file;
     private final ObjectMapper mapper = PolymorphicPersistenceMapper.createSimple();
 
-    public CarrierStatusStore(Path file) {
+    public CommanderStatusStore(Path file) {
         this.file = file;
     }
 
     @Override
     public String name() {
-        return "carrier-status";
+        return "commander-status";
     }
 
     @Override
@@ -27,9 +27,10 @@ public class CarrierStatusStore implements RegistryStore {
             if (file.getParent() != null) {
                 Files.createDirectories(file.getParent());
             }
-            mapper.writeValue(file.toFile(), CarrierStatusSnapshot.fromRuntime(CarrierStatus.getInstance()));
+            mapper.writeValue(file.toFile(),
+                    CommanderStatusSnapshot.fromRuntime(CommanderStatus.getInstance()));
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot save carrier status to " + file, e);
+            throw new IllegalStateException("Cannot save commander status to " + file, e);
         }
     }
 
@@ -39,10 +40,10 @@ public class CarrierStatusStore implements RegistryStore {
             return false;
         }
         try {
-            mapper.readValue(file.toFile(), CarrierStatusSnapshot.class).restore();
+            mapper.readValue(file.toFile(), CommanderStatusSnapshot.class).restore();
             return true;
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot load carrier status from " + file, e);
+            throw new IllegalStateException("Cannot load commander status from " + file, e);
         }
     }
 
@@ -51,7 +52,7 @@ public class CarrierStatusStore implements RegistryStore {
         try {
             Files.deleteIfExists(file);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot delete carrier status file " + file, e);
+            throw new IllegalStateException("Cannot delete commander status file " + file, e);
         }
     }
 }

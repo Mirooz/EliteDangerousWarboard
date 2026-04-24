@@ -4,9 +4,12 @@ import be.mirooz.elitedangerous.dashboard.handlers.events.EddnPublishingEventHan
 import be.mirooz.elitedangerous.dashboard.handlers.events.LoggingEventHandlerDecorator;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.DefaultJournalEventHandler;
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.JournalEventHandler;
+import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalFileTracker;
+import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.reflections.Reflections;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -60,5 +63,32 @@ public class JournalEventDispatcher {
         if (handler != null) {
             handler.handle(jsonNode);
         }
+        updateResumeCursor(jsonNode);
+    }
+
+    /**
+     * Met à jour le curseur de reprise en mémoire après chaque dispatch.
+     *
+     * <p>On ne persiste rien ici : la politique choisie est "save only on shutdown" (cf.
+     * {@link PersistenceService#saveAllNow()} appelé depuis le close handler de
+     * {@code EliteDashboardApp} et depuis le shutdown hook JVM). Ça évite de spammer le disque
+     * à chaque event et les race conditions entre save debouncé et {@code loadAll()} sur des
+     * snapshots volumineux.</p>
+     */
+    private void updateResumeCursor(JsonNode jsonNode) {
+        JsonNode tsNode = jsonNode.get("timestamp");
+        if (tsNode == null || tsNode.isNull()) {
+            return;
+        }
+        String timestamp = tsNode.asText();
+        if (timestamp == null || timestamp.isBlank()) {
+            return;
+        }
+        String fileName = null;
+        File currentFile = JournalFileTracker.getInstance().getCurrentFile();
+        if (currentFile != null) {
+            fileName = currentFile.getName();
+        }
+        PersistenceService.getInstance().updateCursor(timestamp, fileName);
     }
 }
