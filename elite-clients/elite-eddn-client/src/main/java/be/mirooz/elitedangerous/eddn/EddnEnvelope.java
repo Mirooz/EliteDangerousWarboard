@@ -2,7 +2,12 @@ package be.mirooz.elitedangerous.eddn;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * Construit l'enveloppe EDDN attendue par le gateway :
@@ -10,7 +15,25 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public final class EddnEnvelope {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    /**
+     * Mapper configuré pour EDDN :
+     * <ul>
+     *   <li>Sérialise {@link java.util.Date} et les types {@code java.time.*} en ISO-8601 UTC
+     *       (non en timestamp numérique) — EDDN exige le format chaîne ISO.</li>
+     *   <li>Ignore les valeurs {@code null} dans l'output (évite les champs vides rejetés par les schémas stricts).</li>
+     * </ul>
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .setDateFormat(isoUtcDateFormat())
+            .setTimeZone(TimeZone.getTimeZone("UTC"));
+
+    private static SimpleDateFormat isoUtcDateFormat() {
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        f.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return f;
+    }
 
     private EddnEnvelope() {}
 

@@ -72,6 +72,37 @@ public final class EddnUploader {
         publishMessage(schemaRef, (ObjectNode) message);
     }
 
+    /**
+     * Publie un POJO typé généré à partir des JSON Schema EDDN
+     * (cf. {@code be.mirooz.elitedangerous.eddn.generated.*}). Le POJO est sérialisé via Jackson
+     * avant strip / envoi. Préférer cette surcharge aux {@link ObjectNode} bruts : les POJOs garantissent
+     * {@code additionalProperties: false} à la compilation (impossible d'envoyer un champ non autorisé
+     * par le schéma).
+     */
+    public void publishMessage(String schemaRef, Object messagePojo) {
+        if (schemaRef == null || messagePojo == null) {
+            return;
+        }
+        if (messagePojo instanceof JsonNode node) {
+            publishMessage(schemaRef, node);
+            return;
+        }
+        if (!isPublishingAllowed()) {
+            return;
+        }
+        String uploaderId = EddnUploaderId.fromFid(commanderStatus.getFID());
+        if (uploaderId == null) {
+            return;
+        }
+        client.publish(
+                schemaRef,
+                uploaderId,
+                commanderStatus.getGameVersion(),
+                commanderStatus.getGameBuild(),
+                messagePojo
+        );
+    }
+
     public boolean isEnabled() {
         String v = preferences.getPreference(PREF_EDDN_ENABLED, "true");
         return Boolean.parseBoolean(v);

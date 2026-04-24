@@ -1,7 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.eddn.EddnMessages;
 import be.mirooz.elitedangerous.eddn.EddnSchemas;
+import be.mirooz.elitedangerous.eddn.generated.EddnMessage__3;
+import be.mirooz.elitedangerous.eddn.generated.EddnMessage__4;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -79,12 +82,10 @@ public final class EddnJournalPublisher {
                 publishEnriched(EddnSchemas.CODEX_ENTRY_V1, raw, true, true);
                 break;
             case "DockingDenied":
-                // Schéma n'accepte PAS StarSystem ni StarPos : uniquement station / market / reason.
-                publishEnriched(EddnSchemas.DOCKING_DENIED_V1, raw, false, false);
+                publishDockingDenied(raw);
                 break;
             case "DockingGranted":
-                // Schéma n'accepte PAS StarSystem ni StarPos : uniquement station / market / pad.
-                publishEnriched(EddnSchemas.DOCKING_GRANTED_V1, raw, false, false);
+                publishDockingGranted(raw);
                 break;
             case "FCMaterials":
                 publishEnriched(EddnSchemas.FC_MATERIALS_JOURNAL_V1, raw, false, false);
@@ -209,6 +210,53 @@ public final class EddnJournalPublisher {
      * EDDN conforme au schéma {@code fsssignaldiscovered/1} qui exige un tableau {@code signals[]}
      * et interdit les champs {@code SignalName / SignalType / IsStation / ...} au top-level.
      */
+    // ------------------------------------------------------------------
+    //  Publication typée via POJOs générés (jsonschema2pojo)
+    // ------------------------------------------------------------------
+
+    /**
+     * {@code dockinggranted/1} : schéma strict ({@code additionalProperties: false}) refusant
+     * {@code StarSystem}/{@code StarPos}. L'usage du POJO généré garantit par construction que
+     * seuls les champs autorisés (timestamp, event, MarketID, StationName, StationType, LandingPad,
+     * horizons, odyssey) partent sur le wire.
+     */
+    private void publishDockingGranted(JsonNode raw) {
+        EddnMessages.DockingGranted msg = new EddnMessages.DockingGranted();
+        msg.setTimestamp(raw.path("timestamp").asText());
+        msg.setEvent(EddnMessage__4.Event.DOCKING_GRANTED);
+        if (raw.has("MarketID")) {
+            msg.setMarketID(raw.get("MarketID").asLong());
+        }
+        msg.setStationName(raw.path("StationName").asText(null));
+        if (raw.hasNonNull("StationType")) {
+            msg.setStationType(raw.get("StationType").asText());
+        }
+        if (raw.has("LandingPad")) {
+            msg.setLandingPad(raw.get("LandingPad").asLong());
+        }
+        msg.setHorizons(commanderStatus.getHorizons());
+        msg.setOdyssey(commanderStatus.getOdyssey());
+        uploader.publishMessage(EddnSchemas.DOCKING_GRANTED_V1, msg);
+    }
+
+    /** {@code dockingdenied/1} : mêmes contraintes que {@code dockinggranted/1}, avec {@code Reason} en plus. */
+    private void publishDockingDenied(JsonNode raw) {
+        EddnMessages.DockingDenied msg = new EddnMessages.DockingDenied();
+        msg.setTimestamp(raw.path("timestamp").asText());
+        msg.setEvent(EddnMessage__3.Event.DOCKING_DENIED);
+        if (raw.has("MarketID")) {
+            msg.setMarketID(raw.get("MarketID").asLong());
+        }
+        msg.setStationName(raw.path("StationName").asText(null));
+        if (raw.hasNonNull("StationType")) {
+            msg.setStationType(raw.get("StationType").asText());
+        }
+        msg.setReason(raw.path("Reason").asText(null));
+        msg.setHorizons(commanderStatus.getHorizons());
+        msg.setOdyssey(commanderStatus.getOdyssey());
+        uploader.publishMessage(EddnSchemas.DOCKING_DENIED_V1, msg);
+    }
+
     /** Valeurs {@code USSType} dont le signal ne doit JAMAIS être publié (spec EDDN). */
     private static final String USS_TYPE_MISSION_TARGET = "$USS_Type_MissionTarget;";
 

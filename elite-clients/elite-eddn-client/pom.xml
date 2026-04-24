@@ -18,6 +18,13 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Source des schémas EDDN canoniques. -->
+        <eddn.schemas.base>https://eddn.edcd.io/schemas</eddn.schemas.base>
+        <!-- Destination locale des schémas téléchargés (versionnés dans le repo). -->
+        <eddn.schemas.dir>${project.basedir}/src/main/resources/eddn-schemas</eddn.schemas.dir>
+        <!-- Sortie des POJOs générés par jsonschema2pojo. -->
+        <eddn.generated.dir>${project.build.directory}/generated-sources/eddn-schemas</eddn.generated.dir>
     </properties>
 
     <dependencies>
@@ -26,6 +33,124 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.16.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.16.1</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              1) Téléchargement des schémas JSON Schema EDDN depuis eddn.edcd.io.
+                 usetimestamp=true : ne retélécharge un schéma que s'il a été modifié côté serveur.
+                 ignoreerrors=true : le build ne casse pas en offline si les schémas sont déjà présents.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>fetch-eddn-schemas</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="Fetching EDDN JSON schemas from ${eddn.schemas.base}/ into ${eddn.schemas.dir}"/>
+                                <mkdir dir="${eddn.schemas.dir}"/>
+                                <!-- On renomme les fichiers vers des noms courts ("approachsettlement.json" etc.) pour que
+                                     jsonschema2pojo génère des noms de classes propres. -->
+                                <get dest="${eddn.schemas.dir}/approachsettlement.json"  src="${eddn.schemas.base}/approachsettlement-v1.0.json"  usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/codexentry.json"          src="${eddn.schemas.base}/codexentry-v1.0.json"          usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/commodity.json"           src="${eddn.schemas.base}/commodity-v3.0.json"           usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/dockingdenied.json"       src="${eddn.schemas.base}/dockingdenied-v1.0.json"       usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/dockinggranted.json"      src="${eddn.schemas.base}/dockinggranted-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/fcmaterials_capi.json"    src="${eddn.schemas.base}/fcmaterials_capi-v1.0.json"    usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/fcmaterials_journal.json" src="${eddn.schemas.base}/fcmaterials_journal-v1.0.json" usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/fssallbodiesfound.json"   src="${eddn.schemas.base}/fssallbodiesfound-v1.0.json"   usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/fssbodysignals.json"      src="${eddn.schemas.base}/fssbodysignals-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/fssdiscoveryscan.json"    src="${eddn.schemas.base}/fssdiscoveryscan-v1.0.json"    usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/fsssignaldiscovered.json" src="${eddn.schemas.base}/fsssignaldiscovered-v1.0.json" usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/journal.json"             src="${eddn.schemas.base}/journal-v1.0.json"             usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/navbeaconscan.json"       src="${eddn.schemas.base}/navbeaconscan-v1.0.json"       usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/navroute.json"            src="${eddn.schemas.base}/navroute-v1.0.json"            usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/outfitting.json"          src="${eddn.schemas.base}/outfitting-v2.0.json"          usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/scanbarycentre.json"      src="${eddn.schemas.base}/scanbarycentre-v1.0.json"      usetimestamp="true" ignoreerrors="true"/>
+                                <get dest="${eddn.schemas.dir}/shipyard.json"            src="${eddn.schemas.base}/shipyard-v2.0.json"            usetimestamp="true" ignoreerrors="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+              2) Génération des POJOs Jackson à partir des JSON Schema téléchargés.
+                 Chaque fichier ".json" produit une classe avec le prefix "Eddn" dans le package
+                 be.mirooz.elitedangerous.eddn.generated.
+            -->
+            <plugin>
+                <groupId>org.jsonschema2pojo</groupId>
+                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-eddn-pojos</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${eddn.schemas.dir}</sourceDirectory>
+                            <outputDirectory>${eddn.generated.dir}</outputDirectory>
+                            <targetPackage>be.mirooz.elitedangerous.eddn.generated</targetPackage>
+                            <sourceType>jsonschema</sourceType>
+                            <annotationStyle>jackson2</annotationStyle>
+                            <classNamePrefix>Eddn</classNamePrefix>
+                            <useLongIntegers>true</useLongIntegers>
+                            <useDoubleNumbers>true</useDoubleNumbers>
+                            <includeJsr303Annotations>false</includeJsr303Annotations>
+                            <includeAdditionalProperties>false</includeAdditionalProperties>
+                            <includeGeneratedAnnotation>false</includeGeneratedAnnotation>
+                            <initializeCollections>false</initializeCollections>
+                            <generateBuilders>true</generateBuilders>
+                            <useCommonsLang3>false</useCommonsLang3>
+                            <useTitleAsClassname>false</useTitleAsClassname>
+                            <removeOldOutput>true</removeOldOutput>
+                            <!-- EDDN attend les date-time en ISO-8601 (string) et pas des epochs numériques.
+                                 En gardant des String côté POJO on évite toute mauvaise sérialisation. -->
+                            <dateTimeType>java.lang.String</dateTimeType>
+                            <dateType>java.lang.String</dateType>
+                            <timeType>java.lang.String</timeType>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 3) Ajout des sources générées au classpath de compilation. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-eddn-generated-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${eddn.generated.dir}</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

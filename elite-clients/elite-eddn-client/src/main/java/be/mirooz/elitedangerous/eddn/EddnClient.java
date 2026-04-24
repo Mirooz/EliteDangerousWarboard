@@ -93,6 +93,40 @@ public final class EddnClient {
             return;
         }
         ObjectNode body = (ObjectNode) message.deepCopy();
+        publishBody(schemaRef, uploaderId, gameVersion, gameBuild, body);
+    }
+
+    /**
+     * Surcharge typée : accepte un POJO généré (voir {@code be.mirooz.elitedangerous.eddn.generated})
+     * qui sera sérialisé via Jackson. Garantit {@code additionalProperties: false} à la source
+     * puisque les classes générées ne contiennent que les champs autorisés par le schéma.
+     *
+     * @param messagePojo POJO représentant le corps {@code message} (PAS l'enveloppe complète).
+     */
+    public void publish(String schemaRef,
+                        String uploaderId,
+                        String gameVersion,
+                        String gameBuild,
+                        Object messagePojo) {
+        if (schemaRef == null || uploaderId == null || messagePojo == null) {
+            return;
+        }
+        if (messagePojo instanceof JsonNode node) {
+            publish(schemaRef, uploaderId, gameVersion, gameBuild, node);
+            return;
+        }
+        JsonNode node = mapper.valueToTree(messagePojo);
+        if (node == null || !node.isObject()) {
+            return;
+        }
+        publishBody(schemaRef, uploaderId, gameVersion, gameBuild, (ObjectNode) node);
+    }
+
+    private void publishBody(String schemaRef,
+                             String uploaderId,
+                             String gameVersion,
+                             String gameBuild,
+                             ObjectNode body) {
         EddnPersonalDataStripper.stripInPlace(body);
 
         ObjectNode envelope = EddnEnvelope.build(
