@@ -6,10 +6,8 @@ import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -20,63 +18,41 @@ import java.util.List;
  * de deserialiser une interface polymorphe sans type info — d'où ce snapshot plat
  * qui sérialise l'enum sous son nom et le résout à la restauration.
  */
-public class ProspectedAsteroidStore implements RegistryStore {
+public class ProspectedAsteroidStore extends SnapshotJsonStore<List<ProspectedAsteroidStore.AsteroidSnapshot>> {
 
-    private final Path file;
-    private final ObjectMapper mapper = PolymorphicPersistenceMapper.createSimple();
+    private static final TypeReference<List<AsteroidSnapshot>> SNAPSHOT_TYPE = new TypeReference<>() {};
 
     public ProspectedAsteroidStore(Path file) {
-        this.file = file;
+        super(
+                "prospected-asteroids",
+                file,
+                PolymorphicPersistenceMapper.createSimple(),
+                SNAPSHOT_TYPE,
+                ProspectedAsteroidStore::buildSnapshot,
+                ProspectedAsteroidStore::restoreSnapshot
+        );
     }
 
-    @Override
-    public String name() {
-        return "prospected-asteroids";
-    }
-
-    @Override
-    public void save() {
-        try {
-            if (file.getParent() != null) {
-                Files.createDirectories(file.getParent());
-            }
-            Deque<ProspectedAsteroid> all = ProspectedAsteroidRegistry.getInstance().getAll();
-            List<AsteroidSnapshot> snapshots = new ArrayList<>(all.size());
-            for (ProspectedAsteroid a : all) {
-                snapshots.add(AsteroidSnapshot.fromRuntime(a));
-            }
-            mapper.writeValue(file.toFile(), snapshots);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot save prospected asteroids to " + file, e);
+    private static List<AsteroidSnapshot> buildSnapshot() {
+        Deque<ProspectedAsteroid> all = ProspectedAsteroidRegistry.getInstance().getAll();
+        List<AsteroidSnapshot> snapshots = new ArrayList<>(all.size());
+        for (ProspectedAsteroid a : all) {
+            snapshots.add(AsteroidSnapshot.fromRuntime(a));
         }
+        return snapshots;
     }
 
-    @Override
-    public boolean loadIfExists() {
-        if (!Files.exists(file)) {
-            return false;
-        }
-        try {
-            AsteroidSnapshot[] snapshots = mapper.readValue(file.toFile(), AsteroidSnapshot[].class);
-            List<ProspectedAsteroid> restored = new ArrayList<>();
+    private static void restoreSnapshot(List<AsteroidSnapshot> snapshots) {
+        List<ProspectedAsteroid> restored = new ArrayList<>();
+        if (snapshots != null) {
             for (AsteroidSnapshot s : snapshots) {
                 ProspectedAsteroid p = s.toRuntime();
-                if (p != null) restored.add(p);
+                if (p != null) {
+                    restored.add(p);
+                }
             }
-            ProspectedAsteroidRegistry.getInstance().applyFullPersistedSnapshot(restored);
-            return true;
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot load prospected asteroids from " + file, e);
         }
-    }
-
-    @Override
-    public void deleteIfExists() {
-        try {
-            Files.deleteIfExists(file);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot delete prospected asteroids file " + file, e);
-        }
+        ProspectedAsteroidRegistry.getInstance().applyFullPersistedSnapshot(restored);
     }
 
     static class AsteroidSnapshot {
@@ -132,7 +108,9 @@ public class ProspectedAsteroidStore implements RegistryStore {
             if (materials != null) {
                 for (MaterialSnapshot ms : materials) {
                     ProspectedAsteroid.Material m = ms.toRuntime();
-                    if (m != null) mats.add(m);
+                    if (m != null) {
+                        mats.add(m);
+                    }
                 }
             }
             p.setMaterials(mats);

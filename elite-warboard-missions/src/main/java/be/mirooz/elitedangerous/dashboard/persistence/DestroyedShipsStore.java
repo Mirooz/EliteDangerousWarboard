@@ -6,10 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedConflictShip;
 import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.ships.Reward;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,53 +18,17 @@ import java.util.Map;
  * {@link DestroyedShip} est abstraite + {@code @SuperBuilder} sans no-arg ctor : on passe par
  * un snapshot plat avec un discriminateur de type pour éviter d'annoter les POJOs domain.
  */
-public class DestroyedShipsStore implements RegistryStore {
-
-    private final Path file;
-    private final ObjectMapper mapper = PolymorphicPersistenceMapper.createSimple();
+public class DestroyedShipsStore extends SnapshotJsonStore<DestroyedShipsStore.Payload> {
 
     public DestroyedShipsStore(Path file) {
-        this.file = file;
-    }
-
-    @Override
-    public String name() {
-        return "destroyed-ships";
-    }
-
-    @Override
-    public void save() {
-        try {
-            if (file.getParent() != null) {
-                Files.createDirectories(file.getParent());
-            }
-            mapper.writeValue(file.toFile(), Payload.fromRuntime());
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot save destroyed ships to " + file, e);
-        }
-    }
-
-    @Override
-    public boolean loadIfExists() {
-        if (!Files.exists(file)) {
-            return false;
-        }
-        try {
-            Payload payload = mapper.readValue(file.toFile(), Payload.class);
-            payload.apply();
-            return true;
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot load destroyed ships from " + file, e);
-        }
-    }
-
-    @Override
-    public void deleteIfExists() {
-        try {
-            Files.deleteIfExists(file);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot delete destroyed ships file " + file, e);
-        }
+        super(
+                "destroyed-ships",
+                file,
+                PolymorphicPersistenceMapper.createSimple(),
+                Payload.class,
+                Payload::fromRuntime,
+                Payload::apply
+        );
     }
 
     static class Payload {
@@ -98,7 +59,9 @@ public class DestroyedShipsStore implements RegistryStore {
             if (ships != null) {
                 for (ShipEntry e : ships) {
                     DestroyedShip ship = e.toRuntime();
-                    if (ship != null) restored.add(ship);
+                    if (ship != null) {
+                        restored.add(ship);
+                    }
                 }
             }
             DestroyedShipsRegistery.getInstance().applyFullPersistedSnapshot(

@@ -1,57 +1,19 @@
 package be.mirooz.elitedangerous.dashboard.persistence;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class CarrierStatusStore implements RegistryStore {
-
-    private final Path file;
-    private final ObjectMapper mapper = PolymorphicPersistenceMapper.createSimple();
+public class CarrierStatusStore extends SnapshotJsonStore<CarrierStatusSnapshot> {
 
     public CarrierStatusStore(Path file) {
-        this.file = file;
-    }
-
-    @Override
-    public String name() {
-        return "carrier-status";
-    }
-
-    @Override
-    public void save() {
-        try {
-            if (file.getParent() != null) {
-                Files.createDirectories(file.getParent());
-            }
-            mapper.writeValue(file.toFile(), CarrierStatusSnapshot.fromRuntime(CarrierStatus.getInstance()));
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot save carrier status to " + file, e);
-        }
-    }
-
-    @Override
-    public boolean loadIfExists() {
-        if (!Files.exists(file)) {
-            return false;
-        }
-        try {
-            mapper.readValue(file.toFile(), CarrierStatusSnapshot.class).restore();
-            return true;
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot load carrier status from " + file, e);
-        }
-    }
-
-    @Override
-    public void deleteIfExists() {
-        try {
-            Files.deleteIfExists(file);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot delete carrier status file " + file, e);
-        }
+        super(
+                "carrier-status",
+                file,
+                PolymorphicPersistenceMapper.createSimple(),
+                CarrierStatusSnapshot.class,
+                () -> CarrierStatusSnapshot.fromRuntime(CarrierStatus.getInstance()),
+                CarrierStatusSnapshot::restore
+        );
     }
 }
