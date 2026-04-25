@@ -36,6 +36,12 @@ public class CommanderHandler implements JournalEventHandler {
                         currentFID == null ||
                         !currentFID.equals(fid);
 
+                // Important : on persiste l'état du commandant courant AVANT toute bascule
+                // de FID/scope, pour ne pas écraser le snapshot de l'ancien commandant.
+                if (isNewCommander && currentFID != null && !currentFID.isBlank()) {
+                    PersistenceService.getInstance().saveAllNow();
+                }
+
                 // Mettre à jour le statut du commandant
                 commanderStatus.setCommanderName(name);
                 commanderStatus.setFID(fid);
