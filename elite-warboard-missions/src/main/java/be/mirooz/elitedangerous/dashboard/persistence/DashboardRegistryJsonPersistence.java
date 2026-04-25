@@ -15,9 +15,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDa
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
-import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.MiningStatRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteTargetRegistry;
 import com.fasterxml.jackson.databind.JavaType;
@@ -66,9 +64,6 @@ public final class DashboardRegistryJsonPersistence {
         out.add(storeClass("ship-targets", baseDir, false, ShipTargetRegistry.PersistenceFile.class,
                 () -> ShipTargetRegistry.PersistenceFile.fromRuntime(ShipTargetRegistry.getInstance()),
                 ShipTargetRegistry.PersistenceFile::restore));
-        out.add(storeList("prospected-asteroids", baseDir, false, ArrayList.class, ProspectedAsteroid.class,
-                () -> new ArrayList<>(ProspectedAsteroidRegistry.getInstance().getAll()),
-                ProspectedAsteroidRegistry.getInstance()::applyFullPersistedSnapshot));
         out.add(storeMap("missions", baseDir, false, LinkedHashMap.class, String.class, Mission.class,
                 () -> new LinkedHashMap<>(MissionsRegistry.getInstance().getGlobalMissionMap()),
                 MissionsRegistry.getInstance()::applyFullPersistedSnapshot));
@@ -115,16 +110,6 @@ public final class DashboardRegistryJsonPersistence {
             Class<K> keyClass, Class<V> valueClass,
             Supplier<Map<K, V>> snapshot, Consumer<Map<K, V>> restore) {
         JavaType t = TypeFactory.defaultInstance().constructMapType(mapClass, keyClass, valueClass);
-        return new SnapshotJsonStore<>(
-                name, jsonFile(baseDir, name), mapper(polymorphic), t, snapshot, restore);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static <E> RegistryStore storeList(
-            String name, Path baseDir, boolean polymorphic, Class<? extends java.util.List> listClass,
-            Class<E> elementClass,
-            Supplier<List<E>> snapshot, Consumer<List<E>> restore) {
-        JavaType t = TypeFactory.defaultInstance().constructCollectionType(listClass, elementClass);
         return new SnapshotJsonStore<>(
                 name, jsonFile(baseDir, name), mapper(polymorphic), t, snapshot, restore);
     }

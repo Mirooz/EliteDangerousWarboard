@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
+import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralFactory;
@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class ProspectedAsteroidHandler implements JournalEventHandler {
-    ProspectedAsteroidRegistry prospectedAsteroidRegistry = ProspectedAsteroidRegistry.getInstance();
+    private final MiningService miningService = MiningService.getInstance();
 
     @Override
     public String getEventType() {
@@ -33,7 +33,7 @@ public class ProspectedAsteroidHandler implements JournalEventHandler {
                 }
             });
 
-            prospectedAsteroidRegistry.register(prospectedAsteroid);
+            miningService.registerProspectedAsteroid(prospectedAsteroid);
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de ProspectedAsteroid: " + e.getMessage());
             e.printStackTrace();

@@ -3,9 +3,6 @@ package be.mirooz.elitedangerous.dashboard.model.events;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.UnknownMineral;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,14 +17,10 @@ public class ProspectedAsteroid {
     private String timestamp;
     private String event;
 
-    @JsonSerialize(contentUsing = ProspectedAsteroidMaterialSerializer.class)
-    @JsonDeserialize(contentUsing = ProspectedAsteroidMaterialDeserializer.class)
     private List<Material> materials;
 
     private String motherlodeMaterial;
 
-    @JsonProperty("coreMineralName")
-    @JsonDeserialize(using = LenientMineralTypeDeserializer.class)
     private MineralType coreMineral;
 
     private String content;

@@ -6,7 +6,8 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
-import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidRegistry;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MiningSessionNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.ArdentApiService;
 import be.mirooz.elitedangerous.lib.edtools.model.MiningHotspot;
 import be.mirooz.ardentapi.model.CommodityMaxSell;
@@ -34,12 +35,22 @@ public class MiningService {
 
     private static MiningService instance;
 
+    private static final int MAX_PROSPECTED_ASTEROIDS = 50;
+    private final List<ProspectedAsteroid> prospectedAsteroids = new ArrayList<>();
+    private final MiningEventNotificationService miningEventNotifications = MiningEventNotificationService.getInstance();
+    private final MiningSessionNotificationService miningSessionNotificationService =
+            MiningSessionNotificationService.getInstance();
+
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
-    private final ProspectedAsteroidRegistry prospectedRegistry = ProspectedAsteroidRegistry.getInstance();
     public final ArdentApiService ardentApiService = ArdentApiService.getInstance();
     private final EdToolsService edToolsService = EdToolsService.getInstance();
 
     private MiningService() {
+        miningSessionNotificationService.addSessionEndListener(this::onMiningSessionEnd);
+    }
+
+    private void onMiningSessionEnd() {
+        clearAllProspectors();
     }
 
     public static MiningService getInstance() {
@@ -50,32 +61,53 @@ public class MiningService {
     }
 
     /**
+     * Enregistre un prospect d’astéroïde (ordre d’arrivée, buffer borné, non persisté disque).
+     */
+    public synchronized void registerProspectedAsteroid(ProspectedAsteroid asteroid) {
+        if (asteroid == null) {
+            return;
+        }
+        if (!prospectedAsteroids.isEmpty()
+                && prospectedAsteroids.get(prospectedAsteroids.size() - 1).equals(asteroid)) {
+            return;
+        }
+        prospectedAsteroids.add(asteroid);
+        while (prospectedAsteroids.size() > MAX_PROSPECTED_ASTEROIDS) {
+            prospectedAsteroids.remove(0);
+        }
+        miningEventNotifications.notifyProspectorAdded(asteroid);
+    }
+
+    /**
      * Récupère tous les prospecteurs
      */
     public List<ProspectedAsteroid> getAllProspectors() {
-        return prospectedRegistry.getAll();
+        synchronized (this) {
+            return new ArrayList<>(prospectedAsteroids);
+        }
     }
 
     /**
      * Nettoie tous les prospecteurs (utilisé lors de la fin de session de minage)
      */
     public void clearAllProspectors() {
-        prospectedRegistry.clear();
+        synchronized (this) {
+            prospectedAsteroids.clear();
+        }
+        miningEventNotifications.notifyRegistryCleared();
         System.out.println("🗑️ Tous les prospecteurs ont été nettoyés");
-    }
-
-    /**
-     * Récupère le registre des prospecteurs
-     */
-    public ProspectedAsteroidRegistry getProspectedRegistry() {
-        return prospectedRegistry;
     }
 
     /**
      * Récupère le dernier prospecteur
      */
     public Optional<ProspectedAsteroid> getLastProspector() {
-        return prospectedRegistry.getLast();
+        synchronized (this) {
+            if (prospectedAsteroids.isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.of(prospectedAsteroids.get(prospectedAsteroids.size() - 1));
+        }
     }
 
     /**
