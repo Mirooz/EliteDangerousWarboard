@@ -20,7 +20,7 @@ import be.mirooz.elitedangerous.dashboard.model.colonisation.construction.Struct
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResource;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
-import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
@@ -3141,9 +3141,8 @@ public class ColonisationPanelController implements Initializable {
     /** Tonnes par commodité (clé fusion) dans le vaisseau : journal / {@link MiningService#getCargo}. */
     private Map<String, Integer> buildShipStockTonsByMergeKey() {
         Map<String, Integer> out = new HashMap<>();
-        CommanderShip ship = commanderStatus.getShip();
-        CommanderShip.ShipCargo cargo = miningService.getCargo();
-        if (ship == null || cargo == null || cargo.getCommodities() == null) {
+        ShipCargo cargo = miningService.getCargo();
+        if (cargo == null || cargo.getCommodities() == null) {
             return out;
         }
         for (Map.Entry<ICommodity, Integer> e : cargo.getCommodities().entrySet()) {

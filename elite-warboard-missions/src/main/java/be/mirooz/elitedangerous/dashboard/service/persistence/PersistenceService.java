@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service.persistence;
 
+import be.mirooz.elitedangerous.dashboard.model.registries.CommodityRegistry;
 import be.mirooz.elitedangerous.dashboard.persistence.DashboardRegistryJsonPersistence;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursorStore;
@@ -112,6 +113,8 @@ public class PersistenceService {
             deleteAll();
             return false;
         }
+
+        CommodityRegistry.getInstance().ensureSeededFromClasspathIfEmpty();
 
         JournalCursor cursor = cursorStore.getCursor();
         System.out.println("[Persistence] Cursor restauré : " + cursor.getLastJournalFile()

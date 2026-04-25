@@ -1,7 +1,12 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.commander;
 
 import be.mirooz.elitedangerous.dashboard.view.common.CommanderStatusComponent;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Getter
@@ -36,14 +41,12 @@ public class CommanderStatus {
     private Boolean horizons;
     private Boolean odyssey;
 
-    private CommanderShip ship;
-
-    public void setShip(CommanderShip ship) {
-        this.ship = ship;
+    private CommanderStatus() {
     }
 
-
-    private CommanderStatus() {
+    /** Délègue au singleton {@link CommanderShip#getInstance()}. */
+    public CommanderShip getShip() {
+        return CommanderShip.getInstance();
     }
 
     public void setCurrentStarSystem(String value) {
@@ -109,45 +112,74 @@ public class CommanderStatus {
     }
 
     /**
-     * Restauration depuis un snapshot persisté. Utilisé exclusivement par le
-     * {@code PersistenceService} ; le composant UI est mis à jour via les setters.
+     * DTO JSON pour {@code commander-status.json} (commandant seul). Le vaisseau (singleton
+     * {@link CommanderShip}) est dans {@code commander-ship.json} via
+     * {@code DashboardRegistryJsonPersistence}.
      */
-    public synchronized void applyFullPersistedSnapshot(
-            String currentStarSystem,
-            String currentStationName,
-            String currentBodyName,
-            Long currentBodyId,
-            String commanderName,
-            String FID,
-            Boolean isOnline,
-            boolean isOnFoot,
-            Long currentSystemAddress,
-            double[] currentStarPos,
-            String gameVersion,
-            String gameBuild,
-            Boolean horizons,
-            Boolean odyssey,
-            CommanderShip ship) {
-        this.currentStarSystem = currentStarSystem;
-        this.currentStationName = currentStationName;
-        this.currentBodyName = currentBodyName;
-        this.currentBodyId = currentBodyId;
-        this.commanderName = commanderName;
-        this.FID = FID;
-        this.isOnline = isOnline;
-        this.isOnFoot = isOnFoot;
-        this.currentSystemAddress = currentSystemAddress;
-        this.currentStarPos = currentStarPos;
-        this.gameVersion = gameVersion;
-        this.gameBuild = gameBuild;
-        this.horizons = horizons;
-        this.odyssey = odyssey;
-        this.ship = ship;
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static final class PersistenceFile {
 
-        if (commanderName != null) component.setCommanderName(commanderName);
-        if (FID != null) component.setFID(FID);
-        if (currentStarSystem != null) component.setCurrentStarSystem(currentStarSystem);
-        if (currentStationName != null) component.setCurrentStationName(currentStationName);
-        if (isOnline != null) component.setOnline(isOnline);
+        private String currentStarSystem;
+        private String currentStationName;
+        private String currentBodyName;
+        private Long currentBodyId;
+        private String commanderName;
+        private String fid;
+        private Boolean isOnline;
+        private boolean isOnFoot;
+        private Long currentSystemAddress;
+        private double[] currentStarPos;
+        private String gameVersion;
+        private String gameBuild;
+        private Boolean horizons;
+        private Boolean odyssey;
+
+        public static PersistenceFile fromRuntime(CommanderStatus status) {
+            return PersistenceFile.builder()
+                    .currentStarSystem(status.getCurrentStarSystem())
+                    .currentStationName(status.getCurrentStationName())
+                    .currentBodyName(status.getCurrentBodyName())
+                    .currentBodyId(status.getCurrentBodyId())
+                    .commanderName(status.getCommanderName())
+                    .fid(status.getFID())
+                    .isOnline(status.getIsOnline())
+                    .isOnFoot(status.isOnFoot())
+                    .currentSystemAddress(status.getCurrentSystemAddress())
+                    .currentStarPos(status.getCurrentStarPos())
+                    .gameVersion(status.getGameVersion())
+                    .gameBuild(status.getGameBuild())
+                    .horizons(status.getHorizons())
+                    .odyssey(status.getOdyssey())
+                    .build();
+        }
+
+        public void restore() {
+            CommanderStatus s = CommanderStatus.getInstance();
+            synchronized (s) {
+                s.currentStarSystem = currentStarSystem;
+                s.currentStationName = currentStationName;
+                s.currentBodyName = currentBodyName;
+                s.currentBodyId = currentBodyId;
+                s.commanderName = commanderName;
+                s.FID = fid;
+                s.isOnline = isOnline;
+                s.isOnFoot = isOnFoot;
+                s.currentSystemAddress = currentSystemAddress;
+                s.currentStarPos = currentStarPos;
+                s.gameVersion = gameVersion;
+                s.gameBuild = gameBuild;
+                s.horizons = horizons;
+                s.odyssey = odyssey;
+                if (commanderName != null) s.component.setCommanderName(commanderName);
+                if (fid != null) s.component.setFID(fid);
+                if (currentStarSystem != null) s.component.setCurrentStarSystem(currentStarSystem);
+                if (currentStationName != null) s.component.setCurrentStationName(currentStationName);
+                if (isOnline != null) s.component.setOnline(isOnline);
+            }
+        }
     }
 }

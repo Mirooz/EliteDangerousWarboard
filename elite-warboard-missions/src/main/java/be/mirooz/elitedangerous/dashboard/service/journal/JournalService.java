@@ -225,7 +225,6 @@ public class JournalService {
      * Parse tous les fichiers Journal et met à jour les missions existantes
      */
     private List<Mission> parseAllJournalFiles() {
-
         try {
             List<File> journalFiles = getJournalFilesFromLastWeek();
 
@@ -277,6 +276,14 @@ public class JournalService {
 
         } catch (Exception e) {
             System.err.println("Erreur lors de la lecture des journaux: " + e.getMessage());
+        } finally {
+            // Fin du scan batch : débloquer l'UI, charger l’état colonisation persisté, puis
+            // re-synchroniser Cargo.json → jsonShipCargo (et notifier les vues minage, etc.)
+            // pour tous les cas (fichiers vides, erreur, ou replay complet).
+            DashboardContext.getInstance().setBatchLoading(false);
+            ColonisationService.getInstance().loadPersistedUiStateAfterJournalBatch();
+            CargoEventNotificationService.getInstance().notifyCargoEvent();
+            ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
         }
         return new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
 
@@ -322,15 +329,10 @@ public class JournalService {
                 System.err.println("Erreur lors de la lecture du fichier " + journalFile.getName() + ": " + e.getMessage());
             }
         }
-        DashboardContext.getInstance().setBatchLoading(false);
-
         // Pas de save ici : la politique est "save only on shutdown" (close handler de
         // EliteDashboardApp + shutdown hook JVM). Le curseur en mémoire a été mis à jour
         // par le dispatcher à chaque event ; il sera flushé à la fermeture de l'app.
-
-        ColonisationService.getInstance().loadPersistedUiStateAfterJournalBatch();
-        CargoEventNotificationService.getInstance().notifyCargoEvent();
-        ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
+        // Fin de batch, Cargo.json, colonisation : {@link #parseAllJournalFiles()} finally
     }
 
     /**

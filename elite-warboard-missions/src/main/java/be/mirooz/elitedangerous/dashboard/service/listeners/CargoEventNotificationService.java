@@ -2,8 +2,8 @@ package be.mirooz.elitedangerous.dashboard.service.listeners;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
-import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.service.journal.JournalService;
 
@@ -72,11 +72,7 @@ public class CargoEventNotificationService {
             }
 
             CommanderStatus commanderStatus = CommanderStatus.getInstance();
-            if (commanderStatus.getShip() == null) {
-                System.out.println("⚠️ Aucun vaisseau trouvé pour mapper le cargo");
-                return;
-            }
-            commanderStatus.getShip().setJsonShipCargo(new CommanderShip.ShipCargo());
+            commanderStatus.getShip().setJsonShipCargo(new ShipCargo());
 
             // Mapper chaque item de l'inventaire (champ Name du Cargo.json = identifiant jeu, aligné sur le registre)
             if (cargoData.getInventory() != null) {

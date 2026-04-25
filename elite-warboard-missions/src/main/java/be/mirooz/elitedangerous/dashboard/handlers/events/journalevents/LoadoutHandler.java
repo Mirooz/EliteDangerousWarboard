@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.Loadout;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,21 +31,20 @@ public class LoadoutHandler implements JournalEventHandler {
         try {
             Loadout loadout = parseLoadout(jsonNode);
 
-            CommanderShip.ShipCargo oldCargo =
-                    commanderStatus.getShip() != null ? commanderStatus.getShip().getShipCargo() : null;
+            synchronized (CommanderShip.getInstance()) {
+                CommanderShip ship = CommanderShip.getInstance();
+                ShipCargo oldCargo = ship.getShipCargo().copy();
+                ShipCargo oldJson = ship.getJsonShipCargo().copy();
+                ship.setShip(loadout.getShip());
+                ship.setMaxRange(loadout.getMaxJumpRange());
+                ship.setMaxCapacity(loadout.getCargoCapacity());
+                ship.setShipCargo(oldCargo);
+                ship.setJsonShipCargo(oldJson);
+            }
 
-            CommanderShip newShip = CommanderShip.builder()
-                    .ship(loadout.getShip())
-                    .shipCargo(oldCargo != null
-                            ? oldCargo.copy()
-                            : new CommanderShip.ShipCargo())
-                    .maxRange(loadout.getMaxJumpRange())
-                    .maxCapacity(loadout.getCargoCapacity())
-                    .build();
-            commanderStatus.setShip(newShip);
-
+            CommanderShip s = CommanderShip.getInstance();
             System.out.printf("New commander ship parsed: %s (%d cargo capacity)%n",
-                    newShip.getShip(), newShip.getMaxCapacity());
+                    s.getShip(), s.getMaxCapacity());
 
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Loadout: " + e.getMessage());

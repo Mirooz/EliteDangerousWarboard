@@ -1,86 +1,104 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.commander;
 
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Builder;
 
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * Vaisseau commandant (singleton : une seule instance runtime, alignée sur le
+ * modèle d’exploitation en solo).
+ * <p>
+ * L’identité vaisseau (nom, autonomie, etc.) vient des snapshots JSON ; le cargo
+ * n’est pas persisté dans le même fichier. Les champs de persistance s’appliquent
+ * via {@link PersistenceFile#applyToSingleton()}.
+ */
 @Data
-@Builder
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommanderShip {
+
+    private static final CommanderShip INSTANCE = new CommanderShip();
+
+    public static CommanderShip getInstance() {
+        return INSTANCE;
+    }
+
     private String ship;
-    private ShipCargo shipCargo;
-    private ShipCargo jsonShipCargo;
+    private ShipCargo shipCargo = new ShipCargo();
+    private ShipCargo jsonShipCargo = new ShipCargo();
     private int maxCapacity;
     private double maxRange;
 
     public void addCommodity(ICommodity commodity, int number) {
-        this.getShipCargo().addCommodity(commodity,null, number);
+        shipCargo.addCommodity(commodity, null, number);
     }
 
     public void addCommodity(ICommodity commodity) {
-        this.getShipCargo().addCommodity(commodity,null, 1);
+        shipCargo.addCommodity(commodity, null, 1);
     }
 
     public void removeCommodity(ICommodity commodity) {
-        this.getShipCargo().removeCommodity(commodity, 1);
+        shipCargo.removeCommodity(commodity, 1);
     }
 
     public void removeCommodity(ICommodity commodity, int number) {
-        this.getShipCargo().removeCommodity(commodity, number);
+        shipCargo.removeCommodity(commodity, number);
     }
 
     public void removeAllCommodity(ICommodity commodity) {
-        this.getShipCargo().removeAllCommodity(commodity);
+        shipCargo.removeAllCommodity(commodity);
     }
 
     public void setCurrentUsed(int x) {
-        this.getShipCargo().currentUsed = x;
+        shipCargo.setCurrentUsed(x);
     }
 
     public boolean isEmpty() {
-        return this.getShipCargo().currentUsed == 0;
+        return shipCargo.getCurrentUsed() == 0;
     }
 
     public void resetCargo() {
-        this.getShipCargo().currentUsed = 0;
-        this.getShipCargo().commodities.clear();
+        shipCargo.setCurrentUsed(0);
+        shipCargo.getCommodities().clear();
     }
 
-
+    /**
+     * DTO JSON pour {@code commander-ship.json} (déclaré dans
+     * {@link be.mirooz.elitedangerous.dashboard.persistence.DashboardRegistryJsonPersistence}).
+     */
     @Data
-    public static class ShipCargo {
-        private int currentUsed;
-        private final Map<ICommodity, Integer> commodities = new HashMap<>();
-        public ShipCargo(){
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static final class PersistenceFile {
+        private String ship;
+        private int maxCapacity;
+        private double maxRange;
+
+        public static PersistenceFile fromRuntime(CommanderShip runtime) {
+            if (runtime == null) {
+                return PersistenceFile.builder().build();
+            }
+            return PersistenceFile.builder()
+                    .ship(runtime.getShip())
+                    .maxCapacity(runtime.getMaxCapacity())
+                    .maxRange(runtime.getMaxRange())
+                    .build();
         }
-        public void addCommodity(ICommodity c, String nameLocalised, int x) {
-            currentUsed+=x;
-            c.setLocalisedName(nameLocalised);
-            commodities.merge(c, x, Integer::sum);
-        }
-        private void removeCommodity(ICommodity c, int x) {
-            commodities.computeIfPresent(c, (k, v) -> {
-                int removed = Math.min(x, v);
-                currentUsed -= removed;
-                return (v - removed) > 0 ? v - removed : null;
-            });
-        }
-        public void removeAllCommodity(ICommodity commodity) {
-            Integer currentQuantity = commodities.remove(commodity);
-            if (currentQuantity != null) {
-                currentUsed -= currentQuantity;
-                if (currentUsed < 0) currentUsed = 0; // sécurité anti négatif
+
+        public void restore() {
+            synchronized (getInstance()) {
+                CommanderShip s = getInstance();
+                s.setShip(ship);
+                s.setMaxCapacity(maxCapacity);
+                s.setMaxRange(maxRange);
             }
         }
-        public ShipCargo copy() {
-            ShipCargo copy = new ShipCargo();
-            copy.currentUsed = this.currentUsed;
-            copy.commodities.putAll(this.commodities);
-            return copy;
-        }
     }
-
 }

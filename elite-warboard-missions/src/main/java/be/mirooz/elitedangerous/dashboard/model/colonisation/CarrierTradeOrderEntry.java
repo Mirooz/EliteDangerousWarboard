@@ -16,4 +16,5 @@ public class CarrierTradeOrderEntry {
     boolean cancelTrade;
     long price;
     int stock;
+
 }

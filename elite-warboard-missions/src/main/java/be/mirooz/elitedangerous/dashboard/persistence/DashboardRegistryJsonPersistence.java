@@ -4,8 +4,10 @@ import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.CommodityRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.ShipTargetRegistry;
@@ -34,8 +36,9 @@ import java.util.function.Supplier;
 /**
  * Point d'entrée : la liste des {@link RegistryStore} (un fichier JSON chacun). Les DTOs
  * racine sont en général des classes internes {@code PersistenceFile} sur chaque
- * {@code *Registry} ; le statut porteur / commandant reste sur des *Snapshot dédiés
- * (ex. {@link CarrierStatusSnapshot}).
+ * {@code *Registry} (y compris {@link CommodityRegistry.PersistenceFile},
+ * {@link CarrierStatus.PersistenceFile}, {@link CommanderStatus.PersistenceFile} ;
+ * vaisseau : {@link CommanderShip.PersistenceFile} dans {@code commander-ship.json}).
  */
 public final class DashboardRegistryJsonPersistence {
 
@@ -47,12 +50,19 @@ public final class DashboardRegistryJsonPersistence {
     public static List<RegistryStore> buildRegistryStores(Path baseDir) {
         List<RegistryStore> out = new ArrayList<>();
 
-        out.add(storeClass("carrier-status", baseDir, false, CarrierStatusSnapshot.class,
-                () -> CarrierStatusSnapshot.fromRuntime(CarrierStatus.getInstance()),
-                CarrierStatusSnapshot::restore));
-        out.add(storeClass("commander-status", baseDir, false, CommanderStatusSnapshot.class,
-                () -> CommanderStatusSnapshot.fromRuntime(CommanderStatus.getInstance()),
-                CommanderStatusSnapshot::restore));
+        // Chargé en premier : les autres JSON (vaisseau, porte-vaisseau, etc.) résolvent des ICommodity via le catalogue.
+        out.add(storeClass("commodity-registry", baseDir, false, CommodityRegistry.PersistenceFile.class,
+                () -> CommodityRegistry.PersistenceFile.fromRuntime(CommodityRegistry.getInstance()),
+                CommodityRegistry.PersistenceFile::restore));
+        out.add(storeClass("carrier-status", baseDir, false, CarrierStatus.PersistenceFile.class,
+                () -> CarrierStatus.PersistenceFile.fromRuntime(CarrierStatus.getInstance()),
+                CarrierStatus.PersistenceFile::restore));
+        out.add(storeClass("commander-status", baseDir, false, CommanderStatus.PersistenceFile.class,
+                () -> CommanderStatus.PersistenceFile.fromRuntime(CommanderStatus.getInstance()),
+                CommanderStatus.PersistenceFile::restore));
+        out.add(storeClass("commander-ship", baseDir, false, CommanderShip.PersistenceFile.class,
+                () -> CommanderShip.PersistenceFile.fromRuntime(CommanderShip.getInstance()),
+                CommanderShip.PersistenceFile::restore));
 
         out.add(storeClass("exploration-mode", baseDir, false, ExplorationModeRegistry.PersistenceFile.class,
                 () -> ExplorationModeRegistry.PersistenceFile.fromRuntime(ExplorationModeRegistry.getInstance()),

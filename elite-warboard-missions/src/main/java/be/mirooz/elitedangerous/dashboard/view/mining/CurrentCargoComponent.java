@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.view.mining;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.ShipCargo;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
 import javafx.scene.layout.GridPane;
@@ -91,7 +91,7 @@ public class CurrentCargoComponent implements Initializable, MineralPriceNotific
      */
     public void updateCargo() {
         Platform.runLater(() -> {
-            CommanderShip.ShipCargo cargo = miningService.getCargo();
+            ShipCargo cargo = miningService.getCargo();
 
             if (cargo == null) {
                 cargoUsedLabel.setText("0/0");

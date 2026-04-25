@@ -4,7 +4,7 @@ import be.mirooz.ardentapi.model.CommoditiesStats;
 import be.mirooz.ardentapi.model.StationMarket;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
-import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip.ShipCargo;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningSessionNotificationService;
@@ -114,10 +114,7 @@ public class MiningService {
      * Récupère le cargo actuel
      */
     public ShipCargo getCargo() {
-        if (commanderStatus.getShip() == null) {
-            return null;
-        }
-        if (commanderStatus.getShip().getJsonShipCargo() !=null){
+        if (commanderStatus.getShip().getJsonShipCargo() != null) {
             return commanderStatus.getShip().getJsonShipCargo();
         }
         return commanderStatus.getShip().getShipCargo();
@@ -210,10 +207,7 @@ public class MiningService {
      * Récupère la capacité de cargo actuelle
      */
     public int getCurrentCargoCapacity() {
-        if (commanderStatus.getShip() != null) {
-            return commanderStatus.getShip().getMaxCapacity();
-        }
-        return 0; // Fallback
+        return commanderStatus.getShip().getMaxCapacity();
     }
 
     public CompletableFuture <List<CommodityMaxSell>> fetchCommoditiesMaxSell() {

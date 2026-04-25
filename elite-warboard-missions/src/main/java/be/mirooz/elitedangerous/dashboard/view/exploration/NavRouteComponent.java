@@ -903,12 +903,9 @@ public class NavRouteComponent implements Initializable {
                     
                     if (requiresMaxJumpRange) {
                         // Récupérer la portée maximale de saut depuis le vaisseau
-                        Double maxJumpRange = null;
-                        if (commanderStatus.getShip() != null) {
-                            maxJumpRange = commanderStatus.getShip().getMaxRange();
-                        }
+                        double maxJumpRange = commanderStatus.getShip().getMaxRange();
                         
-                        if (maxJumpRange == null || maxJumpRange <= 0) {
+                        if (maxJumpRange <= 0) {
                             Platform.runLater(() -> {
                                 System.err.println("⚠️ Impossible de charger la route " + currentMode.name() + " : portée de saut inconnue");
                                 setLoadingVisible(false);
