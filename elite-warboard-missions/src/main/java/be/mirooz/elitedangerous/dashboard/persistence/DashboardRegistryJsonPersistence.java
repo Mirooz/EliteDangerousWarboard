@@ -42,281 +42,196 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
- * Déclaration centralisée : un fichier JSON / entrée = une ligne
- * de {@link SnapshotJsonStore} + DTOs de forme disque (plus de classes {@code *Store}).
+ * Déclaration centralisée : un fichier JSON / entrée = un {@link SnapshotJsonStore} +
+ * DTOs (classes internes). La liste est construite par {@link #buildRegistryStores(Path)}.
  */
 public final class DashboardRegistryJsonPersistence {
 
     private static final ObjectMapper JSON_SIMPLE = PolymorphicPersistenceMapper.createSimple();
     private static final ObjectMapper JSON_POLYMORPHIC = PolymorphicPersistenceMapper.create();
 
-    private static final TypeReference<LinkedHashMap<String, Mission>> MISSIONS =
-            new TypeReference<>() {};
-    private static final TypeReference<LinkedHashMap<String, ShipTarget>> SHIP_TARGETS =
-            new TypeReference<>() {};
-    private static final TypeReference<LinkedHashMap<String, SystemVisited>> SYSTEMS_VISITED =
-            new TypeReference<>() {};
-    private static final TypeReference<List<ProspectedAsteroidFile>> PROSPECTED =
-            new TypeReference<>() {};
+    private static final TypeReference<LinkedHashMap<String, Mission>> MISSIONS = new TypeReference<>() {};
+    private static final TypeReference<LinkedHashMap<String, ShipTarget>> SHIP_TARGETS = new TypeReference<>() {};
+    private static final TypeReference<LinkedHashMap<String, SystemVisited>> SYSTEMS_VISITED = new TypeReference<>() {};
+    private static final TypeReference<List<ProspectedAsteroidFile>> PROSPECTED = new TypeReference<>() {};
+    /** Racine JSON = map (comme missions / ship-targets), pas d'enveloppe {@code { "routes": ... }}. */
+    private static final TypeReference<HashMap<ExplorationMode, NavRoute>> NAV_ROUTES = new TypeReference<>() {};
 
     private DashboardRegistryJsonPersistence() {}
 
     public static List<RegistryStore> buildRegistryStores(Path baseDir) {
         List<RegistryStore> out = new ArrayList<>();
 
-        out.add(new SnapshotJsonStore<>(
-                "carrier-status", baseDir.resolve("carrier-status.json"), JSON_SIMPLE,
-                CarrierStatusSnapshot.class,
+        out.add(storeClass("carrier-status", baseDir, false, CarrierStatusSnapshot.class,
                 () -> CarrierStatusSnapshot.fromRuntime(CarrierStatus.getInstance()),
                 CarrierStatusSnapshot::restore));
-
-        out.add(new SnapshotJsonStore<>(
-                "commander-status", baseDir.resolve("commander-status.json"), JSON_SIMPLE,
-                CommanderStatusSnapshot.class,
+        out.add(storeClass("commander-status", baseDir, false, CommanderStatusSnapshot.class,
                 () -> CommanderStatusSnapshot.fromRuntime(CommanderStatus.getInstance()),
                 CommanderStatusSnapshot::restore));
 
-        out.add(new SnapshotJsonStore<>(
-                "exploration-mode", baseDir.resolve("exploration-mode.json"), JSON_SIMPLE,
-                ExplorationModeFile.class,
-                () -> new ExplorationModeFile(ExplorationModeRegistry.getInstance().getCurrentMode()),
-                f -> {
-                    if (f != null && f.mode != null) {
-                        ExplorationModeRegistry.getInstance().setCurrentMode(f.mode);
-                    }
-                }));
+        out.add(storeClass("exploration-mode", baseDir, false, ExplorationModeFile.class,
+                ExplorationModeFile::fromRegistry, ExplorationModeFile::applyToRegistry));
+        out.add(storeClass("nav-route-target", baseDir, false, NavRouteTargetFile.class,
+                NavRouteTargetFile::fromRegistry, NavRouteTargetFile::applyToRegistry));
 
-        out.add(new SnapshotJsonStore<>(
-                "nav-route-target", baseDir.resolve("nav-route-target.json"), JSON_SIMPLE,
-                NavRouteTargetFile.class,
-                () -> new NavRouteTargetFile(NavRouteTargetRegistry.getInstance()
-                        .getRemainingJumpsInRoute()),
-                f -> {
-                    if (f != null) {
-                        NavRouteTargetRegistry.getInstance().setRemainingJumpsInRoute(
-                                f.remainingJumpsInRoute);
-                    }
-                }));
-
-        out.add(new SnapshotJsonStore<>(
-                "ship-targets", baseDir.resolve("ship-targets.json"), JSON_SIMPLE,
-                SHIP_TARGETS,
+        out.add(storeRef("ship-targets", baseDir, false, SHIP_TARGETS,
                 () -> new LinkedHashMap<>(ShipTargetRegistry.getInstance().getAll()),
                 ShipTargetRegistry.getInstance()::applyFullPersistedSnapshot));
-
-        out.add(new SnapshotJsonStore<>(
-                "prospected-asteroids", baseDir.resolve("prospected-asteroids.json"), JSON_SIMPLE,
-                PROSPECTED,
-                DashboardRegistryJsonPersistence::prospectedBuild,
-                DashboardRegistryJsonPersistence::prospectedRestore));
-
-        out.add(new SnapshotJsonStore<>(
-                "missions", baseDir.resolve("missions.json"), JSON_SIMPLE,
-                MISSIONS,
-                () -> new LinkedHashMap<>(
-                        MissionsRegistry.getInstance().getGlobalMissionMap()),
+        out.add(storeRef("prospected-asteroids", baseDir, false, PROSPECTED,
+                ProspectedAsteroidFile::listFromRegistry, ProspectedAsteroidFile::applyListToRegistry));
+        out.add(storeRef("missions", baseDir, false, MISSIONS,
+                () -> new LinkedHashMap<>(MissionsRegistry.getInstance().getGlobalMissionMap()),
                 MissionsRegistry.getInstance()::applyFullPersistedSnapshot));
 
-        out.add(new SnapshotJsonStore<>(
-                "destroyed-ships", baseDir.resolve("destroyed-ships.json"), JSON_SIMPLE,
-                DestroyedShipsFile.class,
-                DestroyedShipsFile::fromRuntime,
-                DestroyedShipsFile::apply));
+        out.add(storeClass("destroyed-ships", baseDir, false, DestroyedShipsFile.class,
+                DestroyedShipsFile::fromRuntime, DestroyedShipsFile::apply));
 
-        out.add(new SnapshotJsonStore<>(
-                "colonisation-registry", baseDir.resolve("colonisation-registry.json"), JSON_POLYMORPHIC,
-                ColonisationRegistryFile.class,
-                DashboardRegistryJsonPersistence::colonisationBuild,
-                DashboardRegistryJsonPersistence::colonisationRestore));
-
-        out.add(new SnapshotJsonStore<>(
-                "planete-registry", baseDir.resolve("planete-registry.json"), JSON_POLYMORPHIC,
-                PlaneteRegistryFile.class,
-                DashboardRegistryJsonPersistence::planeteBuild,
-                DashboardRegistryJsonPersistence::planeteRestore));
-
-        out.add(new SnapshotJsonStore<>(
-                "system-visited-registry", baseDir.resolve("system-visited-registry.json"), JSON_POLYMORPHIC,
-                SYSTEMS_VISITED,
-                () -> new LinkedHashMap<>(
-                        SystemVisitedRegistry.getInstance().snapshotSystems()),
+        out.add(storeClass("colonisation-registry", baseDir, true, ColonisationRegistryFile.class,
+                ColonisationRegistryFile::fromRegistry, ColonisationRegistryFile::applyToRegistry));
+        out.add(storeClass("planete-registry", baseDir, true, PlaneteRegistryFile.class,
+                PlaneteRegistryFile::fromRegistry, PlaneteRegistryFile::applyToRegistry));
+        out.add(storeRef("system-visited-registry", baseDir, true, SYSTEMS_VISITED,
+                () -> new LinkedHashMap<>(SystemVisitedRegistry.getInstance().snapshotSystems()),
                 SystemVisitedRegistry.getInstance()::applyFullPersistedSnapshot));
-
-        out.add(new SnapshotJsonStore<>(
-                "nav-route-registry", baseDir.resolve("nav-route-registry.json"), JSON_POLYMORPHIC,
-                NavRouteRegistryFile.class,
-                DashboardRegistryJsonPersistence::navRouteBuild,
-                DashboardRegistryJsonPersistence::navRouteRestore));
-
-        out.add(new SnapshotJsonStore<>(
-                "exploration-data-sale-registry",
-                baseDir.resolve("exploration-data-sale-registry.json"), JSON_POLYMORPHIC,
-                ExplorationDataSaleRegistryFile.class,
-                DashboardRegistryJsonPersistence::explorationDataSaleBuild,
-                DashboardRegistryJsonPersistence::explorationDataSaleRestore));
-
-        out.add(new SnapshotJsonStore<>(
-                "organic-data-sale-registry",
-                baseDir.resolve("organic-data-sale-registry.json"), JSON_POLYMORPHIC,
-                OrganicDataSaleRegistryFile.class,
-                DashboardRegistryJsonPersistence::organicDataSaleBuild,
-                DashboardRegistryJsonPersistence::organicDataSaleRestore));
-
-        out.add(new SnapshotJsonStore<>(
-                "mining-stat-registry", baseDir.resolve("mining-stat-registry.json"), JSON_POLYMORPHIC,
-                MiningStatRegistryFile.class,
-                DashboardRegistryJsonPersistence::miningStatBuild,
-                DashboardRegistryJsonPersistence::miningStatRestore));
+        out.add(storeRef("nav-route-registry", baseDir, true, NAV_ROUTES,
+                () -> new HashMap<>(NavRouteRegistry.getInstance().snapshotRoutes()),
+                NavRouteRegistry.getInstance()::applyFullPersistedSnapshot));
+        out.add(storeClass("exploration-data-sale-registry", baseDir, true, ExplorationDataSaleRegistryFile.class,
+                ExplorationDataSaleRegistryFile::fromRegistry, ExplorationDataSaleRegistryFile::applyToRegistry));
+        out.add(storeClass("organic-data-sale-registry", baseDir, true, OrganicDataSaleRegistryFile.class,
+                OrganicDataSaleRegistryFile::fromRegistry, OrganicDataSaleRegistryFile::applyToRegistry));
+        out.add(storeClass("mining-stat-registry", baseDir, true, MiningStatRegistryFile.class,
+                MiningStatRegistryFile::fromRegistry, MiningStatRegistryFile::applyToRegistry));
 
         return out;
     }
 
-    // -------- colonisation / planete / nav routes / sales / mining --------
-
-    private static ColonisationRegistryFile colonisationBuild() {
-        ColonisationRegistry reg = ColonisationRegistry.getInstance();
-        ColonisationRegistryFile f = new ColonisationRegistryFile();
-        f.architectByStarSystem = reg.snapshotArchitectByStarSystem();
-        f.beaconDeployedSystems = reg.snapshotBeaconDeployedSystems();
-        f.currentConstructionMarketId = reg.getCurrentConstructionMarketId();
-        return f;
+    private static <T> RegistryStore storeClass(
+            String name, Path baseDir, boolean polymorphic, Class<T> type,
+            Supplier<T> snapshot, Consumer<T> restore) {
+        return new SnapshotJsonStore<>(
+                name, jsonFile(baseDir, name), mapper(polymorphic), type, snapshot, restore);
     }
 
-    private static void colonisationRestore(ColonisationRegistryFile p) {
-        ColonisationRegistry.getInstance().applyFullPersistedSnapshot(
-                p.architectByStarSystem, p.beaconDeployedSystems, p.currentConstructionMarketId);
+    private static <T> RegistryStore storeRef(
+            String name, Path baseDir, boolean polymorphic, TypeReference<T> ref,
+            Supplier<T> snapshot, Consumer<T> restore) {
+        return new SnapshotJsonStore<>(
+                name, jsonFile(baseDir, name), mapper(polymorphic), ref, snapshot, restore);
     }
 
-    private static PlaneteRegistryFile planeteBuild() {
-        PlaneteRegistry reg = PlaneteRegistry.getInstance();
-        PlaneteRegistryFile f = new PlaneteRegistryFile();
-        f.planetesMap = new LinkedHashMap<>(reg.snapshotPlanetesMap());
-        f.currentStarSystem = reg.getCurrentStarSystem();
-        return f;
+    private static Path jsonFile(Path baseDir, String storeName) {
+        return baseDir.resolve(storeName + ".json");
     }
 
-    private static void planeteRestore(PlaneteRegistryFile p) {
-        PlaneteRegistry.getInstance().applyFullPersistedSnapshot(p.planetesMap, p.currentStarSystem);
+    private static ObjectMapper mapper(boolean polymorphic) {
+        return polymorphic ? JSON_POLYMORPHIC : JSON_SIMPLE;
     }
 
-    private static NavRouteRegistryFile navRouteBuild() {
-        NavRouteRegistryFile f = new NavRouteRegistryFile();
-        f.routes = new HashMap<>();
-        f.routes.putAll(NavRouteRegistry.getInstance().snapshotRoutes());
-        return f;
-    }
-
-    private static void navRouteRestore(NavRouteRegistryFile p) {
-        if (p != null && p.routes != null) {
-            EnumMap<ExplorationMode, NavRoute> routes = new EnumMap<>(ExplorationMode.class);
-            routes.putAll(p.routes);
-            NavRouteRegistry.getInstance().applyFullPersistedSnapshot(routes);
-        }
-    }
-
-    private static ExplorationDataSaleRegistryFile explorationDataSaleBuild() {
-        ExplorationDataSaleRegistry reg = ExplorationDataSaleRegistry.getInstance();
-        ExplorationDataSaleRegistryFile f = new ExplorationDataSaleRegistryFile();
-        f.sales = new ArrayList<>(reg.snapshotSales());
-        f.currentSale = reg.getCurrentSale();
-        f.explorationDataOnHold = reg.getExplorationDataOnHold();
-        return f;
-    }
-
-    private static void explorationDataSaleRestore(ExplorationDataSaleRegistryFile p) {
-        ExplorationDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
-                p.sales, p.currentSale, p.explorationDataOnHold);
-    }
-
-    private static OrganicDataSaleRegistryFile organicDataSaleBuild() {
-        OrganicDataSaleRegistry reg = OrganicDataSaleRegistry.getInstance();
-        OrganicDataSaleRegistryFile f = new OrganicDataSaleRegistryFile();
-        f.sales = new ArrayList<>(reg.snapshotSales());
-        f.currentOrganicDataOnHold = reg.getCurrentOrganicDataOnHold();
-        return f;
-    }
-
-    private static void organicDataSaleRestore(OrganicDataSaleRegistryFile p) {
-        OrganicDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
-                p.sales, p.currentOrganicDataOnHold);
-    }
-
-    private static MiningStatRegistryFile miningStatBuild() {
-        MiningStatRegistry reg = MiningStatRegistry.getInstance();
-        MiningStatRegistryFile f = new MiningStatRegistryFile();
-        f.miningStats = new ArrayList<>(reg.snapshotMiningStats());
-        f.currentMiningSession = reg.snapshotCurrentMiningSession();
-        return f;
-    }
-
-    private static void miningStatRestore(MiningStatRegistryFile p) {
-        MiningStatRegistry.getInstance().applyFullPersistedSnapshot(
-                p.miningStats, p.currentMiningSession);
-    }
-
-    // -------- prospected asteroids --------
-
-    private static List<ProspectedAsteroidFile> prospectedBuild() {
-        Deque<ProspectedAsteroid> all = ProspectedAsteroidRegistry.getInstance().getAll();
-        List<ProspectedAsteroidFile> list = new ArrayList<>(all.size());
-        for (ProspectedAsteroid a : all) {
-            list.add(ProspectedAsteroidFile.fromRuntime(a));
-        }
-        return list;
-    }
-
-    private static void prospectedRestore(List<ProspectedAsteroidFile> snapshots) {
-        List<ProspectedAsteroid> restored = new ArrayList<>();
-        if (snapshots != null) {
-            for (ProspectedAsteroidFile s : snapshots) {
-                ProspectedAsteroid p = s.toRuntime();
-                if (p != null) {
-                    restored.add(p);
-                }
-            }
-        }
-        ProspectedAsteroidRegistry.getInstance().applyFullPersistedSnapshot(restored);
-    }
-
-    // -------- fichiers DTO (racine JSON) --------
+    // -------------------------------------------------------------------------
+    // DTO racine + sérialisation (logique de capture / restauration sur le DTO)
+    // -------------------------------------------------------------------------
 
     public static final class ColonisationRegistryFile {
         public LinkedHashMap<String, ColonisationArchitectSystem> architectByStarSystem;
         public LinkedHashSet<String> beaconDeployedSystems;
         public Long currentConstructionMarketId;
+
+        public static ColonisationRegistryFile fromRegistry() {
+            ColonisationRegistry reg = ColonisationRegistry.getInstance();
+            ColonisationRegistryFile f = new ColonisationRegistryFile();
+            f.architectByStarSystem = reg.snapshotArchitectByStarSystem();
+            f.beaconDeployedSystems = reg.snapshotBeaconDeployedSystems();
+            f.currentConstructionMarketId = reg.getCurrentConstructionMarketId();
+            return f;
+        }
+
+        public void applyToRegistry() {
+            ColonisationRegistry.getInstance().applyFullPersistedSnapshot(
+                    architectByStarSystem, beaconDeployedSystems, currentConstructionMarketId);
+        }
     }
 
     public static final class PlaneteRegistryFile {
         public LinkedHashMap<Integer, ACelesteBody> planetesMap;
         public String currentStarSystem;
-    }
 
-    public static final class NavRouteRegistryFile {
-        public HashMap<ExplorationMode, NavRoute> routes;
+        public static PlaneteRegistryFile fromRegistry() {
+            PlaneteRegistry reg = PlaneteRegistry.getInstance();
+            PlaneteRegistryFile f = new PlaneteRegistryFile();
+            f.planetesMap = new LinkedHashMap<>(reg.snapshotPlanetesMap());
+            f.currentStarSystem = reg.getCurrentStarSystem();
+            return f;
+        }
+
+        public void applyToRegistry() {
+            PlaneteRegistry.getInstance().applyFullPersistedSnapshot(planetesMap, currentStarSystem);
+        }
     }
 
     public static final class ExplorationDataSaleRegistryFile {
         public List<ExplorationDataSale> sales;
         public ExplorationDataSale currentSale;
         public ExplorationDataOnHold explorationDataOnHold;
+
+        public static ExplorationDataSaleRegistryFile fromRegistry() {
+            ExplorationDataSaleRegistry reg = ExplorationDataSaleRegistry.getInstance();
+            ExplorationDataSaleRegistryFile f = new ExplorationDataSaleRegistryFile();
+            f.sales = new ArrayList<>(reg.snapshotSales());
+            f.currentSale = reg.getCurrentSale();
+            f.explorationDataOnHold = reg.getExplorationDataOnHold();
+            return f;
+        }
+
+        public void applyToRegistry() {
+            ExplorationDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
+                    sales, currentSale, explorationDataOnHold);
+        }
     }
 
     public static final class OrganicDataSaleRegistryFile {
         public List<OrganicDataSale> sales;
         public OrganicDataOnHold currentOrganicDataOnHold;
+
+        public static OrganicDataSaleRegistryFile fromRegistry() {
+            OrganicDataSaleRegistry reg = OrganicDataSaleRegistry.getInstance();
+            OrganicDataSaleRegistryFile f = new OrganicDataSaleRegistryFile();
+            f.sales = new ArrayList<>(reg.snapshotSales());
+            f.currentOrganicDataOnHold = reg.getCurrentOrganicDataOnHold();
+            return f;
+        }
+
+        public void applyToRegistry() {
+            OrganicDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
+                    sales, currentOrganicDataOnHold);
+        }
     }
 
     public static final class MiningStatRegistryFile {
         public List<MiningStat> miningStats;
         public MiningStat currentMiningSession;
+
+        public static MiningStatRegistryFile fromRegistry() {
+            MiningStatRegistry reg = MiningStatRegistry.getInstance();
+            MiningStatRegistryFile f = new MiningStatRegistryFile();
+            f.miningStats = new ArrayList<>(reg.snapshotMiningStats());
+            f.currentMiningSession = reg.snapshotCurrentMiningSession();
+            return f;
+        }
+
+        public void applyToRegistry() {
+            MiningStatRegistry.getInstance().applyFullPersistedSnapshot(
+                    miningStats, currentMiningSession);
+        }
     }
 
     static final class ExplorationModeFile {
@@ -329,6 +244,16 @@ public final class DashboardRegistryJsonPersistence {
         ExplorationModeFile(ExplorationMode mode) {
             this.mode = mode;
         }
+
+        static ExplorationModeFile fromRegistry() {
+            return new ExplorationModeFile(ExplorationModeRegistry.getInstance().getCurrentMode());
+        }
+
+        void applyToRegistry() {
+            if (mode != null) {
+                ExplorationModeRegistry.getInstance().setCurrentMode(mode);
+            }
+        }
     }
 
     static final class NavRouteTargetFile {
@@ -340,6 +265,15 @@ public final class DashboardRegistryJsonPersistence {
 
         NavRouteTargetFile(int value) {
             this.remainingJumpsInRoute = value;
+        }
+
+        static NavRouteTargetFile fromRegistry() {
+            return new NavRouteTargetFile(
+                    NavRouteTargetRegistry.getInstance().getRemainingJumpsInRoute());
+        }
+
+        void applyToRegistry() {
+            NavRouteTargetRegistry.getInstance().setRemainingJumpsInRoute(remainingJumpsInRoute);
         }
     }
 
@@ -377,17 +311,14 @@ public final class DashboardRegistryJsonPersistence {
                 }
             }
             DestroyedShipsRegistery.getInstance().applyFullPersistedSnapshot(
-                    restored,
-                    bountyPerFaction,
-                    combatBondPerFaction,
-                    totalBountyEarned,
-                    totalConflictBounty
+                    restored, bountyPerFaction, combatBondPerFaction,
+                    totalBountyEarned, totalConflictBounty
             );
         }
     }
 
     public static final class DestroyedShipEntry {
-        public String type; // "BOUNTY" ou "CONFLICT"
+        public String type;
         public String shipName;
         public String pilotName;
         public String faction;
@@ -451,6 +382,28 @@ public final class DashboardRegistryJsonPersistence {
         @JsonCreator
         public ProspectedAsteroidFile() {}
 
+        static List<ProspectedAsteroidFile> listFromRegistry() {
+            Deque<ProspectedAsteroid> all = ProspectedAsteroidRegistry.getInstance().getAll();
+            List<ProspectedAsteroidFile> list = new ArrayList<>(all.size());
+            for (ProspectedAsteroid a : all) {
+                list.add(fromRuntime(a));
+            }
+            return list;
+        }
+
+        static void applyListToRegistry(List<ProspectedAsteroidFile> snapshots) {
+            List<ProspectedAsteroid> restored = new ArrayList<>();
+            if (snapshots != null) {
+                for (ProspectedAsteroidFile s : snapshots) {
+                    ProspectedAsteroid p = s.toRuntime();
+                    if (p != null) {
+                        restored.add(p);
+                    }
+                }
+            }
+            ProspectedAsteroidRegistry.getInstance().applyFullPersistedSnapshot(restored);
+        }
+
         static ProspectedAsteroidFile fromRuntime(ProspectedAsteroid a) {
             ProspectedAsteroidFile s = new ProspectedAsteroidFile();
             s.timestamp = a.getTimestamp();
@@ -479,7 +432,7 @@ public final class DashboardRegistryJsonPersistence {
                 try {
                     p.setCoreMineral(MineralType.valueOf(coreMineralName));
                 } catch (IllegalArgumentException ignored) {
-                    // Nouvel enum / renommé → on ignore silencieusement
+                    // Nouvel enum / renommé
                 }
             }
             p.setContent(content);
