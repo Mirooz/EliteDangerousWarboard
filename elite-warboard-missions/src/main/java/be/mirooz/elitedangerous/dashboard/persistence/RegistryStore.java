@@ -3,9 +3,9 @@ package be.mirooz.elitedangerous.dashboard.persistence;
 /**
  * Contrat commun à tous les stores de registries persistés dans {@code ~/.elite-warboard/}.
  *
- * <p>Implémentation type : héritage de {@link SnapshotJsonStore} (ou équivalent) avec
- * le {@link java.nio.file.Path} du fichier cible et un snapshot DTO (ou
- * {@link com.fasterxml.jackson.core.type.TypeReference} pour des racines paramétrées).
+ * <p>Implémentation type : {@link SnapshotJsonStore} avec le {@link java.nio.file.Path} du
+ * fichier cible et un snapshot DTO racine ({@link Class}) — y compris des sous-types de
+ * {@link java.util.Map} / {@link java.util.List} sérialisés comme dans l’historique JSON.
  * Voir {@link DashboardRegistryJsonPersistence} + {@link SnapshotJsonStore}.</p>
  *
  * <p>Les stores sont enregistrés dans

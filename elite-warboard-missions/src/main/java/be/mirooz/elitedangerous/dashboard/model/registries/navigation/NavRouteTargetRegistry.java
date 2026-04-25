@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.navigation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
@@ -53,6 +55,27 @@ public class NavRouteTargetRegistry {
      */
     public void clearTarget() {
         remainingJumpsInRoute.set(-1);
+    }
+
+    /** DTO JSON pour {@code nav-route-target.json}. */
+    public static final class PersistenceFile {
+        @JsonProperty
+        public int remainingJumpsInRoute;
+
+        @JsonCreator
+        public PersistenceFile() {}
+
+        public PersistenceFile(int value) {
+            this.remainingJumpsInRoute = value;
+        }
+
+        public static PersistenceFile fromRuntime(NavRouteTargetRegistry r) {
+            return new PersistenceFile(r.getRemainingJumpsInRoute());
+        }
+
+        public void restore() {
+            NavRouteTargetRegistry.getInstance().setRemainingJumpsInRoute(remainingJumpsInRoute);
+        }
     }
 }
 

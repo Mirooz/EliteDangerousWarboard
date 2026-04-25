@@ -238,4 +238,24 @@ public class ColonisationRegistry {
     public LinkedHashSet<String> snapshotBeaconDeployedSystems() {
         return new LinkedHashSet<>(beaconDeployedSystems);
     }
+
+    /** DTO JSON pour {@code colonisation-registry.json}. */
+    public static final class PersistenceFile {
+        public LinkedHashMap<String, ColonisationArchitectSystem> architectByStarSystem;
+        public LinkedHashSet<String> beaconDeployedSystems;
+        public Long currentConstructionMarketId;
+
+        public static PersistenceFile fromRuntime(ColonisationRegistry reg) {
+            PersistenceFile f = new PersistenceFile();
+            f.architectByStarSystem = reg.snapshotArchitectByStarSystem();
+            f.beaconDeployedSystems = reg.snapshotBeaconDeployedSystems();
+            f.currentConstructionMarketId = reg.getCurrentConstructionMarketId();
+            return f;
+        }
+
+        public void restore() {
+            ColonisationRegistry.getInstance().applyFullPersistedSnapshot(
+                    architectByStarSystem, beaconDeployedSystems, currentConstructionMarketId);
+        }
+    }
 }

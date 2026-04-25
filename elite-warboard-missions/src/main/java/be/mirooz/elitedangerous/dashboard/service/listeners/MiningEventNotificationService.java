@@ -1,63 +1,94 @@
 package be.mirooz.elitedangerous.dashboard.service.listeners;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
+import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAsteroidListener;
 
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Service pour gérer les notifications liées aux événements de minage
- * Permet aux composants UI de s'abonner aux événements de minage
+ * Abonnements minage (un seul registre) : astéroïde craqué, prospecteur ajouté, registre vidé.
+ * Un même objet peut implémenter {@link MiningEventListener} et/ou {@link ProspectedAsteroidListener}
+ * — il n’est enregistré qu’une fois ; chaque notification cible les interfaces réellement implémentées.
  */
 public class MiningEventNotificationService {
-    
+
     private static MiningEventNotificationService instance;
-    private final List<MiningEventListener> listeners = new CopyOnWriteArrayList<>();
-    
+    /** Références uniques ; le type concret peut implémenter une ou les deux interfaces. */
+    private final CopyOnWriteArrayList<Object> listeners = new CopyOnWriteArrayList<>();
+
     private MiningEventNotificationService() {}
-    
+
     public static MiningEventNotificationService getInstance() {
         if (instance == null) {
             instance = new MiningEventNotificationService();
         }
         return instance;
     }
-    
-    /**
-     * Ajoute un listener pour les événements de minage
-     */
+
     public void addListener(MiningEventListener listener) {
-        listeners.add(listener);
+        addIfAbsent(listener);
     }
-    
-    /**
-     * Retire un listener
-     */
-    public void removeListeners () {
+
+    public void addProspectedAsteroidListener(ProspectedAsteroidListener listener) {
+        addIfAbsent(listener);
+    }
+
+    private void addIfAbsent(Object listener) {
+        if (listener == null) {
+            return;
+        }
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeProspectedAsteroidListener(ProspectedAsteroidListener listener) {
+        if (listener != null) {
+            listeners.remove(listener);
+        }
+    }
+
+    public void removeListeners() {
         listeners.clear();
     }
-    
-    /**
-     * Notifie tous les listeners qu'un astéroïde a été craqué
-     */
+
     public void notifyAsteroidCracked(ProspectedAsteroid prospector) {
-        for (MiningEventListener listener : listeners) {
-            try {
-                listener.onAsteroidCracked(prospector);
-            } catch (Exception e) {
-                System.err.println("Erreur lors de la notification AsteroidCracked: " + e.getMessage());
+        for (Object o : listeners) {
+            if (o instanceof MiningEventListener m) {
+                try {
+                    m.onAsteroidCracked(prospector);
+                } catch (Exception e) {
+                    System.err.println("Erreur lors de la notification AsteroidCracked: " + e.getMessage());
+                }
             }
         }
     }
-    
-    /**
-     * Interface pour écouter les événements de minage
-     */
+
+    public void notifyProspectorAdded(ProspectedAsteroid prospector) {
+        for (Object o : listeners) {
+            if (o instanceof ProspectedAsteroidListener p) {
+                try {
+                    p.onProspectorAdded(prospector);
+                } catch (Exception e) {
+                    System.err.println("❌ Erreur lors de la notification d'ajout de prospecteur: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    public void notifyRegistryCleared() {
+        for (Object o : listeners) {
+            if (o instanceof ProspectedAsteroidListener p) {
+                try {
+                    p.onRegistryCleared();
+                } catch (Exception e) {
+                    System.err.println("❌ Erreur lors de la notification de vidage du registre: " + e.getMessage());
+                }
+            }
+        }
+    }
+
     public interface MiningEventListener {
-        /**
-         * Appelé quand un astéroïde est craqué
-         * @param prospector Le prospecteur associé à l'astéroïde craqué
-         */
         void onAsteroidCracked(ProspectedAsteroid prospector);
     }
 }

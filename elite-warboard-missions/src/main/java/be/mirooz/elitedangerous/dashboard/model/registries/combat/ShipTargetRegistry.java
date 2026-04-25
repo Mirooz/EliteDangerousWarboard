@@ -1,20 +1,16 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.combat;
 
 import be.mirooz.elitedangerous.dashboard.model.ships.ShipTarget;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ShipTargetRegistry {
 
-    private static final int MAX_SIZE = 500;
-
-    private final Map<String, ShipTarget> targetMap = new LinkedHashMap<>(MAX_SIZE, 0.75f, false) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, ShipTarget> eldest) {
-            return size() > MAX_SIZE;
-        }
-    };
+    private final Map<String, ShipTarget> targetMap = new HashMap<>();
 
     private static final ShipTargetRegistry INSTANCE = new ShipTargetRegistry();
 
@@ -47,6 +43,25 @@ public class ShipTargetRegistry {
         targetMap.clear();
         if (snapshot != null) {
             targetMap.putAll(snapshot);
+        }
+    }
+
+    /** DTO JSON pour {@code ship-targets.json}. */
+    public static final class PersistenceFile {
+        @JsonProperty
+        public LinkedHashMap<String, ShipTarget> shipTargets;
+
+        @JsonCreator
+        public PersistenceFile() {}
+
+        public static PersistenceFile fromRuntime(ShipTargetRegistry r) {
+            PersistenceFile f = new PersistenceFile();
+            f.shipTargets = new LinkedHashMap<>(r.getAll());
+            return f;
+        }
+
+        public void restore() {
+            ShipTargetRegistry.getInstance().applyFullPersistedSnapshot(shipTargets);
         }
     }
 }

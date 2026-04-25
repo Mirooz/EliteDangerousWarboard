@@ -5,7 +5,6 @@ import be.mirooz.elitedangerous.dashboard.model.registries.mining.ProspectedAste
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralFactory;
-import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.UnknownMineral;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,10 +82,15 @@ public class ProspectedAsteroidHandler implements JournalEventHandler {
         String rawName = getText.apply("Name");
 
         if (rawName != null) {
-            material.setName(
-                    MineralFactory.fromCargoJsonName(rawName)
-                            .orElseGet(() -> new UnknownMineral(rawName))
-            );
+            MineralFactory.fromCargoJsonName(rawName).ifPresent(
+                    m -> {
+                        if (m instanceof MineralType mt) {
+                            material.setMineral(mt);
+                        }
+                    });
+            if (material.getMineral() == null) {
+                material.setUnregisteredName(rawName);
+            }
         }
 
         material.setNameLocalised(getText.apply("Name_Localised"));

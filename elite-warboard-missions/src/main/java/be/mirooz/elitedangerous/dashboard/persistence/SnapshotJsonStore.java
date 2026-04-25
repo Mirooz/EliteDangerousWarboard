@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.persistence;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -16,7 +17,8 @@ import java.util.function.Supplier;
  * applique explicitement la restauration sur le runtime registry.</p>
  *
  * <p>Utilise soit {@link Class}{@code <T>} (racine JSON = objet), soit
- * {@link TypeReference} pour des racines paramétrées (ex. {@code Map}, {@code List}).</p>
+ * {@link TypeReference} / {@link JavaType} pour des racines paramétrées
+ * (ex. {@code Map}, {@code List}).</p>
  */
 public class SnapshotJsonStore<T> implements RegistryStore {
 
@@ -25,6 +27,7 @@ public class SnapshotJsonStore<T> implements RegistryStore {
     private final ObjectMapper mapper;
     private final Class<T> snapshotType;
     private final TypeReference<T> typeRef;
+    private final JavaType javaType;
     private final Supplier<T> snapshotSupplier;
     private final Consumer<T> loader;
 
@@ -34,7 +37,7 @@ public class SnapshotJsonStore<T> implements RegistryStore {
                              Class<T> snapshotType,
                              Supplier<T> snapshotSupplier,
                              Consumer<T> loader) {
-        this(storeName, file, mapper, snapshotType, null, snapshotSupplier, loader);
+        this(storeName, file, mapper, snapshotType, null, null, snapshotSupplier, loader);
     }
 
     public SnapshotJsonStore(String storeName,
@@ -43,7 +46,16 @@ public class SnapshotJsonStore<T> implements RegistryStore {
                              TypeReference<T> typeRef,
                              Supplier<T> snapshotSupplier,
                              Consumer<T> loader) {
-        this(storeName, file, mapper, null, typeRef, snapshotSupplier, loader);
+        this(storeName, file, mapper, null, typeRef, null, snapshotSupplier, loader);
+    }
+
+    public SnapshotJsonStore(String storeName,
+                             Path file,
+                             ObjectMapper mapper,
+                             JavaType javaType,
+                             Supplier<T> snapshotSupplier,
+                             Consumer<T> loader) {
+        this(storeName, file, mapper, null, null, javaType, snapshotSupplier, loader);
     }
 
     private SnapshotJsonStore(String storeName,
@@ -51,19 +63,20 @@ public class SnapshotJsonStore<T> implements RegistryStore {
                               ObjectMapper mapper,
                               Class<T> snapshotType,
                               TypeReference<T> typeRef,
+                              JavaType javaType,
                               Supplier<T> snapshotSupplier,
                               Consumer<T> loader) {
-        if (snapshotType == null && typeRef == null) {
-            throw new IllegalArgumentException("Either snapshotType or typeRef must be set");
-        }
-        if (snapshotType != null && typeRef != null) {
-            throw new IllegalArgumentException("Use either snapshotType or typeRef, not both");
+        int n = (snapshotType != null ? 1 : 0) + (typeRef != null ? 1 : 0) + (javaType != null ? 1 : 0);
+        if (n != 1) {
+            throw new IllegalArgumentException(
+                    "Exactly one of snapshotType, typeRef, or javaType must be set, got " + n);
         }
         this.storeName = storeName;
         this.file = file;
         this.mapper = mapper;
         this.snapshotType = snapshotType;
         this.typeRef = typeRef;
+        this.javaType = javaType;
         this.snapshotSupplier = snapshotSupplier;
         this.loader = loader;
     }
@@ -91,9 +104,14 @@ public class SnapshotJsonStore<T> implements RegistryStore {
             return false;
         }
         try {
-            T snapshot = typeRef != null
-                    ? mapper.readValue(file.toFile(), typeRef)
-                    : mapper.readValue(file.toFile(), snapshotType);
+            T snapshot;
+            if (typeRef != null) {
+                snapshot = mapper.readValue(file.toFile(), typeRef);
+            } else if (javaType != null) {
+                snapshot = mapper.readValue(file.toFile(), javaType);
+            } else {
+                snapshot = mapper.readValue(file.toFile(), snapshotType);
+            }
             loader.accept(snapshot);
             return true;
         } catch (IOException e) {

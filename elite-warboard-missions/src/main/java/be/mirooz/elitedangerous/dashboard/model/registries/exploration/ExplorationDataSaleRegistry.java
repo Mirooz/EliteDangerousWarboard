@@ -127,5 +127,25 @@ public class ExplorationDataSaleRegistry {
     public List<ExplorationDataSale> snapshotSales() {
         return new java.util.ArrayList<>(sales);
     }
+
+    /** DTO JSON pour {@code exploration-data-sale-registry.json}. */
+    public static final class PersistenceFile {
+        public List<ExplorationDataSale> sales;
+        public ExplorationDataSale currentSale;
+        public ExplorationDataOnHold explorationDataOnHold;
+
+        public static PersistenceFile fromRuntime(ExplorationDataSaleRegistry reg) {
+            PersistenceFile f = new PersistenceFile();
+            f.sales = new java.util.ArrayList<>(reg.snapshotSales());
+            f.currentSale = reg.getCurrentSale();
+            f.explorationDataOnHold = reg.getExplorationDataOnHold();
+            return f;
+        }
+
+        public void restore() {
+            ExplorationDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
+                    sales, currentSale, explorationDataOnHold);
+        }
+    }
 }
 

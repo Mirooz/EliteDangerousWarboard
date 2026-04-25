@@ -142,6 +142,23 @@ public class PlaneteRegistry {
         return new LinkedHashMap<>(planetesMap);
     }
 
+    /** DTO JSON pour {@code planete-registry.json}. */
+    public static final class PersistenceFile {
+        public LinkedHashMap<Integer, ACelesteBody> planetesMap;
+        public String currentStarSystem;
+
+        public static PersistenceFile fromRuntime(PlaneteRegistry reg) {
+            PersistenceFile f = new PersistenceFile();
+            f.planetesMap = new LinkedHashMap<>(reg.snapshotPlanetesMap());
+            f.currentStarSystem = reg.getCurrentStarSystem();
+            return f;
+        }
+
+        public void restore() {
+            PlaneteRegistry.getInstance().applyFullPersistedSnapshot(planetesMap, currentStarSystem);
+        }
+    }
+
     /**
      * Retourne une liste triée des corps célestes organisée hiérarchiquement :
      * - Les soleils sont placés à gauche (en premier)

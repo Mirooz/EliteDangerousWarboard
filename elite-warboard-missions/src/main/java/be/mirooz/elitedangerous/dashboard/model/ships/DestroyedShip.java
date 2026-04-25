@@ -1,18 +1,27 @@
 package be.mirooz.elitedangerous.dashboard.model.ships;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Modèle représentant un vaisseau détruit dans Elite Dangerous
+ * Ligne d'un vaisseau détruit (bounty ou bond) — un seul modèle ;
+ * le discriminant est {@link #kind} (champ JSON {@code "type"}).
  */
-
-@SuperBuilder
 @Data
-public abstract class DestroyedShip {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class DestroyedShip {
+
+    @JsonProperty("type")
+    private DestroyedShipKind kind;
+
     private String shipName;
     private String pilotName;
     private String faction;
@@ -20,5 +29,4 @@ public abstract class DestroyedShip {
     private List<Reward> rewards;
     private int totalBountyReward;
     private LocalDateTime destroyedTime;
-
 }

@@ -115,5 +115,23 @@ public class OrganicDataSaleRegistry {
     public List<OrganicDataSale> snapshotSales() {
         return new java.util.ArrayList<>(sales);
     }
+
+    /** DTO JSON pour {@code organic-data-sale-registry.json}. */
+    public static final class PersistenceFile {
+        public List<OrganicDataSale> sales;
+        public OrganicDataOnHold currentOrganicDataOnHold;
+
+        public static PersistenceFile fromRuntime(OrganicDataSaleRegistry reg) {
+            PersistenceFile f = new PersistenceFile();
+            f.sales = new java.util.ArrayList<>(reg.snapshotSales());
+            f.currentOrganicDataOnHold = reg.getCurrentOrganicDataOnHold();
+            return f;
+        }
+
+        public void restore() {
+            OrganicDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
+                    sales, currentOrganicDataOnHold);
+        }
+    }
 }
 

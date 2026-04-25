@@ -92,7 +92,7 @@ public class ProspectorCardComponent {
         if (prospector.getMaterials() != null) {
             for (ProspectedAsteroid.Material material : prospector.getMaterials()) {
                 if (material.getProportion() != null) {
-                    long estimation = calculateMaterialEstimation(material.getProportion(), material.getName());
+                    long estimation = calculateMaterialEstimation(material.getProportion(), material.toMineral());
                     totalEstimation += estimation;
                 }
             }
@@ -134,9 +134,12 @@ public class ProspectorCardComponent {
                     HBox materialRow = new HBox(10);
                     materialRow.setAlignment(Pos.CENTER_LEFT);
 
-                    String materialName = material.getNameLocalised() != null ?
-                            material.getNameLocalised().toUpperCase() :
-                            (material.getName() != null ? material.getName().getVisibleName() : getTranslation("mining.unknown_material"));
+                    Mineral showMineral = material.toMineral();
+                    String materialName = material.getNameLocalised() != null
+                            ? material.getNameLocalised().toUpperCase()
+                            : (showMineral != null
+                            ? showMineral.getVisibleName()
+                            : getTranslation("mining.unknown_material"));
 
                     Label materialLabel = new Label(materialName);
                     materialLabel.getStyleClass().add("elite-material-name-large");

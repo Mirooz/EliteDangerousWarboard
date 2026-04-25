@@ -78,14 +78,10 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     @Override
     public void onBatchEnd(){
         miningEventNotificationService.addListener(this);
-        // S'enregistrer comme listener du registre des prospecteurs
-        miningService.getProspectedRegistry().addListener(this);
     }
     @Override
     public void onBatchStart(){
         miningEventNotificationService.removeListeners();
-        // S'enregistrer comme listener du registre des prospecteurs
-        miningService.getProspectedRegistry().removeListeners();
     }
 
     /**
@@ -94,7 +90,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     public void updateProspectors() {
         if (!DashboardContext.getInstance().isBatchLoading()) {
             Platform.runLater(() -> {
-                Deque<ProspectedAsteroid> prospectors = miningService.getAllProspectors();
+                List<ProspectedAsteroid> prospectors = miningService.getAllProspectors();
 
                 // Convertir en liste pour faciliter la navigation et inverser l'ordre
                 allProspectors.clear();

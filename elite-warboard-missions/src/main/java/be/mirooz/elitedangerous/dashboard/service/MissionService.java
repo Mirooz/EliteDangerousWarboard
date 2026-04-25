@@ -2,8 +2,8 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
-import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedBountyShip;
-import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedConflictShip;
+import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShip;
+import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShipKind;
 import be.mirooz.elitedangerous.dashboard.model.ships.Reward;
 import be.mirooz.elitedangerous.dashboard.model.ships.ShipTarget;
 import be.mirooz.elitedangerous.dashboard.util.comparator.MissionTimestampComparator;
@@ -47,8 +47,8 @@ public class MissionService {
         List<Reward> rewards = getRewards(jsonNode);
         System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward + ", Wanted : " + +rewards.size() + rewards);
         if (totalReward > 0) {
-            DestroyedBountyShip destroyedShip = DestroyedBountyShip
-                    .builder()
+            DestroyedShip destroyedShip = DestroyedShip.builder()
+                    .kind(DestroyedShipKind.BOUNTY)
                     .destroyedTime(timestamp)
                     .shipName(shipName)
                     .pilotName(pilotName)
@@ -71,8 +71,8 @@ public class MissionService {
         rewards.add(reward);
         System.out.println("VictimFaction: " + victimFaction + ", Reward: " + totalReward + ", Wanted : " + +rewards.size() + rewards);
         if (totalReward > 0) {
-            DestroyedConflictShip destroyedShip = DestroyedConflictShip
-                    .builder()
+            DestroyedShip destroyedShip = DestroyedShip.builder()
+                    .kind(DestroyedShipKind.CONFLICT)
                     .destroyedTime(timestamp)
                     .shipName(victimFaction)
                     .pilotName(victimFaction)

@@ -1,27 +1,27 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.mining;
 
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningSessionNotificationService;
 
-import java.util.Deque;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Registre des astéroïdes prospectés (FIFO bornée). Structures : {@link ArrayList} uniquement.
+ * <p>La persistance JSON réutilise {@link #getAll()} (snapshot) et {@link #applyFullPersistedSnapshot(List)}.
+ * Les écoutes UI passent par {@link MiningEventNotificationService}.</p>
+ */
 public class ProspectedAsteroidRegistry {
 
     private static final int MAX_SIZE = 50;
-    private final Deque<ProspectedAsteroid> registry = new LinkedList<>();
-    private final List<ProspectedAsteroidListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<ProspectedAsteroid> items = new ArrayList<>();
     private final MiningSessionNotificationService miningSessionNotificationService = MiningSessionNotificationService.getInstance();
-    
+    private final MiningEventNotificationService miningEventNotifications = MiningEventNotificationService.getInstance();
+
     private ProspectedAsteroidRegistry() {
         miningSessionNotificationService.addSessionEndListener(this::notifyEndMiningSession);
-    }
-
-    public void removeListeners() {
-        listeners.clear();
     }
 
     private static class Holder {
@@ -35,90 +35,53 @@ public class ProspectedAsteroidRegistry {
     public synchronized void register(ProspectedAsteroid asteroid) {
         if (asteroid == null) return;
 
-        // Optionnel : éviter doublon immédiat
-        if (!registry.isEmpty() && registry.peekLast().equals(asteroid)) {
+        if (!items.isEmpty() && items.get(items.size() - 1).equals(asteroid)) {
             return;
         }
 
-        registry.addLast(asteroid);
-
-        if (registry.size() > MAX_SIZE) {
-            registry.removeFirst();
+        items.add(asteroid);
+        while (items.size() > MAX_SIZE) {
+            items.remove(0);
         }
-        
-        // Notifier les listeners
-        notifyProspectorAdded(asteroid);
+
+        miningEventNotifications.notifyProspectorAdded(asteroid);
     }
 
     public synchronized Optional<ProspectedAsteroid> getLast() {
-        return Optional.ofNullable(registry.peekLast());
+        if (items.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(items.get(items.size() - 1));
     }
 
-    public synchronized Deque<ProspectedAsteroid> getAll() {
-        return new LinkedList<>(registry);
+    /**
+     * Copie de l’ordre d’insertion (plus ancien en tête, plus récent en fin). Utilisé aussi pour la persistance.
+     */
+    public synchronized List<ProspectedAsteroid> getAll() {
+        return new ArrayList<>(items);
     }
 
     public synchronized void clear() {
-        registry.clear();
-        // Notifier les listeners
-        notifyRegistryCleared();
+        items.clear();
+        miningEventNotifications.notifyRegistryCleared();
     }
 
-    /** Restauration silencieuse depuis un snapshot (aucune notification émise). */
-    public synchronized void applyFullPersistedSnapshot(java.util.List<ProspectedAsteroid> snapshot) {
-        registry.clear();
+    /** Restauration silencieuse (aucune notification) — alimente la persistance JSON. */
+    public synchronized void applyFullPersistedSnapshot(List<ProspectedAsteroid> snapshot) {
+        items.clear();
         if (snapshot != null) {
             for (ProspectedAsteroid a : snapshot) {
-                if (a != null) registry.addLast(a);
+                if (a != null) {
+                    items.add(a);
+                }
             }
-            while (registry.size() > MAX_SIZE) {
-                registry.removeFirst();
-            }
-        }
-    }
-    
-    /**
-     * Ajoute un listener pour les changements du registre
-     */
-    public void addListener(ProspectedAsteroidListener listener) {
-        if (listener != null && !listeners.contains(listener)) {
-            listeners.add(listener);
-        }
-    }
-    
-    /**
-     * Supprime un listener
-     */
-    public void removeListener(ProspectedAsteroidListener listener) {
-        listeners.remove(listener);
-    }
-    
-    /**
-     * Notifie tous les listeners qu'un prospecteur a été ajouté
-     */
-    private void notifyProspectorAdded(ProspectedAsteroid prospector) {
-        for (ProspectedAsteroidListener listener : listeners) {
-            try {
-                listener.onProspectorAdded(prospector);
-            } catch (Exception e) {
-                System.err.println("❌ Erreur lors de la notification d'ajout de prospecteur: " + e.getMessage());
+            while (items.size() > MAX_SIZE) {
+                items.remove(0);
             }
         }
-    }
-    private void notifyEndMiningSession() {
-        this.clear();
     }
 
-    /**
-     * Notifie tous les listeners que le registre a été vidé
-     */
-    private void notifyRegistryCleared() {
-        for (ProspectedAsteroidListener listener : listeners) {
-            try {
-                listener.onRegistryCleared();
-            } catch (Exception e) {
-                System.err.println("❌ Erreur lors de la notification de vidage du registre: " + e.getMessage());
-            }
-        }
+    private void notifyEndMiningSession() {
+        this.clear();
     }
 }

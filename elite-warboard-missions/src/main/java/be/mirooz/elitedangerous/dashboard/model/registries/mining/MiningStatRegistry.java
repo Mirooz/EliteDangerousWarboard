@@ -172,4 +172,22 @@ public class MiningStatRegistry {
     public MiningStat snapshotCurrentMiningSession() {
         return currentMiningSession;
     }
+
+    /** DTO JSON pour {@code mining-stat-registry.json}. */
+    public static final class PersistenceFile {
+        public List<MiningStat> miningStats;
+        public MiningStat currentMiningSession;
+
+        public static PersistenceFile fromRuntime(MiningStatRegistry reg) {
+            PersistenceFile f = new PersistenceFile();
+            f.miningStats = new ArrayList<>(reg.snapshotMiningStats());
+            f.currentMiningSession = reg.snapshotCurrentMiningSession();
+            return f;
+        }
+
+        public void restore() {
+            MiningStatRegistry.getInstance().applyFullPersistedSnapshot(
+                    miningStats, currentMiningSession);
+        }
+    }
 }

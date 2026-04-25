@@ -52,7 +52,7 @@ public class MiningService {
     /**
      * Récupère tous les prospecteurs
      */
-    public Deque<ProspectedAsteroid> getAllProspectors() {
+    public List<ProspectedAsteroid> getAllProspectors() {
         return prospectedRegistry.getAll();
     }
 
@@ -75,8 +75,7 @@ public class MiningService {
      * Récupère le dernier prospecteur
      */
     public Optional<ProspectedAsteroid> getLastProspector() {
-        Deque<ProspectedAsteroid> prospectors = getAllProspectors();
-        return prospectors.isEmpty() ? Optional.empty() : Optional.of(prospectors.peekLast());
+        return prospectedRegistry.getLast();
     }
 
     /**
