@@ -1,5 +1,10 @@
 package be.mirooz.elitedangerous.commons.lib.models.commodities;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.UnknownMineral;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.Optional;
 
 import static be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType.LOW_TEMPERATURE_DIAMONDS;
@@ -7,6 +12,14 @@ import static be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.M
 /**
  * Interface représentant une commodité dans Elite Dangerous
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = RegistryCommodity.class, name = "registryCommodity"),
+        @JsonSubTypes.Type(value = CarrierUnresolvedCommodity.class, name = "carrierUnresolvedCommodity"),
+        @JsonSubTypes.Type(value = LimpetType.class, name = "limpetType"),
+        @JsonSubTypes.Type(value = MineralType.class, name = "mineralType"),
+        @JsonSubTypes.Type(value = UnknownMineral.class, name = "unknownMineral")
+})
 public interface ICommodity {
     String getInaraId();
 

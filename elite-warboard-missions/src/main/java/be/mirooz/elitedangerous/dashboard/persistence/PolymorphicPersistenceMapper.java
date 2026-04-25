@@ -11,8 +11,8 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 /**
  * {@link ObjectMapper} pré-configuré pour les registries lourds de la Phase 3.
  *
- * <p>Polymorphisme explicite par annotations {@code @JsonTypeInfo(use = NAME)} et mixins
- * ({@link PersistencePolymorphicMixins}) au lieu du default-typing global.</p>
+ * <p>Polymorphisme explicite par annotations {@code @JsonTypeInfo(use = NAME)}
+ * au lieu du default-typing global.</p>
  */
 public final class PolymorphicPersistenceMapper {
 
@@ -35,7 +35,6 @@ public final class PolymorphicPersistenceMapper {
         // ColonisationArchitectSystem n'a qu'un constructeur (String starSystem) : combiné au
         // flag -parameters du compilateur, Jackson peut le détecter comme creator property-based.
         mapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.ANY);
-        PersistencePolymorphicMixins.registerOn(mapper);
         return mapper;
     }
 
