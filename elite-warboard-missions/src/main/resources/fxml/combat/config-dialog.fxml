@@ -48,21 +48,6 @@
                    styleClass="config-description" maxWidth="800.0" wrapText="true"/>
         </VBox>
 
-        <!-- Section Nombre de jours -->
-        <VBox spacing="10.0" styleClass="config-section">
-            <Label fx:id="journalDaysSectionLabel" text="PÉRIODE DE LECTURE" styleClass="config-section-title"/>
-            
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Label fx:id="journalDaysLabel" text="Nombre de jours à lire:" styleClass="config-label"/>
-                <Spinner fx:id="journalDaysSpinner" styleClass="config-spinner" prefWidth="70"
-                        editable="true" initialValue="30" min="1" max="365"/>
-                <Label fx:id="journalDaysUnitLabel" text="jours" styleClass="config-label"/>
-            </HBox>
-            
-            <Label fx:id="journalDaysDescriptionLabel" text="Nombre de jours en arrière pour lire les fichiers journal (par défaut: 30 jours)" 
-                   styleClass="config-description" maxWidth="800.0" wrapText="true"/>
-        </VBox>
-
         <!-- Section VR Mode -->
         <VBox spacing="10.0" styleClass="config-section">
             <Label fx:id="vrModeSectionLabel" text="VR MODE" styleClass="config-section-title"/>

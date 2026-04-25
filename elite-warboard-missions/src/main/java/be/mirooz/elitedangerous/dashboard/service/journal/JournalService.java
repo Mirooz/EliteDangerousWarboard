@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.*;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -178,7 +178,7 @@ public class JournalService {
     }
 
     /**
-     * Récupère les fichiers Journal des 7 derniers jours
+     * Récupère tous les fichiers Journal disponibles dans le dossier configuré.
      */
     private List<File> getJournalFilesFromLastWeek() throws IOException {
         List<File> journalFiles = new ArrayList<>();
@@ -191,34 +191,15 @@ public class JournalService {
             return journalFiles;
         }
 
-        int journalDays = preferencesService.getJournalDays();
-        LocalDate oneWeekAgo = LocalDate.now().minusDays(journalDays);
-
         try (Stream<Path> paths = Files.list(journalDir)) {
             paths.filter(path -> {
                         String filename = path.getFileName().toString();
                         return filename.startsWith(JOURNAL_PREFIX) && filename.endsWith(".log");
                     })
-                    .filter(path -> isFileFromLastWeek(path, oneWeekAgo))
                     .sorted((p1, p2) -> p2.getFileName().toString().compareTo(p1.getFileName().toString()))
                     .forEach(path -> journalFiles.add(path.toFile()));
         }
         return journalFiles;
-    }
-
-    /**
-     * Vérifie si un fichier Journal est de la semaine dernière
-     */
-    private boolean isFileFromLastWeek(Path filePath, LocalDate oneWeekAgo) {
-        try {
-            String fileName = filePath.getFileName().toString();
-            // Format: Journal.2025-09-19T121254.01
-            String datePart = fileName.substring(JOURNAL_PREFIX.length(), JOURNAL_PREFIX.length() + 10);
-            LocalDate fileDate = LocalDate.parse(datePart);
-            return !fileDate.isBefore(oneWeekAgo);
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     /**
@@ -284,6 +265,7 @@ public class JournalService {
             ColonisationService.getInstance().loadPersistedUiStateAfterJournalBatch();
             CargoEventNotificationService.getInstance().notifyCargoEvent();
             ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
+            DashboardContext.getInstance().refreshUI();
         }
         return new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
 

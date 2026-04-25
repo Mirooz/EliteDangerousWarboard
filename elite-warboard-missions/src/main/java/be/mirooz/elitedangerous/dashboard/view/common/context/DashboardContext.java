@@ -66,8 +66,10 @@ public class DashboardContext {
     }
     public void refreshUI(){
         if (!isBatchLoading()){
-            System.out.println("UI refreshed");
-            UIManager.getInstance().refreshAllUI();
+            Platform.runLater(() -> {
+                System.out.println("UI refreshed");
+                UIManager.getInstance().refreshAllUI();
+            });
         }
     }
 }
