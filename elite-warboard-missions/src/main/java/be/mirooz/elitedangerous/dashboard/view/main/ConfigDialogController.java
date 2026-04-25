@@ -74,6 +74,18 @@ public class ConfigDialogController implements Initializable {
     private CheckBox sendDataToEddnCheckBox;
 
     @FXML
+    private CheckBox capiLoginEnabledCheckBox;
+
+    @FXML
+    private HBox capiStatusRow;
+
+    @FXML
+    private Label capiStatusIconLabel;
+
+    @FXML
+    private Label capiStatusTextLabel;
+
+    @FXML
     private Button logCapiAccountButton;
 
     @FXML
@@ -126,6 +138,9 @@ public class ConfigDialogController implements Initializable {
     private final DashboardService dashboardService = DashboardService.getInstance();
     private final WindowToggleService windowToggleService = WindowToggleService.getInstance();
     private final CapiApiService capiApiService = CapiApiService.getInstance();
+
+    /** Dernier résultat du test {@code /profile} pour re-appliquer les libellés après changement de langue. */
+    private Boolean lastCapiProfileResult;
     
     private boolean isCapturingBind = false;
     private String currentBindType = null; // "windowToggle", "tabSwitchLeft", "tabSwitchRight"
@@ -173,6 +188,8 @@ public class ConfigDialogController implements Initializable {
 
         // Initialiser l'option d'envoi vers EDDN
         sendDataToEddnCheckBox.setSelected(preferencesService.isSendDataToEddnEnabled());
+        capiLoginEnabledCheckBox.setSelected(preferencesService.isCapiLoginEnabled());
+        updateCapiControlsState();
         
         // Initialiser les affichages des binds
         updateWindowToggleBindDisplay();
@@ -201,7 +218,13 @@ public class ConfigDialogController implements Initializable {
         vrModeSectionLabel.setText("VR MODE");
         sendDataToEddnCheckBox.setText(localizationService.getString("config.eddn.send.enabled"));
         sendDataToEddnCheckBox.setTooltip(new Tooltip(localizationService.getString("config.eddn.send.hint")));
-        logCapiAccountButton.setText(localizationService.getString("config.capi.log.account"));
+        capiLoginEnabledCheckBox.setText(localizationService.getString("config.capi.login.enabled"));
+        logCapiAccountButton.setText(localizationService.getString("config.capi.connect.button"));
+        if (capiLoginEnabledCheckBox != null && capiLoginEnabledCheckBox.isSelected() && lastCapiProfileResult != null) {
+            applyCapiConnectionStatusUi(lastCapiProfileResult);
+        } else if (capiLoginEnabledCheckBox != null && capiLoginEnabledCheckBox.isSelected()) {
+            refreshCapiProfileStatusAsync();
+        }
         vrModeEnabledCheckBox.setText(localizationService.getString("config.vr.mode.enabled"));
         windowToggleBindLabel.setText(localizationService.getString("config.window.toggle.bind.label"));
         tabSwitchLeftLabel.setText(localizationService.getString("config.tab.switch.left"));
@@ -504,6 +527,7 @@ public class ConfigDialogController implements Initializable {
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
         preferencesService.setTabSwitchEnabled(false);
         preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
+        preferencesService.setCapiLoginEnabled(capiLoginEnabledCheckBox.isSelected());
         
         if (isKeyboardBind && capturedKeyCode != -1) {
             // Sauvegarder bind clavier
@@ -579,6 +603,91 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private void logCapiAccount() {
         capiApiService.loginCapiAccount();
+        scheduleCapiStatusRechecks();
+    }
+
+    @FXML
+    private void onCapiLoginEnabledChanged() {
+        updateCapiControlsState();
+    }
+
+    private void updateCapiControlsState() {
+        boolean capiOn = capiLoginEnabledCheckBox.isSelected();
+        logCapiAccountButton.setDisable(!capiOn);
+        if (capiStatusRow != null) {
+            capiStatusRow.setVisible(capiOn);
+            capiStatusRow.setManaged(capiOn);
+        }
+        if (capiOn) {
+            refreshCapiProfileStatusAsync();
+        } else {
+            lastCapiProfileResult = null;
+        }
+    }
+
+    private void refreshCapiProfileStatusAsync() {
+        if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
+            return;
+        }
+        applyCapiConnectionStatusUi(null);
+        new Thread(() -> {
+            boolean ok = capiApiService.isProfileConnectionOk();
+            Platform.runLater(() -> {
+                if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
+                    return;
+                }
+                applyCapiConnectionStatusUi(ok);
+            });
+        }, "capi-profile-check").start();
+    }
+
+    private void applyCapiConnectionStatusUi(Boolean connected) {
+        if (capiStatusRow == null || capiStatusIconLabel == null || capiStatusTextLabel == null) {
+            return;
+        }
+        capiStatusRow.getStyleClass().removeAll(
+                "config-capi-status-checking", "config-capi-status-connected", "config-capi-status-required"
+        );
+        if (connected == null) {
+            if (!capiStatusRow.getStyleClass().contains("config-capi-status-checking")) {
+                capiStatusRow.getStyleClass().add("config-capi-status-checking");
+            }
+            capiStatusIconLabel.setText("…");
+            capiStatusTextLabel.setText(localizationService.getString("config.capi.status.checking"));
+            return;
+        }
+        lastCapiProfileResult = connected;
+        if (Boolean.TRUE.equals(connected)) {
+            capiStatusRow.getStyleClass().add("config-capi-status-connected");
+            capiStatusIconLabel.setText("✓");
+            capiStatusTextLabel.setText(localizationService.getString("config.capi.status.connected"));
+        } else {
+            capiStatusRow.getStyleClass().add("config-capi-status-required");
+            capiStatusIconLabel.setText("✗");
+            capiStatusTextLabel.setText(localizationService.getString("config.capi.status.connection_required"));
+        }
+    }
+
+    /** Quelques re-vérifs après une demande de login navigateur. */
+    private void scheduleCapiStatusRechecks() {
+        if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
+            return;
+        }
+        for (int delaySec : new int[] {2, 6, 15}) {
+            int d = delaySec;
+            new Thread(() -> {
+                try {
+                    Thread.sleep(d * 1000L);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
+                    return;
+                }
+                Platform.runLater(this::refreshCapiProfileStatusAsync);
+            }, "capi-profile-recheck-" + d).start();
+        }
     }
 
     @FXML

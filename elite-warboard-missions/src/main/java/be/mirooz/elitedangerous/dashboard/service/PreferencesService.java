@@ -293,6 +293,21 @@ public class PreferencesService {
     }
 
     /**
+     * Active ou désactive les appels CAPI backend.
+     */
+    public void setCapiLoginEnabled(boolean enabled) {
+        preferences.setProperty("capi.login.enabled", String.valueOf(enabled));
+        savePreferences();
+    }
+
+    /**
+     * Vérifie si les appels CAPI backend sont autorisés (activé par défaut).
+     */
+    public boolean isCapiLoginEnabled() {
+        return Boolean.parseBoolean(preferences.getProperty("capi.login.enabled", "true"));
+    }
+
+    /**
      * Vérifie si un fichier de préférences existe
      */
     public boolean hasPreferencesFile() {

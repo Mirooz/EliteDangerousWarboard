@@ -53,7 +53,15 @@
             <CheckBox fx:id="sendDataToEddnCheckBox" text="Send datas to EDDN"
                     styleClass="config-checkbox"/>
 
-            <Button fx:id="logCapiAccountButton" text="Log CAPI account"
+            <CheckBox fx:id="capiLoginEnabledCheckBox" text="Connect Frontier Companion API"
+                    onAction="#onCapiLoginEnabledChanged" styleClass="config-checkbox"/>
+
+            <HBox fx:id="capiStatusRow" alignment="CENTER_LEFT" spacing="8.0" styleClass="config-capi-status-row" visible="false" managed="false">
+                <Label fx:id="capiStatusIconLabel" styleClass="config-capi-status-icon" text=""/>
+                <Label fx:id="capiStatusTextLabel" styleClass="config-capi-status-text" wrapText="true" maxWidth="800.0"/>
+            </HBox>
+
+            <Button fx:id="logCapiAccountButton" text="Connect Frontier Companion API"
                     onAction="#logCapiAccount" styleClass="elite-button-secondary"/>
         </VBox>
 

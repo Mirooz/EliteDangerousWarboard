@@ -13,6 +13,7 @@ import be.mirooz.elitedangerous.backend.generated.model.CapiProfileDto;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthConnectedNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -44,6 +45,7 @@ public final class CapiApiService {
     private static final long APPROVAL_WAIT_ERROR_BACKOFF_MS = 2_000L;
 
     private final CapiFacade capiFacade = CapiFacade.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Object marketRateLimitLock = new Object();
     private boolean authPromptVisible = false;
@@ -58,6 +60,9 @@ public final class CapiApiService {
     }
 
     public void sendMarketDatas(JsonNode journalDockedEvent) {
+        if (!isCapiEnabled()) {
+            return;
+        }
         if (DashboardContext.getInstance().isBatchLoading()) {
             return;
         }
@@ -95,6 +100,9 @@ public final class CapiApiService {
     }
 
     public boolean checkCapiAuthentication() {
+        if (!isCapiEnabled()) {
+            return false;
+        }
         try {
             CommanderStatus status = CommanderStatus.getInstance();
             String language = getCurrentLanguage();
@@ -119,7 +127,35 @@ public final class CapiApiService {
         }
     }
 
+    /**
+     * Vérifie silencieusement que {@code GET /api/capi/profile} réussit (sans popup d’authentification).
+     * Utile pour l’indicateur de statut dans les paramètres.
+     */
+    public boolean isProfileConnectionOk() {
+        if (!isCapiEnabled()) {
+            return false;
+        }
+        try {
+            CommanderStatus status = CommanderStatus.getInstance();
+            String language = getCurrentLanguage();
+            CapiProfileDto profileResponse = capiFacade.fetchProfile(
+                    status.getCommanderName(),
+                    status.getFID(),
+                    language
+            );
+            return profileResponse != null
+                    && isOauthApproved(profileResponse.getStatus(), profileResponse.getError());
+        } catch (UnauthorizedException e) {
+            return false;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     public void fetchFleetCarrierData() {
+        if (!isCapiEnabled()) {
+            return;
+        }
         try {
             CommanderStatus status = CommanderStatus.getInstance();
             String language = getCurrentLanguage();
@@ -202,6 +238,9 @@ public final class CapiApiService {
     // =========================
 
     private void promptAuthenticationApproval() {
+        if (!isCapiEnabled()) {
+            return;
+        }
         Platform.runLater(() -> {
             try {
                 Window ownerWindow = getBestOwnerWindow();
@@ -290,7 +329,15 @@ public final class CapiApiService {
      * Déclenche explicitement le login CAPI (bouton settings).
      */
     public void loginCapiAccount() {
+        if (!isCapiEnabled()) {
+            System.out.println("CAPI market: login désactivé dans les paramètres");
+            return;
+        }
         requestAuthenticationAndOpenBrowser();
+    }
+
+    private boolean isCapiEnabled() {
+        return preferencesService.isCapiLoginEnabled();
     }
 
     /**

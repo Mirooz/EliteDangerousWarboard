@@ -2772,6 +2772,31 @@
     -fx-opacity: 0.5;
 }
 
+.config-capi-status-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+}
+
+.config-capi-status-icon,
+.config-capi-status-text {
+    -fx-font-size: 12px;
+}
+
+.config-capi-status-row.config-capi-status-checking .config-capi-status-icon,
+.config-capi-status-row.config-capi-status-checking .config-capi-status-text {
+    -fx-text-fill: #888888;
+}
+
+.config-capi-status-row.config-capi-status-connected .config-capi-status-icon,
+.config-capi-status-row.config-capi-status-connected .config-capi-status-text {
+    -fx-text-fill: #2ecc71;
+}
+
+.config-capi-status-row.config-capi-status-required .config-capi-status-icon,
+.config-capi-status-row.config-capi-status-required .config-capi-status-text {
+    -fx-text-fill: #e74c3c;
+}
+
 /* Conteneur des missions */
 .missions-container {
     -fx-background-color: -fx-elite-gray;
