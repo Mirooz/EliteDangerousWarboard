@@ -1,15 +1,9 @@
 package be.mirooz.elitedangerous.dashboard;
 
-import be.mirooz.elitedangerous.backend.generated.model.LatestVersionResponse;
-import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
-import be.mirooz.elitedangerous.dashboard.view.common.VersionUpdateNotificationComponent;
+import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
-import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
-import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
-import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
-import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -29,7 +23,6 @@ import java.util.Objects;
 public class EliteDashboardApp extends Application {
 
     private LocalizationService localizationService = LocalizationService.getInstance();
-    private WindowToggleService windowToggleService = WindowToggleService.getInstance();
     private LoggingService loggingService = LoggingService.getInstance();
     private PreferencesService preferencesService = PreferencesService.getInstance();
     private ComboBox<String> comboBox;
@@ -108,35 +101,18 @@ public class EliteDashboardApp extends Application {
             stage.setOnCloseRequest(event -> {
                 // Sauvegarder la position et la taille avant de fermer
                 saveWindowPosition(stage);
-                stage.hide();
-                // Fermer la session analytics
-                AnalyticsService.getInstance().endSession();
-                System.out.println("Arrêt global : sauvegarde état fleet carrier...");
-                PersistenceService.getInstance().save();
-                System.out.println("Arrêt des services de journal...");
-                JournalTailService.getInstance().stop();
-                JournalWatcherService.getInstance().stop();
-                windowToggleService.stop();
-                
-                // Arrêter le service de logging
-                loggingService.shutdown();
-
-                Platform.exit();
-                System.exit(0);
+                event.consume();
+                AppLifecycleService.getInstance().shutdown("window-close-request", null);
             });
 
             stage.show();
 
-            // Initialiser et démarrer le service de toggle de fenêtre
-            windowToggleService.initialize(stage, comboBox, rootPane);
-            windowToggleService.start();
-
-            // Vérifier la version de l'application de manière asynchrone
-            checkForUpdates(root);
+            AppLifecycleService.getInstance().onStart(stage, comboBox, rootPane);
 
             System.out.println("✅ Application démarrée");
 
         } catch (Exception e) {
+            AppLifecycleService.getInstance().shutdown("startup-error", e);
             throw new RuntimeException("Erreur lors du chargement du Dashboard", e);
         }
     }
@@ -397,74 +373,6 @@ public class EliteDashboardApp extends Application {
         stage.setHeight(bounds.getHeight());
     }
     
-    /**
-     * Vérifie si une nouvelle version est disponible et affiche une notification si nécessaire
-     */
-    private void checkForUpdates(StackPane rootPane) {
-        // Vérifier de manière asynchrone pour ne pas bloquer le démarrage
-        new Thread(() -> {
-            try {
-                AnalyticsService analyticsService = AnalyticsService.getInstance();
-                String currentVersion = analyticsService.getCurrentVersion();
-                LatestVersionResponse latestVersion = analyticsService.getLatestVersion();
-                
-                if (latestVersion != null) {
-                    String latestVersionTag = latestVersion.getTagName();
-                    if (analyticsService.isNewerVersion(currentVersion, latestVersionTag)) {
-                        // Afficher la notification sur le thread JavaFX
-                        Platform.runLater(() -> {
-                            // Chercher le popupContainer dans la hiérarchie
-                            StackPane popupContainer = findPopupContainer(rootPane);
-                            if (popupContainer != null) {
-                                new VersionUpdateNotificationComponent(
-                                    latestVersionTag,
-                                    latestVersion.getBody(),
-                                    latestVersion.getHtmlUrl(),
-                                    popupContainer
-                                );
-                            } else {
-                                // Fallback: utiliser rootPane directement
-                                new VersionUpdateNotificationComponent(
-                                    latestVersionTag,
-                                    latestVersion.getBody(),
-                                    latestVersion.getHtmlUrl(),
-                                    rootPane
-                                );
-                            }
-                        });
-                    }
-                }
-            } catch (Exception e) {
-                // Ignorer silencieusement les erreurs de vérification de version
-                System.err.println("Erreur lors de la vérification de version: " + e.getMessage());
-            }
-        }).start();
-    }
-    
-    /**
-     * Trouve le popupContainer dans la hiérarchie des nœuds
-     */
-    private StackPane findPopupContainer(javafx.scene.Node root) {
-        if (root instanceof StackPane stackPane) {
-            // Vérifier si c'est le popupContainer (chercher par ID ou par structure)
-            if (root.getId() != null && root.getId().equals("popupContainer")) {
-                return stackPane;
-            }
-        }
-        
-        // Parcourir récursivement les enfants
-        if (root instanceof javafx.scene.layout.Pane pane) {
-            for (javafx.scene.Node child : pane.getChildren()) {
-                StackPane found = findPopupContainer(child);
-                if (found != null) {
-                    return found;
-                }
-            }
-        }
-        
-        return null;
-    }
-
     public static void main(String[] args) {
         launch(args);
     }

@@ -125,19 +125,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadComponents();
-        loadMissions();
         initializeTabImages();
         loadDonateButtonImage();
         popupManager.attachToContainer(popupContainer);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            AnalyticsService.getInstance().endSession();
-            System.out.println("Arrêt global : sauvegarde état fleet carrier...");
-            PersistenceService.getInstance().save();
-            System.out.println("Arrêt global : arrêt des services de journal...");
-            JournalTailService.getInstance().stop();
-            JournalWatcherService.getInstance().stop();
-        }));
-
         UIManager.getInstance().register(this);
         updateTranslations();
         initializeCommanderStatusLabels();
@@ -232,10 +222,6 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         colonisationPane.setCenter(panel);
     }
 
-    private void loadMissions() {
-        dashboardService.initActiveMissions();
-    }
-    
     /**
      * Initialise les images des onglets avec design Elite Dangerous
      */
