@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.backend.generated.model.LatestVersionResponse;
+import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
@@ -43,6 +44,32 @@ public final class AppLifecycleService {
         WindowToggleService.getInstance().start();
         DashboardService.getInstance().initActiveMissions();
         checkForUpdatesAsync(rootPane);
+    }
+
+    /**
+     * Étape intermédiaire lors d'un changement de commandant (sans arrêter watchers/lectures).
+     * - flush du scope courant
+     * - fermeture session analytics courante
+     * - reset du marqueur d'activité carrier (timestamp d'insertion)
+     * - switch du scope de persistance vers le nouveau FID
+     */
+    public void onCommanderSwitch(String previousFid, String nextFid) {
+        if (previousFid == null || previousFid.isBlank() || previousFid.equals(nextFid)) {
+            PersistenceService.getInstance().useCommanderScope(nextFid);
+            return;
+        }
+        try {
+            PersistenceService.getInstance().saveAllNow();
+        } catch (Exception e) {
+            System.err.println("[Lifecycle] Commander switch save failed: " + e.getMessage());
+        }
+        try {
+            AnalyticsService.getInstance().endSession();
+        } catch (Exception e) {
+            System.err.println("[Lifecycle] Commander switch endSession failed: " + e.getMessage());
+        }
+        CarrierStatus.getInstance().clearJournalActivityMarker();
+        PersistenceService.getInstance().useCommanderScope(nextFid);
     }
 
     /**

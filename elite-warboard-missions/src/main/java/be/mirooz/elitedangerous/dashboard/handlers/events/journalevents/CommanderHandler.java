@@ -1,10 +1,10 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
-import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,6 +15,7 @@ public class CommanderHandler implements JournalEventHandler {
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final MiningStatsService miningStatsService = MiningStatsService.getInstance();
+    private final AppLifecycleService appLifecycleService = AppLifecycleService.getInstance();
 
     @Override
     public String getEventType() {
@@ -36,12 +37,6 @@ public class CommanderHandler implements JournalEventHandler {
                         currentFID == null ||
                         !currentFID.equals(fid);
 
-                // Important : on persiste l'état du commandant courant AVANT toute bascule
-                // de FID/scope, pour ne pas écraser le snapshot de l'ancien commandant.
-                if (isNewCommander && currentFID != null && !currentFID.isBlank()) {
-                    PersistenceService.getInstance().saveAllNow();
-                }
-
                 // Mettre à jour le statut du commandant
                 commanderStatus.setCommanderName(name);
                 commanderStatus.setFID(fid);
@@ -57,7 +52,8 @@ public class CommanderHandler implements JournalEventHandler {
 
                 // Si c'est un nouveau commandant, afficher le popup et relire les journaux
                 if (isNewCommander && currentCommanderName != null) {
-                    PersistenceService.getInstance().useCommanderScope(fid);
+                    // Étape intermédiaire de transition de commandant (sans stop des watchers).
+                    appLifecycleService.onCommanderSwitch(currentFID, fid);
                     showNewCommanderPopup(name);
                     rereadAllJournalsForNewCommander();
                 }
@@ -93,16 +89,12 @@ public class CommanderHandler implements JournalEventHandler {
      * Relit tous les fichiers journal pour le nouveau commandant
      */
     private void rereadAllJournalsForNewCommander() {
-        Platform.runLater(() -> {
-            try {
-                // Utiliser initActiveMissions pour bien tout reset et initialiser les batch listeners
-                DashboardService dashboardService = DashboardService.getInstance();
-                dashboardService.initActiveMissions();
-
-            } catch (Exception e) {
-                System.err.println("Erreur lors de la relecture des journaux pour le nouveau commandant: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
+        try {
+            // initActiveMissions() lance déjà son propre thread ; pas besoin de runLater ici.
+            DashboardService.getInstance().initActiveMissions();
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la relecture des journaux pour le nouveau commandant: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

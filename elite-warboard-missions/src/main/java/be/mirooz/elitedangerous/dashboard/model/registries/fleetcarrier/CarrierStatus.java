@@ -416,6 +416,14 @@ public class CarrierStatus {
         return !t.isBefore(Instant.now().minus(maxAge));
     }
 
+    /**
+     * Réinitialise le marqueur de dernière activité journal carrier.
+     * Utilisé lors d'un changement de commandant pour éviter de réutiliser un timestamp d'un autre profil.
+     */
+    public void clearJournalActivityMarker() {
+        lastModifiedTime = null;
+    }
+
     private void markLastModifiedFromJournal(String journalIsoTimestamp) {
         lastModifiedTime = parseJournalInstant(journalIsoTimestamp);
     }
