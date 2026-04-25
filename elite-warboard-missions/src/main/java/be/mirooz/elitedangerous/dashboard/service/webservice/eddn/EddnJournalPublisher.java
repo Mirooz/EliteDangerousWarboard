@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.eddn.EddnSchemas;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -28,6 +29,7 @@ public final class EddnJournalPublisher {
 
     private final EddnUploader uploader = EddnUploader.getInstance();
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final EddnEventMappers mappers = new EddnEventMappers(commanderStatus);
 
     private EddnJournalPublisher() {
@@ -42,6 +44,9 @@ public final class EddnJournalPublisher {
      * métier effectué. Ne lève jamais, ne bloque jamais l'appelant.
      */
     public void publish(JsonNode jsonNode) {
+        if (!preferencesService.isSendDataToEddnEnabled()) {
+            return;
+        }
         if (jsonNode == null || !jsonNode.isObject()) {
             return;
         }

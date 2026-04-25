@@ -287,6 +287,13 @@ public final class CapiApiService {
     }
 
     /**
+     * Déclenche explicitement le login CAPI (bouton settings).
+     */
+    public void loginCapiAccount() {
+        requestAuthenticationAndOpenBrowser();
+    }
+
+    /**
      * Lance une boucle de long polling sur {@code GET /api/capi/wait-approval} (hold serveur 60 s)
      * jusqu'à réception de {@code approved=true} ou expiration du budget total de 15 min.
      *

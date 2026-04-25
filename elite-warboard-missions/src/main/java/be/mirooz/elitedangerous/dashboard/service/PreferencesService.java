@@ -278,6 +278,21 @@ public class PreferencesService {
     }
 
     /**
+     * Active ou désactive l'envoi de données vers EDDN.
+     */
+    public void setSendDataToEddnEnabled(boolean enabled) {
+        preferences.setProperty("eddn.send.enabled", String.valueOf(enabled));
+        savePreferences();
+    }
+
+    /**
+     * Vérifie si l'envoi vers EDDN est activé (activé par défaut).
+     */
+    public boolean isSendDataToEddnEnabled() {
+        return Boolean.parseBoolean(preferences.getProperty("eddn.send.enabled", "true"));
+    }
+
+    /**
      * Vérifie si un fichier de préférences existe
      */
     public boolean hasPreferencesFile() {

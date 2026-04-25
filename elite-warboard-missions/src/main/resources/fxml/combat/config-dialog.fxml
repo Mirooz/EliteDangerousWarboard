@@ -48,10 +48,19 @@
                    styleClass="config-description" maxWidth="800.0" wrapText="true"/>
         </VBox>
 
+        <!-- Section EDDN / CAPI -->
+        <VBox spacing="10.0" styleClass="config-section">
+            <CheckBox fx:id="sendDataToEddnCheckBox" text="Send datas to EDDN"
+                    styleClass="config-checkbox"/>
+
+            <Button fx:id="logCapiAccountButton" text="Log CAPI account"
+                    onAction="#logCapiAccount" styleClass="elite-button-secondary"/>
+        </VBox>
+
         <!-- Section VR Mode -->
         <VBox spacing="10.0" styleClass="config-section">
             <Label fx:id="vrModeSectionLabel" text="VR MODE" styleClass="config-section-title"/>
-            
+
             <!-- Checkbox pour activer/désactiver VR mode -->
             <CheckBox fx:id="vrModeEnabledCheckBox" text="Enable VR mode" 
                     onAction="#onVrModeChanged" styleClass="config-checkbox" disable="true"/>

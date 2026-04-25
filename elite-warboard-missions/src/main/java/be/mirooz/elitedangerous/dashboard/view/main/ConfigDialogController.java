@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
@@ -70,6 +71,12 @@ public class ConfigDialogController implements Initializable {
     private Label vrModeSectionLabel;
 
     @FXML
+    private CheckBox sendDataToEddnCheckBox;
+
+    @FXML
+    private Button logCapiAccountButton;
+
+    @FXML
     private CheckBox vrModeEnabledCheckBox;
 
     @FXML
@@ -118,6 +125,7 @@ public class ConfigDialogController implements Initializable {
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final DashboardService dashboardService = DashboardService.getInstance();
     private final WindowToggleService windowToggleService = WindowToggleService.getInstance();
+    private final CapiApiService capiApiService = CapiApiService.getInstance();
     
     private boolean isCapturingBind = false;
     private String currentBindType = null; // "windowToggle", "tabSwitchLeft", "tabSwitchRight"
@@ -162,6 +170,9 @@ public class ConfigDialogController implements Initializable {
         vrModeEnabledCheckBox.setSelected(vrModeEnabled);
         // S'assurer que la checkbox est activée
         vrModeEnabledCheckBox.setDisable(false);
+
+        // Initialiser l'option d'envoi vers EDDN
+        sendDataToEddnCheckBox.setSelected(preferencesService.isSendDataToEddnEnabled());
         
         // Initialiser les affichages des binds
         updateWindowToggleBindDisplay();
@@ -188,6 +199,9 @@ public class ConfigDialogController implements Initializable {
         
         // Traductions pour la section VR mode
         vrModeSectionLabel.setText("VR MODE");
+        sendDataToEddnCheckBox.setText(localizationService.getString("config.eddn.send.enabled"));
+        sendDataToEddnCheckBox.setTooltip(new Tooltip(localizationService.getString("config.eddn.send.hint")));
+        logCapiAccountButton.setText(localizationService.getString("config.capi.log.account"));
         vrModeEnabledCheckBox.setText(localizationService.getString("config.vr.mode.enabled"));
         windowToggleBindLabel.setText(localizationService.getString("config.window.toggle.bind.label"));
         tabSwitchLeftLabel.setText(localizationService.getString("config.tab.switch.left"));
@@ -489,6 +503,7 @@ public class ConfigDialogController implements Initializable {
         boolean vrModeEnabled = vrModeEnabledCheckBox.isSelected();
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
         preferencesService.setTabSwitchEnabled(false);
+        preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
         
         if (isKeyboardBind && capturedKeyCode != -1) {
             // Sauvegarder bind clavier
@@ -559,6 +574,11 @@ public class ConfigDialogController implements Initializable {
         // Fermer la fenêtre
         Stage stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
+    }
+
+    @FXML
+    private void logCapiAccount() {
+        capiApiService.loginCapiAccount();
     }
 
     @FXML
