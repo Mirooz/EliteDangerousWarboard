@@ -49,6 +49,16 @@ public class CombatMissionHistoryService {
                 .filter(mission -> mission.isCompleted() && isCombatMission(mission))
                 .forEach(this::addCompletedMissionToStats);
     }
+
+    /**
+     * Reconstruit entièrement l'historique à partir de l'état courant des missions.
+     * Utile après un replay batch de journaux.
+     */
+    public synchronized void rebuildFromRegistry() {
+        missionStatsMap.clear();
+        loadCompletedMissions();
+        notifyHistoryChanged();
+    }
     
     /**
      * Vérifie si c'est une mission de massacre ou de conflit

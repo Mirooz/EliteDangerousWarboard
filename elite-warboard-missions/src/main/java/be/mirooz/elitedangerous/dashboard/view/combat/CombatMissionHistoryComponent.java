@@ -61,6 +61,7 @@ public class CombatMissionHistoryComponent implements Initializable, IBatchListe
     }
     @Override
     public void onBatchEnd() {
+        historyService.rebuildFromRegistry();
         refreshHistory();
         historyService.addListener(this::refreshHistory);
     }
