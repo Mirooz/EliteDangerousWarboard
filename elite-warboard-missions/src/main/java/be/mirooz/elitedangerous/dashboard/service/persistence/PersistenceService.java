@@ -40,9 +40,13 @@ public class PersistenceService {
         return INSTANCE;
     }
 
-    private final Path baseDir;
-    private final List<RegistryStore> stores = new ArrayList<>();
-    private final JournalCursorStore cursorStore;
+    private static final String DEFAULT_COMMANDER_SCOPE = "_unknown";
+
+    private final Path persistenceRootDir;
+    private Path commanderBaseDir;
+    private String currentCommanderScope = DEFAULT_COMMANDER_SCOPE;
+    private List<RegistryStore> stores = new ArrayList<>();
+    private JournalCursorStore cursorStore;
 
     private final ScheduledExecutorService scheduler =
             Executors.newSingleThreadScheduledExecutor(r -> {
@@ -53,12 +57,33 @@ public class PersistenceService {
     private volatile ScheduledFuture<?> pendingSave;
 
     private PersistenceService() {
-        this.baseDir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
-        this.cursorStore = new JournalCursorStore(baseDir.resolve("journal-cursor.json"));
-        this.stores.addAll(DashboardRegistryJsonPersistence.buildRegistryStores(baseDir));
+        this.persistenceRootDir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
+        configureCommanderScope(DEFAULT_COMMANDER_SCOPE);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::flushOnShutdown,
                 "PersistenceService-shutdown"));
+    }
+
+    /**
+     * Active le scope de persistance pour le commandant courant (dossier par FID).
+     *
+     * @param commanderFid FID du commandant ; null/blank => scope par défaut.
+     * @return {@code true} si le scope a changé.
+     */
+    public synchronized boolean useCommanderScope(String commanderFid) {
+        String normalized = normalizeCommanderScope(commanderFid);
+        if (normalized.equals(currentCommanderScope)) {
+            return false;
+        }
+        cancelPendingSave();
+        configureCommanderScope(normalized);
+        System.out.println("[Persistence] Scope commandant activé: " + normalized
+                + " (" + commanderBaseDir + ")");
+        return true;
+    }
+
+    public synchronized Path getCurrentCommanderBaseDir() {
+        return commanderBaseDir;
     }
 
     // -------- Resume API --------
@@ -238,5 +263,20 @@ public class PersistenceService {
         } finally {
             scheduler.shutdownNow();
         }
+    }
+
+    private void configureCommanderScope(String commanderScope) {
+        currentCommanderScope = normalizeCommanderScope(commanderScope);
+        commanderBaseDir = persistenceRootDir.resolve("commanders").resolve(currentCommanderScope);
+        cursorStore = new JournalCursorStore(commanderBaseDir.resolve("journal-cursor.json"));
+        stores = new ArrayList<>(DashboardRegistryJsonPersistence.buildRegistryStores(commanderBaseDir));
+    }
+
+    private static String normalizeCommanderScope(String commanderFid) {
+        if (commanderFid == null || commanderFid.isBlank()) {
+            return DEFAULT_COMMANDER_SCOPE;
+        }
+        String safe = commanderFid.strip().replaceAll("[^a-zA-Z0-9._-]", "_");
+        return safe.isBlank() ? DEFAULT_COMMANDER_SCOPE : safe;
     }
 }

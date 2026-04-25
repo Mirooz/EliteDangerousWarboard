@@ -230,6 +230,7 @@ public class JournalService {
 
             // Tente une reprise incrémentale si un curseur + snapshots valides existent
             // ~/.elite-warboard/. Sinon on retombe sur le replay complet.
+            PersistenceService.getInstance().useCommanderScope(getCommanderFid());
             boolean resumed = PersistenceService.getInstance().loadAll();
             if (resumed) {
                 JournalCursor cursor = PersistenceService.getInstance().getCursor();

@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSt
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
+import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -50,6 +51,7 @@ public class CommanderHandler implements JournalEventHandler {
 
                 // Si c'est un nouveau commandant, afficher le popup et relire les journaux
                 if (isNewCommander && currentCommanderName != null) {
+                    PersistenceService.getInstance().useCommanderScope(fid);
                     showNewCommanderPopup(name);
                     rereadAllJournalsForNewCommander();
                 }

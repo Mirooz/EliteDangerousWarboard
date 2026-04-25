@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.backend.generated.model.NearbyExportsBestStationResult;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.construction.Colony;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.construction.Structure;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,7 @@ import java.util.Set;
  * Service pour gérer les préférences utilisateur
  */
 public class PreferencesService {
+    private static final String DEFAULT_COMMANDER_SCOPE = "_unknown";
     private static PreferencesService instance;
     private final Properties preferences;
     private final Path preferencesFile;
@@ -51,6 +53,7 @@ public class PreferencesService {
     private volatile Properties colonisationConstructionStructureTypes;
     private final Object colonisationConstructionStructureTypesLock = new Object();
     private final Object colonisationConstructionListLock = new Object();
+    private volatile String colonisationScope = DEFAULT_COMMANDER_SCOPE;
 
     private static ObjectMapper createColonisationSuggestedStationsMapper() {
         ObjectMapper m = new ObjectMapper();
@@ -66,7 +69,8 @@ public class PreferencesService {
     }
 
     private Path colonisationSuggestedBuyStationsPath() {
-        Path parent = preferencesFile.getParent();
+        ensureColonisationScopeUpToDate();
+        Path parent = commanderScopedDir();
         if (parent == null) {
             return Paths.get(COLONISATION_SUGGESTED_BUY_STATIONS_FILE);
         }
@@ -74,7 +78,8 @@ public class PreferencesService {
     }
 
     private Path colonisationConstructionStructureTypesPath() {
-        Path parent = preferencesFile.getParent();
+        ensureColonisationScopeUpToDate();
+        Path parent = commanderScopedDir();
         if (parent == null) {
             return Paths.get(COLONISATION_CONSTRUCTION_STRUCTURE_TYPES_FILE);
         }
@@ -82,7 +87,8 @@ public class PreferencesService {
     }
 
     private Path colonisationConstructionListPath() {
-        Path parent = preferencesFile.getParent();
+        ensureColonisationScopeUpToDate();
+        Path parent = commanderScopedDir();
         if (parent == null) {
             return Paths.get(COLONISATION_CONSTRUCTION_LIST_FILE);
         }
@@ -120,6 +126,7 @@ public class PreferencesService {
     }
 
     private Properties colonisationConstructionStructureTypes() {
+        ensureColonisationScopeUpToDate();
         Properties local = colonisationConstructionStructureTypes;
         if (local != null) {
             return local;
@@ -226,6 +233,7 @@ public class PreferencesService {
      * Définit une préférence
      */
     public void setPreference(String key, String value) {
+        key = scopedPreferenceKey(key);
         if (value == null) {
             // Si la valeur est null, supprimer la préférence
             preferences.remove(key);
@@ -239,6 +247,7 @@ public class PreferencesService {
      * Supprime une préférence
      */
     public void removePreference(String key) {
+        key = scopedPreferenceKey(key);
         preferences.remove(key);
         savePreferences();
     }
@@ -247,6 +256,7 @@ public class PreferencesService {
      * Récupère une préférence
      */
     public String getPreference(String key, String defaultValue) {
+        key = scopedPreferenceKey(key);
         return preferences.getProperty(key, defaultValue);
     }
 
@@ -687,6 +697,43 @@ public class PreferencesService {
                 System.err.println("Préférences: enregistrement selectedArchitectSystem colonisation : " + e.getMessage());
             }
         }
+    }
+
+    private Path commanderScopedDir() {
+        Path parent = preferencesFile.getParent();
+        if (parent == null) {
+            return Paths.get("commanders", colonisationScope);
+        }
+        return parent.resolve("commanders").resolve(colonisationScope);
+    }
+
+    private void ensureColonisationScopeUpToDate() {
+        String newScope = normalizeCommanderScope(CommanderStatus.getInstance().getFID());
+        if (newScope.equals(colonisationScope)) {
+            return;
+        }
+        synchronized (colonisationConstructionStructureTypesLock) {
+            if (!newScope.equals(colonisationScope)) {
+                colonisationScope = newScope;
+                colonisationConstructionStructureTypes = null;
+            }
+        }
+    }
+
+    private static String scopedPreferenceKey(String key) {
+        if (key == null || !key.startsWith("colonisation.")) {
+            return key;
+        }
+        String scope = normalizeCommanderScope(CommanderStatus.getInstance().getFID());
+        return "commanders." + scope + "." + key;
+    }
+
+    private static String normalizeCommanderScope(String commanderFid) {
+        if (commanderFid == null || commanderFid.isBlank()) {
+            return DEFAULT_COMMANDER_SCOPE;
+        }
+        String safe = commanderFid.strip().replaceAll("[^a-zA-Z0-9._-]", "_");
+        return safe.isBlank() ? DEFAULT_COMMANDER_SCOPE : safe;
     }
 }
 
