@@ -16,7 +16,6 @@ import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteTargetRegistry;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
@@ -122,7 +121,6 @@ public class NavRouteComponent implements Initializable {
     private NavRouteOverlayComponent navRouteOverlayComponent;
 
     private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
-    private final NavRouteTargetRegistry navRouteTargetRegistry = NavRouteTargetRegistry.getInstance();
     private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
     private ExplorationMode currentMode = ExplorationMode.FREE_EXPLORATION;
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
@@ -211,7 +209,7 @@ public class NavRouteComponent implements Initializable {
         statusComponent.getCurrentStarSystem().addListener(currentSystemListener);
         
         // Écouter les changements de RemainingJumpsInRoute
-        navRouteTargetRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
+        navRouteRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
             Platform.runLater(() -> {
                 updateRemainingJumpsLabel(newValue.intValue());
             });
@@ -233,7 +231,7 @@ public class NavRouteComponent implements Initializable {
         // Initialiser le label avec la valeur actuelle
         // Utiliser Platform.runLater pour s'assurer que le label est bien injecté
         Platform.runLater(() -> {
-            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
+            updateRemainingJumpsLabel(navRouteRegistry.getRemainingJumpsInRoute());
         });
 
         // S'abonner au service de notification pour le refresh de la route
@@ -314,7 +312,7 @@ public class NavRouteComponent implements Initializable {
                 updateRouteDisplay(null);
             }
             // Toujours mettre à jour le label des remaining jumps lors du rafraîchissement
-            updateRemainingJumpsLabel(navRouteTargetRegistry.getRemainingJumpsInRoute());
+            updateRemainingJumpsLabel(navRouteRegistry.getRemainingJumpsInRoute());
         });
     }
 
@@ -1653,7 +1651,7 @@ public class NavRouteComponent implements Initializable {
                             // Vérifier si le dernier système de Free Exploration correspond à la prochaine boule
                             if (lastFreeSystem.getSystemName().equals(nextSystem.getSystemName())) {
                                 // Utiliser le nombre de sauts restants du registre (celui du label "x jump remaining")
-                                int remainingJumps = navRouteTargetRegistry.getRemainingJumpsInRoute();
+                                int remainingJumps = navRouteRegistry.getRemainingJumpsInRoute();
                                 if (remainingJumps > 0) {
                                     // Afficher le nombre de sauts au-dessus de la ligne, au milieu
                                     double midX = (x + nextX) / 2;
@@ -2025,7 +2023,7 @@ public class NavRouteComponent implements Initializable {
 
         // Mettre à jour le label des remaining jumps avec la nouvelle langue
         if (remainingJumpsLabel != null) {
-            int remainingJumps = navRouteTargetRegistry.getRemainingJumpsInRoute();
+            int remainingJumps = navRouteRegistry.getRemainingJumpsInRoute();
             updateRemainingJumpsLabel(remainingJumps);
         }
 

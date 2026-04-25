@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteTargetRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
 import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public class FSDTargetHandler implements JournalEventHandler {
 
-    private final NavRouteTargetRegistry navRouteTargetRegistry = NavRouteTargetRegistry.getInstance();
+    private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
     private final NavRouteNotificationService navRouteNotificationService = NavRouteNotificationService.getInstance();
 
     @Override
@@ -32,7 +32,7 @@ public class FSDTargetHandler implements JournalEventHandler {
         try {
             if (jsonNode.has("RemainingJumpsInRoute")) {
                 int remainingJumps = jsonNode.get("RemainingJumpsInRoute").asInt();
-                navRouteTargetRegistry.setRemainingJumpsInRoute(remainingJumps);
+                navRouteRegistry.setRemainingJumpsInRoute(remainingJumps);
                 System.out.println("🎯 FSDTarget: " + remainingJumps + " saut(s) restant(s)");
                 // Notifier le service pour rafraîchir l'affichage de la route
                 navRouteNotificationService.notifyRouteRefreshRequired();

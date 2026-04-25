@@ -2,10 +2,15 @@ package be.mirooz.elitedangerous.dashboard.model.registries.navigation;
 
 import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -17,10 +22,15 @@ public class NavRouteRegistry {
     private static final NavRouteRegistry INSTANCE = new NavRouteRegistry();
 
     // Map générique pour stocker les routes par mode
+    @JsonIgnore
     private final Map<ExplorationMode, ObjectProperty<NavRoute>> routeMap = new HashMap<>();
     
     // Property combinée pour la compatibilité avec le code existant
+    @JsonIgnore
     private final ObjectProperty<NavRoute> currentRoute = new SimpleObjectProperty<>(null);
+
+    @JsonIgnore
+    private final IntegerProperty remainingJumpsInRoute = new SimpleIntegerProperty(-1);
 
     private NavRouteRegistry() {
         // Initialiser les propriétés pour tous les modes
@@ -113,6 +123,28 @@ public class NavRouteRegistry {
         return route != null && route.getRoute() != null && !route.getRoute().isEmpty();
     }
 
+    @JsonProperty("remainingJumpsInRoute")
+    public void setRemainingJumpsInRoute(int remainingJumps) {
+        remainingJumpsInRoute.set(remainingJumps);
+    }
+
+    public IntegerProperty getRemainingJumpsInRouteProperty() {
+        return remainingJumpsInRoute;
+    }
+
+    @JsonProperty("remainingJumpsInRoute")
+    public int getRemainingJumpsInRoute() {
+        return remainingJumpsInRoute.get();
+    }
+
+    public boolean hasTarget() {
+        return remainingJumpsInRoute.get() >= 0;
+    }
+
+    public void clearTarget() {
+        remainingJumpsInRoute.set(-1);
+    }
+
     /**
      * Efface la route pour un mode spécifique
      */
@@ -151,5 +183,21 @@ public class NavRouteRegistry {
             }
         }
         return out;
+    }
+
+    @JsonProperty("routesByMode")
+    public Map<ExplorationMode, NavRoute> getPersistedRoutesByMode() {
+        return new LinkedHashMap<>(snapshotRoutes());
+    }
+
+    @JsonProperty("routesByMode")
+    public void setPersistedRoutesByMode(Map<ExplorationMode, NavRoute> routesByMode) {
+        for (ExplorationMode mode : ExplorationMode.values()) {
+            setRouteForMode(null, mode);
+        }
+        if (routesByMode == null) {
+            return;
+        }
+        applyFullPersistedSnapshot(routesByMode);
     }
 }

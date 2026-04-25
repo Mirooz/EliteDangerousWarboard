@@ -1,9 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.persistence;
 
-import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
-import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.colonisation.ColonisationRegistry;
@@ -19,7 +17,6 @@ import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVis
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.MiningStatRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteTargetRegistry;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -76,9 +73,9 @@ public final class DashboardRegistryJsonPersistence {
         out.add(storeClass("exploration-mode", baseDir, ExplorationModeRegistry.class,
                 ExplorationModeRegistry::getInstance,
                 loaded -> mergeIntoSingleton("exploration-mode", ExplorationModeRegistry.getInstance(), loaded)));
-        out.add(storeClass("nav-route-target", baseDir, NavRouteTargetRegistry.class,
-                NavRouteTargetRegistry::getInstance,
-                loaded -> mergeIntoSingleton("nav-route-target", NavRouteTargetRegistry.getInstance(), loaded)));
+        out.add(storeClass("nav-route-registry", baseDir, NavRouteRegistry.class,
+                NavRouteRegistry::getInstance,
+                loaded -> mergeIntoSingleton("nav-route-registry", NavRouteRegistry.getInstance(), loaded)));
 
         out.add(storeClass("ship-targets", baseDir, ShipTargetRegistry.class,
                 ShipTargetRegistry::getInstance,
@@ -100,9 +97,6 @@ public final class DashboardRegistryJsonPersistence {
         out.add(storeMap("system-visited-registry", baseDir, LinkedHashMap.class, String.class, SystemVisited.class,
                 () -> new LinkedHashMap<>(SystemVisitedRegistry.getInstance().snapshotSystems()),
                 SystemVisitedRegistry.getInstance()::applyFullPersistedSnapshot));
-        out.add(storeMap("nav-route-registry", baseDir, HashMap.class, ExplorationMode.class, NavRoute.class,
-                () -> new HashMap<>(NavRouteRegistry.getInstance().snapshotRoutes()),
-                NavRouteRegistry.getInstance()::applyFullPersistedSnapshot));
         out.add(storeClass("exploration-data-sale-registry", baseDir, ExplorationDataSaleRegistry.class,
                 ExplorationDataSaleRegistry::getInstance,
                 loaded -> mergeIntoSingleton("exploration-data-sale-registry", ExplorationDataSaleRegistry.getInstance(), loaded)));
