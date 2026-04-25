@@ -1,7 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.mining;
 
 import be.mirooz.elitedangerous.dashboard.model.mining.MiningStat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -14,8 +13,8 @@ import java.util.Optional;
 public class MiningStatRegistry {
     
     private static MiningStatRegistry instance;
-    @JsonIgnore
-    private final List<MiningStat> miningStats;
+    @JsonProperty
+    private List<MiningStat> miningStats;
     private MiningStat currentMiningSession;
     
     private MiningStatRegistry() {
@@ -97,19 +96,6 @@ public class MiningStatRegistry {
         return new ArrayList<>(miningStats);
     }
 
-    @JsonProperty("miningStats")
-    public List<MiningStat> getPersistedMiningStats() {
-        return new ArrayList<>(miningStats);
-    }
-
-    @JsonProperty("miningStats")
-    public void setPersistedMiningStats(List<MiningStat> statsList) {
-        miningStats.clear();
-        if (statsList != null) {
-            miningStats.addAll(statsList);
-        }
-    }
-    
     /**
      * Récupère les sessions de minage actives
      */

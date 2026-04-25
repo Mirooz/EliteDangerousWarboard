@@ -26,16 +26,16 @@ public class ColonisationRegistry {
     private static final ColonisationRegistry INSTANCE = new ColonisationRegistry();
 
     /** Clé = nom de système journal ; ordre = première activité colonisation sur ce système. */
-    @JsonIgnore
-    private final LinkedHashMap<String, ColonisationArchitectSystem> architectByStarSystem = new LinkedHashMap<>();
+    @JsonProperty
+    private LinkedHashMap<String, ColonisationArchitectSystem> architectByStarSystem = new LinkedHashMap<>();
 
     /**
      * Systèmes pour lesquels {@code ColonisationBeaconDeployed} a été reçu, dans l’ordre chronologique de réception
      * (une nouvelle réception pour un même système le déplace en fin de collection). Tant qu’un système n’y figure pas,
      * les événements {@code ColonisationConstructionDepot} associés sont ignorés.
      */
-    @JsonIgnore
-    private final LinkedHashSet<String> beaconDeployedSystems = new LinkedHashSet<>();
+    @JsonProperty
+    private LinkedHashSet<String> beaconDeployedSystems = new LinkedHashSet<>();
 
     /**
      * Site (même instance que dans {@link ColonisationArchitectSystem}) dont la {@link ColonisationDockEntry#getConstruction()}
@@ -205,36 +205,6 @@ public class ColonisationRegistry {
         currentConstruction = null;
     }
 
-    @JsonProperty("architectByStarSystem")
-    @Synchronized
-    public LinkedHashMap<String, ColonisationArchitectSystem> getPersistedArchitectByStarSystem() {
-        return new LinkedHashMap<>(architectByStarSystem);
-    }
-
-    @JsonProperty("architectByStarSystem")
-    @Synchronized
-    public void setPersistedArchitectByStarSystem(LinkedHashMap<String, ColonisationArchitectSystem> architects) {
-        architectByStarSystem.clear();
-        if (architects != null) {
-            architectByStarSystem.putAll(architects);
-        }
-    }
-
-    @JsonProperty("beaconDeployedSystems")
-    @Synchronized
-    public LinkedHashSet<String> getPersistedBeaconDeployedSystems() {
-        return new LinkedHashSet<>(beaconDeployedSystems);
-    }
-
-    @JsonProperty("beaconDeployedSystems")
-    @Synchronized
-    public void setPersistedBeaconDeployedSystems(LinkedHashSet<String> beaconOrder) {
-        beaconDeployedSystems.clear();
-        if (beaconOrder != null) {
-            beaconDeployedSystems.addAll(beaconOrder);
-        }
-    }
-
     /** Expose le MarketID du chantier courant pour la sérialisation. */
     @JsonProperty("currentConstructionMarketId")
     @Synchronized
@@ -250,17 +220,5 @@ public class ColonisationRegistry {
         if (currentConstructionMarketId != null) {
             currentConstruction = findDockEntryByMarketId(currentConstructionMarketId);
         }
-    }
-
-    /** Expose la map interne (ordonnée) pour la sérialisation. */
-    @Synchronized
-    public LinkedHashMap<String, ColonisationArchitectSystem> snapshotArchitectByStarSystem() {
-        return new LinkedHashMap<>(architectByStarSystem);
-    }
-
-    /** Expose l'ordre des balises déployées pour la sérialisation. */
-    @Synchronized
-    public LinkedHashSet<String> snapshotBeaconDeployedSystems() {
-        return new LinkedHashSet<>(beaconDeployedSystems);
     }
 }
