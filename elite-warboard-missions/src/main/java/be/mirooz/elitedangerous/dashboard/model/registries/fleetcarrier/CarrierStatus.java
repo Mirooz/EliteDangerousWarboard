@@ -16,8 +16,9 @@ import be.mirooz.elitedangerous.backend.generated.model.CapiFleetCarrierProxyRes
 import be.mirooz.elitedangerous.dashboard.model.colonisation.CarrierTradeOrderEntry;
 import be.mirooz.elitedangerous.dashboard.model.fleetcarrier.CarrierPosition;
 import be.mirooz.elitedangerous.dashboard.model.registries.CommodityRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -63,7 +64,9 @@ public class CarrierStatus {
     private String operationalState = "";
     private CarrierPosition position = new CarrierPosition("", -1L);
 
+    @JsonIgnore
     private final Map<ICommodity, CarrierTradeOrderEntry> marketByCommodity = new LinkedHashMap<>();
+    @JsonIgnore
     private final Map<ICommodity, Integer> stocksByCommodity = new LinkedHashMap<>();
 
     /** Dernière activité journal (ordre / achat-vente marché carrier) — pour éviter un sync CAPI redondant. */
@@ -592,137 +595,79 @@ public class CarrierStatus {
         }
     }
 
-    /** DTO JSON pour {@code carrier-status.json} (même schéma qu’avant, sans classe séparée *Snapshot*). */
+    @JsonProperty("stocksByCommodity")
+    public Map<String, Integer> getPersistedStocksByCommodity() {
+        Map<String, Integer> persistedStocks = new LinkedHashMap<>();
+        for (Map.Entry<ICommodity, Integer> e : stocksByCommodity.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) {
+                continue;
+            }
+            persistedStocks.put(nvl(e.getKey().getCargoJsonName()), e.getValue());
+        }
+        return persistedStocks;
+    }
+
+    @JsonProperty("stocksByCommodity")
+    public void setPersistedStocksByCommodity(Map<String, Integer> stocksByCommodity) {
+        this.stocksByCommodity.clear();
+        if (stocksByCommodity == null) {
+            return;
+        }
+        for (Map.Entry<String, Integer> e : stocksByCommodity.entrySet()) {
+            if (e.getValue() == null || e.getValue() <= 0) {
+                continue;
+            }
+            ICommodity c = CommodityRegistry.getInstance().resolve(e.getKey(), null);
+            if (c == null || isFleetStockExcludedDrone(c)) {
+                continue;
+            }
+            this.stocksByCommodity.put(c, e.getValue());
+        }
+    }
+
+    @JsonProperty("marketByCommodity")
+    public Map<String, OrderLine> getPersistedMarketByCommodity() {
+        Map<String, OrderLine> persistedMarket = new LinkedHashMap<>();
+        for (Map.Entry<ICommodity, CarrierTradeOrderEntry> e : marketByCommodity.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null || e.getValue().isCancelTrade()) {
+                continue;
+            }
+            String cargo = nvl(e.getKey().getCargoJsonName());
+            persistedMarket.put(cargo, OrderLine.from(cargo, e.getValue()));
+        }
+        return persistedMarket;
+    }
+
+    @JsonProperty("marketByCommodity")
+    public void setPersistedMarketByCommodity(Map<String, OrderLine> marketByCommodity) {
+        this.marketByCommodity.clear();
+        if (marketByCommodity == null) {
+            return;
+        }
+        for (Map.Entry<String, OrderLine> e : marketByCommodity.entrySet()) {
+            OrderLine line = e.getValue();
+            if (line == null) {
+                continue;
+            }
+            if (line.getCargoJsonName() == null || line.getCargoJsonName().isBlank()) {
+                line.setCargoJsonName(e.getKey());
+            }
+            line.toEntry().ifPresent(entry -> {
+                if (!entry.isCancelTrade()) {
+                    ICommodity key = canonicalCommodity(entry);
+                    if (key != null) {
+                        this.marketByCommodity.put(key, entry);
+                    }
+                }
+            });
+        }
+    }
+
+    /** Mapping JSON-friendly d'une ligne d'ordre market. */
     @Data
-    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static final class PersistenceFile {
-
-        private long carrierId;
-        private String carrierType;
-        private String callsign;
-        private String name;
-        private int totalCapacity;
-        private boolean blackMarket;
-        private boolean carrierStatsInitialized;
-        private long balance;
-        private int fuel;
-        private String operationalState;
-        private String positionStarSystem;
-        private long positionBodyId;
-        private Instant lastModifiedTime;
-
-        @Builder.Default
-        private Map<String, Integer> stocksByCommodity = new LinkedHashMap<>();
-        @Builder.Default
-        private Map<String, OrderLine> marketByCommodity = new LinkedHashMap<>();
-
-        public static PersistenceFile fromRuntime(CarrierStatus status) {
-            CarrierPosition position = status.getPosition();
-            Map<String, Integer> persistedStocks = new LinkedHashMap<>();
-            for (Map.Entry<ICommodity, Integer> e : status.getStocksByCommodity().entrySet()) {
-                if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) {
-                    continue;
-                }
-                persistedStocks.put(nvl(e.getKey().getCargoJsonName()), e.getValue());
-            }
-            Map<String, OrderLine> persistedMarket = new LinkedHashMap<>();
-            for (Map.Entry<ICommodity, CarrierTradeOrderEntry> e : status.getMarketByCommodity().entrySet()) {
-                if (e.getKey() == null || e.getValue() == null || e.getValue().isCancelTrade()) {
-                    continue;
-                }
-                String cargo = nvl(e.getKey().getCargoJsonName());
-                persistedMarket.put(cargo, OrderLine.from(cargo, e.getValue()));
-            }
-            return PersistenceFile.builder()
-                    .carrierId(status.getCarrierId())
-                    .carrierType(status.getCarrierType())
-                    .callsign(status.getCallsign())
-                    .name(status.getName())
-                    .totalCapacity(status.getTotalCapacity())
-                    .blackMarket(status.isBlackMarket())
-                    .carrierStatsInitialized(status.isCarrierStatsInitialized())
-                    .balance(status.getBalance())
-                    .fuel(status.getFuel())
-                    .operationalState(status.getOperationalState())
-                    .positionStarSystem(position != null ? nvl(position.getStarSystem()) : "")
-                    .positionBodyId(position != null ? position.getBodyId() : -1L)
-                    .lastModifiedTime(status.getLastModifiedTime())
-                    .stocksByCommodity(persistedStocks)
-                    .marketByCommodity(persistedMarket)
-                    .build();
-        }
-
-        public void restore() {
-            Map<ICommodity, Integer> restoredStocks = new LinkedHashMap<>();
-            if (stocksByCommodity != null) {
-                for (Map.Entry<String, Integer> e : stocksByCommodity.entrySet()) {
-                    if (e.getValue() == null || e.getValue() <= 0) {
-                        continue;
-                    }
-                    ICommodity c = CommodityRegistry.getInstance().resolve(e.getKey(), null);
-                    if (c != null) {
-                        restoredStocks.put(c, e.getValue());
-                    }
-                }
-            }
-            List<CarrierTradeOrderEntry> restoredOrders = new ArrayList<>();
-            if (marketByCommodity != null) {
-                for (Map.Entry<String, OrderLine> e : marketByCommodity.entrySet()) {
-                    OrderLine line = e.getValue();
-                    if (line == null) {
-                        continue;
-                    }
-                    if (line.getCargoJsonName() == null || line.getCargoJsonName().isBlank()) {
-                        line.setCargoJsonName(e.getKey());
-                    }
-                    line.toEntry().ifPresent(restoredOrders::add);
-                }
-            }
-            CarrierStatus status = CarrierStatus.getInstance();
-            synchronized (status) {
-                status.marketByCommodity.clear();
-                status.stocksByCommodity.clear();
-                status.carrierId = carrierId;
-                status.carrierType = nvl(carrierType);
-                status.callsign = nvl(callsign);
-                status.name = nvl(name);
-                status.totalCapacity = Math.max(totalCapacity, 0);
-                status.blackMarket = blackMarket;
-                status.carrierStatsInitialized = carrierStatsInitialized;
-                status.balance = balance;
-                status.fuel = fuel;
-                status.operationalState = nvl(operationalState);
-                status.position = new CarrierPosition(nvl(positionStarSystem), positionBodyId);
-                status.lastModifiedTime = lastModifiedTime;
-                for (Map.Entry<ICommodity, Integer> e : restoredStocks.entrySet()) {
-                    if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) {
-                        continue;
-                    }
-                    if (isFleetStockExcludedDrone(e.getKey())) {
-                        continue;
-                    }
-                    status.stocksByCommodity.put(e.getKey(), e.getValue());
-                }
-                for (CarrierTradeOrderEntry entry : restoredOrders) {
-                    if (entry == null || entry.isCancelTrade()) {
-                        continue;
-                    }
-                    ICommodity key = status.canonicalCommodity(entry);
-                    if (key == null) {
-                        continue;
-                    }
-                    status.marketByCommodity.put(key, entry);
-                }
-            }
-        }
-
-        @Data
-        @Builder
-        @NoArgsConstructor
-        @AllArgsConstructor
-        public static class OrderLine {
+    public static class OrderLine {
             private String timestamp;
             private long carrierId;
             private String carrierType;
@@ -736,18 +681,18 @@ public class CarrierStatus {
             private int stock;
 
             static OrderLine from(String cargoJsonName, CarrierTradeOrderEntry e) {
-                return OrderLine.builder()
-                        .timestamp(e.getTimestamp())
-                        .carrierId(e.getCarrierId())
-                        .carrierType(e.getCarrierType())
-                        .blackMarket(e.isBlackMarket())
-                        .cargoJsonName(cargoJsonName)
-                        .purchaseOrder(e.getPurchaseOrder())
-                        .saleOrder(e.getSaleOrder())
-                        .cancelTrade(e.isCancelTrade())
-                        .price(e.getPrice())
-                        .stock(e.getStock())
-                        .build();
+                return new OrderLine(
+                        e.getTimestamp(),
+                        e.getCarrierId(),
+                        e.getCarrierType(),
+                        e.isBlackMarket(),
+                        cargoJsonName,
+                        null,
+                        e.getPurchaseOrder(),
+                        e.getSaleOrder(),
+                        e.isCancelTrade(),
+                        e.getPrice(),
+                        e.getStock());
             }
 
             java.util.Optional<CarrierTradeOrderEntry> toEntry() {
@@ -767,11 +712,10 @@ public class CarrierStatus {
                         price,
                         stock));
             }
-        }
+    }
 
-        private static String nvl(String value) {
-            return value != null ? value : "";
-        }
+    private static String nvl(String value) {
+        return value != null ? value : "";
     }
 
 }

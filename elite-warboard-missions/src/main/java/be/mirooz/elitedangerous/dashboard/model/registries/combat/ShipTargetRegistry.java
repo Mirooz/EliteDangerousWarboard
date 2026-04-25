@@ -1,11 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.combat;
 
 import be.mirooz.elitedangerous.dashboard.model.ships.ShipTarget;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ShipTargetRegistry {
@@ -46,22 +43,4 @@ public class ShipTargetRegistry {
         }
     }
 
-    /** DTO JSON pour {@code ship-targets.json}. */
-    public static final class PersistenceFile {
-        @JsonProperty
-        public LinkedHashMap<String, ShipTarget> shipTargets;
-
-        @JsonCreator
-        public PersistenceFile() {}
-
-        public static PersistenceFile fromRuntime(ShipTargetRegistry r) {
-            PersistenceFile f = new PersistenceFile();
-            f.shipTargets = new LinkedHashMap<>(r.getAll());
-            return f;
-        }
-
-        public void restore() {
-            ShipTargetRegistry.getInstance().applyFullPersistedSnapshot(shipTargets);
-        }
-    }
 }

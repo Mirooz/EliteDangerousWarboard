@@ -1,6 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.model.exploration;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +23,11 @@ import java.util.List;
 @Data
 @SuperBuilder
 @NoArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = StarDetail.class, name = "star"),
+        @JsonSubTypes.Type(value = PlaneteDetail.class, name = "planet")
+})
 public abstract class ACelesteBody {
 
     protected String timestamp;

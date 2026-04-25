@@ -5,10 +5,13 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.OrganicDataSale;
 import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +23,9 @@ public class OrganicDataSaleRegistry {
 
     private static final OrganicDataSaleRegistry INSTANCE = new OrganicDataSaleRegistry();
 
+    @JsonIgnore
     private final ObservableList<OrganicDataSale> sales = FXCollections.observableArrayList();
+    @JsonIgnore
     private final ExplorationService explorationService = ExplorationService.getInstance();
     
     // Vente en cours (accumule les données organiques analysées jusqu'à la vente)
@@ -86,6 +91,19 @@ public class OrganicDataSaleRegistry {
         return sales;
     }
 
+    @JsonProperty("sales")
+    public List<OrganicDataSale> getPersistedSales() {
+        return new ArrayList<>(sales);
+    }
+
+    @JsonProperty("sales")
+    public void setPersistedSales(List<OrganicDataSale> salesList) {
+        sales.clear();
+        if (salesList != null) {
+            sales.addAll(salesList);
+        }
+    }
+
     /**
      * Vide le registry.
      */
@@ -101,37 +119,5 @@ public class OrganicDataSaleRegistry {
         return sales.size();
     }
 
-    /** Restaure l'état complet depuis un snapshot persisté. */
-    public void applyFullPersistedSnapshot(List<OrganicDataSale> salesList,
-                                           OrganicDataOnHold currentOrganicDataOnHold) {
-        sales.clear();
-        if (salesList != null) {
-            sales.addAll(salesList);
-        }
-        this.currentOrganicDataOnHold = currentOrganicDataOnHold;
-    }
-
-    /** Expose une copie plate des ventes pour la sérialisation. */
-    public List<OrganicDataSale> snapshotSales() {
-        return new java.util.ArrayList<>(sales);
-    }
-
-    /** DTO JSON pour {@code organic-data-sale-registry.json}. */
-    public static final class PersistenceFile {
-        public List<OrganicDataSale> sales;
-        public OrganicDataOnHold currentOrganicDataOnHold;
-
-        public static PersistenceFile fromRuntime(OrganicDataSaleRegistry reg) {
-            PersistenceFile f = new PersistenceFile();
-            f.sales = new java.util.ArrayList<>(reg.snapshotSales());
-            f.currentOrganicDataOnHold = reg.getCurrentOrganicDataOnHold();
-            return f;
-        }
-
-        public void restore() {
-            OrganicDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
-                    sales, currentOrganicDataOnHold);
-        }
-    }
 }
 

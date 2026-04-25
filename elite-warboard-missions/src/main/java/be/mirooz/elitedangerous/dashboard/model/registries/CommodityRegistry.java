@@ -5,7 +5,9 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.CommodityLoader;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodity;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.ICommodityFactory;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.RegistryCommodity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +22,7 @@ import java.util.Locale;
  * <strong>Persistence</strong> : enregistré dans
  * {@link be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService} via
  * {@link be.mirooz.elitedangerous.dashboard.persistence.DashboardRegistryJsonPersistence#buildRegistryStores}
- * (fichier {@code commodity-registry.json}, DTO {@link PersistenceFile}). Doit rester
+ * (fichier {@code commodity-registry.json}). Doit rester
  * <em>en tête de liste</em> de chargement : les restitutions {@code carrier-status},
  * {@code commander-ship}, etc. appellent {@link #resolve(String, String)} et supposent le
  * catalogue prêt dès
@@ -33,6 +35,7 @@ public final class CommodityRegistry {
 
     private static final CommodityRegistry INSTANCE = new CommodityRegistry();
 
+    @JsonIgnore
     private final List<ICommodity> commodities = new ArrayList<>();
 
     private CommodityRegistry() {}
@@ -119,6 +122,22 @@ public final class CommodityRegistry {
         return out;
     }
 
+    @JsonProperty("commodities")
+    public synchronized List<Line> getPersistedCommodities() {
+        ensureSeededFromClasspathIfEmpty();
+        return exportLines();
+    }
+
+    @JsonProperty("commodities")
+    public synchronized void setPersistedCommodities(List<Line> lines) {
+        if (lines == null || lines.isEmpty()) {
+            applyFullSnapshot(List.of());
+            ensureSeededFromClasspathIfEmpty();
+            return;
+        }
+        applyFullSnapshot(lines);
+    }
+
     private static String normalizeCargo(String s) {
         if (s == null) {
             return "";
@@ -159,26 +178,4 @@ public final class CommodityRegistry {
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class PersistenceFile {
-        private List<Line> commodities = new ArrayList<>();
-
-        public void restore() {
-            CommodityRegistry r = getInstance();
-            if (commodities == null || commodities.isEmpty()) {
-                r.applyFullSnapshot(List.of());
-                r.ensureSeededFromClasspathIfEmpty();
-            } else {
-                r.applyFullSnapshot(commodities);
-            }
-        }
-
-        public static PersistenceFile fromRuntime(CommodityRegistry r) {
-            r.ensureSeededFromClasspathIfEmpty();
-            return new PersistenceFile(r.exportLines());
-        }
-    }
 }

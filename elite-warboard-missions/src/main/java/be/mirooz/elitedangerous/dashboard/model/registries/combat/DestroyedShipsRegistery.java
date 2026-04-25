@@ -3,7 +3,8 @@ package be.mirooz.elitedangerous.dashboard.model.registries.combat;
 import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShip;
 import be.mirooz.elitedangerous.dashboard.model.ships.DestroyedShipKind;
 import be.mirooz.elitedangerous.dashboard.model.ships.Reward;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Getter;
@@ -18,6 +19,7 @@ import java.util.Map;
  */
 public class DestroyedShipsRegistery {
     private static DestroyedShipsRegistery instance = new DestroyedShipsRegistery();
+    @JsonIgnore
     private final ObservableList<DestroyedShip> destroyedShips =
             FXCollections.observableArrayList();
     private Map<String,Integer> bountyPerFaction = new HashMap<>();
@@ -93,24 +95,13 @@ public class DestroyedShipsRegistery {
         return destroyedShips;
     }
 
-    public Map<String, Integer> getBountyPerFaction() {
-        return bountyPerFaction;
+    @JsonProperty("ships")
+    public List<DestroyedShip> getPersistedShips() {
+        return new ArrayList<>(destroyedShips);
     }
 
-    public Map<String, Integer> getCombatBondPerFaction() {
-        return combatBondPerFaction;
-    }
-
-    /**
-     * Restauration en bloc depuis un snapshot persisté. Pas de recomputation : les agrégats
-     * ({@link #totalBountyEarned}, {@link #totalConflictBounty}, maps par faction) sont
-     * copiés tels quels pour coller à l'état affiché au moment du save.
-     */
-    public void applyFullPersistedSnapshot(List<DestroyedShip> shipsNewestFirst,
-                                           Map<String, Integer> bountyPerFaction,
-                                           Map<String, Integer> combatBondPerFaction,
-                                           int totalBountyEarned,
-                                           int totalConflictBounty) {
+    @JsonProperty("ships")
+    public void setPersistedShips(List<DestroyedShip> shipsNewestFirst) {
         this.destroyedShips.clear();
         if (shipsNewestFirst != null) {
             for (DestroyedShip s : shipsNewestFirst) {
@@ -120,41 +111,14 @@ public class DestroyedShipsRegistery {
             }
             this.destroyedShips.addAll(shipsNewestFirst);
         }
-        this.bountyPerFaction = bountyPerFaction != null ? new HashMap<>(bountyPerFaction) : new HashMap<>();
-        this.combatBondPerFaction = combatBondPerFaction != null ? new HashMap<>(combatBondPerFaction) : new HashMap<>();
-        this.totalBountyEarned = totalBountyEarned;
-        this.totalConflictBounty = totalConflictBounty;
     }
 
-    /**
-     * DTO JSON {@code destroyed-ships.json} : la liste d'événements est directement
-     * {@link DestroyedShip} (champ {@code type} = {@link DestroyedShipKind}).
-     */
-    public static final class PersistenceFile {
-        public List<DestroyedShip> ships = new ArrayList<>();
-        public Map<String, Integer> bountyPerFaction = new HashMap<>();
-        public Map<String, Integer> combatBondPerFaction = new HashMap<>();
-        public int totalBountyEarned;
-        public int totalConflictBounty;
-
-        @JsonCreator
-        public PersistenceFile() {}
-
-        public static PersistenceFile fromRuntime(DestroyedShipsRegistery reg) {
-            PersistenceFile p = new PersistenceFile();
-            p.ships = new ArrayList<>(reg.getDestroyedShips());
-            p.bountyPerFaction.putAll(reg.getBountyPerFaction());
-            p.combatBondPerFaction.putAll(reg.getCombatBondPerFaction());
-            p.totalBountyEarned = reg.getTotalBountyEarned();
-            p.totalConflictBounty = reg.getTotalConflictBounty();
-            return p;
-        }
-
-        public void restore() {
-            DestroyedShipsRegistery.getInstance().applyFullPersistedSnapshot(
-                    ships, bountyPerFaction, combatBondPerFaction,
-                    totalBountyEarned, totalConflictBounty
-            );
-        }
+    public Map<String, Integer> getBountyPerFaction() {
+        return bountyPerFaction;
     }
+
+    public Map<String, Integer> getCombatBondPerFaction() {
+        return combatBondPerFaction;
+    }
+
 }

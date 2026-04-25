@@ -1,6 +1,8 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.mining;
 
 import be.mirooz.elitedangerous.dashboard.model.mining.MiningStat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Optional;
 public class MiningStatRegistry {
     
     private static MiningStatRegistry instance;
+    @JsonIgnore
     private final List<MiningStat> miningStats;
     private MiningStat currentMiningSession;
     
@@ -93,6 +96,19 @@ public class MiningStatRegistry {
     public List<MiningStat> getAllMiningStats() {
         return new ArrayList<>(miningStats);
     }
+
+    @JsonProperty("miningStats")
+    public List<MiningStat> getPersistedMiningStats() {
+        return new ArrayList<>(miningStats);
+    }
+
+    @JsonProperty("miningStats")
+    public void setPersistedMiningStats(List<MiningStat> statsList) {
+        miningStats.clear();
+        if (statsList != null) {
+            miningStats.addAll(statsList);
+        }
+    }
     
     /**
      * Récupère les sessions de minage actives
@@ -154,40 +170,4 @@ public class MiningStatRegistry {
         miningStats.removeIf(stat -> !stat.isActive());
     }
 
-    /** Restaure l'état complet depuis un snapshot persisté. */
-    public void applyFullPersistedSnapshot(List<MiningStat> statsList, MiningStat currentMiningSession) {
-        miningStats.clear();
-        if (statsList != null) {
-            miningStats.addAll(statsList);
-        }
-        this.currentMiningSession = currentMiningSession;
-    }
-
-    /** Expose une copie plate de la liste pour la sérialisation. */
-    public List<MiningStat> snapshotMiningStats() {
-        return new ArrayList<>(miningStats);
-    }
-
-    /** Renvoie la session courante brute (non Optional) pour la sérialisation. */
-    public MiningStat snapshotCurrentMiningSession() {
-        return currentMiningSession;
-    }
-
-    /** DTO JSON pour {@code mining-stat-registry.json}. */
-    public static final class PersistenceFile {
-        public List<MiningStat> miningStats;
-        public MiningStat currentMiningSession;
-
-        public static PersistenceFile fromRuntime(MiningStatRegistry reg) {
-            PersistenceFile f = new PersistenceFile();
-            f.miningStats = new ArrayList<>(reg.snapshotMiningStats());
-            f.currentMiningSession = reg.snapshotCurrentMiningSession();
-            return f;
-        }
-
-        public void restore() {
-            MiningStatRegistry.getInstance().applyFullPersistedSnapshot(
-                    miningStats, currentMiningSession);
-        }
-    }
 }

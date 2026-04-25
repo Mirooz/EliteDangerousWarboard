@@ -3,10 +3,13 @@ package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,6 +21,7 @@ public class ExplorationDataSaleRegistry {
 
     private static final ExplorationDataSaleRegistry INSTANCE = new ExplorationDataSaleRegistry();
 
+    @JsonIgnore
     private final ObservableList<ExplorationDataSale> sales = FXCollections.observableArrayList();
     
     // Vente en cours (accumule les MultiSellExplorationData jusqu'à Undocked)
@@ -95,6 +99,19 @@ public class ExplorationDataSaleRegistry {
         return sales;
     }
 
+    @JsonProperty("sales")
+    public List<ExplorationDataSale> getPersistedSales() {
+        return new ArrayList<>(sales);
+    }
+
+    @JsonProperty("sales")
+    public void setPersistedSales(List<ExplorationDataSale> salesList) {
+        sales.clear();
+        if (salesList != null) {
+            sales.addAll(salesList);
+        }
+    }
+
 
     public void clearOnHold() {
         explorationDataOnHold = null;
@@ -111,41 +128,5 @@ public class ExplorationDataSaleRegistry {
         return sales.size();
     }
 
-    /** Restaure l'état complet depuis un snapshot persisté. */
-    public void applyFullPersistedSnapshot(List<ExplorationDataSale> salesList,
-                                           ExplorationDataSale currentSale,
-                                           ExplorationDataOnHold explorationDataOnHold) {
-        sales.clear();
-        if (salesList != null) {
-            sales.addAll(salesList);
-        }
-        this.currentSale = currentSale;
-        this.explorationDataOnHold = explorationDataOnHold;
-    }
-
-    /** Expose une copie plate des ventes pour la sérialisation. */
-    public List<ExplorationDataSale> snapshotSales() {
-        return new java.util.ArrayList<>(sales);
-    }
-
-    /** DTO JSON pour {@code exploration-data-sale-registry.json}. */
-    public static final class PersistenceFile {
-        public List<ExplorationDataSale> sales;
-        public ExplorationDataSale currentSale;
-        public ExplorationDataOnHold explorationDataOnHold;
-
-        public static PersistenceFile fromRuntime(ExplorationDataSaleRegistry reg) {
-            PersistenceFile f = new PersistenceFile();
-            f.sales = new java.util.ArrayList<>(reg.snapshotSales());
-            f.currentSale = reg.getCurrentSale();
-            f.explorationDataOnHold = reg.getExplorationDataOnHold();
-            return f;
-        }
-
-        public void restore() {
-            ExplorationDataSaleRegistry.getInstance().applyFullPersistedSnapshot(
-                    sales, currentSale, explorationDataOnHold);
-        }
-    }
 }
 

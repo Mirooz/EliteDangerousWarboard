@@ -6,6 +6,8 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProc
 import be.mirooz.elitedangerous.dashboard.model.exploration.ParentBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -24,6 +26,7 @@ public class PlaneteRegistry {
 
     private static final PlaneteRegistry INSTANCE = new PlaneteRegistry();
 
+    @JsonIgnore
     private ObservableMap<Integer, ACelesteBody> planetesMap =
             FXCollections.observableHashMap();
 
@@ -114,6 +117,19 @@ public class PlaneteRegistry {
         return planetesMap.values();
     }
 
+    @JsonProperty("planetesMap")
+    public Map<Integer, ACelesteBody> getPersistedPlanetesMap() {
+        return new LinkedHashMap<>(planetesMap);
+    }
+
+    @JsonProperty("planetesMap")
+    public void setPersistedPlanetesMap(Map<Integer, ACelesteBody> bodies) {
+        planetesMap.clear();
+        if (bodies != null) {
+            planetesMap.putAll(bodies);
+        }
+    }
+
     public String getCurrentStarSystem() {
         return currentStarSystem;
     }
@@ -126,37 +142,6 @@ public class PlaneteRegistry {
         planetes.forEach( planete ->
                 planetesMap.put(planete.getBodyID(), planete)
         );
-    }
-
-    /** Restaure l'état complet depuis un snapshot persisté. */
-    public void applyFullPersistedSnapshot(Map<Integer, ACelesteBody> bodies, String currentStarSystem) {
-        planetesMap.clear();
-        if (bodies != null) {
-            planetesMap.putAll(bodies);
-        }
-        this.currentStarSystem = currentStarSystem;
-    }
-
-    /** Expose une copie plate de la map interne pour la sérialisation. */
-    public Map<Integer, ACelesteBody> snapshotPlanetesMap() {
-        return new LinkedHashMap<>(planetesMap);
-    }
-
-    /** DTO JSON pour {@code planete-registry.json}. */
-    public static final class PersistenceFile {
-        public LinkedHashMap<Integer, ACelesteBody> planetesMap;
-        public String currentStarSystem;
-
-        public static PersistenceFile fromRuntime(PlaneteRegistry reg) {
-            PersistenceFile f = new PersistenceFile();
-            f.planetesMap = new LinkedHashMap<>(reg.snapshotPlanetesMap());
-            f.currentStarSystem = reg.getCurrentStarSystem();
-            return f;
-        }
-
-        public void restore() {
-            PlaneteRegistry.getInstance().applyFullPersistedSnapshot(planetesMap, currentStarSystem);
-        }
     }
 
     /**

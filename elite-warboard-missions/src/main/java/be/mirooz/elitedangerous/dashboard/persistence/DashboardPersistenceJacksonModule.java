@@ -18,11 +18,9 @@ import java.io.IOException;
  * composite (pas enum, pas String). Jackson ne sait ni la sérialiser ni la désérialiser comme
  * clé de map sans aide explicite.</p>
  *
- * <p>Même si le champ {@code histogramData} est marqué {@code @JsonIgnore} côté
- * {@link be.mirooz.elitedangerous.biologic.BioSpecies}, l'activation du default-typing
- * {@code NON_FINAL} dans {@link PolymorphicPersistenceMapper} force Jackson à résoudre de
- * manière eager les deserializers du graphe complet pendant la construction de son cache —
- * y compris les champs ignorés côté données. Sans ces (de)serializers, Jackson lève une
+ * <p>Lors de l'initialisation des caches de (dé)sérialiseurs, Jackson peut tout de même
+ * tenter de résoudre ces clés sur certains graphes de types (même si les champs sont ignorés
+ * en écriture/lecture métier). Sans ces (de)serializers, Jackson lève une
  * {@code InvalidDefinitionException: Cannot find a (Map) Key deserializer for type
  * VolcanicBodyType} avant même de commencer la lecture du JSON.</p>
  *

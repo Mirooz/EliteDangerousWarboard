@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.navigation;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -13,6 +13,7 @@ public class NavRouteTargetRegistry {
 
     private static final NavRouteTargetRegistry INSTANCE = new NavRouteTargetRegistry();
 
+    @JsonIgnore
     private final IntegerProperty remainingJumpsInRoute = new SimpleIntegerProperty(-1);
 
     private NavRouteTargetRegistry() {
@@ -25,6 +26,7 @@ public class NavRouteTargetRegistry {
     /**
      * Met à jour le nombre de sauts restants dans la route
      */
+    @JsonProperty("remainingJumpsInRoute")
     public void setRemainingJumpsInRoute(int remainingJumps) {
         remainingJumpsInRoute.set(remainingJumps);
     }
@@ -39,6 +41,7 @@ public class NavRouteTargetRegistry {
     /**
      * Récupère le nombre de sauts restants dans la route
      */
+    @JsonProperty("remainingJumpsInRoute")
     public int getRemainingJumpsInRoute() {
         return remainingJumpsInRoute.get();
     }
@@ -57,25 +60,5 @@ public class NavRouteTargetRegistry {
         remainingJumpsInRoute.set(-1);
     }
 
-    /** DTO JSON pour {@code nav-route-target.json}. */
-    public static final class PersistenceFile {
-        @JsonProperty
-        public int remainingJumpsInRoute;
-
-        @JsonCreator
-        public PersistenceFile() {}
-
-        public PersistenceFile(int value) {
-            this.remainingJumpsInRoute = value;
-        }
-
-        public static PersistenceFile fromRuntime(NavRouteTargetRegistry r) {
-            return new PersistenceFile(r.getRemainingJumpsInRoute());
-        }
-
-        public void restore() {
-            NavRouteTargetRegistry.getInstance().setRemainingJumpsInRoute(remainingJumpsInRoute);
-        }
-    }
 }
 
