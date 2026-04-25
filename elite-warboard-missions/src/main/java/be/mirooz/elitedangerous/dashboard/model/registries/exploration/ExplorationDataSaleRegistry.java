@@ -3,13 +3,11 @@ package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,8 +19,8 @@ public class ExplorationDataSaleRegistry {
 
     private static final ExplorationDataSaleRegistry INSTANCE = new ExplorationDataSaleRegistry();
 
-    @JsonIgnore
-    private final ObservableList<ExplorationDataSale> sales = FXCollections.observableArrayList();
+    @JsonProperty("sales")
+    private List<ExplorationDataSale> sales = FXCollections.observableArrayList();
     
     // Vente en cours (accumule les MultiSellExplorationData jusqu'à Undocked)
     private ExplorationDataSale currentSale = null;
@@ -97,19 +95,6 @@ public class ExplorationDataSaleRegistry {
      */
     public List<ExplorationDataSale> getAllSales() {
         return sales;
-    }
-
-    @JsonProperty("sales")
-    public List<ExplorationDataSale> getPersistedSales() {
-        return new ArrayList<>(sales);
-    }
-
-    @JsonProperty("sales")
-    public void setPersistedSales(List<ExplorationDataSale> salesList) {
-        sales.clear();
-        if (salesList != null) {
-            sales.addAll(salesList);
-        }
     }
 
 

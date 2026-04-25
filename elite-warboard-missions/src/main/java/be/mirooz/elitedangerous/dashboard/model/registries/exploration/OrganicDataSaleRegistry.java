@@ -11,7 +11,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,8 +22,8 @@ public class OrganicDataSaleRegistry {
 
     private static final OrganicDataSaleRegistry INSTANCE = new OrganicDataSaleRegistry();
 
-    @JsonIgnore
-    private final ObservableList<OrganicDataSale> sales = FXCollections.observableArrayList();
+    @JsonProperty("sales")
+    private List<OrganicDataSale> sales = FXCollections.observableArrayList();
     @JsonIgnore
     private final ExplorationService explorationService = ExplorationService.getInstance();
     
@@ -89,19 +88,6 @@ public class OrganicDataSaleRegistry {
      */
     public List<OrganicDataSale> getAllSales() {
         return sales;
-    }
-
-    @JsonProperty("sales")
-    public List<OrganicDataSale> getPersistedSales() {
-        return new ArrayList<>(sales);
-    }
-
-    @JsonProperty("sales")
-    public void setPersistedSales(List<OrganicDataSale> salesList) {
-        sales.clear();
-        if (salesList != null) {
-            sales.addAll(salesList);
-        }
     }
 
     /**
