@@ -18,6 +18,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.SpanshSystemVisitedService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -131,11 +132,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * <strong>en dehors</strong> de {@link #bodiesGroup} pour ne pas subir zoom / pan.
      */
     private StackPane spanshLoadingLayer;
-
-    /**
-     * Si {@code true}, attend la réponse Spansh avant d'afficher l'orrery et la liste des corps (chargement).
-     */
-    public static final boolean SEARCH_SPANSH_EXPLORATION = true;
 
     /** Appelé sur le thread JavaFX juste après {@link #mergeOnlineDataFromSpansh} (liste d’historique, etc.). */
     private Runnable afterSpanshBodiesMerged;
@@ -854,7 +850,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 return;
             }
 
-            boolean awaitSpansh = SEARCH_SPANSH_EXPLORATION
+            boolean awaitSpansh = PreferencesService.getInstance().isSpanshExplorationLoadEnabled()
                     && systemSelectionChanged
                     && !forceRefresh
                     && !DashboardContext.getInstance().isBatchLoading();
@@ -871,7 +867,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
             // Le zoom optimal sera calculé après le positionnement des corps
 
-            if (systemSelectionChanged) {
+            if (systemSelectionChanged && PreferencesService.getInstance().isSpanshExplorationLoadEnabled()) {
                 scheduleSpanshOnlineDataHydration(system);
             }
 
@@ -1521,6 +1517,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     private void scheduleSpanshOnlineDataHydration(SystemVisited displayed) {
+        if (!PreferencesService.getInstance().isSpanshExplorationLoadEnabled()) {
+            return;
+        }
         if (spanshOnlineHydrationSuppressed) {
             return;
         }
@@ -1561,7 +1560,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     });
                 });
             } catch (Exception ignored) {
-                if (!SEARCH_SPANSH_EXPLORATION) {
+                if (!PreferencesService.getInstance().isSpanshExplorationLoadEnabled()) {
                     return;
                 }
                 Platform.runLater(() -> {

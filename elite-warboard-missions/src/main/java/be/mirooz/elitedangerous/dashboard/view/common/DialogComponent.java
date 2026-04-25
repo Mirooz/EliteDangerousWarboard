@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -54,6 +55,7 @@ public class DialogComponent {
             }
 
             Scene scene = new Scene(content, width, height);
+            scene.setFill(Color.TRANSPARENT);
             if (cssPath != null) {
                 scene.getStylesheets().add(getClass().getResource(cssPath).toExternalForm());
             }
@@ -69,7 +71,8 @@ public class DialogComponent {
             this.stage.setAlwaysOnTop(false);
             this.stage.requestFocus();
             this.stage.setResizable(false);
-            this.stage.initStyle(StageStyle.TRANSPARENT);
+            /* Pas de barre de titre Windows : cadre dessiné par le thème (.config-content). */
+            this.stage.initStyle(StageStyle.UNDECORATED);
 
         } catch (Exception e) {
             String id = fxmlPath != null ? fxmlPath : "(contenu direct)";

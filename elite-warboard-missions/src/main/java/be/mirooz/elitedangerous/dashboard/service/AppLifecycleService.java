@@ -88,6 +88,14 @@ public final class AppLifecycleService {
      * @param error   erreur éventuelle ayant déclenché la fermeture (nullable).
      */
     public void shutdown(String context, Throwable error) {
+        shutdown(context, error, false);
+    }
+
+    /**
+     * @param skipPersistenceSave si {@code true}, ne pas appeler {@link PersistenceService#saveAllNow()}
+     *                            (ex. après suppression du dossier commandant).
+     */
+    public void shutdown(String context, Throwable error, boolean skipPersistenceSave) {
         if (!shutdownStarted.compareAndSet(false, true)) {
             return;
         }
@@ -104,10 +112,12 @@ public final class AppLifecycleService {
             System.err.println("[Lifecycle] Analytics stop failed: " + e.getMessage());
         }
 
-        try {
-            PersistenceService.getInstance().saveAllNow();
-        } catch (Exception e) {
-            System.err.println("[Lifecycle] Persistence save failed: " + e.getMessage());
+        if (!skipPersistenceSave) {
+            try {
+                PersistenceService.getInstance().saveAllNow();
+            } catch (Exception e) {
+                System.err.println("[Lifecycle] Persistence save failed: " + e.getMessage());
+            }
         }
 
         try {

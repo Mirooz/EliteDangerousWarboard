@@ -1,9 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.view.main;
 
+import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
+import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -14,21 +16,36 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.paint.Color;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import net.java.games.input.Controller;
 import net.java.games.input.ControllerEnvironment;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -59,6 +76,15 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private Label journalFolderDescriptionLabel;
+
+    @FXML
+    private Label explorationDataSectionLabel;
+
+    @FXML
+    private CheckBox spanshLoadSystemsCheckBox;
+
+    @FXML
+    private Button reloadAllCommanderFilesButton;
 
     @FXML
     private TextField journalFolderTextField;
@@ -188,6 +214,7 @@ public class ConfigDialogController implements Initializable {
 
         // Initialiser l'option d'envoi vers EDDN
         sendDataToEddnCheckBox.setSelected(preferencesService.isSendDataToEddnEnabled());
+        spanshLoadSystemsCheckBox.setSelected(preferencesService.isSpanshExplorationLoadEnabled());
         capiLoginEnabledCheckBox.setSelected(preferencesService.isCapiLoginEnabled());
         updateCapiControlsState();
         
@@ -209,6 +236,10 @@ public class ConfigDialogController implements Initializable {
         configSubtitleLabel.setText(localizationService.getString("config.subtitle"));
         languageSectionLabel.setText(localizationService.getString("config.language"));
         journalFolderSectionLabel.setText(localizationService.getString("config.journal.folder"));
+        explorationDataSectionLabel.setText(localizationService.getString("config.exploration.data.section"));
+        spanshLoadSystemsCheckBox.setText(localizationService.getString("config.exploration.spansh.load.enabled"));
+        spanshLoadSystemsCheckBox.setTooltip(new Tooltip(localizationService.getString("config.exploration.spansh.load.hint")));
+        reloadAllCommanderFilesButton.setText(localizationService.getString("config.data.reload.files.button"));
         
         // Traiter les retours à la ligne pour la description
         String description = localizationService.getString("config.journal.description");
@@ -527,6 +558,7 @@ public class ConfigDialogController implements Initializable {
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
         preferencesService.setTabSwitchEnabled(false);
         preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
+        preferencesService.setSpanshExplorationLoadEnabled(spanshLoadSystemsCheckBox.isSelected());
         preferencesService.setCapiLoginEnabled(capiLoginEnabledCheckBox.isSelected());
         
         if (isKeyboardBind && capturedKeyCode != -1) {
@@ -669,6 +701,63 @@ public class ConfigDialogController implements Initializable {
     }
 
     /** Quelques re-vérifs après une demande de login navigateur. */
+    @FXML
+    private void reloadAllCommanderFiles() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.initStyle(StageStyle.UNDECORATED);
+        Stage owner = saveButton != null && saveButton.getScene() != null
+                ? (Stage) saveButton.getScene().getWindow()
+                : null;
+        if (owner != null) {
+            alert.initOwner(owner);
+        }
+        ButtonType confirmOk = new ButtonType(localizationService.getString("config.data.reload.confirm.ok"), ButtonData.OK_DONE);
+        ButtonType confirmCancel = new ButtonType(localizationService.getString("config.cancel"), ButtonData.CANCEL_CLOSE);
+        alert.getButtonTypes().setAll(confirmCancel, confirmOk);
+        alert.setTitle(localizationService.getString("config.data.reload.confirm.title"));
+        alert.setHeaderText(localizationService.getString("config.data.reload.confirm.title"));
+        alert.setContentText(localizationService.getString("config.data.reload.confirm.message"));
+        applyEliteAlertStyle(alert);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isEmpty() || result.get() != confirmOk) {
+            return;
+        }
+        PersistenceService persistence = PersistenceService.getInstance();
+        persistence.setSkipJvmShutdownPersistenceFlush(true);
+        try {
+            persistence.deleteCurrentCommanderDirectoryRecursively();
+        } catch (IOException e) {
+            persistence.setSkipJvmShutdownPersistenceFlush(false);
+            Alert err = new Alert(Alert.AlertType.ERROR);
+            err.initStyle(StageStyle.UNDECORATED);
+            if (owner != null) {
+                err.initOwner(owner);
+            }
+            err.setTitle(localizationService.getString("config.data.reload.error.title"));
+            err.setHeaderText(localizationService.getString("config.data.reload.error.title"));
+            err.setContentText(localizationService.getString("config.data.reload.error.message") + e.getMessage());
+            applyEliteAlertStyle(err);
+            err.showAndWait();
+            return;
+        }
+        AppLifecycleService.getInstance().shutdown("commander-data-directory-reset", null, true);
+    }
+
+    /** Applique la feuille de style Elite au panneau d’une alerte JavaFX. */
+    private void applyEliteAlertStyle(Alert alert) {
+        DialogPane pane = alert.getDialogPane();
+        URL cssUrl = ConfigDialogController.class.getResource("/css/elite-theme.css");
+        if (cssUrl != null) {
+            pane.getStylesheets().setAll(cssUrl.toExternalForm());
+        }
+        pane.getStyleClass().add("elite-dialog");
+        pane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.setFill(Color.TRANSPARENT);
+            }
+        });
+    }
+
     private void scheduleCapiStatusRechecks() {
         if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
             return;

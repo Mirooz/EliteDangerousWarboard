@@ -2,21 +2,21 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/11.0.1"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="be.mirooz.elitedangerous.dashboard.view.main.ConfigDialogController"
            styleClass="config-dialog"
-           alignment="CENTER">
+           alignment="TOP_CENTER"
+           maxWidth="Infinity"
+           maxHeight="Infinity">
 
-    <VBox spacing="14.0" styleClass="config-content" StackPane.alignment="CENTER">
+    <VBox spacing="14.0" styleClass="config-content" maxWidth="Infinity" maxHeight="Infinity" VBox.vgrow="ALWAYS">
         <padding>
             <Insets bottom="5.0" left="10.0" right="5.0" top="10.0"/>
         </padding>
 
-        <!-- En-tête avec titre -->
         <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="config-header">
             <VBox spacing="2.0">
                 <Label fx:id="configTitleLabel" text="CONFIGURATION" styleClass="config-title"/>
@@ -24,102 +24,108 @@
             </VBox>
         </HBox>
 
-        <!-- Section Langue -->
-        <VBox spacing="10.0" styleClass="config-section">
-            <Label fx:id="languageSectionLabel" text="LANGUE" styleClass="config-section-title"/>
-            
-            <HBox alignment="CENTER_LEFT" spacing="15.0">
-                <ComboBox fx:id="languageComboBox" styleClass="config-combo" prefWidth="180"/>
-            </HBox>
-        </VBox>
+        <VBox spacing="14.0" VBox.vgrow="NEVER">
+            <!-- Section Langue -->
+            <VBox spacing="10.0" styleClass="config-section">
+                <Label fx:id="languageSectionLabel" text="LANGUE" styleClass="config-section-title"/>
 
-        <!-- Section Dossier Journal -->
-        <VBox spacing="10.0" styleClass="config-section">
-            <Label fx:id="journalFolderSectionLabel" text="DOSSIER JOURNAL" styleClass="config-section-title"/>
-            
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <TextField fx:id="journalFolderTextField" styleClass="config-textfield" 
-                          promptText="Chemin vers le dossier Journal Elite Dangerous" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="browseJournalFolderButton" text="Parcourir..." 
-                       onAction="#browseJournalFolder" styleClass="elite-button"/>
-            </HBox>
-            
-            <Label fx:id="journalFolderDescriptionLabel" text="Votre dossier contenant les journaux de log, généralement à C:/Users/Saved Games/Frontier Developments/Elite Dangerous" 
-                   styleClass="config-description" maxWidth="800.0" wrapText="true"/>
-        </VBox>
+                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                    <ComboBox fx:id="languageComboBox" styleClass="config-combo" prefWidth="180"/>
+                </HBox>
+            </VBox>
 
-        <!-- Section EDDN / CAPI -->
-        <VBox spacing="10.0" styleClass="config-section">
-            <CheckBox fx:id="sendDataToEddnCheckBox" text="Send datas to EDDN"
-                    styleClass="config-checkbox"/>
+            <!-- Section Dossier Journal + rechargement des journaux -->
+            <VBox spacing="10.0" styleClass="config-section">
+                <Label fx:id="journalFolderSectionLabel" text="DOSSIER JOURNAL" styleClass="config-section-title"/>
 
-            <CheckBox fx:id="capiLoginEnabledCheckBox" text="Connect Frontier Companion API"
-                    onAction="#onCapiLoginEnabledChanged" styleClass="config-checkbox"/>
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <TextField fx:id="journalFolderTextField" styleClass="config-textfield"
+                               promptText="Chemin vers le dossier Journal Elite Dangerous" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="browseJournalFolderButton" text="Parcourir..."
+                            onAction="#browseJournalFolder" styleClass="elite-button"/>
+                </HBox>
 
-            <HBox fx:id="capiStatusRow" alignment="CENTER_LEFT" spacing="8.0" styleClass="config-capi-status-row" visible="false" managed="false">
-                <Label fx:id="capiStatusIconLabel" styleClass="config-capi-status-icon" text=""/>
-                <Label fx:id="capiStatusTextLabel" styleClass="config-capi-status-text" wrapText="true" maxWidth="800.0"/>
-            </HBox>
+                <Label fx:id="journalFolderDescriptionLabel" text="Votre dossier contenant les journaux de log, généralement à C:/Users/Saved Games/Frontier Developments/Elite Dangerous"
+                       styleClass="config-description" maxWidth="800.0" wrapText="true"/>
 
-            <Button fx:id="logCapiAccountButton" text="Connect Frontier Companion API"
-                    onAction="#logCapiAccount" styleClass="elite-button-secondary"/>
-        </VBox>
+                <Button fx:id="reloadAllCommanderFilesButton" text="Reload all log files"
+                        onAction="#reloadAllCommanderFiles" styleClass="elite-button-secondary"/>
+            </VBox>
 
-        <!-- Section VR Mode -->
-        <VBox spacing="10.0" styleClass="config-section">
-            <Label fx:id="vrModeSectionLabel" text="VR MODE" styleClass="config-section-title"/>
+            <!-- Section EDDN / CAPI -->
+            <VBox spacing="10.0" styleClass="config-section">
+                <CheckBox fx:id="sendDataToEddnCheckBox" text="Send datas to EDDN"
+                          styleClass="config-checkbox"/>
 
-            <!-- Checkbox pour activer/désactiver VR mode -->
-            <CheckBox fx:id="vrModeEnabledCheckBox" text="Enable VR mode" 
-                    onAction="#onVrModeChanged" styleClass="config-checkbox" disable="true"/>
-            
-            <!-- Bindings groupés -->
-            <VBox spacing="15.0" styleClass="config-subsection" fx:id="bindingsContainer">
-                <!-- Bind Hide/Show Dashboard -->
-                <VBox spacing="5.0">
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label fx:id="windowToggleBindLabel" text="Hide/Show Dashboard:" styleClass="config-label" prefWidth="180"/>
-                        <Button fx:id="windowToggleBindButton" text="BIND" 
-                               onAction="#captureWindowToggleBind" styleClass="elite-button" prefWidth="80"/>
-                        <Label fx:id="windowToggleBindValueLabel" styleClass="config-label" 
-                               text="Aucun bind" minWidth="200"/>
-                        <Button fx:id="windowToggleUnbindButton" text="✕" 
-                               onAction="#unbindWindowToggle" styleClass="elite-button-secondary" 
-                               visible="false" managed="false"/>
-                    </HBox>
+                <CheckBox fx:id="capiLoginEnabledCheckBox" text="Connect Frontier Companion API"
+                          onAction="#onCapiLoginEnabledChanged" styleClass="config-checkbox"/>
+
+                <HBox fx:id="capiStatusRow" alignment="CENTER_LEFT" spacing="8.0" styleClass="config-capi-status-row" visible="false" managed="false">
+                    <Label fx:id="capiStatusIconLabel" styleClass="config-capi-status-icon" text=""/>
+                    <Label fx:id="capiStatusTextLabel" styleClass="config-capi-status-text" wrapText="true" maxWidth="800.0"/>
+                </HBox>
+
+                <Button fx:id="logCapiAccountButton" text="Connect Frontier Companion API"
+                        onAction="#logCapiAccount" styleClass="elite-button-secondary"/>
+            </VBox>
+
+            <!-- Section VR Mode -->
+            <VBox spacing="10.0" styleClass="config-section">
+                <Label fx:id="vrModeSectionLabel" text="VR MODE" styleClass="config-section-title"/>
+
+                <CheckBox fx:id="vrModeEnabledCheckBox" text="Enable VR mode"
+                          onAction="#onVrModeChanged" styleClass="config-checkbox" disable="true"/>
+
+                <VBox spacing="15.0" styleClass="config-subsection" fx:id="bindingsContainer">
+                    <VBox spacing="5.0">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <Label fx:id="windowToggleBindLabel" text="Hide/Show Dashboard:" styleClass="config-label" prefWidth="180"/>
+                            <Button fx:id="windowToggleBindButton" text="BIND"
+                                    onAction="#captureWindowToggleBind" styleClass="elite-button" prefWidth="80"/>
+                            <Label fx:id="windowToggleBindValueLabel" styleClass="config-label"
+                                   text="Aucun bind" minWidth="200"/>
+                            <Button fx:id="windowToggleUnbindButton" text="✕"
+                                    onAction="#unbindWindowToggle" styleClass="elite-button-secondary"
+                                    visible="false" managed="false"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="5.0" visible="false" managed="false">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <Label fx:id="tabSwitchLeftLabel" text="Previous tab:" styleClass="config-label" prefWidth="180"/>
+                            <Button fx:id="tabSwitchLeftButton" text="BIND"
+                                    onAction="#captureTabSwitchLeftBind" styleClass="elite-button" prefWidth="80"/>
+                            <Label fx:id="tabSwitchLeftBindLabel" styleClass="config-label"
+                                   text="Aucun bind" minWidth="200"/>
+                            <Button fx:id="tabSwitchLeftUnbindButton" text="✕"
+                                    onAction="#unbindTabSwitchLeft" styleClass="elite-button-secondary"
+                                    visible="false" managed="false"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="5.0" visible="false" managed="false">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <Label fx:id="tabSwitchRightLabel" text="Next tab:" styleClass="config-label" prefWidth="180"/>
+                            <Button fx:id="tabSwitchRightButton" text="BIND"
+                                    onAction="#captureTabSwitchRightBind" styleClass="elite-button" prefWidth="80"/>
+                            <Label fx:id="tabSwitchRightBindLabel" styleClass="config-label"
+                                   text="Aucun bind" minWidth="200"/>
+                            <Button fx:id="tabSwitchRightUnbindButton" text="✕"
+                                    onAction="#unbindTabSwitchRight" styleClass="elite-button-secondary"
+                                    visible="false" managed="false"/>
+                        </HBox>
+                    </VBox>
                 </VBox>
+            </VBox>
 
-                <!-- Bind Onglet précédent -->
-                <VBox spacing="5.0" visible="false" managed="false">
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label fx:id="tabSwitchLeftLabel" text="Previous tab:" styleClass="config-label" prefWidth="180"/>
-                        <Button fx:id="tabSwitchLeftButton" text="BIND" 
-                               onAction="#captureTabSwitchLeftBind" styleClass="elite-button" prefWidth="80"/>
-                        <Label fx:id="tabSwitchLeftBindLabel" styleClass="config-label" 
-                               text="Aucun bind" minWidth="200"/>
-                        <Button fx:id="tabSwitchLeftUnbindButton" text="✕" 
-                               onAction="#unbindTabSwitchLeft" styleClass="elite-button-secondary" 
-                               visible="false" managed="false"/>
-                    </HBox>
-                </VBox>
-
-                <!-- Bind Onglet suivant -->
-                <VBox spacing="5.0" visible="false" managed="false">
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label fx:id="tabSwitchRightLabel" text="Next tab:" styleClass="config-label" prefWidth="180"/>
-                        <Button fx:id="tabSwitchRightButton" text="BIND" 
-                               onAction="#captureTabSwitchRightBind" styleClass="elite-button" prefWidth="80"/>
-                        <Label fx:id="tabSwitchRightBindLabel" styleClass="config-label" 
-                               text="Aucun bind" minWidth="200"/>
-                        <Button fx:id="tabSwitchRightUnbindButton" text="✕" 
-                               onAction="#unbindTabSwitchRight" styleClass="elite-button-secondary" 
-                               visible="false" managed="false"/>
-                    </HBox>
-                </VBox>
+            <!-- Exploration (Spansh uniquement) -->
+            <VBox spacing="10.0" styleClass="config-section">
+                <Label fx:id="explorationDataSectionLabel" text="Exploration" styleClass="config-section-title"/>
+                <CheckBox fx:id="spanshLoadSystemsCheckBox" text="Load systems via Spansh"
+                          styleClass="config-checkbox"/>
             </VBox>
         </VBox>
 
-        <!-- Panneau des boutons d'action -->
         <HBox alignment="CENTER_RIGHT" spacing="10.0" styleClass="config-action-panel">
             <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveConfig"
                     styleClass="elite-button" text="SAUVEGARDER"/>

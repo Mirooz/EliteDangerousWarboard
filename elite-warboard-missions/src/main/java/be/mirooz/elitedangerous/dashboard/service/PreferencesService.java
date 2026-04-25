@@ -308,6 +308,21 @@ public class PreferencesService {
     }
 
     /**
+     * Active ou désactive le chargement des systèmes stellaires via Spansh dans la vue exploration.
+     */
+    public void setSpanshExplorationLoadEnabled(boolean enabled) {
+        preferences.setProperty("exploration.spansh.load.enabled", String.valueOf(enabled));
+        savePreferences();
+    }
+
+    /**
+     * Si {@code true}, les appels Spansh sont autorisés pour enrichir les systèmes en exploration (défaut : oui).
+     */
+    public boolean isSpanshExplorationLoadEnabled() {
+        return Boolean.parseBoolean(preferences.getProperty("exploration.spansh.load.enabled", "true"));
+    }
+
+    /**
      * Vérifie si un fichier de préférences existe
      */
     public boolean hasPreferencesFile() {

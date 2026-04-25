@@ -6,10 +6,14 @@ import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursorStore;
 import be.mirooz.elitedangerous.dashboard.persistence.RegistryStore;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -56,6 +60,9 @@ public class PersistenceService {
             });
     private volatile ScheduledFuture<?> pendingSave;
 
+    /** Si {@code true}, le hook JVM ne réécrit pas les snapshots (reset dossier commandant + sortie). */
+    private volatile boolean skipJvmShutdownPersistenceFlush;
+
     private PersistenceService() {
         this.persistenceRootDir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
         configureCommanderScope(DEFAULT_COMMANDER_SCOPE);
@@ -84,6 +91,33 @@ public class PersistenceService {
 
     public synchronized Path getCurrentCommanderBaseDir() {
         return commanderBaseDir;
+    }
+
+    /**
+     * Désactive la sauvegarde finale déclenchée par le shutdown hook JVM (évite de recréer des fichiers
+     * après une suppression complète du dossier commandant).
+     */
+    public void setSkipJvmShutdownPersistenceFlush(boolean skip) {
+        this.skipJvmShutdownPersistenceFlush = skip;
+    }
+
+    /**
+     * Supprime récursivement le répertoire du commandant courant ({@code ~/.elite-warboard/commanders/&lt;fid&gt;/}),
+     * y compris persistance, caches colonisation, etc.
+     */
+    public synchronized void deleteCurrentCommanderDirectoryRecursively() throws IOException {
+        cancelPendingSave();
+        Path root = commanderBaseDir;
+        if (root == null || !Files.exists(root)) {
+            return;
+        }
+        Path abs = root.toAbsolutePath().normalize();
+        try (Stream<Path> walk = Files.walk(abs)) {
+            List<Path> paths = walk.sorted(Comparator.reverseOrder()).toList();
+            for (Path p : paths) {
+                Files.deleteIfExists(p);
+            }
+        }
     }
 
     // -------- Resume API --------
@@ -256,6 +290,10 @@ public class PersistenceService {
 
     private void flushOnShutdown() {
         try {
+            if (skipJvmShutdownPersistenceFlush) {
+                System.out.println("[Persistence] Flush shutdown ignoré (reset données commandant).");
+                return;
+            }
             // Politique "save only on shutdown" : même si le close handler de l'app a déjà
             // sauvé, on re-sauve ici par sécurité (pas d'opération coûteuse si l'état n'a
             // pas changé, et ça couvre les fermetures non propres type Ctrl+C / kill).

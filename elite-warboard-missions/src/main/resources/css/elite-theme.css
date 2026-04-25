@@ -2654,6 +2654,109 @@
     -fx-border-width: 2 0 0 0;
 }
 
+/* Zone scrollable du dialogue de configuration */
+.config-dialog-scroll {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.config-dialog-scroll > .viewport {
+    -fx-background-color: -fx-elite-dark;
+}
+.config-dialog-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+}
+.config-dialog-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 4;
+}
+.config-dialog-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.config-section-footer {
+    -fx-padding: 12 0 4 0;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* Alertes / dialogues JavaFX (confirmation, erreur) — thème Elite */
+.elite-dialog.dialog-pane {
+    -fx-background-color: -fx-elite-dark;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-padding: 0;
+}
+.elite-dialog.dialog-pane > .button-bar > .container {
+    -fx-padding: 12 16 16 16;
+}
+.elite-dialog .header-panel {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 16 20 12 20;
+}
+.elite-dialog .header-panel .label {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+.elite-dialog .content {
+    -fx-padding: 16 20 8 20;
+}
+.elite-dialog .content.label {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
+}
+.elite-dialog .button-bar {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 12 16 16 16;
+}
+.elite-dialog .button-bar .button {
+    -fx-background-color: -fx-elite-gray;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 2;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 18 8 18;
+    -fx-cursor: hand;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+.elite-dialog .button-bar .button:hover {
+    -fx-background-color: -fx-elite-light-gray;
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+.elite-dialog .button-bar .button:pressed {
+    -fx-background-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-dark;
+}
+.elite-dialog .button-bar .button.cancel-button {
+    -fx-border-color: -fx-elite-text-dim;
+    -fx-text-fill: -fx-elite-text-dim;
+}
+.elite-dialog .button-bar .button.cancel-button:hover {
+    -fx-border-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-orange;
+}
+.elite-dialog .button-bar .button:default {
+    -fx-border-color: -fx-elite-orange;
+    -fx-text-fill: -fx-elite-orange;
+}
+.elite-dialog .button-bar .button:default:hover {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+.elite-dialog.alert.error .header-panel .label {
+    -fx-text-fill: derive(-fx-elite-orange, -15%);
+}
 
 .header-separator {
     -fx-background-color: -fx-elite-orange;

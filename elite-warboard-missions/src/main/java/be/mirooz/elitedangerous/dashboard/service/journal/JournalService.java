@@ -361,7 +361,7 @@ public class JournalService {
                         .orElse(null);
 
                 if (primaryWindow instanceof javafx.stage.Stage stage) {
-                    DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 900, 850);
+                    DialogComponent dialog = new DialogComponent("/fxml/combat/config-dialog.fxml", "/css/elite-theme.css", "Configuration", 960, 780);
                     dialog.init(stage);
                     dialog.showAndWait();
                 }
