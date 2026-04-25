@@ -91,4 +91,44 @@ public class ICommodityFactory {
         return Optional.empty();
     }
 
+    /**
+     * Résout une commodité à partir de champs persistés (JSON) : d’abord
+     * {@link #ofByCargoJson} / {@link #ofByInaraId} (registre {@link CommodityLoader},
+     * minéraux, limpets), puis le même repli qu’en runtime via {@link CarrierCommodityResolver}
+     * pour les commodités non référencées.
+     *
+     * @param inaraName optionnel, utilisé en secours (anciens snapshots ou libellé) ; un ID Inara
+     *                  entièrement numérique est testé via {@link #ofByInaraId}.
+     * @return jamais {@code null} si au moins une chaîne non vide est fournie
+     */
+    public static ICommodity fromPersisted(String cargoJsonName, String inaraName) {
+        String c = cargoJsonName == null || cargoJsonName.isBlank() ? null : cargoJsonName;
+        String i = inaraName == null || inaraName.isBlank() ? null : inaraName;
+        if (c != null) {
+            Optional<ICommodity> o = ofByCargoJson(c);
+            if (o.isPresent()) {
+                return o.get();
+            }
+        }
+        if (i != null) {
+            String trimmed = i.trim();
+            if (!trimmed.isEmpty() && trimmed.chars().allMatch(ch -> ch >= '0' && ch <= '9')) {
+                Optional<ICommodity> o = ofByInaraId(trimmed);
+                if (o.isPresent()) {
+                    return o.get();
+                }
+            }
+            Optional<ICommodity> o2 = ofByCargoJson(trimmed);
+            if (o2.isPresent()) {
+                return o2.get();
+            }
+        }
+        if (c != null || i != null) {
+            return CarrierCommodityResolver.resolve(
+                    c != null ? c : "",
+                    i != null ? i : "");
+        }
+        return null;
+    }
+
 }

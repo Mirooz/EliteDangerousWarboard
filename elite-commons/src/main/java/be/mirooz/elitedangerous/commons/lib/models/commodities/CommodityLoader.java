@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,18 @@ public final class CommodityLoader {
 
         return i == -1 ? cleaned : cleaned.substring(0, i);
     }
+    /**
+     * Toutes les entrées du registre Arden/Inara (après {@link #ensureLoaded()}) — pour
+     * alimenter un catalogue persisté côté application.
+     */
+    public static List<RegistryCommodity> allRegistryCommodities() {
+        ensureLoaded();
+        if (byCargoJson.isEmpty()) {
+            return List.of();
+        }
+        return new ArrayList<>(byCargoJson.values());
+    }
+
     private static void ensureLoaded() {
         if (loadAttempted) {
             return;
