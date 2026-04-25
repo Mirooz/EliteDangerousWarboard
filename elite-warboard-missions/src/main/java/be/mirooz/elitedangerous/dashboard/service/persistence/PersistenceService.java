@@ -1,23 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.service.persistence;
 
-import be.mirooz.elitedangerous.dashboard.persistence.CarrierStatusStore;
-import be.mirooz.elitedangerous.dashboard.persistence.ColonisationRegistryStore;
-import be.mirooz.elitedangerous.dashboard.persistence.CommanderStatusStore;
-import be.mirooz.elitedangerous.dashboard.persistence.DestroyedShipsStore;
-import be.mirooz.elitedangerous.dashboard.persistence.ExplorationDataSaleRegistryStore;
-import be.mirooz.elitedangerous.dashboard.persistence.ExplorationModeStore;
+import be.mirooz.elitedangerous.dashboard.persistence.DashboardRegistryJsonPersistence;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursorStore;
-import be.mirooz.elitedangerous.dashboard.persistence.MiningStatRegistryStore;
-import be.mirooz.elitedangerous.dashboard.persistence.MissionsStore;
-import be.mirooz.elitedangerous.dashboard.persistence.NavRouteRegistryStore;
-import be.mirooz.elitedangerous.dashboard.persistence.NavRouteTargetStore;
-import be.mirooz.elitedangerous.dashboard.persistence.OrganicDataSaleRegistryStore;
-import be.mirooz.elitedangerous.dashboard.persistence.PlaneteRegistryStore;
-import be.mirooz.elitedangerous.dashboard.persistence.ProspectedAsteroidStore;
 import be.mirooz.elitedangerous.dashboard.persistence.RegistryStore;
-import be.mirooz.elitedangerous.dashboard.persistence.ShipTargetStore;
-import be.mirooz.elitedangerous.dashboard.persistence.SystemVisitedRegistryStore;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,25 +54,7 @@ public class PersistenceService {
     private PersistenceService() {
         this.baseDir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
         this.cursorStore = new JournalCursorStore(baseDir.resolve("journal-cursor.json"));
-
-        // Phase 1 : fleetcarrier
-        stores.add(new CarrierStatusStore(baseDir.resolve("carrier-status.json")));
-        // Phase 2 : registries simples
-        stores.add(new CommanderStatusStore(baseDir.resolve("commander-status.json")));
-        stores.add(new ExplorationModeStore(baseDir.resolve("exploration-mode.json")));
-        stores.add(new NavRouteTargetStore(baseDir.resolve("nav-route-target.json")));
-        stores.add(new ShipTargetStore(baseDir.resolve("ship-targets.json")));
-        stores.add(new ProspectedAsteroidStore(baseDir.resolve("prospected-asteroids.json")));
-        stores.add(new MissionsStore(baseDir.resolve("missions.json")));
-        stores.add(new DestroyedShipsStore(baseDir.resolve("destroyed-ships.json")));
-        // Phase 3 : registries lourds
-        stores.add(new ColonisationRegistryStore(baseDir.resolve("colonisation-registry.json")));
-        stores.add(new PlaneteRegistryStore(baseDir.resolve("planete-registry.json")));
-        stores.add(new SystemVisitedRegistryStore(baseDir.resolve("system-visited-registry.json")));
-        stores.add(new NavRouteRegistryStore(baseDir.resolve("nav-route-registry.json")));
-        stores.add(new ExplorationDataSaleRegistryStore(baseDir.resolve("exploration-data-sale-registry.json")));
-        stores.add(new OrganicDataSaleRegistryStore(baseDir.resolve("organic-data-sale-registry.json")));
-        stores.add(new MiningStatRegistryStore(baseDir.resolve("mining-stat-registry.json")));
+        this.stores.addAll(DashboardRegistryJsonPersistence.buildRegistryStores(baseDir));
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::flushOnShutdown,
                 "PersistenceService-shutdown"));

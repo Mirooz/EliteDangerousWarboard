@@ -6,7 +6,7 @@ package be.mirooz.elitedangerous.dashboard.persistence;
  * <p>Implémentation type : héritage de {@link SnapshotJsonStore} (ou équivalent) avec
  * le {@link java.nio.file.Path} du fichier cible et un snapshot DTO (ou
  * {@link com.fasterxml.jackson.core.type.TypeReference} pour des racines paramétrées).
- * Voir {@link CarrierStatusStore}.</p>
+ * Voir {@link DashboardRegistryJsonPersistence} + {@link SnapshotJsonStore}.</p>
  *
  * <p>Les stores sont enregistrés dans
  * {@code be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService}
