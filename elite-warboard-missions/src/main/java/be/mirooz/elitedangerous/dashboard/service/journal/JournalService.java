@@ -13,6 +13,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegist
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
+import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
@@ -88,8 +89,11 @@ public class JournalService {
             // Données fleet CAPI : après tout le chargement journal (ordres, stocks journal, etc.)
             // Le fallback "load depuis disque" a disparu : parseAllJournalFiles() a déjà
             // appelé PersistenceService.loadAll() en amont si un snapshot valide existait.
-            if (profileOk && !CarrierTradeService.getInstance()
-                    .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN)) {
+            boolean forceFleetRefreshAfterCommanderSwitch =
+                    AppLifecycleService.getInstance().consumeCommanderSwitchFleetRefreshFlag();
+            boolean hasRecentCarrierActivity = CarrierTradeService.getInstance()
+                    .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN);
+            if (profileOk && (forceFleetRefreshAfterCommanderSwitch || !hasRecentCarrierActivity)) {
                 CapiApiService.getInstance().fetchFleetCarrierData();
             }
 

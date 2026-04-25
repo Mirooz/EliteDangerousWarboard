@@ -96,6 +96,8 @@ public class PersistenceService {
      *         full replay des journaux).
      */
     public boolean loadAll() {
+        System.out.println("[Persistence] loadAll scope=" + currentCommanderScope
+                + " dir=" + commanderBaseDir);
         boolean cursorLoaded;
         try {
             cursorLoaded = cursorStore.loadIfExists();
@@ -218,6 +220,8 @@ public class PersistenceService {
 
     private void doSaveAll() {
         try {
+            System.out.println("[Persistence] saveAll scope=" + currentCommanderScope
+                    + " dir=" + commanderBaseDir);
             for (RegistryStore store : stores) {
                 try {
                     store.save();

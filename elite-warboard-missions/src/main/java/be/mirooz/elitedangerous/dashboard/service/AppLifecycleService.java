@@ -25,6 +25,7 @@ public final class AppLifecycleService {
 
     private final AtomicBoolean startupStarted = new AtomicBoolean(false);
     private final AtomicBoolean shutdownStarted = new AtomicBoolean(false);
+    private final AtomicBoolean commanderSwitchPendingFleetRefresh = new AtomicBoolean(false);
 
     private AppLifecycleService() {
     }
@@ -69,7 +70,15 @@ public final class AppLifecycleService {
             System.err.println("[Lifecycle] Commander switch endSession failed: " + e.getMessage());
         }
         CarrierStatus.getInstance().clearJournalActivityMarker();
+        commanderSwitchPendingFleetRefresh.set(true);
         PersistenceService.getInstance().useCommanderScope(nextFid);
+    }
+
+    /**
+     * @return true une seule fois après un switch commandant (puis reset automatiquement).
+     */
+    public boolean consumeCommanderSwitchFleetRefreshFlag() {
+        return commanderSwitchPendingFleetRefresh.getAndSet(false);
     }
 
     /**

@@ -101,7 +101,7 @@ public class EliteDashboardApp extends Application {
             stage.setOnCloseRequest(event -> {
                 // Sauvegarder la position et la taille avant de fermer
                 saveWindowPosition(stage);
-                event.consume();
+                stage.hide();
                 AppLifecycleService.getInstance().shutdown("window-close-request", null);
             });
 
