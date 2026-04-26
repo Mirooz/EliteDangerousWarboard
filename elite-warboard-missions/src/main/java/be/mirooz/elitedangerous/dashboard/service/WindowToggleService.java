@@ -165,7 +165,6 @@ public class WindowToggleService {
         boolean tabSwitchEnabled = preferencesService.isTabSwitchEnabled();
 
         if (!windowToggleEnabled && !tabSwitchEnabled) {
-            System.out.println("⚠️ Aucun service activé dans les préférences");
             return;
         }
 
