@@ -4,6 +4,43 @@ info:
   title: analytics-backend-api API
   version: 1.3.4-SNAPSHOT
 paths:
+  /api/analytics/client-error-report:
+    post:
+      tags:
+      - Analytics Controller
+      parameters:
+      - name: X-App-Version
+        in: header
+        schema:
+          type: string
+      - name: X-Commander-Name
+        in: header
+        schema:
+          type: string
+      - name: X-Fid
+        in: header
+        schema:
+          type: string
+      - name: X-Os
+        in: header
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                logFile:
+                  format: binary
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientErrorReportDto'
   /api/analytics/health:
     get:
       tags:
@@ -680,6 +717,16 @@ paths:
       deprecated: true
 components:
   schemas:
+    AnalyticErrorBody:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: {}
     AnalyticsHealthResponse:
       type: object
       properties:
@@ -1547,6 +1594,21 @@ components:
         fid:
           type: string
         profile: {}
+    ClientErrorReportData:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+    ClientErrorReportDto:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/ClientErrorReportData'
+        error:
+          $ref: '#/components/schemas/AnalyticErrorBody'
     CommodityMarketDao:
       type: object
       properties:

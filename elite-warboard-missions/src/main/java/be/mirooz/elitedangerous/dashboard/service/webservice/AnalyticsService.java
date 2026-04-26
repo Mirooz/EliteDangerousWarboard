@@ -74,7 +74,7 @@ public class AnalyticsService {
      * Récupère la version actuelle de l'application
      */
     public String getCurrentVersion() {
-        return analyticsClient.getCurrentVersion();
+        return analyticsClient.getAppVersion();
     }
     
     /**

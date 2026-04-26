@@ -9,14 +9,17 @@ import be.mirooz.elitedangerous.backend.generated.model.LatestVersionResponse;
 import be.mirooz.elitedangerous.backend.generated.model.StartSessionRequest;
 import be.mirooz.elitedangerous.backend.generated.model.StartSessionResponse;
 
+import java.io.*;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.GZIPOutputStream;
 
 /**
- * Client OpenAPI pour les endpoints analytics (sessions, version).
+ * Client OpenAPI pour les endpoints analytics (sessions, version, signalement d'erreurs).
  */
 public class AnalyticsClient {
 
@@ -27,6 +30,14 @@ public class AnalyticsClient {
     private final Map<String, Long> panelDurations = new ConcurrentHashMap<>();
     private final Map<String, Long> panelStartTimes = new ConcurrentHashMap<>();
 
+    /**
+     * Le stub généré envoie {@code logFile} en {@code addTextBody(..., path.toString())}. On conserve
+     * l’appel à {@link AnalyticsControllerApi} et on remplace le corps multipart par un binaire ici.
+     */
+    private static final ThreadLocal<ClientErrorBinaryPayload> CLIENT_ERROR_BINARY_PAYLOAD = new ThreadLocal<>();
+
+    private record ClientErrorBinaryPayload(byte[] bytes, String fileName) {}
+
     private AnalyticsClient() {
         String baseUrl = BackendBundledProperties.get("backend.base-url", "http://localhost:8080");
         ApiClient apiClient = new ApiClient();
@@ -34,12 +45,76 @@ public class AnalyticsClient {
         apiClient.setReadTimeout(Duration.ofSeconds(10));
         this.analyticsApi = new AnalyticsControllerApi(apiClient);
     }
-
     public static synchronized AnalyticsClient getInstance() {
         if (instance == null) {
             instance = new AnalyticsClient();
         }
         return instance;
+    }
+
+
+    public void postClientErrorReportBestEffort(
+            String commanderName,
+            String fid,
+            byte[] logFileContent,
+            String logFileName) {
+
+        if (logFileContent == null || logFileContent.length == 0) {
+            System.err.println("[AnalyticsClient] fichier vide");
+            return;
+        }
+
+        File tempFile = null;
+
+        try {
+            // 👉 on force .gz
+            String gzFileName = logFileName.endsWith(".gz")
+                    ? logFileName
+                    : logFileName + ".gz";
+
+            tempFile = new File(System.getProperty("java.io.tmpdir"), gzFileName);
+
+            // 🔥 compression ici
+            try (FileOutputStream fos = new FileOutputStream(tempFile);
+                 GZIPOutputStream gzip = new GZIPOutputStream(fos)) {
+
+                gzip.write(logFileContent);
+            }
+
+            System.out.println("COMPRESSED FILE LENGTH = " + tempFile.length());
+
+            analyticsApi.apiAnalyticsClientErrorReportPost(
+                    nonBlankHeaderValue(getAppVersion(), "unknown"),
+                    nullableHeader(commanderName),
+                    nullableHeader(fid),
+                    nonBlankHeaderValue(getOperatingSystem(), "Unknown"),
+                    tempFile
+            );
+
+        } catch (Exception e) {
+            System.err.println("[AnalyticsClient] erreur: " + e.getMessage());
+
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
+        }
+    }
+
+    /** Valeur d’en-tête HTTP exigée non vide par le backend analytics. */
+    private static String nonBlankHeaderValue(String value, String fallbackIfBlank) {
+        if (value == null || value.isBlank()) {
+            return fallbackIfBlank;
+        }
+        return value.strip();
+    }
+
+    /** En-tête omis côté HTTP si null ou blanc ({@code if (x != null)} dans le client généré). */
+    private static String nullableHeader(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.strip();
     }
 
     public void startSession(String commanderName) {
@@ -69,39 +144,6 @@ public class AnalyticsClient {
             });
         } catch (Exception e) {
             System.err.println("Erreur lors de l'appel au backend analytics: " + e.getMessage());
-        }
-    }
-
-    private String getAppVersion() {
-        try {
-            String version = System.getProperty("project.version");
-            if (version != null && !version.isEmpty()) {
-                return version;
-            }
-
-            Package pkg = getClass().getPackage();
-            if (pkg != null) {
-                String implVersion = pkg.getImplementationVersion();
-                if (implVersion != null && !implVersion.isEmpty()) {
-                    return implVersion;
-                }
-            }
-
-            try (var inputStream = getClass().getResourceAsStream("/META-INF/maven/be.mirooz.elitedangerous/elite-warboard-missions/pom.properties")) {
-                if (inputStream != null) {
-                    var properties = new java.util.Properties();
-                    properties.load(inputStream);
-                    version = properties.getProperty("version");
-                    if (version != null && !version.isEmpty()) {
-                        return version;
-                    }
-                }
-            }
-
-            return "1.2.0-SNAPSHOT";
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la récupération de la version: " + e.getMessage());
-            return "1.2.0-SNAPSHOT";
         }
     }
 
@@ -191,7 +233,7 @@ public class AnalyticsClient {
         }
     }
 
-    public String getCurrentVersion() {
+    public String getAppVersion() {
         try {
             String version = System.getProperty("project.version");
             if (version != null && !version.isEmpty()) {
