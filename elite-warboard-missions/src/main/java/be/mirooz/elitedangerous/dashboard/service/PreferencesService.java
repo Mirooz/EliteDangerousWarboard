@@ -323,6 +323,30 @@ public class PreferencesService {
     }
 
     /**
+     * Envoi des journaux d’erreur au backend analytics (session précédente), désactivé par défaut.
+     */
+    public void setSendErrorLogsEnabled(boolean enabled) {
+        preferences.setProperty("analytics.send.error.logs", String.valueOf(enabled));
+        savePreferences();
+    }
+
+    public boolean isSendErrorLogsEnabled() {
+        return Boolean.parseBoolean(preferences.getProperty("analytics.send.error.logs", "false"));
+    }
+
+    /**
+     * Une fois {@code true}, la question de consentement au premier lancement n’est plus affichée.
+     */
+    public void setErrorLogsConsentPromptCompleted(boolean completed) {
+        preferences.setProperty("analytics.error.logs.prompt.completed", String.valueOf(completed));
+        savePreferences();
+    }
+
+    public boolean isErrorLogsConsentPromptCompleted() {
+        return Boolean.parseBoolean(preferences.getProperty("analytics.error.logs.prompt.completed", "false"));
+    }
+
+    /**
      * Vérifie si un fichier de préférences existe
      */
     public boolean hasPreferencesFile() {

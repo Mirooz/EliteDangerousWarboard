@@ -48,6 +48,10 @@ public class LoggingService {
      * avec le fichier, puis {@link #initialize()} pourra supprimer les anciens logs.
      */
     public void reportSessionLogError() {
+        if (!PreferencesService.getInstance().isSendErrorLogsEnabled()) {
+            return;
+        }
+
         Path dir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
 
         if (!Files.isDirectory(dir)) {

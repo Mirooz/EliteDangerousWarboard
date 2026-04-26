@@ -67,6 +67,16 @@
 
                 <Button fx:id="logCapiAccountButton" text="Connect Frontier Companion API"
                         onAction="#logCapiAccount" styleClass="elite-button-secondary"/>
+
+                <CheckBox fx:id="sendErrorLogsCheckBox" text="Send error logs"
+                          styleClass="config-checkbox"/>
+            </VBox>
+
+            <!-- Exploration (Spansh uniquement) -->
+            <VBox spacing="10.0" styleClass="config-section">
+                <Label fx:id="explorationDataSectionLabel" text="Exploration" styleClass="config-section-title"/>
+                <CheckBox fx:id="spanshLoadSystemsCheckBox" text="Load systems via Spansh"
+                          styleClass="config-checkbox"/>
             </VBox>
 
             <!-- Section VR Mode -->
@@ -116,13 +126,6 @@
                         </HBox>
                     </VBox>
                 </VBox>
-            </VBox>
-
-            <!-- Exploration (Spansh uniquement) -->
-            <VBox spacing="10.0" styleClass="config-section">
-                <Label fx:id="explorationDataSectionLabel" text="Exploration" styleClass="config-section-title"/>
-                <CheckBox fx:id="spanshLoadSystemsCheckBox" text="Load systems via Spansh"
-                          styleClass="config-checkbox"/>
             </VBox>
         </VBox>
 

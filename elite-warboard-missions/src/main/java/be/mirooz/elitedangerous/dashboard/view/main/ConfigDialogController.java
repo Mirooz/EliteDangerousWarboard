@@ -117,6 +117,9 @@ public class ConfigDialogController implements Initializable {
     private Button logCapiAccountButton;
 
     @FXML
+    private CheckBox sendErrorLogsCheckBox;
+
+    @FXML
     private CheckBox vrModeEnabledCheckBox;
 
     @FXML
@@ -218,6 +221,7 @@ public class ConfigDialogController implements Initializable {
         sendDataToEddnCheckBox.setSelected(preferencesService.isSendDataToEddnEnabled());
         spanshLoadSystemsCheckBox.setSelected(preferencesService.isSpanshExplorationLoadEnabled());
         capiLoginEnabledCheckBox.setSelected(preferencesService.isCapiLoginEnabled());
+        sendErrorLogsCheckBox.setSelected(preferencesService.isSendErrorLogsEnabled());
         updateCapiControlsState();
         
         // Initialiser les affichages des binds
@@ -255,6 +259,8 @@ public class ConfigDialogController implements Initializable {
         sendDataToEddnCheckBox.setTooltip(new Tooltip(localizationService.getString("config.eddn.send.hint")));
         capiLoginEnabledCheckBox.setText(localizationService.getString("config.capi.login.enabled"));
         logCapiAccountButton.setText(localizationService.getString("config.capi.connect.button"));
+        sendErrorLogsCheckBox.setText(localizationService.getString("config.analytics.send.error.logs"));
+        sendErrorLogsCheckBox.setTooltip(new Tooltip(localizationService.getString("config.analytics.send.error.logs.hint")));
         if (capiLoginEnabledCheckBox != null && capiLoginEnabledCheckBox.isSelected() && lastCapiProfileResult != null) {
             applyCapiConnectionStatusUi(lastCapiProfileResult);
         } else if (capiLoginEnabledCheckBox != null && capiLoginEnabledCheckBox.isSelected()) {
@@ -583,7 +589,9 @@ public class ConfigDialogController implements Initializable {
             }
         }
         preferencesService.setCapiLoginEnabled(newCapiLogin);
-        
+        preferencesService.setSendErrorLogsEnabled(sendErrorLogsCheckBox.isSelected());
+        preferencesService.setErrorLogsConsentPromptCompleted(true);
+
         if (isKeyboardBind && capturedKeyCode != -1) {
             // Sauvegarder bind clavier
             preferencesService.setWindowToggleKeyboardKey(capturedKeyCode);

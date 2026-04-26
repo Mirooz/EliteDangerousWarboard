@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard;
 
 import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
+import be.mirooz.elitedangerous.dashboard.service.ErrorLogsConsentService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
@@ -111,6 +112,8 @@ public class EliteDashboardApp extends Application {
             loggingService.reportSessionLogError();
             loggingService.initialize();
             System.out.println("✅ Application démarrée");
+
+            Platform.runLater(() -> ErrorLogsConsentService.promptIfNeeded(stage));
 
         } catch (Exception e) {
             AppLifecycleService.getInstance().shutdown("startup-error", e);
