@@ -1044,7 +1044,6 @@ public class NavRouteComponent implements Initializable {
 
             } catch (Exception e) {
                 System.err.println("❌ Erreur lors du chargement de la route " + currentMode.name() + ": " + e.getMessage());
-                e.printStackTrace();
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
                     // Réactiver le bouton en cas d'erreur

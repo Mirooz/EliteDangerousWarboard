@@ -66,6 +66,29 @@ public final class CapiFacade {
         }
     }
 
+    /**
+     * {@code POST /api/capi/logout?fid=…} — supprime les jetons CAPI côté backend (idempotent : 200 ou 400 acceptés).
+     */
+    public void logout(String fid) throws IOException, InterruptedException {
+        if (fid == null || fid.isBlank()) {
+            return;
+        }
+        URI uri = URI.create(backendBaseUrl + "/api/capi/logout?fid="
+                + URLEncoder.encode(fid, StandardCharsets.UTF_8));
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .header("Accept", "application/json")
+                .timeout(Duration.ofSeconds(30))
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+        HttpResponse<String> response = longPollingHttpClient.send(
+                request, HttpResponse.BodyHandlers.ofString());
+        int status = response.statusCode();
+        if (status == 200 || status == 400) {
+            return;
+        }
+        throw new IOException("CAPI logout: HTTP " + status + " - " + response.body());
+    }
+
     public CapiProfileDto fetchProfile(String commanderName, String fid, String language) throws IOException {
         try {
             return capiApi.apiCapiProfileGet(commanderName, fid, language);

@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.view.main;
 
+import be.mirooz.elitedangerous.backend.capi.CapiFacade;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
@@ -227,9 +229,11 @@ public class ConfigDialogController implements Initializable {
         
         // Stocker les valeurs initiales pour détecter les changements
         originalJournalFolder = preferencesService.getJournalFolder();
+        originalCapiLoginEnabled = preferencesService.isCapiLoginEnabled();
     }
     
     private String originalJournalFolder;
+    private boolean originalCapiLoginEnabled;
 
     private void updateTranslations() {
         configTitleLabel.setText(localizationService.getString("config.title"));
@@ -559,7 +563,26 @@ public class ConfigDialogController implements Initializable {
         preferencesService.setTabSwitchEnabled(false);
         preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
         preferencesService.setSpanshExplorationLoadEnabled(spanshLoadSystemsCheckBox.isSelected());
-        preferencesService.setCapiLoginEnabled(capiLoginEnabledCheckBox.isSelected());
+        boolean newCapiLogin = capiLoginEnabledCheckBox.isSelected();
+        if (originalCapiLoginEnabled && !newCapiLogin) {
+            String fid = CommanderStatus.getInstance().getFID();
+            if (fid != null && !fid.isBlank()) {
+                final String fidForLogout = fid;
+                Thread t = new Thread(() -> {
+                    try {
+                        CapiFacade.getInstance().logout(fidForLogout);
+                    } catch (IOException | InterruptedException e) {
+                        if (e instanceof InterruptedException) {
+                            Thread.currentThread().interrupt();
+                        }
+                        System.err.println("CAPI logout: " + e.getMessage());
+                    }
+                }, "capi-logout");
+                t.setDaemon(true);
+                t.start();
+            }
+        }
+        preferencesService.setCapiLoginEnabled(newCapiLogin);
         
         if (isKeyboardBind && capturedKeyCode != -1) {
             // Sauvegarder bind clavier

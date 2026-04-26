@@ -131,15 +131,6 @@ public class AnalyticsService {
         return spanshFacade.searchSpanshRoute(mode, routeRequestDTO);
     }
 
-    /**
-     * Récupère les résultats d'une route Spansh via son GUID (job)
-     * @param job Le GUID (job) de la route Spansh
-     * @return SpanshRouteResultsResponseDTO contenant les résultats de la route
-     * @throws Exception en cas d'erreur lors de l'appel HTTP
-     */
-    public SpanshRouteResultsResponse getSpanshRouteResultsByJob(String job) throws Exception {
-        return spanshFacade.getSpanshRouteResultsByJob(job);
-    }
 
     /**
      * Récupère les résultats d'une route Spansh via son GUID en utilisant /api/spansh/search/{guid}

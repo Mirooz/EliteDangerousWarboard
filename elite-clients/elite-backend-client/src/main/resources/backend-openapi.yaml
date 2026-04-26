@@ -52,6 +52,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnalyticsHealthResponse'
+  /api/analytics/internal/client-error-reports:
+    get:
+      tags:
+      - Client Error Report Admin Resource
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          format: int32
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientErrorReportListItemDto'
+  /api/analytics/internal/client-error-reports/{id}/log:
+    get:
+      tags:
+      - Client Error Report Admin Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
   /api/analytics/sessions/start:
     post:
       tags:
@@ -216,6 +249,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CapiLoginDto'
+  /api/capi/logout:
+    post:
+      tags:
+      - Capi Controller
+      summary: Déconnexion CAPI pour un fid
+      description: "Supprime access_token et refresh_token en base (table capi_commander_auth).\
+        \ Réponses JSON : DTO CapiLogoutDto (200 ou 400). Idempotent si aucune session."
+      parameters:
+      - name: fid
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapiLogoutDto'
   /api/capi/market:
     post:
       tags:
@@ -1539,6 +1591,20 @@ components:
           type: string
         loginUrl:
           type: string
+    CapiLogoutData:
+      type: object
+      properties:
+        fid:
+          type: string
+    CapiLogoutDto:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: '#/components/schemas/CapiLogoutData'
+        error:
+          $ref: '#/components/schemas/CapiApiErrorBody'
     CapiMarketDto:
       type: object
       properties:
@@ -1609,6 +1675,27 @@ components:
           $ref: '#/components/schemas/ClientErrorReportData'
         error:
           $ref: '#/components/schemas/AnalyticErrorBody'
+    ClientErrorReportListItemDto:
+      type: object
+      properties:
+        id:
+          format: int64
+          type: integer
+        commanderName:
+          type: string
+        appVersion:
+          type: string
+        fid:
+          type: string
+        os:
+          type: string
+        createdAt:
+          $ref: '#/components/schemas/LocalDateTime'
+        hasLog:
+          type: boolean
+        logContentBytes:
+          format: int64
+          type: integer
     CommodityMarketDao:
       type: object
       properties:

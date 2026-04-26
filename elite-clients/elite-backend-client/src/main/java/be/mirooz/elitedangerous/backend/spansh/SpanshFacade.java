@@ -71,7 +71,7 @@ public class SpanshFacade {
             return out;
         } catch (ApiException e) {
             logSpanshFailure("apiSpanshSearchesStratumPost", e);
-            throw new Exception("Erreur Spansh (" + mode + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
+            throw new Exception("Erreur Spansh (" + mode + "): " + briefApiErrorMessage(e));
         }
     }
 
@@ -91,7 +91,7 @@ public class SpanshFacade {
             return out;
         } catch (ApiException e) {
             logSpanshFailure("searchSpanshRoute", e);
-            throw new Exception("Erreur Spansh (" + mode + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
+            throw new Exception("Erreur Spansh (" + mode + "): " + briefApiErrorMessage(e));
         }
     }
 
@@ -107,7 +107,7 @@ public class SpanshFacade {
             throw new Exception("Réponse invalide : spanshResponse est null");
         } catch (ApiException e) {
             logSpanshFailure("apiSpanshRoutesGuidGet", e);
-            throw new Exception("Erreur Spansh (results, job: " + job + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
+            throw new Exception("Erreur Spansh (results, job: " + job + "): " + briefApiErrorMessage(e));
         }
     }
 
@@ -127,7 +127,7 @@ public class SpanshFacade {
                 throw new SpanshGuidExpiredException(
                         "Le GUID Spansh a expiré ou n'est plus valide. Une nouvelle demande est nécessaire.");
             }
-            throw new Exception("Erreur Spansh (route, guid: " + guid + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
+            throw new Exception("Erreur Spansh (route, guid: " + guid + "): " + briefApiErrorMessage(e));
         }
     }
 
@@ -144,7 +144,7 @@ public class SpanshFacade {
                 throw new SpanshGuidExpiredException(
                         "Le GUID Spansh a expiré ou n'est plus valide. Une nouvelle demande est nécessaire.");
             }
-            throw new Exception("Erreur Spansh (GUID: " + guid + "): HTTP " + e.getCode() + " - " + e.getMessage(), e);
+            throw new Exception("Erreur Spansh (GUID: " + guid + "): " + briefApiErrorMessage(e));
         }
     }
 
@@ -173,8 +173,8 @@ public class SpanshFacade {
             return out;
         } catch (ApiException e) {
             logSpanshFailure("apiSpanshBodiesSearchGet", e);
-            throw new Exception("Erreur Spansh (bodies/search, système: " + sys + ", id64: " + id + "): HTTP "
-                    + e.getCode() + " - " + e.getMessage(), e);
+            throw new Exception("Erreur Spansh (bodies/search, système: " + sys + ", id64: " + id + "): "
+                    + briefApiErrorMessage(e));
         }
     }
 
@@ -206,7 +206,7 @@ public class SpanshFacade {
         // Cause directe (souvent ConnectException) — pas la toute dernière (souvent ClosedChannelException).
         String cause = immediateCauseSimpleName(e);
         // Ne pas utiliser LOG.log(level, msg, e) : le 3ᵉ argument imprime toute la pile.
-        LOG.warning(String.format("SpanshFacade %s HTTP_%d %s", operation, code, cause));
+        //LOG.warning(String.format("SpanshFacade %s HTTP_%d %s", operation, code, cause));
     }
 
     private static String immediateCauseSimpleName(Throwable t) {
@@ -218,5 +218,53 @@ public class SpanshFacade {
             return c.getClass().getSimpleName();
         }
         return t.getClass().getSimpleName();
+    }
+
+    /**
+     * Libellé court pour les exceptions remontées (évite le texte verbeux du client OpenAPI + corps JSON entier).
+     */
+    private static String briefApiErrorMessage(ApiException e) {
+        if (e == null) {
+            return "erreur inconnue";
+        }
+        int code = e.getCode();
+        String fromBody = extractJsonMessageField(e.getResponseBody());
+        if (fromBody != null && !fromBody.isBlank()) {
+            String m = fromBody.trim().replaceAll("\\s+", " ");
+            if (m.length() > 160) {
+                m = m.substring(0, 157) + "…";
+            }
+            return "HTTP " + code + " — " + m;
+        }
+        return "HTTP " + code;
+    }
+
+    private static String extractJsonMessageField(String body) {
+        if (body == null || body.isBlank()) {
+            return null;
+        }
+        int key = body.indexOf("\"message\"");
+        if (key < 0) {
+            return null;
+        }
+        int colon = body.indexOf(':', key);
+        if (colon < 0) {
+            return null;
+        }
+        int i = colon + 1;
+        while (i < body.length() && Character.isWhitespace(body.charAt(i))) {
+            i++;
+        }
+        if (i >= body.length()) {
+            return null;
+        }
+        if (body.charAt(i) == '"') {
+            int start = i + 1;
+            int end = body.indexOf('"', start);
+            if (end > start) {
+                return body.substring(start, end);
+            }
+        }
+        return null;
     }
 }
