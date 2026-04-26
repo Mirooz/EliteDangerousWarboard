@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
+import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -41,7 +41,7 @@ public class NavRouteOverlayComponent {
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
-    private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
+    private final NavRouteService navRouteService = NavRouteService.getInstance();
 
     // Clés pour les préférences de l'overlay
     private static final String NAV_ROUTE_OVERLAY_WIDTH_KEY = "nav_route_overlay.width";
@@ -81,7 +81,7 @@ public class NavRouteOverlayComponent {
         });
 
         // Écouter les changements de route pour mettre à jour l'overlay
-        navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
+        navRouteService.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
             if (overlayStage != null && overlayStage.isShowing()) {
                 Platform.runLater(() -> {
                     updateOverlayContent();
@@ -90,7 +90,7 @@ public class NavRouteOverlayComponent {
         });
         
         // Écouter les changements de RemainingJumpsInRoute pour mettre à jour le label
-        navRouteRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
+        navRouteService.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
             if (overlayStage != null && overlayStage.isShowing()) {
                 Platform.runLater(() -> {
                     updateRemainingJumpsLabel(newValue.intValue());
@@ -173,7 +173,7 @@ public class NavRouteOverlayComponent {
         if (overlayStage != null && overlayStage.isShowing()) {
             updateOverlayContent();
             // Mettre à jour le label des remaining jumps avec la nouvelle langue
-            updateRemainingJumpsLabel(navRouteRegistry.getRemainingJumpsInRoute());
+            updateRemainingJumpsLabel(navRouteService.getRemainingJumpsInRoute());
         }
     }
 
@@ -187,7 +187,7 @@ public class NavRouteOverlayComponent {
         }
         
         // Obtenir la route actuelle depuis le registre
-        be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute route = navRouteRegistry.getCurrentRoute();
+        be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute route = navRouteService.getCurrentRoute();
         if (route == null) {
             routeSystemsPane.getChildren().clear();
             return;
@@ -457,7 +457,7 @@ public class NavRouteOverlayComponent {
             updateOverlayContent();
             
             // Initialiser le label des remaining jumps avec la valeur actuelle
-            updateRemainingJumpsLabel(navRouteRegistry.getRemainingJumpsInRoute());
+            updateRemainingJumpsLabel(navRouteService.getRemainingJumpsInRoute());
         } catch (Exception e) {
             System.err.println("❌ Erreur lors du chargement de l'overlay de route: " + e.getMessage());
             e.printStackTrace();

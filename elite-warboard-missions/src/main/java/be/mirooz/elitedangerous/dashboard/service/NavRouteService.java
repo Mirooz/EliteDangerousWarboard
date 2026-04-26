@@ -3,18 +3,25 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Service pour gérer la lecture du fichier NavRoute.json
+ * Lecture de {@code NavRoute.json} du journal du jeu et état runtime observable des routes
+ * par mode d'exploration (non persisté dans les JSON du dashboard).
  */
 public class NavRouteService {
 
@@ -23,9 +30,17 @@ public class NavRouteService {
 
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
+
+    private final Map<ExplorationMode, ObjectProperty<NavRoute>> routeMap = new HashMap<>();
+    private final ObjectProperty<NavRoute> currentRoute = new SimpleObjectProperty<>(null);
+    private final IntegerProperty remainingJumpsInRoute = new SimpleIntegerProperty(-1);
 
     private NavRouteService() {
+        for (ExplorationMode mode : ExplorationMode.values()) {
+            ObjectProperty<NavRoute> routeProperty = new SimpleObjectProperty<>(null);
+            routeProperty.addListener((obs, oldRoute, newRoute) -> updateCurrentRoute());
+            routeMap.put(mode, routeProperty);
+        }
     }
 
     public static NavRouteService getInstance() {
@@ -33,32 +48,113 @@ public class NavRouteService {
     }
 
     /**
-     * Lit le fichier NavRoute.json et le stocke dans le registre
+     * Lit le fichier NavRoute.json et met à jour la route pour le mode Free Exploration.
      */
     public void loadAndStoreNavRoute() {
         NavRoute navRoute = readNavRouteFile();
-        
+
         if (navRoute != null) {
-            // Stocker la route dans le registre pour le mode Free Exploration uniquement
-            navRouteRegistry.setRouteForMode(navRoute, ExplorationMode.FREE_EXPLORATION);
-            
+            setRouteForMode(navRoute, ExplorationMode.FREE_EXPLORATION);
+
             System.out.println("✅ Route de navigation Free Exploration chargée : " + navRoute.getRoute().size() + " systèmes");
-            
-            // Afficher les détails de la route
+
             for (int i = 0; i < navRoute.getRoute().size(); i++) {
                 RouteSystem system = navRoute.getRoute().get(i);
                 if (i == 0) {
-                    System.out.println("  📍 Système actuel : " + system.getSystemName() + 
-                                     " (" + system.getStarClass() + ")");
+                    System.out.println("  📍 Système actuel : " + system.getSystemName()
+                            + " (" + system.getStarClass() + ")");
                 } else {
-                    System.out.println("  → " + system.getSystemName() + 
-                                     " (" + system.getStarClass() + ") - " + 
-                                     String.format("%.2f", system.getDistanceFromPrevious()) + " AL");
+                    System.out.println("  → " + system.getSystemName()
+                            + " (" + system.getStarClass() + ") - "
+                            + String.format("%.2f", system.getDistanceFromPrevious()) + " AL");
                 }
             }
         } else {
-            // Si pas de route, effacer le registre pour Free Exploration
-            navRouteRegistry.clearRouteForMode(ExplorationMode.FREE_EXPLORATION);
+            clearRouteForMode(ExplorationMode.FREE_EXPLORATION);
+        }
+    }
+
+    public void setCurrentRoute(NavRoute route) {
+        try {
+            ExplorationMode currentMode = ExplorationModeRegistry.getInstance().getCurrentMode();
+            setRouteForMode(route, currentMode);
+        } catch (Exception e) {
+            setRouteForMode(route, ExplorationMode.FREE_EXPLORATION);
+        }
+    }
+
+    public void setRouteForMode(NavRoute route, ExplorationMode mode) {
+        ObjectProperty<NavRoute> routeProperty = routeMap.get(mode);
+        if (routeProperty != null) {
+            routeProperty.set(route);
+        }
+    }
+
+    public NavRoute getRouteForMode(ExplorationMode mode) {
+        ObjectProperty<NavRoute> routeProperty = routeMap.get(mode);
+        return routeProperty != null ? routeProperty.get() : null;
+    }
+
+    private void updateCurrentRoute() {
+        try {
+            ExplorationMode currentMode = ExplorationModeRegistry.getInstance().getCurrentMode();
+            NavRoute route = getRouteForMode(currentMode);
+            currentRoute.set(route);
+        } catch (Exception e) {
+            ObjectProperty<NavRoute> freeExplorationProperty = routeMap.get(ExplorationMode.FREE_EXPLORATION);
+            currentRoute.set(freeExplorationProperty != null ? freeExplorationProperty.get() : null);
+        }
+    }
+
+    public ObjectProperty<NavRoute> getCurrentRouteProperty() {
+        updateCurrentRoute();
+        return currentRoute;
+    }
+
+    public NavRoute getCurrentRoute() {
+        try {
+            ExplorationMode currentMode = ExplorationModeRegistry.getInstance().getCurrentMode();
+            return getRouteForMode(currentMode);
+        } catch (Exception e) {
+            return getRouteForMode(ExplorationMode.FREE_EXPLORATION);
+        }
+    }
+
+    public boolean hasRoute() {
+        NavRoute route = getCurrentRoute();
+        return route != null && route.getRoute() != null && !route.getRoute().isEmpty();
+    }
+
+    public void setRemainingJumpsInRoute(int remainingJumps) {
+        remainingJumpsInRoute.set(remainingJumps);
+    }
+
+    public IntegerProperty getRemainingJumpsInRouteProperty() {
+        return remainingJumpsInRoute;
+    }
+
+    public int getRemainingJumpsInRoute() {
+        return remainingJumpsInRoute.get();
+    }
+
+    public boolean hasTarget() {
+        return remainingJumpsInRoute.get() >= 0;
+    }
+
+    public void clearTarget() {
+        remainingJumpsInRoute.set(-1);
+    }
+
+    public void clearRouteForMode(ExplorationMode mode) {
+        setRouteForMode(null, mode);
+    }
+
+    public void clearRoute() {
+        try {
+            ExplorationMode currentMode = ExplorationModeRegistry.getInstance().getCurrentMode();
+            clearRouteForMode(currentMode);
+        } catch (Exception e) {
+            clearRouteForMode(ExplorationMode.FREE_EXPLORATION);
         }
     }
 
@@ -73,62 +169,56 @@ public class NavRouteService {
                 System.out.println("⚠️ Dossier journal non configuré");
                 return null;
             }
-            
+
             Path navRouteFilePath = Paths.get(journalFolder, NAV_ROUTE_FILE);
             if (!Files.exists(navRouteFilePath)) {
                 System.out.println("⚠️ Fichier NavRoute.json non trouvé: " + navRouteFilePath);
                 return null;
             }
-            
+
             String navRouteContent = Files.readString(navRouteFilePath);
             if (navRouteContent == null || navRouteContent.trim().isEmpty()) {
                 System.out.println("⚠️ Fichier NavRoute.json vide");
                 return null;
             }
-            
+
             JsonNode navRouteNode = objectMapper.readTree(navRouteContent);
             return parseNavRouteFromJson(navRouteNode);
-            
+
         } catch (Exception e) {
             System.err.println("❌ Erreur lors de la lecture du fichier NavRoute.json: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
     }
-    
-    /**
-     * Parse un JsonNode en objet NavRoute avec calcul des distances
-     */
+
     private NavRoute parseNavRouteFromJson(JsonNode jsonNode) {
         NavRoute navRoute = new NavRoute();
-        
-        // Récupérer le timestamp
+
         if (jsonNode.has("timestamp")) {
             navRoute.setTimestamp(jsonNode.get("timestamp").asText());
         }
-        
-        // Récupérer le tableau Route
+
         if (!jsonNode.has("Route") || !jsonNode.get("Route").isArray()) {
             System.out.println("⚠️ Pas de tableau Route dans NavRoute.json");
             return null;
         }
-        
+
         JsonNode routeArray = jsonNode.get("Route");
         List<RouteSystem> routeSystems = new ArrayList<>();
-        
+
         double[] previousPosition = null;
-        
+
         for (int i = 0; i < routeArray.size(); i++) {
             JsonNode systemNode = routeArray.get(i);
-            
-            String systemName = systemNode.has("StarSystem") ? 
-                systemNode.get("StarSystem").asText() : "";
-            long systemAddress = systemNode.has("SystemAddress") ? 
-                systemNode.get("SystemAddress").asLong() : 0;
-            String starClass = systemNode.has("StarClass") ? 
-                systemNode.get("StarClass").asText() : "";
-            
-            // Récupérer la position (tableau [x, y, z])
+
+            String systemName = systemNode.has("StarSystem")
+                    ? systemNode.get("StarSystem").asText() : "";
+            long systemAddress = systemNode.has("SystemAddress")
+                    ? systemNode.get("SystemAddress").asLong() : 0;
+            String starClass = systemNode.has("StarClass")
+                    ? systemNode.get("StarClass").asText() : "";
+
             double[] starPos = null;
             if (systemNode.has("StarPos") && systemNode.get("StarPos").isArray()) {
                 JsonNode posArray = systemNode.get("StarPos");
@@ -137,47 +227,43 @@ public class NavRouteService {
                 starPos[1] = posArray.get(1).asDouble();
                 starPos[2] = posArray.get(2).asDouble();
             }
-            
-            // Calculer la distance par rapport au système précédent
+
             double distance = 0.0;
             if (i > 0 && previousPosition != null && starPos != null) {
                 distance = calculateDistance(previousPosition, starPos);
             }
-            
+
             RouteSystem routeSystem = new RouteSystem(
-                systemName,
-                systemAddress,
-                starClass,
-                starPos,
-                distance
+                    systemName,
+                    systemAddress,
+                    starClass,
+                    starPos,
+                    distance
             );
-            
+
             routeSystems.add(routeSystem);
             previousPosition = starPos;
         }
-        
+
         navRoute.setRoute(routeSystems);
         return navRoute;
     }
-    
-    /**
-     * Calcule la distance en années-lumière entre deux positions 3D
-     * Utilise la formule de distance euclidienne : sqrt((x2-x1)² + (y2-y1)² + (z2-z1)²)
-     */
+
     private double calculateDistance(double[] pos1, double[] pos2) {
         if (pos1 == null || pos2 == null || pos1.length != 3 || pos2.length != 3) {
             return 0.0;
         }
-        
+
         double dx = pos2[0] - pos1[0];
         double dy = pos2[1] - pos1[1];
         double dz = pos2[2] - pos1[2];
-        
+
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
-    
+
     /**
      * Récupère le nom du dernier système de la route dans NavRoute.json
+     *
      * @return Le nom du dernier système, ou null si le fichier n'existe pas ou est vide
      */
     public String getFinalTargetSystem() {
@@ -190,4 +276,3 @@ public class NavRouteService {
         return null;
     }
 }
-

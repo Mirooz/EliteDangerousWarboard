@@ -1,6 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
-import be.mirooz.elitedangerous.backend.spansh.SpanshGuidExpiredException;
 import be.mirooz.elitedangerous.backend.generated.model.BodyResult;
 import be.mirooz.elitedangerous.backend.generated.model.Parent;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshRouteResponseDTO;
@@ -15,7 +14,7 @@ import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
+import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
@@ -120,7 +119,7 @@ public class NavRouteComponent implements Initializable {
     private ComboBox<ExplorationMode> modeComboBox; // Référence au ComboBox pour les mises à jour de traduction
     private NavRouteOverlayComponent navRouteOverlayComponent;
 
-    private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
+    private final NavRouteService navRouteService = NavRouteService.getInstance();
     private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
     private ExplorationMode currentMode = ExplorationMode.FREE_EXPLORATION;
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
@@ -161,7 +160,7 @@ public class NavRouteComponent implements Initializable {
         updateOverlayButtonText();
 
         // Écouter les changements de route
-        navRouteRegistry.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
+        navRouteService.getCurrentRouteProperty().addListener((obs, oldRoute, newRoute) -> {
             Platform.runLater(() -> {
                 // Ne pas réinitialiser les systèmes visités - on les maintient même lors du changement de route
                 // Les systèmes visités sont sauvegardés dans les préférences et chargés au démarrage
@@ -180,7 +179,7 @@ public class NavRouteComponent implements Initializable {
                 // Marquer le système précédent (oldSystem) comme visité s'il était dans la route
                 // (basé sur FSDJumpHandler qui met à jour CommanderStatus quand on arrive dans un nouveau système)
                 if (oldSystem != null && !oldSystem.isEmpty() && newSystem != null && !newSystem.isEmpty()) {
-                    NavRoute route = navRouteRegistry.getCurrentRoute();
+                    NavRoute route = navRouteService.getCurrentRoute();
                     if (route != null && route.getRoute() != null) {
                         for (RouteSystem routeSystem : route.getRoute()) {
                             if (routeSystem.getSystemName().equals(oldSystem)) {
@@ -200,7 +199,7 @@ public class NavRouteComponent implements Initializable {
                 }
 
                 // Mettre à jour l'affichage
-                NavRoute route = navRouteRegistry.getCurrentRoute();
+                NavRoute route = navRouteService.getCurrentRoute();
                 if (route != null) {
                     updateRouteDisplay(route);
                 }
@@ -209,7 +208,7 @@ public class NavRouteComponent implements Initializable {
         statusComponent.getCurrentStarSystem().addListener(currentSystemListener);
         
         // Écouter les changements de RemainingJumpsInRoute
-        navRouteRegistry.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
+        navRouteService.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
             Platform.runLater(() -> {
                 updateRemainingJumpsLabel(newValue.intValue());
             });
@@ -219,7 +218,7 @@ public class NavRouteComponent implements Initializable {
         if (navRouteContainer != null) {
             widthListener = (obs, oldWidth, newWidth) -> {
                 Platform.runLater(() -> {
-                    NavRoute route = navRouteRegistry.getCurrentRoute();
+                    NavRoute route = navRouteService.getCurrentRoute();
                     if (route != null) {
                         updateRouteDisplay(route);
                     }
@@ -231,7 +230,7 @@ public class NavRouteComponent implements Initializable {
         // Initialiser le label avec la valeur actuelle
         // Utiliser Platform.runLater pour s'assurer que le label est bien injecté
         Platform.runLater(() -> {
-            updateRemainingJumpsLabel(navRouteRegistry.getRemainingJumpsInRoute());
+            updateRemainingJumpsLabel(navRouteService.getRemainingJumpsInRoute());
         });
 
         // S'abonner au service de notification pour le refresh de la route
@@ -248,7 +247,7 @@ public class NavRouteComponent implements Initializable {
         updateTranslations();
 
         // Afficher la route actuelle si elle existe
-        updateRouteDisplay(navRouteRegistry.getCurrentRoute());
+        updateRouteDisplay(navRouteService.getCurrentRoute());
         
         // Écouter les changements d'état "à pied"
         ExplorationRefreshNotificationService.getInstance().addOnFootStateListener(this::handleOnFootStateChanged);
@@ -291,7 +290,7 @@ public class NavRouteComponent implements Initializable {
         Platform.runLater(() -> {
             // Toujours rafraîchir l'affichage, même en mode Stratum
             // car on affiche des informations basées sur la route Free Exploration (nombre de sauts)
-            NavRoute route = navRouteRegistry.getCurrentRoute();
+            NavRoute route = navRouteService.getCurrentRoute();
             if (route != null) {
                 // En mode nécessitant l'API Spansh, forcer le rafraîchissement en créant une nouvelle instance de la route
                 if (currentMode != null && currentMode.requiresSpanshApi()) {
@@ -299,7 +298,7 @@ public class NavRouteComponent implements Initializable {
                     NavRoute refreshedRoute = new NavRoute();
                     refreshedRoute.setTimestamp(route.getTimestamp());
                     refreshedRoute.setRoute(new java.util.ArrayList<>(route.getRoute()));
-                    navRouteRegistry.setCurrentRoute(refreshedRoute);
+                    navRouteService.setCurrentRoute(refreshedRoute);
                     // Forcer aussi un appel direct à updateRouteDisplay pour s'assurer que l'UI se met à jour
                     // (car le nombre de sauts dépend de la route Free Exploration qui vient de changer)
                     updateRouteDisplay(refreshedRoute);
@@ -312,7 +311,7 @@ public class NavRouteComponent implements Initializable {
                 updateRouteDisplay(null);
             }
             // Toujours mettre à jour le label des remaining jumps lors du rafraîchissement
-            updateRemainingJumpsLabel(navRouteRegistry.getRemainingJumpsInRoute());
+            updateRemainingJumpsLabel(navRouteService.getRemainingJumpsInRoute());
         });
     }
 
@@ -548,12 +547,8 @@ public class NavRouteComponent implements Initializable {
                 reloadButton.setDisable(true);
             }
 
-            // Effacer le GUID sauvegardé pour forcer une nouvelle recherche avec le système actuel
-            String modeKey = "spansh.guid." + currentMode.name();
-            preferencesService.setPreference(modeKey, "");
-
             // Recharger la route avec le système actuel
-            loadSpanshRoute(false);
+            loadSpanshRoute();
         }
     }
 
@@ -632,15 +627,10 @@ public class NavRouteComponent implements Initializable {
             // visitedSystems.clear(); // Commenté pour maintenir les systèmes visités
             
             // Charger la route depuis le registre (si elle existe déjà)
-            NavRoute spanshRoute = navRouteRegistry.getRouteForMode(newMode);
-            
-            // Vérifier si un GUID est sauvegardé pour ce mode
-            String modeKey = "spansh.guid." + newMode.name();
-            String savedGuid = preferencesService.getPreference(modeKey, null);
-            boolean hasSavedGuid = (savedGuid != null && !savedGuid.isEmpty());
-            
-            if (spanshRoute != null && hasSavedGuid) {
-                // Afficher la route existante (rechargée depuis un GUID sauvegardé)
+            NavRoute spanshRoute = navRouteService.getRouteForMode(newMode);
+
+            if (spanshRoute != null) {
+                // Afficher la route déjà en mémoire pour ce mode (session courante)
                 Platform.runLater(() -> {
                     updateRouteDisplay(spanshRoute);
                     ShowLoadPopup();
@@ -651,15 +641,14 @@ public class NavRouteComponent implements Initializable {
                     }
                 });
             } else {
-                // Appeler le backend pour obtenir la route (nouvelle route ou route sans GUID sauvegardé)
-                loadSpanshRoute(true);
+                loadSpanshRoute();
             }
         } else if (newMode == ExplorationMode.FREE_EXPLORATION) {
             // Réinitialiser les systèmes visités pour la nouvelle route
             visitedSystems.clear();
             
             // Charger la route Free Exploration depuis le registre (si elle existe déjà)
-            NavRoute freeRoute = navRouteRegistry.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
+            NavRoute freeRoute = navRouteService.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
             if (freeRoute != null) {
                 // Afficher la route Free Exploration existante
                 Platform.runLater(() -> {
@@ -667,7 +656,7 @@ public class NavRouteComponent implements Initializable {
                 });
             } else {
                 // Toujours recharger le fichier NavRoute.json pour avoir les données les plus récentes
-                be.mirooz.elitedangerous.dashboard.service.NavRouteService.getInstance().loadAndStoreNavRoute();
+                navRouteService.loadAndStoreNavRoute();
             }
         }
     }
@@ -701,7 +690,7 @@ public class NavRouteComponent implements Initializable {
             return;
         }
         
-        NavRoute route = navRouteRegistry.getCurrentRoute();
+        NavRoute route = navRouteService.getCurrentRoute();
         if (route == null || route.getRoute() == null) {
             return;
         }
@@ -821,7 +810,7 @@ public class NavRouteComponent implements Initializable {
     /**
      * Charge la route depuis Spansh pour le mode actuel (générique pour tous les modes nécessitant l'API Spansh)
      */
-    private void loadSpanshRoute(boolean loadPopup) {
+    private void loadSpanshRoute() {
         // Afficher l'indicateur de chargement
         setLoadingVisible(true);
 
@@ -853,53 +842,15 @@ public class NavRouteComponent implements Initializable {
                     return;
                 }
 
-                // Charger le GUID depuis les préférences pour ce mode
-                String modeKey = "spansh.guid." + currentMode.name();
-                String savedGuid = null;
-                // Toujours utiliser le GUID sauvegardé s'il existe (sauvegarde par défaut)
-                savedGuid = preferencesService.getPreference(modeKey, null);
-                boolean useSavedGuid = (savedGuid != null && !savedGuid.isEmpty());
-                
-                // Variable pour savoir si on doit afficher le popup (uniquement si on recharge une route existante)
-                final boolean shouldShowPopup = useSavedGuid;
-
-                boolean requiresMaxJumpRange = currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY 
+                boolean requiresMaxJumpRange = currentMode == ExplorationMode.EXPRESSWAY_TO_EXOMASTERY
                     || currentMode == ExplorationMode.ROAD_TO_RICHES;
 
-                final NavRoute[] spanshRouteRef = new NavRoute[1]; // Utiliser un tableau pour rendre la variable effectively final
+                final NavRoute[] spanshRouteRef = new NavRoute[1];
                 String savedJobGuid = null;
 
-                if (useSavedGuid) {
-                    // Si on a un GUID et que la checkbox est cochée, faire un GET (reprise en cours de route)
-                    System.out.println("📋 Utilisation du GUID sauvegardé pour le mode " + currentMode.name() + ": " + savedGuid);
-                    
-                    try {
-                        if (requiresMaxJumpRange) {
-                            // Pour les routes (expressway-to-exomastery et road-to-riches), utiliser /api/spansh/search/{guid}
-                            SpanshRouteResultsResponse routeResults = analyticsService.getSpanshRouteResultsByGuid(savedGuid);
-                            spanshRouteRef[0] = buildRouteFromSpanshRouteResults(routeResults, currentSystem);
-                            savedJobGuid = savedGuid;
-                        } else {
-                            // Pour les recherches, utiliser getSpanshSearchByGuidAndMode
-                            SpanshSearchResponseDTO responseDTO = analyticsService.getSpanshSearchByGuidAndMode(currentMode, savedGuid);
-                            spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, false);
-                        }
-                    } catch (SpanshGuidExpiredException e) {
-                        // Le GUID a expiré, réinitialiser et faire une nouvelle demande
-                        System.out.println("⚠️ GUID expiré, réinitialisation et nouvelle demande pour le mode " + currentMode.name());
-                        preferencesService.removePreference(modeKey); // Effacer le GUID invalide
-                        useSavedGuid = false; // Forcer une nouvelle demande
-                        savedGuid = null; // Réinitialiser le GUID
-                        // Le code continuera dans le bloc if (!useSavedGuid) ci-dessous pour faire une nouvelle demande POST
-                    }
-                }
-                
-                // Si useSavedGuid est false (soit initialement, soit après expiration du GUID), faire une nouvelle demande POST
-                if (!useSavedGuid) {
-                    // Faire un POST normal (nouveau call)
-                    System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name());
-                    
-                    if (requiresMaxJumpRange) {
+                System.out.println("🆕 Création d'une nouvelle recherche Spansh pour le mode " + currentMode.name());
+
+                if (requiresMaxJumpRange) {
                         // Récupérer la portée maximale de saut depuis le vaisseau
                         double maxJumpRange = commanderStatus.getShip().getMaxRange();
                         
@@ -955,7 +906,6 @@ public class NavRouteComponent implements Initializable {
                             System.out.println("📊 Résultats de route reçus : " + (routeResults.getResult() != null ? routeResults.getResult().size() : 0) + " systèmes");
                             System.out.println("📊 État de la route : " + routeResults.getState() + ", Statut : " + routeResults.getStatus());
                             
-                            // Sauvegarder le searchReference ou le job
                             if (routeResponse.getSearchReference() != null && !routeResponse.getSearchReference().isEmpty()) {
                                 savedJobGuid = routeResponse.getSearchReference();
                                 System.out.println("💾 SearchReference reçu : " + savedJobGuid);
@@ -975,29 +925,20 @@ public class NavRouteComponent implements Initializable {
                             } else {
                                 System.err.println("❌ Échec de construction de la route");
                             }
-                            
-                            // Sauvegarder le GUID (searchReference ou job) si disponible
-                            if (savedJobGuid != null && !savedJobGuid.isEmpty()) {
-                                preferencesService.setPreference(modeKey, savedJobGuid);
-                                System.out.println("💾 GUID sauvegardé pour le mode " + currentMode.name() + ": " + savedJobGuid);
-                            }
                         } else {
                             System.err.println("❌ Réponse de route est null ou spanshResponse est null");
                         }
-                    } else {
+                } else {
                         // Pour stratum-undiscovered, utiliser le DTO simple
                         SpanshSearchRequestDTO requestDTO = new SpanshSearchRequestDTO()
                             .referenceSystem(currentSystem)
                             .commandername(commanderStatus.getCommanderName());
                         SpanshSearchResponseDTO responseDTO = analyticsService.searchSpansh(currentMode, requestDTO);
                         spanshRouteRef[0] = buildRouteFromSpanshResponse(responseDTO, currentSystem, true);
-                        
-                        // Sauvegarder le GUID reçu
+
                         if (responseDTO != null && responseDTO.getSearchReference() != null && !responseDTO.getSearchReference().isEmpty()) {
-                            preferencesService.setPreference(modeKey, responseDTO.getSearchReference());
-                            System.out.println("💾 GUID sauvegardé pour le mode " + currentMode.name() + ": " + responseDTO.getSearchReference());
+                            System.out.println("📎 SearchReference reçu : " + responseDTO.getSearchReference());
                         }
-                    }
                 }
 
                 // Sauvegarder les systèmes visités avant de reconstruire la route
@@ -1018,7 +959,7 @@ public class NavRouteComponent implements Initializable {
                     }
                     if (spanshRoute != null && spanshRoute.getRoute() != null && !spanshRoute.getRoute().isEmpty()) {
                         // Sauvegarder la route dans le registre pour le mode actuel
-                        navRouteRegistry.setRouteForMode(spanshRoute, currentMode);
+                        navRouteService.setRouteForMode(spanshRoute, currentMode);
                         System.out.println("✅ Route " + currentMode.name() + " chargée : " + spanshRoute.getRoute().size() + " systèmes");
                         // Forcer la mise à jour de l'affichage pour prendre en compte les systèmes visités
                         updateRouteDisplay(spanshRoute);
@@ -1037,10 +978,6 @@ public class NavRouteComponent implements Initializable {
                         }
                     }
                 });
-                // Afficher le popup uniquement si on a rechargé une route existante (GUID sauvegardé)
-                if (loadPopup && shouldShowPopup) {
-                    ShowLoadPopup();
-                }
 
             } catch (Exception e) {
                 System.err.println("❌ Erreur lors du chargement de la route " + currentMode.name() + ": " + e.getMessage());
@@ -1644,13 +1581,13 @@ public class NavRouteComponent implements Initializable {
                     
                     // En mode Stratum, vérifier et afficher le nombre de sauts restants pour toutes les lignes
                     if (currentMode != null && currentMode.requiresSpanshApi()) {
-                        NavRoute freeExplorationRoute = navRouteRegistry.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
+                        NavRoute freeExplorationRoute = navRouteService.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
                         if (freeExplorationRoute != null && freeExplorationRoute.getRoute() != null && !freeExplorationRoute.getRoute().isEmpty()) {
                             RouteSystem lastFreeSystem = freeExplorationRoute.getRoute().get(freeExplorationRoute.getRoute().size() - 1);
                             // Vérifier si le dernier système de Free Exploration correspond à la prochaine boule
                             if (lastFreeSystem.getSystemName().equals(nextSystem.getSystemName())) {
                                 // Utiliser le nombre de sauts restants du registre (celui du label "x jump remaining")
-                                int remainingJumps = navRouteRegistry.getRemainingJumpsInRoute();
+                                int remainingJumps = navRouteService.getRemainingJumpsInRoute();
                                 if (remainingJumps > 0) {
                                     // Afficher le nombre de sauts au-dessus de la ligne, au milieu
                                     double midX = (x + nextX) / 2;
@@ -1911,7 +1848,7 @@ public class NavRouteComponent implements Initializable {
 
         // Mettre à jour le dernier système copié et rafraîchir l'affichage
         lastCopiedSystemName = systemName;
-        NavRoute route = navRouteRegistry.getCurrentRoute();
+        NavRoute route = navRouteService.getCurrentRoute();
         if (route != null) {
             updateRouteDisplay(route);
         }
@@ -1943,7 +1880,7 @@ public class NavRouteComponent implements Initializable {
 
         // Si les coordonnées ne sont pas fournies, calculer depuis la route
         if (x < 0 || y < 0) {
-            NavRoute route = navRouteRegistry.getCurrentRoute();
+            NavRoute route = navRouteService.getCurrentRoute();
             if (route != null && routeSystemsPane != null && routeSystemsPane.getScene() != null) {
                 double systemX = calculateSystemXPosition(route, systemName);
                 if (systemX >= 0) {
@@ -1995,7 +1932,7 @@ public class NavRouteComponent implements Initializable {
     private void updateTranslations() {
         // Mettre à jour le titre de base
         if (routeTitleLabel != null) {
-            NavRoute currentRoute = navRouteRegistry.getCurrentRoute();
+            NavRoute currentRoute = navRouteService.getCurrentRoute();
             if (currentRoute == null || currentRoute.getRoute() == null || currentRoute.getRoute().isEmpty()) {
                 routeTitleLabel.setText(localizationService.getString("nav.route.title.no_route"));
             } else {
@@ -2020,7 +1957,7 @@ public class NavRouteComponent implements Initializable {
 
         // Mettre à jour le label des remaining jumps avec la nouvelle langue
         if (remainingJumpsLabel != null) {
-            int remainingJumps = navRouteRegistry.getRemainingJumpsInRoute();
+            int remainingJumps = navRouteService.getRemainingJumpsInRoute();
             updateRemainingJumpsLabel(remainingJumps);
         }
 

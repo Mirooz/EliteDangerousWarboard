@@ -1,7 +1,5 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
 import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -14,11 +12,9 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public class NavRouteClearHandler implements JournalEventHandler {
 
-    private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
     private final NavRouteNotificationService navRouteNotificationService = NavRouteNotificationService.getInstance();
     private final NavRouteService navRouteService = NavRouteService.getInstance();
 
-    private final NavRouteRegistry navRouteRegistry = NavRouteRegistry.getInstance();
     @Override
     public String getEventType() {
         return "NavRouteClear";
@@ -32,7 +28,7 @@ public class NavRouteClearHandler implements JournalEventHandler {
         }
 
         navRouteService.loadAndStoreNavRoute();
-        navRouteRegistry.setRemainingJumpsInRoute(0);
+        navRouteService.setRemainingJumpsInRoute(0);
         // En mode Stratum, notifier le service pour rafraîchir l'affichage
         navRouteNotificationService.notifyRouteRefreshRequired();
 

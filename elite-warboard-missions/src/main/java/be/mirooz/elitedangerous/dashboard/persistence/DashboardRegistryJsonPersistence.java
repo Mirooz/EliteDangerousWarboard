@@ -16,7 +16,6 @@ import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRe
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.mining.MiningStatRegistry;
-import be.mirooz.elitedangerous.dashboard.model.registries.navigation.NavRouteRegistry;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -73,9 +72,6 @@ public final class DashboardRegistryJsonPersistence {
         out.add(storeClass("exploration-mode", baseDir, ExplorationModeRegistry.class,
                 ExplorationModeRegistry::getInstance,
                 loaded -> mergeIntoSingleton("exploration-mode", ExplorationModeRegistry.getInstance(), loaded)));
-        out.add(storeClass("nav-route-registry", baseDir, NavRouteRegistry.class,
-                NavRouteRegistry::getInstance,
-                loaded -> mergeIntoSingleton("nav-route-registry", NavRouteRegistry.getInstance(), loaded)));
 
         out.add(storeClass("ship-targets", baseDir, ShipTargetRegistry.class,
                 ShipTargetRegistry::getInstance,

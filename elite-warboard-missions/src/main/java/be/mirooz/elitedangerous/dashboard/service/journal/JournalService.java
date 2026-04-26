@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.journal;
 
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
+import be.mirooz.elitedangerous.dashboard.service.*;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalFileTracker;
 import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
@@ -11,16 +12,11 @@ import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.model.events.Cargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.handlers.dispatcher.JournalEventDispatcher;
-import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
-import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
-import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
-import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -266,9 +262,10 @@ public class JournalService {
             // Fin du scan batch : débloquer l'UI, charger l’état colonisation persisté, puis
             // re-synchroniser Cargo.json → jsonShipCargo (et notifier les vues minage, etc.)
             // pour tous les cas (fichiers vides, erreur, ou replay complet).
-            DashboardContext.getInstance().setBatchLoading(false);
             ColonisationService.getInstance().loadPersistedUiStateAfterJournalBatch();
+            DashboardContext.getInstance().setBatchLoading(false);
             CargoEventNotificationService.getInstance().notifyCargoEvent();
+            NavRouteService.getInstance().loadAndStoreNavRoute();
             ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
             DashboardContext.getInstance().refreshUI();
         }
