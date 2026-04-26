@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -306,10 +307,21 @@ public final class CapiApiService {
     }
 
     private void requestAuthenticationAndOpenBrowser() {
+        requestAuthenticationAndOpenBrowser(null);
+    }
+
+    /**
+     * @param onFinishedOnFx exécuté sur le thread JavaFX quand l’attente {@code wait-approval} se termine
+     *                       (ou immédiatement si la demande d’auth ne peut pas démarrer). L’argument est
+     *                       {@code true} uniquement si le backend a renvoyé une approbation positive
+     *                       ({@code approved=true}), {@code false} dans tous les autres cas.
+     */
+    private void requestAuthenticationAndOpenBrowser(Consumer<Boolean> onFinishedOnFx) {
         CommanderStatus status = CommanderStatus.getInstance();
         String fid = status.getFID();
         if (fid == null || fid.isBlank()) {
-            System.err.println("CAPI market: FID manquant, impossible de demander l'authentification");
+            System.err.println("CAPI : FID manquant, impossible de demander l'authentification");
+            finishLoginWait(onFinishedOnFx, false);
             return;
         }
 
@@ -317,23 +329,37 @@ public final class CapiApiService {
             CapiLoginDto response = capiFacade.requestAuthentication(fid);
             String loginUrl = extractLoginUrl(response);
             openBrowser(loginUrl);
-            startWaitingForApproval(fid);
+            startWaitingForApproval(fid, onFinishedOnFx);
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
+            finishLoginWait(onFinishedOnFx, false);
         } catch (IOException e) {
-            System.err.println("CAPI market: erreur requestAuthentication: " + e.getMessage());
+            System.err.println("CAPI : erreur requestAuthentication: " + e.getMessage());
+            finishLoginWait(onFinishedOnFx, false);
         }
+    }
+
+    private static void finishLoginWait(Consumer<Boolean> onFinishedOnFx, boolean approvalGranted) {
+        if (onFinishedOnFx == null) {
+            return;
+        }
+        Platform.runLater(() -> onFinishedOnFx.accept(approvalGranted));
     }
 
     /**
      * Déclenche explicitement le login CAPI (bouton settings).
      */
     public void loginCapiAccount() {
-        if (!isCapiEnabled()) {
-            System.out.println("CAPI market: login désactivé dans les paramètres");
-            return;
-        }
-        requestAuthenticationAndOpenBrowser();
+        loginCapiAccount(null);
+    }
+
+    /**
+     * Comme {@link #loginCapiAccount()} mais appelle {@code onFinishedOnFx} sur le thread JavaFX une fois
+     * la boucle d’attente d’approbation terminée (ou immédiatement si le flux d’auth ne démarre pas).
+     * L’argument vaut {@code true} seulement après une réponse positive {@code approved} du backend.
+     */
+    public void loginCapiAccount(Consumer<Boolean> onFinishedOnFx) {
+        requestAuthenticationAndOpenBrowser(onFinishedOnFx);
     }
 
     private boolean isCapiEnabled() {
@@ -350,45 +376,51 @@ public final class CapiApiService {
      *     <li>Une seule boucle active par instance : les appels concurrents sont ignorés.</li>
      * </ul>
      */
-    private void startWaitingForApproval(String fid) {
+    private void startWaitingForApproval(String fid, Consumer<Boolean> onFinishedOnFx) {
         if (fid == null || fid.isBlank()) {
+            finishLoginWait(onFinishedOnFx, false);
             return;
         }
         if (!waitingForApproval.compareAndSet(false, true)) {
+            finishLoginWait(onFinishedOnFx, false);
             return;
         }
-        Thread worker = new Thread(() -> runApprovalWaitLoop(fid), "capi-wait-approval");
+        Thread worker = new Thread(() -> runApprovalWaitLoop(fid, onFinishedOnFx), "capi-wait-approval");
         worker.setDaemon(true);
         worker.start();
     }
 
-    private void runApprovalWaitLoop(String fid) {
+    private void runApprovalWaitLoop(String fid, Consumer<Boolean> onFinishedOnFx) {
         try {
             long deadlineMs = System.currentTimeMillis() + APPROVAL_WAIT_TOTAL_BUDGET_MS;
             while (System.currentTimeMillis() < deadlineMs) {
                 try {
                     CapiWaitApprovalResponse resp = capiFacade.waitApproval(fid);
                     if (resp.isApproved()) {
-                        System.out.println("CAPI market: approbation reçue via wait-approval (fid=" + fid + ")");
+                        System.out.println("CAPI : approbation reçue via wait-approval (fid=" + fid + ")");
                         onApprovalReceived();
+                        finishLoginWait(onFinishedOnFx, true);
                         return;
                     }
                     // approved=false (timeout serveur attendu ou réponse négative) → on reboucle sans attendre
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
+                    finishLoginWait(onFinishedOnFx, false);
                     return;
                 } catch (IOException ioe) {
-                    System.err.println("CAPI market: wait-approval erreur: " + ioe.getMessage());
+                    System.err.println("CAPI : wait-approval erreur: " + ioe.getMessage());
                     try {
                         Thread.sleep(APPROVAL_WAIT_ERROR_BACKOFF_MS);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
+                        finishLoginWait(onFinishedOnFx, false);
                         return;
                     }
                 }
             }
             System.out.println("CAPI market: wait-approval budget expiré (15 min), réaffichage de la popup");
             promptAuthenticationApproval();
+            finishLoginWait(onFinishedOnFx, false);
         } finally {
             waitingForApproval.set(false);
         }
@@ -438,18 +470,18 @@ public final class CapiApiService {
 
     private void openBrowser(String loginUrl) {
         if (loginUrl == null || loginUrl.isBlank()) {
-            System.err.println("CAPI market: loginUrl manquante");
+            System.err.println("CAPI : loginUrl manquante");
             return;
         }
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().browse(URI.create(loginUrl));
-                System.out.println("CAPI market: ouverture navigateur pour auth Frontier");
+                System.out.println("CAPI : ouverture navigateur pour auth Frontier");
             } else {
-                System.err.println("CAPI market: navigateur non supporté. URL: " + loginUrl);
+                System.err.println("CAPI : navigateur non supporté. URL: " + loginUrl);
             }
         } catch (Exception e) {
-            System.err.println("CAPI market: erreur ouverture navigateur: " + e.getMessage());
+            System.err.println("CAPI : erreur ouverture navigateur: " + e.getMessage());
         }
     }
 

@@ -634,8 +634,16 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private void logCapiAccount() {
-        capiApiService.loginCapiAccount();
-        scheduleCapiStatusRechecks();
+        applyCapiConnectionStatusUi(null);
+        logCapiAccountButton.setDisable(true);
+        capiApiService.loginCapiAccount(waitApprovalOk -> {
+            logCapiAccountButton.setDisable(!capiLoginEnabledCheckBox.isSelected());
+            if (Boolean.TRUE.equals(waitApprovalOk)) {
+                applyCapiConnectionStatusUi(true);
+            } else {
+                refreshCapiProfileStatusAsync();
+            }
+        });
     }
 
     @FXML
@@ -756,27 +764,6 @@ public class ConfigDialogController implements Initializable {
                 newScene.setFill(Color.TRANSPARENT);
             }
         });
-    }
-
-    private void scheduleCapiStatusRechecks() {
-        if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
-            return;
-        }
-        for (int delaySec : new int[] {2, 6, 15}) {
-            int d = delaySec;
-            new Thread(() -> {
-                try {
-                    Thread.sleep(d * 1000L);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-                if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
-                    return;
-                }
-                Platform.runLater(this::refreshCapiProfileStatusAsync);
-            }, "capi-profile-recheck-" + d).start();
-        }
     }
 
     @FXML
