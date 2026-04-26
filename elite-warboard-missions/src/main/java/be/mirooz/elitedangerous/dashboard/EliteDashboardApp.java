@@ -1,12 +1,9 @@
 package be.mirooz.elitedangerous.dashboard;
 
-import be.mirooz.elitedangerous.backend.analytics.AnalyticsClient;
-import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
-import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -20,16 +17,8 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class EliteDashboardApp extends Application {
 
@@ -41,85 +30,6 @@ public class EliteDashboardApp extends Application {
     
     private boolean isRestoringWindow = false; // Flag pour éviter de sauvegarder pendant la restauration
 
-    /**
-     * Dernier {@code elite-warboard_*.log} sous {@code ~/.elite-warboard} : si le contenu contient
-     * {@code exception} (insensible à la casse), envoi best-effort au backend avec le fichier,
-     * puis {@link LoggingService#initialize()} pourra supprimer les anciens logs.
-     */
-    private static void reportPreviousSessionLogIfContainsException() {
-        Path dir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
-
-        if (!Files.isDirectory(dir)) {
-            return;
-        }
-
-        Path previousLog;
-
-        try (Stream<Path> stream = Files.list(dir)) {
-            previousLog = stream
-                    .filter(Files::isRegularFile)
-                    .filter(p -> {
-                        String n = p.getFileName().toString();
-                        return n.startsWith("elite-warboard_") && n.endsWith(".log");
-                    })
-                    .max(Comparator.comparing(p -> p.getFileName().toString()))
-                    .orElse(null);
-
-        } catch (IOException e) {
-            return;
-        }
-
-        if (previousLog == null) {
-            return;
-        }
-
-        final byte[] content;
-
-        try {
-            content = Files.readAllBytes(previousLog);
-        } catch (IOException e) {
-            return;
-        }
-
-        // (optionnel) filtrer uniquement si "exception"
-    /*
-    if (!new String(content, StandardCharsets.UTF_8)
-            .toLowerCase(Locale.ROOT)
-            .contains("exception")) {
-        return;
-    }
-    */
-
-        final String logFileName = previousLog.getFileName().toString();
-        final byte[] payload = content;
-
-        Thread t = new Thread(() -> {
-            try {
-                while (DashboardContext.getInstance().isBatchLoading()) {
-                    Thread.sleep(500); // check toutes les 500ms
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-            CommanderStatus cs = CommanderStatus.getInstance();
-            String commanderName = blankToNull(cs.getCommanderName());
-            String fid = blankToNull(cs.getFID());
-            AnalyticsClient.getInstance().postClientErrorReportBestEffort(
-                    commanderName,
-                    fid,
-                    payload,
-                    logFileName
-            );
-
-        }, "previous-log-error-report");
-
-        t.setDaemon(true);
-        t.start();
-    }
-    private static String blankToNull(String s) {
-        return (s == null || s.isBlank()) ? null : s;
-    }
     @Override
     public void start(Stage stage) {
 
@@ -197,8 +107,8 @@ public class EliteDashboardApp extends Application {
 
             AppLifecycleService.getInstance().onStart(stage, comboBox, rootPane);
 
-            // Avant rotation des logs : signalement du dernier fichier si une trace "exception" y figure
-            reportPreviousSessionLogIfContainsException();
+            // Avant rotation des logs : signalement best-effort du dernier fichier de session
+            loggingService.reportSessionLogError();
             loggingService.initialize();
             System.out.println("✅ Application démarrée");
 

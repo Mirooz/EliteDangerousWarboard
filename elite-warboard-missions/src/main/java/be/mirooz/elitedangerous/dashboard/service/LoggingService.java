@@ -1,15 +1,22 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
+import be.mirooz.elitedangerous.backend.analytics.AnalyticsClient;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.logging.*;
+import java.util.stream.Stream;
 
 /**
  * Service pour gérer les logs de l'application
@@ -36,6 +43,82 @@ public class LoggingService {
         return instance;
     }
 
+    /**
+     * Dernier {@code elite-warboard_*.log} sous {@code ~/.elite-warboard} : envoi best-effort au backend
+     * avec le fichier, puis {@link #initialize()} pourra supprimer les anciens logs.
+     */
+    public void reportSessionLogError() {
+        Path dir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
+
+        if (!Files.isDirectory(dir)) {
+            return;
+        }
+
+        Path previousLog;
+
+        try (Stream<Path> stream = Files.list(dir)) {
+            previousLog = stream
+                    .filter(Files::isRegularFile)
+                    .filter(p -> {
+                        String n = p.getFileName().toString();
+                        return n.startsWith("elite-warboard_") && n.endsWith(".log");
+                    })
+                    .max(Comparator.comparing(p -> p.getFileName().toString()))
+                    .orElse(null);
+
+        } catch (IOException e) {
+            return;
+        }
+
+        if (previousLog == null) {
+            return;
+        }
+
+        final byte[] content;
+
+        try {
+            content = Files.readAllBytes(previousLog);
+        } catch (IOException e) {
+            return;
+        }
+
+        final String logFileName = previousLog.getFileName().toString();
+        final byte[] payload = content;
+        if (!containsError(payload)) {
+            return;
+        }
+        Thread t = new Thread(() -> {
+            try {
+                while (DashboardContext.getInstance().isBatchLoading()) {
+                    Thread.sleep(500);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            CommanderStatus cs = CommanderStatus.getInstance();
+            String commanderName = blankToNull(cs.getCommanderName());
+            String fid = blankToNull(cs.getFID());
+            AnalyticsClient.getInstance().postClientErrorReport(
+                    commanderName,
+                    fid,
+                    payload,
+                    logFileName
+            );
+
+        }, "previous-log-error-report");
+
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private static String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
+    }
+    private boolean containsError(byte[] content) {
+        String log = new String(content, StandardCharsets.UTF_8).toLowerCase();
+        return log.contains("exception");
+    }
     /**
      * Initialise le service de logging
      * Doit être appelé au démarrage de l'application

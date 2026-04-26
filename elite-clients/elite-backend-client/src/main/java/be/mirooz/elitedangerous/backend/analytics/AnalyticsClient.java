@@ -10,7 +10,6 @@ import be.mirooz.elitedangerous.backend.generated.model.StartSessionRequest;
 import be.mirooz.elitedangerous.backend.generated.model.StartSessionResponse;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class AnalyticsClient {
     }
 
 
-    public void postClientErrorReportBestEffort(
+    public void postClientErrorReport(
             String commanderName,
             String fid,
             byte[] logFileContent,
@@ -81,7 +80,6 @@ public class AnalyticsClient {
                 gzip.write(logFileContent);
             }
 
-            System.out.println("COMPRESSED FILE LENGTH = " + tempFile.length());
 
             analyticsApi.apiAnalyticsClientErrorReportPost(
                     nonBlankHeaderValue(getAppVersion(), "unknown"),
@@ -90,6 +88,11 @@ public class AnalyticsClient {
                     nonBlankHeaderValue(getOperatingSystem(), "Unknown"),
                     tempFile
             );
+            System.out.println(String.format(
+                    "[AnalyticsClient] Error report sent (file=%s, size=%.2f KB)",
+                    tempFile.getName(),
+                    tempFile.length() / 1024.0
+            ));
 
         } catch (Exception e) {
             System.err.println("[AnalyticsClient] erreur: " + e.getMessage());
