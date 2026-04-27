@@ -205,7 +205,11 @@ final class EddnEventMappers {
     }
 
     EddnMessages.FSSDiscoveryScan mapFssDiscoveryScan(JsonNode raw) throws JsonProcessingException {
-        return enrichAndConvert(raw, EddnMessages.FSSDiscoveryScan.class, true, true);
+        // Spec fssdiscoveryscan/1 : "Progress" est explicitement disallowed (donnée perso) — la gateway rejette
+        // si la clé est présente avec une valeur (ValidationError sur le nombre).
+        ObjectNode msg = (ObjectNode) raw.deepCopy();
+        msg.remove("Progress");
+        return enrichAndConvert(msg, EddnMessages.FSSDiscoveryScan.class, true, true);
     }
 
     EddnMessages.NavBeaconScan mapNavBeaconScan(JsonNode raw) throws JsonProcessingException {
