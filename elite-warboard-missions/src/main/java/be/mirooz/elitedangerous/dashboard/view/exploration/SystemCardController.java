@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.biologic.BioSpecies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationParentBodies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
@@ -211,13 +212,13 @@ public class SystemCardController implements Initializable {
         // La collection originale peut être modifiée pendant l'itération (ObservableCollection, etc.)
         List<ACelesteBody> bodiesSnapshot = new ArrayList<>(bodies);
         
-        // Identifier les soleils (sans parent ou avec parent "Null")
+        // Identifier les soleils (sans parent ou avec référentiel Null / barycentre)
         List<ACelesteBody> stars = bodiesSnapshot.stream()
                 .filter(body -> body instanceof StarDetail)
                 .filter(body -> {
                     var parents = body.getParents();
                     return parents == null || parents.isEmpty() ||
-                           parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
+                           parents.stream().anyMatch(ExplorationParentBodies::isRootReferenceParent);
                 })
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                 .collect(Collectors.toList());
@@ -285,6 +286,9 @@ public class SystemCardController implements Initializable {
 
         // Trouver le parent direct (le premier dans la liste qui existe dans notre map)
         for (var parent : parents) {
+            if (ExplorationParentBodies.isRootReferenceParent(parent)) {
+                continue;
+            }
             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
             if (parentBody != null) {
                 return calculateDepth(parentBody, bodiesMap) + 1;

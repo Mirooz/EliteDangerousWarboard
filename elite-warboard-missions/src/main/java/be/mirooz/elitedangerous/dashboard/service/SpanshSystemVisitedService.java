@@ -29,9 +29,6 @@ public final class SpanshSystemVisitedService {
         return INSTANCE;
     }
 
-    public SpanshSearchResponseDTO fetchSpanshBodiesSearch(String systemName) throws IOException {
-        return fetchSpanshBodiesSearch(systemName, null);
-    }
 
     public SpanshSearchResponseDTO fetchSpanshBodiesSearch(String systemName, Long systemId64) throws IOException {
         boolean hasName = systemName != null && !systemName.isBlank();
@@ -45,10 +42,6 @@ public final class SpanshSystemVisitedService {
         } catch (Exception e) {
             throw new IOException("Spansh bodies/search failed for system: " + key + " (id64=" + systemId64 + ")", e);
         }
-    }
-
-    public SystemVisited fetchSystemVisited(String systemName) throws IOException {
-        return fetchSystemVisited(systemName, null);
     }
 
     public SystemVisited fetchSystemVisited(String systemName, Long systemId64) throws IOException {

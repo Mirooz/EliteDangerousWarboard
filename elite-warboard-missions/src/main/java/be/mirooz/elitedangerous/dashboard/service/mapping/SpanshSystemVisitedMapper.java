@@ -586,6 +586,8 @@ public final class SpanshSystemVisitedMapper {
                 p.put("Planet", id);
             } else if (t != null && t.equalsIgnoreCase("Star")) {
                 p.put("Star", id);
+            } else if (t != null && (t.equalsIgnoreCase("Barycentre") || t.equalsIgnoreCase("BaryCentre"))) {
+                p.put("BaryCentre", id);
             } else {
                 p.put("Null", id);
             }

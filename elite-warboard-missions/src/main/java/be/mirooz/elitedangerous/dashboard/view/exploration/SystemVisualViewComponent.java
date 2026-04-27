@@ -11,6 +11,7 @@ import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNo
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationArchitectMapCaptionLine;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationParentBodies;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Scan;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SpeciesProbability;
@@ -1006,8 +1007,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         int maxBodyID = -1;
 
                         for (var parent : parents) {
-                            if ("Null".equalsIgnoreCase(parent.getType())) {
-                                continue; // Ignorer les parents "Null"
+                            if (ExplorationParentBodies.isRootReferenceParent(parent)) {
+                                continue; // Ignorer Null / barycentre pour détecter une étoile parente réelle
                             }
                             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
                             if (parentBody != null && parentBody instanceof StarDetail) {
@@ -1015,7 +1016,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 // (on cherche les étoiles principales, pas les étoiles en orbite)
                                 var parentStarParents = parentBody.getParents();
                                 boolean isMainStar = parentStarParents == null || parentStarParents.isEmpty() ||
-                                        parentStarParents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
+                                        parentStarParents.stream().anyMatch(ExplorationParentBodies::isRootReferenceParent);
 
                                 if (isMainStar && parent.getBodyID() > maxBodyID) {
                                     parentStar = parentBody;
@@ -1044,7 +1045,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
                     var parents = body.getParents();
                     if (parents == null || parents.isEmpty() ||
-                            parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
+                            parents.stream().anyMatch(ExplorationParentBodies::isRootReferenceParent)) {
                         stars.add(body);
                         starToDirectPlanets.put(body, new ArrayList<>());
                     }
@@ -1075,6 +1076,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         int maxBodyID = -1;
 
                         Integer nullParentBodyID = null; // BodyID du parent "Null" si présent
+                        Integer baryParentBodyID = null; // BodyID du barycentre si présent (sans corps dans la map)
 
                         for (var parent : parents) {
                             if ("Null".equalsIgnoreCase(parent.getType())) {
@@ -1084,6 +1086,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 }
                                 continue; // Ignorer les parents "Null" pour la recherche du parent réel
                             }
+                            if (ExplorationParentBodies.isBarycentreType(parent.getType())) {
+                                if (baryParentBodyID == null || parent.getBodyID() < baryParentBodyID) {
+                                    baryParentBodyID = parent.getBodyID();
+                                }
+                                continue;
+                            }
                             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
                             if (parentBody != null && parent.getBodyID() > maxBodyID) {
                                 directParent = parentBody;
@@ -1092,11 +1100,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             }
                         }
 
-                        // Si aucune planète n'a de parent réel (seulement "Null"), créer ou réutiliser un fake soleil
-                        if (directParent == null && nullParentBodyID != null) {
+                        // BodyID parent Star parfois décorélé (merge Spansh / journal, binaire, etc.) : retrouver l’étoile par préfixe de nom
+                        if (directParent == null) {
+                            StarDetail hostByName = findHostStarForPlanetByNamePrefix((PlaneteDetail) body, sortedBodies);
+                            if (hostByName != null) {
+                                directParent = hostByName;
+                                directParentType = "Star";
+                            }
+                        }
+
+                        // Si aucune planète n'a de parent réel (seulement Null / barycentre sans entrée dans la map)
+                        if (directParent == null && (nullParentBodyID != null || baryParentBodyID != null)) {
+                            int anchorId = nullParentBodyID != null ? nullParentBodyID : baryParentBodyID;
                             // Créer un bodyID unique pour le fake soleil basé sur le bodyID du parent "Null"
                             // Utiliser un préfixe négatif pour éviter les conflits avec les vrais bodyIDs
-                            int fakeStarBodyID = -1000000 - nullParentBodyID;
+                            int fakeStarBodyID = -1000000 - anchorId;
 
                             // Vérifier si ce fake soleil existe déjà (partagé par plusieurs planètes avec le même parent "Null")
                             StarDetail fakeStar = (StarDetail) bodiesMap.get(fakeStarBodyID);
@@ -1106,7 +1124,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
                                 // Créer le fake soleil
                                 fakeStar = StarDetail.builder()
-                                        .bodyName(starName)
+                                        // Libellé distinct du vrai soleil (évite doublon « B » + icône NULL)
+                                        .bodyName(starName + " ·")
                                         .bodyID(fakeStarBodyID)
                                         .starSystem(body.getStarSystem())
                                         .systemAddress(body.getSystemAddress())
@@ -1191,7 +1210,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         int maxBodyID = -1;
 
                         for (var parent : parents) {
-                            if ("Null".equalsIgnoreCase(parent.getType())) {
+                            if (ExplorationParentBodies.isRootReferenceParent(parent)) {
                                 continue;
                             }
                             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
@@ -2670,12 +2689,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
 
         for (var parent : parents) {
+            if (ExplorationParentBodies.isRootReferenceParent(parent)) {
+                continue;
+            }
             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
             if (parentBody != null) {
                 if (parentBody instanceof StarDetail) {
                     var starParents = parentBody.getParents();
                     if (starParents == null || starParents.isEmpty() ||
-                            starParents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()))) {
+                            starParents.stream().anyMatch(ExplorationParentBodies::isRootReferenceParent)) {
                         return parentBody;
                     }
                 }
@@ -2700,13 +2722,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // La collection originale peut être modifiée pendant l'itération (ObservableCollection, etc.)
         List<ACelesteBody> bodiesSnapshot = new ArrayList<>(bodies);
 
-        // Identifier les soleils
+        // Identifier les soleils (référentiel Null ou barycentre binaire sans parent étoile/planète affichable)
         List<ACelesteBody> stars = bodiesSnapshot.stream()
                 .filter(body -> body instanceof StarDetail)
                 .filter(body -> {
                     var parents = body.getParents();
                     return parents == null || parents.isEmpty() ||
-                            parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
+                            parents.stream().anyMatch(ExplorationParentBodies::isRootReferenceParent);
                 })
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                 .collect(Collectors.toList());
@@ -2781,6 +2803,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
 
         for (var parent : parents) {
+            if (ExplorationParentBodies.isRootReferenceParent(parent)) {
+                continue;
+            }
             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
             if (parentBody != null) {
                 return calculateDepth(parentBody, bodiesMap) + 1;
@@ -2937,7 +2962,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         int maxDepth = 0;
         for (var parent : parents) {
-            if ("Null".equalsIgnoreCase(parent.getType())) {
+            if (ExplorationParentBodies.isRootReferenceParent(parent)) {
                 continue;
             }
             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
@@ -2965,7 +2990,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Trouver le parent qui a la profondeur depth-1
         for (var parent : parents) {
-            if ("Null".equalsIgnoreCase(parent.getType())) {
+            if (ExplorationParentBodies.isRootReferenceParent(parent)) {
                 continue;
             }
             ACelesteBody parentBody = bodiesMap.get(parent.getBodyID());
@@ -3795,6 +3820,40 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
 
         return Integer.MAX_VALUE;
+    }
+
+    /**
+     * Quand le parent {@code Star} du journal ne résout pas dans la map, retrouve l’étoile dont le
+     * {@code BodyName} est le plus long préfixe du nom de la planète (ex. « … B 13 » → étoile « … B »).
+     * Ignore les soleils de secours ({@link StarType#NULL}, bodyID négatif).
+     */
+    private static StarDetail findHostStarForPlanetByNamePrefix(
+            PlaneteDetail planet, Collection<ACelesteBody> allBodies) {
+        String pn = planet.getBodyName();
+        if (pn == null || pn.isBlank()) {
+            return null;
+        }
+        String planetLower = pn.toLowerCase(Locale.ROOT);
+        StarDetail best = null;
+        int bestLen = -1;
+        for (ACelesteBody b : allBodies) {
+            if (!(b instanceof StarDetail sd)) {
+                continue;
+            }
+            if (sd.getBodyID() < 0 || sd.getStarType() == StarType.NULL) {
+                continue;
+            }
+            String sn = sd.getBodyName();
+            if (sn == null || sn.isBlank()) {
+                continue;
+            }
+            String prefix = sn.toLowerCase(Locale.ROOT) + " ";
+            if (planetLower.startsWith(prefix) && sn.length() > bestLen) {
+                bestLen = sn.length();
+                best = sd;
+            }
+        }
+        return best;
     }
 
     /**

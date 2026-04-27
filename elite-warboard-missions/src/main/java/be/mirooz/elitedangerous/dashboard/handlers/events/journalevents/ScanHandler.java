@@ -76,6 +76,12 @@ public class ScanHandler implements JournalEventHandler {
                     } else if (parent.has("Null")) {
                         int starID = parent.path("Null").asInt();
                         parents.add(ParentBody.builder().type("Null").bodyID(starID).build());
+                    } else if (parent.has("Barycentre")) {
+                        int id = parent.path("Barycentre").asInt();
+                        parents.add(ParentBody.builder().type("Barycentre").bodyID(id).build());
+                    } else if (parent.has("BaryCentre")) {
+                        int id = parent.path("BaryCentre").asInt();
+                        parents.add(ParentBody.builder().type("BaryCentre").bodyID(id).build());
                     }
                 });
             }
