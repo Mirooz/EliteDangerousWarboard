@@ -55,6 +55,7 @@ public class MultiSellExplorationDataHandler implements JournalEventHandler {
             saleRegistry.addToCurrentSale(discoveredSystems, baseValue, bonus, totalEarnings, timestamp);
             // Supprimer tout les credit d'exploration on Hold
             ExplorationDataSaleRegistry.getInstance().clearOnHold();
+            saleRegistry.appendCommanderStarSystemToCurrentSaleIfMissing(timestamp);
             System.out.printf("📊 Données d'exploration ajoutées: %d systèmes, BaseValue: %d, Bonus: %d, Total: %d%n",
                     discoveredSystems.size(), baseValue, bonus, totalEarnings);
             // Notifier le refresh du panneau d'exploration

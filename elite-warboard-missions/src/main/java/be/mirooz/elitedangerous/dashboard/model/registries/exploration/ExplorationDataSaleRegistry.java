@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.model.registries.exploration;
 
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataSale;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
@@ -100,6 +101,39 @@ public class ExplorationDataSaleRegistry {
 
     public void clearOnHold() {
         explorationDataOnHold = null;
+    }
+
+    /**
+     * Après une vente au marchand : le journal ne liste que les systèmes dont les données ont été
+     * vendues, pas forcément le système d'amarrage (hub, bulle, etc.). On garde le système actuel
+     * dans le groupe {@code currentSale} pour qu'il reste visible dans l'historique d'exploration.
+     */
+    public void appendCommanderStarSystemToCurrentSaleIfMissing(String journalTimestamp) {
+        if (currentSale == null || currentSale.getSystemsVisited() == null) {
+            return;
+        }
+        String name = CommanderStatus.getInstance().getCurrentStarSystem();
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        boolean alreadyListed = currentSale.getSystemsVisited().stream()
+                .anyMatch(s -> s != null && name.equals(s.getSystemName()));
+        if (alreadyListed) {
+            return;
+        }
+        SystemVisited fromRegistry = SystemVisitedRegistry.getInstance().getSystem(name);
+        if (fromRegistry != null) {
+            currentSale.getSystemsVisited().add(fromRegistry);
+            return;
+        }
+        String ts = journalTimestamp != null && !journalTimestamp.isBlank() ? journalTimestamp : "";
+        SystemVisited placeholder = SystemVisited.builder()
+                .systemName(name)
+                .firstVisitedTime(ts)
+                .lastVisitedTime(ts)
+                .sold(false)
+                .build();
+        currentSale.getSystemsVisited().add(placeholder);
     }
 
     public void clearAll(){
