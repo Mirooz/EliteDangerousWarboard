@@ -169,9 +169,15 @@ public final class FleetCarrierMarketTableSupport {
         Map<String, Integer> ship = shipStockByMergeKey != null ? shipStockByMergeKey : Map.of();
         List<FleetCarrierMarketRow> out = new ArrayList<>(byCommodity.size());
         for (FleetCarrierMarketRow r : byCommodity.values()) {
-            int shipTons = ship.getOrDefault(r.getCommodityKey(), 0);
-            int effectiveMissing = Math.max(0, r.getMissing() - r.getStock() - shipTons);
-            out.add(r.withMissing(effectiveMissing));
+            String k = r.getCommodityKey();
+            String constructionLabel = missingDisplayByCommodity != null ? missingDisplayByCommodity.get(k) : null;
+            FleetCarrierMarketRow row = r;
+            if (constructionLabel != null && !constructionLabel.isBlank()) {
+                row = row.withDisplayName(constructionLabel);
+            }
+            int shipTons = ship.getOrDefault(k, 0);
+            int effectiveMissing = Math.max(0, row.getMissing() - row.getStock() - shipTons);
+            out.add(row.withMissing(effectiveMissing));
         }
         sortRows(out, localizationService);
         return out;

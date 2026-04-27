@@ -45,6 +45,10 @@ public final class FleetCarrierMarketRow {
         return new FleetCarrierMarketRow(commodity, displayName, stock, purchaseOrder, saleOrder, price, newMissing);
     }
 
+    public FleetCarrierMarketRow withDisplayName(String newDisplay) {
+        return new FleetCarrierMarketRow(commodity, newDisplay, stock, purchaseOrder, saleOrder, price, missing);
+    }
+
     /** Clé de fusion avec les ressources chantier (même logique que l'UI colonisation). */
     public String getCommodityKey() {
         return ColonisationCommodityKeys.mergeKey(commodity);

@@ -547,16 +547,32 @@ public class CarrierStatus {
         for (Map.Entry<ICommodity, CarrierTradeOrderEntry> e : marketByCommodity.entrySet()) {
             if (e.getKey() != null && ColonisationCommodityKeys.mergeKey(e.getKey()).equals(mk)) {
                 CarrierTradeOrderEntry tr = e.getValue();
+                String fromValue = "";
                 if (tr != null && tr.getCommodity() != null) {
-                    return firstNonBlank(
-                            tr.getCommodity().getTitleName(),
-                            tr.getCommodity().getVisibleName(),
-                            tr.getCommodity().getCargoJsonName(),
-                            titleOrCargo(c));
+                    fromValue = commodityLabelPreferGameLocale(tr.getCommodity());
                 }
+                return firstNonBlank(
+                        commodityLabelPreferGameLocale(e.getKey()),
+                        fromValue,
+                        titleOrCargo(c));
             }
         }
         return titleOrCargo(c);
+    }
+
+    /** Libellé jeu / CAPI / journal : localisé explicite d’abord (évite Inara si le client a fourni un nom). */
+    private static String commodityLabelPreferGameLocale(ICommodity x) {
+        if (x == null) {
+            return "";
+        }
+        String loc = x.getLocalisedName();
+        if (loc != null) {
+            loc = loc.trim();
+            if (!loc.isBlank()) {
+                return loc;
+            }
+        }
+        return firstNonBlank(x.getVisibleName(), x.getTitleName(), x.getCargoJsonName());
     }
 
     private static String titleOrCargo(ICommodity c) {
