@@ -289,7 +289,7 @@ public class FleetCarrierOverlayComponent {
             Label empty = new Label(localizationService.getString("colonisation.fleet.overlay.noMissing"));
             empty.getStyleClass().add("colonisation-detail-placeholder");
             empty.setWrapText(true);
-            grid.add(empty, 0, 0, 5, 1);
+            //grid.add(empty, 0, 0, 5, 1);
             return;
         }
         int row = 0;

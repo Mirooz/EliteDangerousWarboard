@@ -3153,12 +3153,19 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             }
             systemArg = cur.trim();
         } else {
-            String archSys = selectedArchitectStarSystem;
-            if (archSys == null || archSys.isBlank()) {
-                showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noArchitectSystem"));
+            List<ColonisationDockEntry> docks = selectedConstructionListDocks();
+            if (docks.isEmpty()) {
+                showFleetOptimalMarketMessage(
+                        localizationService.getString("colonisation.fleet.optimalMarket.noConstructionListOrigin"));
                 return;
             }
-            systemArg = archSys.trim();
+            String firstSys = docks.get(0).getStarSystem();
+            if (firstSys == null || firstSys.isBlank()) {
+                showFleetOptimalMarketMessage(
+                        localizationService.getString("colonisation.fleet.optimalMarket.noConstructionListOrigin"));
+                return;
+            }
+            systemArg = firstSys.trim();
         }
         List<CommodityRequest> requests = buildFleetOptimalMarketCommodityRequests(cs);
         final boolean avoidPlanetary = fleetAvoidPlanetaryLandingCheckBox != null && fleetAvoidPlanetaryLandingCheckBox.isSelected();
