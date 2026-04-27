@@ -20,7 +20,6 @@ import be.mirooz.elitedangerous.dashboard.model.colonisation.construction.Struct
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResource;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionStatus;
-import be.mirooz.elitedangerous.dashboard.model.registries.commander.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
@@ -33,6 +32,10 @@ import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ColonisationNotificationService;
 import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
+import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierMarketRow;
+import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierMarketTableSupport;
+import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlayComponent;
+import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlaySnapshot;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
@@ -119,6 +122,8 @@ public class ColonisationPanelController implements Initializable {
     private Label architectSystemStatsLabel;
     @FXML
     private Label fleetTitleLabel;
+    @FXML
+    private Button fleetCarrierOverlayButton;
     @FXML
     private Button fleetCollapseButton;
     @FXML
@@ -209,6 +214,7 @@ public class ColonisationPanelController implements Initializable {
     private final PopupManager popupManager = PopupManager.getInstance();
     private final MiningService miningService = MiningService.getInstance();
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
+    private FleetCarrierOverlayComponent fleetCarrierOverlayComponent;
     private final CargoEventNotificationService cargoEventNotificationService = CargoEventNotificationService.getInstance();
     private final CargoEventNotificationService.CargoEventInterface commanderCargoListener =
             () -> Platform.runLater(this::refreshFleetPanel);
@@ -279,6 +285,21 @@ public class ColonisationPanelController implements Initializable {
         refreshAll();
         hideFleetRightColumn();
         initFleetOptimalMarketPanel();
+        initFleetCarrierOverlayButton();
+    }
+
+    private void initFleetCarrierOverlayButton() {
+        fleetCarrierOverlayComponent = new FleetCarrierOverlayComponent();
+        if (fleetCarrierOverlayButton != null) {
+            fleetCarrierOverlayButton.setOnAction(e ->
+                    fleetCarrierOverlayComponent.toggleOverlay(this::buildFleetCarrierOverlaySnapshot));
+            Tooltip ot = new Tooltip();
+            ot.setWrapText(true);
+            ot.setMaxWidth(320);
+            ot.setShowDelay(Duration.millis(200));
+            ot.setText(localizationService.getString("colonisation.fleet.overlayTooltip"));
+            fleetCarrierOverlayButton.setTooltip(ot);
+        }
     }
 
     private void initFleetOptimalMarketPanel() {
@@ -539,6 +560,13 @@ public class ColonisationPanelController implements Initializable {
         }
         constructionsTitleLabel.setText(localizationService.getString("colonisation.constructions.title"));
         fleetTitleLabel.setText(localizationService.getString("colonisation.fleet.title"));
+        if (fleetCarrierOverlayButton != null) {
+            fleetCarrierOverlayButton.setText(localizationService.getString("colonisation.fleet.overlayButton"));
+            Tooltip fleetOt = fleetCarrierOverlayButton.getTooltip();
+            if (fleetOt != null) {
+                fleetOt.setText(localizationService.getString("colonisation.fleet.overlayTooltip"));
+            }
+        }
         if (fleetAvoidPlanetaryLandingCheckBox != null) {
             fleetAvoidPlanetaryLandingCheckBox.setText(localizationService.getString("colonisation.fleet.optimalMarket.avoidPlanetary"));
         }
@@ -2726,6 +2754,7 @@ public class ColonisationPanelController implements Initializable {
                 fleetSummaryBox.getChildren().add(empty);
             }
             refreshCommanderColonyPanel();
+            refreshFleetCarrierOverlayIfOpen();
             return;
         }
 
@@ -2749,6 +2778,24 @@ public class ColonisationPanelController implements Initializable {
             fleetFindOptimalMarketButton.setDisable(fleetOptimalMarketSearchInProgress);
         }
         refreshCommanderColonyPanel();
+    }
+
+    private void refreshFleetCarrierOverlayIfOpen() {
+        if (fleetCarrierOverlayComponent != null) {
+            fleetCarrierOverlayComponent.refreshIfShowing();
+        }
+    }
+
+    private FleetCarrierOverlaySnapshot buildFleetCarrierOverlaySnapshot() {
+        CarrierStatus cs = carrierTradeService.getCarrierStatus();
+        if (!cs.isCarrierStatsInitialized()) {
+            return new FleetCarrierOverlaySnapshot(false, List.of(), Map.of(), Map.of());
+        }
+        List<FleetCarrierMarketRow> rows = FleetCarrierMarketTableSupport.buildMergedRows(cs,
+                buildMissingByCommodity(), buildMissingDisplayByCommodity(), localizationService);
+        Map<String, Integer> ship = FleetCarrierMarketTableSupport.shipStockByMergeKey(miningService.getCargo());
+        Map<String, Color> highlights = new HashMap<>(fleetCargoRowHighlightByMergeKey);
+        return new FleetCarrierOverlaySnapshot(true, rows, ship, highlights);
     }
 
     private void onFleetFindOptimalMarket() {
@@ -2783,6 +2830,13 @@ public class ColonisationPanelController implements Initializable {
             fleetOptimalMarketProgress.setVisible(true);
         }
         showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.searching"));
+        // Réinitialise les couleurs « marché optimal » et resynchronise grille + overlay pendant la recherche.
+        fleetCargoRowHighlightByMergeKey.clear();
+        if (fleetMarketGrid != null) {
+            refreshFleetMarketGrid(cs);
+        } else {
+            refreshFleetCarrierOverlayIfOpen();
+        }
         final String systemArg = refSystem.trim();
         final List<CommodityRequest> requestsArg = List.copyOf(requests);
         Thread t = new Thread(() -> {
@@ -2833,7 +2887,7 @@ public class ColonisationPanelController implements Initializable {
 
     private List<CommodityRequest> buildFleetOptimalMarketCommodityRequests(CarrierStatus cs) {
         List<CommodityRequest> out = new ArrayList<>();
-        for (FleetMarketRow r : buildFleetMergedRows(cs)) {
+        for (FleetCarrierMarketRow r : buildFleetMergedRows(cs)) {
             if (r.getMissing() <= 0) {
                 continue;
             }
@@ -3035,7 +3089,7 @@ public class ColonisationPanelController implements Initializable {
         return firstNonBlank(req, "");
     }
 
-    private Color fleetRouteColorForRow(FleetMarketRow r) {
+    private Color fleetRouteColorForRow(FleetCarrierMarketRow r) {
         if (r == null || r.getMissing() <= 0) {
             return null;
         }
@@ -3053,7 +3107,7 @@ public class ColonisationPanelController implements Initializable {
         return c;
     }
 
-    private static void clearFleetMarketRowHighlight(Label name, Label shipL, Label stock, Label missing, Label buyOrder, Label price) {
+    private static void clearFleetCarrierMarketRowHighlight(Label name, Label shipL, Label stock, Label missing, Label buyOrder, Label price) {
         for (Label cell : List.of(name, shipL, stock, missing, buyOrder, price)) {
             cell.setBackground(Background.EMPTY);
         }
@@ -3064,11 +3118,11 @@ public class ColonisationPanelController implements Initializable {
      * Couleur uniquement sur le libellé commodité : le thème impose {@code -fx-text-fill} sur {@code .cargo-mineral-name},
      * donc style inline pour la couleur station.
      */
-    private void applyFleetMarketRowRouteHighlight(
-            FleetMarketRow r, Label name, Label shipL, Label stock, Label missing, Label buyOrder, Label price) {
+    private void applyFleetCarrierMarketRowRouteHighlight(
+            FleetCarrierMarketRow r, Label name, Label shipL, Label stock, Label missing, Label buyOrder, Label price) {
         Color c = fleetRouteColorForRow(r);
         if (c == null) {
-            clearFleetMarketRowHighlight(name, shipL, stock, missing, buyOrder, price);
+            clearFleetCarrierMarketRowHighlight(name, shipL, stock, missing, buyOrder, price);
             return;
         }
         shipL.setBackground(Background.EMPTY);
@@ -3170,24 +3224,7 @@ public class ColonisationPanelController implements Initializable {
 
     /** Tonnes par commodité (clé fusion) dans le vaisseau : journal / {@link MiningService#getCargo}. */
     private Map<String, Integer> buildShipStockTonsByMergeKey() {
-        Map<String, Integer> out = new HashMap<>();
-        ShipCargo cargo = miningService.getCargo();
-        if (cargo == null || cargo.getCommodities() == null) {
-            return out;
-        }
-        for (Map.Entry<ICommodity, Integer> e : cargo.getCommodities().entrySet()) {
-            ICommodity comm = e.getKey();
-            if (comm == null) {
-                continue;
-            }
-            String k = ColonisationCommodityKeys.mergeKey(comm);
-            if (k.isBlank()) {
-                continue;
-            }
-            int q = e.getValue() != null ? e.getValue() : 0;
-            out.merge(k, Math.max(0, q), Integer::sum);
-        }
-        return out;
+        return FleetCarrierMarketTableSupport.shipStockByMergeKey(miningService.getCargo());
     }
 
     private Label placeholderLabel(String messageKey) {
@@ -3257,19 +3294,20 @@ public class ColonisationPanelController implements Initializable {
     private void refreshFleetMarketGrid(CarrierStatus cs) {
         fleetMarketGrid.getChildren().clear();
         addFleetMarketHeaderRow();
-        List<FleetMarketRow> rows = buildFleetMergedRows(cs);
+        List<FleetCarrierMarketRow> rows = buildFleetMergedRows(cs);
         Map<String, Integer> shipByKey = buildShipStockTonsByMergeKey();
         if (rows.isEmpty()) {
             Label empty = new Label(localizationService.getString("colonisation.fleet.marketEmpty"));
             empty.getStyleClass().add("cargo-mineral-null-price");
             empty.setWrapText(true);
             fleetMarketGrid.add(empty, 0, 1, 6, 1);
+            refreshFleetCarrierOverlayIfOpen();
             return;
         }
         int row = 1;
         CommodityCategory lastCategory = null;
-        for (FleetMarketRow r : rows) {
-            CommodityCategory cat = fleetMarketRowCategory(r);
+        for (FleetCarrierMarketRow r : rows) {
+            CommodityCategory cat = FleetCarrierMarketTableSupport.rowCategory(r);
             if (lastCategory != cat) {
                 Label catHead = new Label(fleetCommodityCategoryLabel(cat));
                 catHead.getStyleClass().add("colonisation-fleet-commodity-category");
@@ -3302,7 +3340,7 @@ public class ColonisationPanelController implements Initializable {
             if (po <= 0) {
                 priceText = "—";
             } else {
-                priceText = formatCreditsThousandsDots(r.getCarrierPurchaseBidPerTonCr());
+                priceText = FleetCarrierMarketTableSupport.formatCreditsThousandsDots(r.getCarrierPurchaseBidPerTonCr());
             }
             Label price = new Label(priceText);
             price.getStyleClass().add(po > 0 ? "cargo-mineral-total-price" : "cargo-mineral-null-price");
@@ -3310,7 +3348,7 @@ public class ColonisationPanelController implements Initializable {
             stock.getStyleClass().add(r.getStock() > 0 ? "cargo-mineral-quantity" : "cargo-mineral-null-price");
             Label missing = new Label(r.getMissing() > 0 ? Integer.toString(r.getMissing()) : "—");
             missing.getStyleClass().add(r.getMissing() > 0 ? "cargo-mineral-unit-price" : "cargo-mineral-null-price");
-            applyFleetMarketRowRouteHighlight(r, name, shipL, stock, missing, buyOrder, price);
+            applyFleetCarrierMarketRowRouteHighlight(r, name, shipL, stock, missing, buyOrder, price);
             fleetMarketGrid.add(name, 0, row);
             fleetMarketGrid.add(shipL, 1, row);
             fleetMarketGrid.add(stock, 2, row);
@@ -3319,6 +3357,7 @@ public class ColonisationPanelController implements Initializable {
             fleetMarketGrid.add(price, 5, row);
             row++;
         }
+        refreshFleetCarrierOverlayIfOpen();
     }
 
     private void addFleetMarketHeaderRow() {
@@ -3350,131 +3389,9 @@ public class ColonisationPanelController implements Initializable {
         return l;
     }
 
-    /** Séparateur de milliers « . » (ex. 1.234.567) pour les Cr affichés dans le tableau fleet. */
-    private static String formatCreditsThousandsDots(long amount) {
-        if (amount == 0L) {
-            return "0";
-        }
-        String s = Long.toString(amount);
-        int len = s.length();
-        int firstGroup = len % 3;
-        if (firstGroup == 0) {
-            firstGroup = 3;
-        }
-        StringBuilder out = new StringBuilder();
-        for (int i = 0; i < firstGroup; i++) {
-            out.append(s.charAt(i));
-        }
-        for (int i = firstGroup; i < len; i += 3) {
-            out.append('.');
-            out.append(s, i, i + 3);
-        }
-        return out.toString();
-    }
-
-    private List<FleetMarketRow> buildFleetMarketRows(CarrierStatus cs) {
-        Map<ICommodity, Integer> stocks = cs.getStocksByCommodity();
-        Map<String, FleetMarketRow> acc = new LinkedHashMap<>();
-
-        for (CarrierTradeOrderEntry e : cs.getActiveTransactions()) {
-            if (e == null) {
-                continue;
-            }
-            if (e.getCommodity() == null || CarrierStatus.isFleetStockExcludedDrone(e.getCommodity())) {
-                continue;
-            }
-            ICommodity nk = cs.canonicalCommodity(e);
-            if (nk == null || ColonisationCommodityKeys.mergeKey(nk).isBlank()) {
-                continue;
-            }
-            int stockVal = Math.max(e.getStock(), cs.physicalStock(nk));
-            if (stockVal <= 0 && e.getPurchaseOrder() == 0 && e.getSaleOrder() == 0) {
-                continue;
-            }
-            String display = firstNonBlank(
-                    nk.getTitleName(),
-                    nk.getVisibleName(),
-                    nk.getCargoJsonName());
-            /*
-             * Journal CarrierTradeOrder : Price est le prix à la tonne pour l’ordre actif.
-             * Pour un ordre d’achat (PurchaseOrder > 0), c’est ce que le carrier propose d’offrir par tonne ;
-             * pour un ordre de vente seul, ce serait le prix de vente — on ne le mélange pas dans cette colonne.
-             */
-            long carrierPurchaseBidPerTonCr = e.getPurchaseOrder() > 0 ? e.getPrice() : 0L;
-            String rowKey = ColonisationCommodityKeys.mergeKey(nk);
-            acc.put(rowKey, new FleetMarketRow(nk, display, stockVal, e.getPurchaseOrder(), e.getSaleOrder(), carrierPurchaseBidPerTonCr));
-        }
-
-        if (stocks != null) {
-            for (Map.Entry<ICommodity, Integer> en : stocks.entrySet()) {
-                int st = en.getValue() == null ? 0 : en.getValue();
-                if (st <= 0) {
-                    continue;
-                }
-                ICommodity comm = en.getKey();
-                if (comm == null) {
-                    continue;
-                }
-                if (CarrierStatus.isFleetStockExcludedDrone(comm)) {
-                    continue;
-                }
-                String nk = ColonisationCommodityKeys.mergeKey(comm);
-                if (nk.isBlank()) {
-                    continue;
-                }
-                if (acc.containsKey(nk)) {
-                    FleetMarketRow old = acc.get(nk);
-                    acc.put(nk, old.withStock(Math.max(old.getStock(), st)));
-                } else {
-                    acc.put(nk, new FleetMarketRow(comm, cs.displayLabel(comm), st, 0, 0, 0L));
-                }
-            }
-        }
-
-        List<FleetMarketRow> out = new ArrayList<>(acc.values());
-        out.sort(Comparator
-                .comparing(this::fleetMarketRowCategorySortKey, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
-        return out;
-    }
-
-    private List<FleetMarketRow> buildFleetMergedRows(CarrierStatus cs) {
-        List<FleetMarketRow> base = buildFleetMarketRows(cs);
-        Map<String, FleetMarketRow> byCommodity = new LinkedHashMap<>();
-        for (FleetMarketRow r : base) {
-            byCommodity.put(r.getCommodityKey(), r);
-        }
-        Map<String, Integer> missingByCommodity = buildMissingByCommodity();
-        Map<String, String> missingDisplayByCommodity = buildMissingDisplayByCommodity();
-        for (Map.Entry<String, Integer> e : missingByCommodity.entrySet()) {
-            String k = e.getKey();
-            int missing = e.getValue();
-            FleetMarketRow existing = byCommodity.get(k);
-            if (existing != null) {
-                byCommodity.put(k, existing.withMissing(missing));
-            } else {
-                String display = missingDisplayByCommodity.getOrDefault(k, k);
-                ICommodity onlyMissing = CarrierCommodityResolver.resolve(k, display);
-                byCommodity.put(k, new FleetMarketRow(onlyMissing, display, 0, 0, 0, 0L, missing));
-            }
-        }
-        List<FleetMarketRow> out = new ArrayList<>(byCommodity.values());
-        out.sort(Comparator
-                .comparing(this::fleetMarketRowCategorySortKey, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(FleetMarketRow::getDisplayName, String.CASE_INSENSITIVE_ORDER));
-        return out;
-    }
-
-    /** Clé de tri des groupes : libellé {@code colonisation.fleet.commodityCategory.<ENUM>}. */
-    private String fleetMarketRowCategorySortKey(FleetMarketRow r) {
-        return fleetCommodityCategoryLabel(fleetMarketRowCategory(r));
-    }
-
-    private static CommodityCategory fleetMarketRowCategory(FleetMarketRow r) {
-        if (r == null || r.getCommodity() == null) {
-            return CommodityCategory.UNKNOWN;
-        }
-        return r.getCommodity().getInaraCommodityCategory();
+    private List<FleetCarrierMarketRow> buildFleetMergedRows(CarrierStatus cs) {
+        return FleetCarrierMarketTableSupport.buildMergedRows(cs,
+                buildMissingByCommodity(), buildMissingDisplayByCommodity(), localizationService);
     }
 
     private String fleetCommodityCategoryLabel(CommodityCategory cat) {
@@ -3658,79 +3575,6 @@ public class ColonisationPanelController implements Initializable {
             }
         }
         return "";
-    }
-
-    public static final class FleetMarketRow {
-        private final ICommodity commodity;
-        private final String displayName;
-        private final int stock;
-        private final int purchaseOrder;
-        private final int saleOrder;
-        /** Crédits par tonne offerts par le carrier pour un ordre d’achat (journal), 0 si pas d’ordre d’achat. */
-        private final long price;
-        private final int missing;
-
-        public FleetMarketRow(ICommodity commodity, String displayName, int stock, int purchaseOrder, int saleOrder, long price) {
-            this(commodity, displayName, stock, purchaseOrder, saleOrder, price, 0);
-        }
-
-        public FleetMarketRow(ICommodity commodity, String displayName, int stock, int purchaseOrder, int saleOrder, long price, int missing) {
-            this.commodity = commodity;
-            String fallback =
-                    commodity != null && commodity.getCargoJsonName() != null ? commodity.getCargoJsonName() : "";
-            this.displayName = displayName != null && !displayName.isBlank() ? displayName : fallback;
-            this.stock = stock;
-            this.purchaseOrder = purchaseOrder;
-            this.saleOrder = saleOrder;
-            this.price = price;
-            this.missing = missing;
-        }
-
-        public FleetMarketRow withStock(int newStock) {
-            return new FleetMarketRow(commodity, displayName, newStock, purchaseOrder, saleOrder, price, missing);
-        }
-
-        public FleetMarketRow withMissing(int newMissing) {
-            return new FleetMarketRow(commodity, displayName, stock, purchaseOrder, saleOrder, price, newMissing);
-        }
-
-        public ICommodity getCommodity() {
-            return commodity;
-        }
-
-        /** Clé de fusion avec les ressources chantier (même logique qu’avant, dérivée du {@link ICommodity}). */
-        public String getCommodityKey() {
-            return ColonisationCommodityKeys.mergeKey(commodity);
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public int getStock() {
-            return stock;
-        }
-
-        public int getPurchaseOrder() {
-            return purchaseOrder;
-        }
-
-        public int getSaleOrder() {
-            return saleOrder;
-        }
-
-        public long getPrice() {
-            return price;
-        }
-
-        /** Prix unitaire (Cr/t) auquel le Fleet Carrier achète la commodité (offre d’achat), ou 0. */
-        public long getCarrierPurchaseBidPerTonCr() {
-            return purchaseOrder > 0 ? price : 0L;
-        }
-
-        public int getMissing() {
-            return missing;
-        }
     }
 
     public static final class ConstructionSiteRow {

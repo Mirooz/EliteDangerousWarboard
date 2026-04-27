@@ -30,6 +30,8 @@
                                 <VBox spacing="8.0" styleClass="colonisation-fleet-carrier-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                                     <HBox spacing="8.0" alignment="CENTER_LEFT">
                                         <Label fx:id="fleetTitleLabel" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="mining-title"/>
+                                        <Button fx:id="fleetCarrierOverlayButton" mnemonicParsing="false" focusTraversable="false"
+                                                styleClass="elite-nav-button"/>
                                         <Button fx:id="fleetCollapseButton" mnemonicParsing="false" focusTraversable="false" managed="false" visible="false"
                                                 styleClass="colonisation-panel-fold-button" text="▼"/>
                                     </HBox>
