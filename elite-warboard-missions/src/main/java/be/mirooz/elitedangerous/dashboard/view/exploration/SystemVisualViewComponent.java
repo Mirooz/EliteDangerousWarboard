@@ -130,8 +130,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private boolean spanshOnlineHydrationSuppressed;
 
     /**
-     * Chargement Spansh : placé sur le {@link StackPane} qui enveloppe le {@link #bodiesScrollPane},
-     * <strong>en dehors</strong> de {@link #bodiesGroup} pour ne pas subir zoom / pan.
+     * Chargement Spansh : placé sur le conteneur ({@link StackPane} ou {@link AnchorPane}) qui enveloppe le
+     * {@link #bodiesScrollPane}, <strong>en dehors</strong> de {@link #bodiesGroup} pour ne pas subir zoom / pan.
      */
     private StackPane spanshLoadingLayer;
 
@@ -1454,9 +1454,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             return;
         }
         Parent rawParent = bodiesScrollPane.getParent();
-        if (!(rawParent instanceof StackPane host)) {
-            return;
-        }
         if (spanshLoadingLayer == null) {
             ProgressIndicator indicator = new ProgressIndicator();
             indicator.setMaxSize(96, 96);
@@ -1465,12 +1462,31 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             spanshLoadingLayer.setPickOnBounds(true);
             spanshLoadingLayer.setStyle("-fx-background-color: transparent;");
             spanshLoadingLayer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            int scrollIdx = host.getChildren().indexOf(bodiesScrollPane);
-            if (scrollIdx < 0) {
-                host.getChildren().add(spanshLoadingLayer);
-            } else {
-                host.getChildren().add(scrollIdx + 1, spanshLoadingLayer);
+        }
+        if (rawParent instanceof StackPane host) {
+            if (!host.getChildren().contains(spanshLoadingLayer)) {
+                int scrollIdx = host.getChildren().indexOf(bodiesScrollPane);
+                if (scrollIdx < 0) {
+                    host.getChildren().add(spanshLoadingLayer);
+                } else {
+                    host.getChildren().add(scrollIdx + 1, spanshLoadingLayer);
+                }
             }
+        } else if (rawParent instanceof AnchorPane host) {
+            if (!host.getChildren().contains(spanshLoadingLayer)) {
+                int scrollIdx = host.getChildren().indexOf(bodiesScrollPane);
+                if (scrollIdx < 0) {
+                    host.getChildren().add(spanshLoadingLayer);
+                } else {
+                    host.getChildren().add(scrollIdx + 1, spanshLoadingLayer);
+                }
+            }
+            AnchorPane.setTopAnchor(spanshLoadingLayer, 0.0);
+            AnchorPane.setRightAnchor(spanshLoadingLayer, 0.0);
+            AnchorPane.setBottomAnchor(spanshLoadingLayer, 0.0);
+            AnchorPane.setLeftAnchor(spanshLoadingLayer, 0.0);
+        } else {
+            return;
         }
         spanshLoadingLayer.setVisible(true);
         spanshLoadingLayer.setManaged(true);
@@ -2412,18 +2428,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     if (ring == null || ring.isNull()) {
                         continue;
                     }
-                    if (ring.isObject()) {
-                        Iterator<Map.Entry<String, JsonNode>> ringFields = ring.fields();
-                        while (ringFields.hasNext()) {
-                            Map.Entry<String, JsonNode> e = ringFields.next();
-                            String fk = e.getKey();
-                            String label = ringCount <= 1 ? fk : ("Ring " + (i + 1) + " — " + fk);
-                            item.getChildren().add(buildJsonTree(e.getValue(), label));
-                        }
-                    } else {
-                        String label = ringCount <= 1 ? "Ring" : ("Ring " + (i + 1));
-                        item.getChildren().add(buildJsonTree(ring, label));
-                    }
+                    String ringLabel = ringCount == 1 ? "Ring" : ("Ring " + (i + 1));
+                    item.getChildren().add(buildJsonTree(ring, ringLabel));
                 }
             } else {
                 for (int i = 0; i < node.size(); i++) {

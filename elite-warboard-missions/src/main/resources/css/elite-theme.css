@@ -1439,6 +1439,14 @@
     -fx-padding: 0;
 }
 
+/* En-tête fenêtre détail (carte colonisation, panneau JSON exploration, etc.) */
+.colonisation-detail-window-header {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 0 8 0;
+    -fx-border-color: derive(-fx-elite-orange, -28%);
+    -fx-border-width: 0 0 1 0;
+}
+
 .colonisation-map-detail-window {
     -fx-padding: 10 10 10 10;
 }
@@ -1464,6 +1472,64 @@
 
 .colonisation-map-detail-scroll .scroll-bar:vertical .thumb {
     -fx-background-color: -fx-elite-orange;
+}
+
+.colonisation-map-detail-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+/* Panneau JSON exploration : barre de défilement horizontale masquée (TreeView) */
+.exploration-json-side-panel .colonisation-map-detail-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* Fenêtre JSON flottante : titre + croix alignés en haut (le header global utilise CENTER_LEFT) */
+.exploration-json-side-panel .exploration-json-window-header-row {
+    -fx-alignment: TOP_LEFT;
+}
+
+/*
+ * Croix fermeture : même rendu que la fenêtre détail colonisation (carte) — texte orange,
+ * pas de fond modena au survol / focus / défaut.
+ */
+.exploration-json-side-panel .colonisation-detail-window-header .colonisation-panel-fold-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-text-fill: derive(-fx-elite-orange, 8%);
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 4 2 6;
+    -fx-min-width: 28px;
+    -fx-cursor: hand;
+}
+
+.exploration-json-side-panel .colonisation-detail-window-header .colonisation-panel-fold-button:hover {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.exploration-json-side-panel .colonisation-detail-window-header .colonisation-panel-fold-button:pressed,
+.exploration-json-side-panel .colonisation-detail-window-header .colonisation-panel-fold-button:focused,
+.exploration-json-side-panel .colonisation-detail-window-header .colonisation-panel-fold-button:default {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: derive(-fx-elite-orange, 8%);
+}
+
+.exploration-json-side-panel .colonisation-detail-window-header .colonisation-panel-fold-button:focused:hover {
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+/* Léger relief pour la carte au-dessus de la vue système */
+.exploration-json-side-panel {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 14, 0.22, 0, 2);
 }
 
 .colonisation-list-progress-bar {
@@ -7194,133 +7260,7 @@
     -fx-max-height: 0;
 }
 
-/* Panneau JSON latéral */
-.exploration-json-panel {
-    -fx-background-color: -fx-elite-dark;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 2px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-padding: 10px;
-    -fx-spacing: 10px;
-}
-
-.exploration-json-header {
-    -fx-background-color: -fx-elite-darker;
-    -fx-padding: 8px;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 0 0 1 0;
-    -fx-border-radius: 0;
-    -fx-background-radius: 3px 3px 0 0;
-}
-
-.exploration-json-title {
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-    -fx-font-family: "Arial Black", "Arial", sans-serif;
-}
-
-.exploration-json-close-button {
-    -fx-background-color: -fx-elite-gray;
-    -fx-text-fill: -fx-elite-orange;
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-    -fx-padding: 4 10;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1px;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
-    -fx-cursor: hand;
-    -fx-min-width: 40px;
-    -fx-pref-width: 40px;
-    -fx-max-width: 40px;
-    -fx-min-height: 32px;
-    -fx-pref-height: 32px;
-    -fx-max-height: 32px;
-}
-
-.exploration-json-close-button:hover {
-    -fx-background-color: -fx-elite-orange;
-    -fx-text-fill: -fx-elite-dark;
-    -fx-border-color: -fx-elite-cyan;
-}
-
-.exploration-json-scroll {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-}
-
-.exploration-json-scroll .viewport {
-    -fx-background-color: -fx-elite-darker;
-}
-
-/* Scrollbar verticale pour le panneau JSON - Style Elite Dangerous */
-.exploration-json-scroll .scroll-bar:vertical {
-    -fx-background-color: -fx-elite-darker;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 0 0 0 1;
-    -fx-pref-width: 12px;
-    -fx-min-width: 12px;
-    -fx-max-width: 12px;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .thumb {
-    -fx-background-color: -fx-elite-orange;
-    -fx-background-radius: 2px;
-    -fx-border-radius: 2px;
-    -fx-min-height: 20px;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: -fx-elite-cyan;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .track {
-    -fx-background-color: -fx-elite-darker;
-    -fx-border-color: transparent;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .increment-button,
-.exploration-json-scroll .scroll-bar:vertical .decrement-button {
-    -fx-background-color: -fx-elite-darker;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 0 0 1 0;
-    -fx-pref-height: 12px;
-    -fx-min-height: 12px;
-    -fx-max-height: 12px;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .increment-button:hover,
-.exploration-json-scroll .scroll-bar:vertical .decrement-button:hover {
-    -fx-background-color: -fx-elite-gray;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .decrement-arrow {
-    -fx-background-color: -fx-elite-orange;
-    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
-    -fx-pref-width: 8px;
-    -fx-pref-height: 4px;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .increment-arrow {
-    -fx-background-color: -fx-elite-orange;
-    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
-    -fx-pref-width: 8px;
-    -fx-pref-height: 4px;
-}
-
-.exploration-json-scroll .scroll-bar:vertical .increment-arrow:hover,
-.exploration-json-scroll .scroll-bar:vertical .decrement-arrow:hover {
-    -fx-background-color: -fx-elite-cyan;
-}
-
-.exploration-json-scroll .scroll-bar:horizontal {
-    -fx-opacity: 0;
-    -fx-pref-height: 0;
-    -fx-min-height: 0;
-    -fx-max-height: 0;
-}
+/* Panneau JSON latéral : cadre et scroll via .exploration-json-side-panel + colonisation-* (voir system-visual-view.fxml) */
 
 .exploration-json-tree {
     -fx-background-color: -fx-elite-darker;

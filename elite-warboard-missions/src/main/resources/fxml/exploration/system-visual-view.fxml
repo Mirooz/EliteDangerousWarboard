@@ -4,14 +4,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Group?>
 <?import javafx.geometry.Insets?>
-
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent"
       spacing="0" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS">
 
     <Label fx:id="systemTitleLabel" text="VUE VISUELLE DU SYSTÈME" styleClass="exploration-section-title" />
     
-    <!-- Conteneur principal : Panneau gauche + Vue visuelle + Panneau JSON latéral -->
+    <!-- Conteneur principal : Panneau gauche + Vue visuelle (panneau JSON en overlay sur la vue centrale) -->
     <HBox spacing="10" VBox.vgrow="ALWAYS">
         <!-- Panneau gauche : Liste des corps du système -->
         <VBox fx:id="bodiesListPanel" styleClass="exploration-bodies-list-panel" 
@@ -33,12 +32,14 @@
             </ScrollPane>
         </VBox>
         
-        <!-- Zone d'affichage des corps célestes -->
-        <StackPane HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+        <!-- Zone d'affichage des corps célestes (AnchorPane : JSON ancré haut/droite/bas pour toute la hauteur) -->
+        <AnchorPane HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
             <ScrollPane fx:id="bodiesScrollPane" styleClass="exploration-visual-scroll"
-                        fitToWidth="false" fitToHeight="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"
+                        fitToWidth="false" fitToHeight="false"
                         minHeight="300" prefWidth="800" prefHeight="450"
-                        hbarPolicy="NEVER" vbarPolicy="NEVER">
+                        hbarPolicy="NEVER" vbarPolicy="NEVER"
+                        AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
                 <Group fx:id="bodiesGroup">
                     <Pane fx:id="bodiesPane" styleClass="exploration-visual-pane"
                           minHeight="300" prefWidth="800" prefHeight="450"
@@ -46,10 +47,7 @@
                 </Group>
             </ScrollPane>
             <VBox alignment="BOTTOM_LEFT" maxWidth="260.0" spacing="8.0" pickOnBounds="false"
-                  StackPane.alignment="BOTTOM_LEFT">
-                <StackPane.margin>
-                    <Insets top="0.0" right="0.0" bottom="8.0" left="8.0"/>
-                </StackPane.margin>
+                  AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <VBox spacing="8.0" HBox.hgrow="ALWAYS">
                         <HBox alignment="CENTER_LEFT" spacing="8.0">
@@ -64,26 +62,26 @@
                     <Button fx:id="resetViewParametersButton" text="⟳" styleClass="elite-nav-button"/>
                 </HBox>
             </VBox>
-        </StackPane>
-        
-        <!-- Panneau JSON latéral (caché par défaut) -->
-        <VBox fx:id="jsonDetailPanel" styleClass="exploration-json-panel" 
-              visible="false" managed="false" minWidth="400" maxWidth="500"
-              HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
-            <!-- En-tête avec titre et bouton fermer -->
-            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="exploration-json-header">
-                <Label fx:id="jsonBodyNameLabel" text="Détails JSON" styleClass="exploration-json-title" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="closeJsonPanelButton" text="✕" styleClass="exploration-json-close-button" 
-                        onAction="#closeJsonPanel"/>
-            </HBox>
-            
-            <!-- TreeView pour afficher le JSON de manière hiérarchique -->
-            <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" 
-                        styleClass="exploration-json-scroll" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
-                <TreeView fx:id="jsonTreeView" styleClass="exploration-json-tree" 
-                          showRoot="true" VBox.vgrow="ALWAYS"/>
-            </ScrollPane>
-        </VBox>
+            <!-- Fenêtre JSON : overlay pleine hauteur utile à droite -->
+            <VBox fx:id="jsonDetailPanel" pickOnBounds="true"
+                  styleClass="colonisation-column,colonisation-detail-column,exploration-json-side-panel"
+                  visible="false" managed="false"
+                  minWidth="360" prefWidth="440" maxWidth="480" minHeight="200"
+                  AnchorPane.topAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="10.0">
+                <HBox spacing="10" alignment="TOP_LEFT" styleClass="colonisation-detail-window-header,exploration-json-window-header-row">
+                    <Label fx:id="jsonBodyNameLabel" text="Détails JSON" styleClass="colonisation-section-subtitle"
+                           wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="closeJsonPanelButton" mnemonicParsing="false" focusTraversable="false"
+                            text="X" styleClass="colonisation-panel-fold-button"
+                            onAction="#closeJsonPanel"/>
+                </HBox>
+                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS"
+                            styleClass="colonisation-map-detail-scroll" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                    <TreeView fx:id="jsonTreeView" styleClass="exploration-json-tree"
+                              showRoot="true" VBox.vgrow="ALWAYS"/>
+                </ScrollPane>
+            </VBox>
+        </AnchorPane>
     </HBox>
 </VBox>
 
