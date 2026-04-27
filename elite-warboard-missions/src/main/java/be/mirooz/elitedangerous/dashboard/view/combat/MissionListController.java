@@ -112,6 +112,9 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
         UIManager.getInstance().register(this);
 
+        // Toute mutation de la carte des missions (hors batch) → liste à jour même si un handler oublie notify()
+        missionsRegistry.addMissionMapListener(this::refreshMissions);
+
         // Écouter les changements de langue
         localizationService.addLanguageChangeListener(locale -> {
             updateLanguage();
@@ -160,7 +163,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @Override
     public void onBatchStart() {
         setLoadingVisible(true);
-        MissionEventNotificationService.getInstance().clearListeners();
+        MissionEventNotificationService.getInstance().removeListener(this);
     }
 
     private void setLoadingVisible(boolean visible) {
@@ -375,6 +378,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
     @Override
     public void refreshUI() {
+        refreshMissions();
     }
 
     @Override

@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.ShipTargetRegistry;
@@ -68,9 +69,14 @@ public class DashboardService {
             } catch (Exception ex) {
                 ex.printStackTrace();
             } finally {
-                listeners.forEach(l -> Platform.runLater(l::onBatchEnd));
-                DashboardContext.getInstance().refreshUI();
-
+                // Un seul pulse FX : d’abord tous les onBatchEnd (liaisons header, listes, etc.),
+                // puis rafraîchissement global des panneaux enregistrés (UIManager).
+                Platform.runLater(() -> {
+                    for (IBatchListener l : listeners) {
+                        l.onBatchEnd();
+                    }
+                    UIManager.getInstance().refreshAllUI();
+                });
             }
         }).start();
     }

@@ -820,7 +820,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
     @Override
     public void refreshUI() {
-        //refresh();
+        refresh();
     }
 
     public void refresh() {

@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSh
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.ShipCargo;
 import be.mirooz.elitedangerous.dashboard.model.events.Loadout;
+import be.mirooz.elitedangerous.dashboard.service.listeners.CargoEventNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -45,6 +46,9 @@ public class LoadoutHandler implements JournalEventHandler {
             CommanderShip s = CommanderShip.getInstance();
             System.out.printf("New commander ship parsed: %s (%d cargo capacity)%n",
                     s.getShip(), s.getMaxCapacity());
+
+            // Recharger Cargo.json → jsonShipCargo et rafraîchir le panneau (comme après un event Cargo).
+            CargoEventNotificationService.getInstance().notifyCargoEvent();
 
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Loadout: " + e.getMessage());

@@ -124,7 +124,7 @@ public class DestroyedShipsController implements Initializable, IRefreshable, IB
     @Override
     public void onBatchStart(){
         destroyedShipsTable.setItems(null);
-        MissionEventNotificationService.getInstance().clearListeners();
+        MissionEventNotificationService.getInstance().removeListener(this);
     }
     @Override
     public void onBatchEnd() {
@@ -190,7 +190,10 @@ public class DestroyedShipsController implements Initializable, IRefreshable, IB
 
     @Override
     public void refreshUI() {
-        //updateStatistics();
+        if (destroyedShipsTable != null) {
+            destroyedShipsTable.setItems(destroyedShipsRegistery.getDestroyedShips());
+        }
+        updateStatistics();
     }
 
     @Override

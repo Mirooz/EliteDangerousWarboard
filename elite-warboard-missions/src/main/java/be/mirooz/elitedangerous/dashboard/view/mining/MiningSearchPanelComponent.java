@@ -7,7 +7,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MiningMe
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.mining.wrapper.MineralListWrapper;
-import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
@@ -320,7 +320,7 @@ public class MiningSearchPanelComponent implements Initializable, IBatchListener
                                     commodityMaxSell.ifPresent(
                                             maxSell -> mineral.getMineral().setPrice(maxSell.getMaxSellPrice()));
                                 });
-                        DashboardContext.getInstance().refreshUI();
+                        UIManager.getInstance().refreshAllPanelsIfNotBatchLoading();
                         onPriceUpdated.run();
                     }
                 }));

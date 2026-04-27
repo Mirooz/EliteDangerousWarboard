@@ -36,9 +36,11 @@ import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierMarketRo
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierMarketTableSupport;
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlayComponent;
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlaySnapshot;
+import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -112,7 +114,7 @@ import java.util.regex.Pattern;
 /**
  * Onglet colonisation + fleet carrier : chantiers architecte, chantier courant, ressources, suggestions d’achat dans le détail.
  */
-public class ColonisationPanelController implements Initializable {
+public class ColonisationPanelController implements Initializable, IRefreshable {
 
     @FXML
     private Button updateTradeStationButton;
@@ -300,6 +302,12 @@ public class ColonisationPanelController implements Initializable {
         hideFleetRightColumn();
         initFleetOptimalMarketPanel();
         initFleetCarrierOverlayButton();
+        UIManager.getInstance().register(this);
+    }
+
+    @Override
+    public void refreshUI() {
+        refreshAll();
     }
 
     private void initFleetCarrierOverlayButton() {
@@ -886,6 +894,7 @@ public class ColonisationPanelController implements Initializable {
             clearArchitectSystemImpactTotals();
             return;
         }
+        ensureDefaultColonisationStructuresForArchitectSystem(selectedArchitectArch);
         architectSystemStatsLabel.setManaged(true);
         architectSystemStatsLabel.setVisible(true);
         int completed = 0;
@@ -907,6 +916,39 @@ public class ColonisationPanelController implements Initializable {
                 total,
                 remainingTons));
         refreshArchitectSystemImpactTotals();
+    }
+
+    /**
+     * Même logique que l’auto-remplissage du sélecteur de structure dans le détail chantier : sans entrée persistée,
+     * les totaux T2/T3 de l’en-tête resteraient vides tant qu’on n’ouvre pas le panneau détail. On applique donc
+     * le défaut dès qu’un système architecte est affiché.
+     */
+    private void ensureDefaultColonisationStructuresForArchitectSystem(ColonisationArchitectSystem arch) {
+        if (arch == null) {
+            return;
+        }
+        List<Structure> catalog = Colony.getInstance().getConstructionClassCatalog();
+        for (ColonisationDockEntry site : arch.getSites()) {
+            if (site == null || site.getConstruction() == null) {
+                continue;
+            }
+            long marketId = site.getMarketId();
+            if (preferencesService.getColonisationUserConstructionStructure(marketId).isPresent()) {
+                continue;
+            }
+            Optional<String> preferredCategory = inferDefaultConstructionCategory(site);
+            if (preferredCategory.isEmpty()) {
+                continue;
+            }
+            String cat = preferredCategory.get();
+            ColonisationConstruction c = site.getConstruction();
+            List<ConstructionResource> req = c.getResourcesRequired();
+            Structure chosen = Colony.bestMatchByResourcesRequired(catalog, cat, req)
+                    .orElseGet(() -> firstStructureForCategory(catalog, cat).orElse(null));
+            if (chosen != null) {
+                preferencesService.setColonisationUserConstructionStructure(marketId, chosen);
+            }
+        }
     }
 
     private void clearArchitectSystemImpactTotals() {

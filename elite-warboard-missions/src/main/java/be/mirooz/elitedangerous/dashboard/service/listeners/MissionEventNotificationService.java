@@ -29,6 +29,12 @@ public class MissionEventNotificationService {
         listeners.clear();
     }
 
+    public void removeListener(MissionEventListener listener) {
+        if (listener != null) {
+            listeners.remove(listener);
+        }
+    }
+
     public void notifyOnMissionStatusChanged() {
         for (MissionEventListener listener : listeners) {
             try {

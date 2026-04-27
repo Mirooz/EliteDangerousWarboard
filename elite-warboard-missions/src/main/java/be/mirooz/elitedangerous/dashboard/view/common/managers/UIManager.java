@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.view.common.managers;
 
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import javafx.application.Platform;
 
 import java.util.ArrayList;
@@ -37,5 +38,16 @@ public class UIManager {
                 }
             }
         });
+    }
+
+    /**
+     * Rafraîchit tous les {@link IRefreshable} enregistrés, seulement si le replay / scan
+     * batch des journaux n’est pas en cours. Point d’entrée préféré pour un refresh global
+     * ponctuel (évite d’appeler {@link DashboardContext#refreshUI()} lié à d’autres usages).
+     */
+    public void refreshAllPanelsIfNotBatchLoading() {
+        if (!DashboardContext.getInstance().isBatchLoading()) {
+            refreshAllUI();
+        }
     }
 }

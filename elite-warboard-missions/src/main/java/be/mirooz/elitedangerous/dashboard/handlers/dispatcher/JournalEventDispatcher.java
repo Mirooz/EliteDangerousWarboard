@@ -58,12 +58,21 @@ public class JournalEventDispatcher {
         );
     }
     public void dispatch(JsonNode jsonNode) {
+        dispatch(jsonNode, null);
+    }
+
+    /**
+     * @param journalPhysicalLineNumber numéro de ligne 1-based dans le fichier journal courant
+     *                                  ({@link be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalFileTracker}),
+     *                                  ou {@code null} si inconnu (le curseur ne met pas à jour la ligne).
+     */
+    public void dispatch(JsonNode jsonNode, Integer journalPhysicalLineNumber) {
         String event = jsonNode.get("event").asText();
         JournalEventHandler handler = handlers.getOrDefault(event, defaultHandler);
         if (handler != null) {
             handler.handle(jsonNode);
         }
-        updateResumeCursor(jsonNode);
+        updateResumeCursor(jsonNode, journalPhysicalLineNumber);
     }
 
     /**
@@ -75,7 +84,7 @@ public class JournalEventDispatcher {
      * à chaque event et les race conditions entre save debouncé et {@code loadAll()} sur des
      * snapshots volumineux.</p>
      */
-    private void updateResumeCursor(JsonNode jsonNode) {
+    private void updateResumeCursor(JsonNode jsonNode, Integer journalPhysicalLineNumber) {
         JsonNode tsNode = jsonNode.get("timestamp");
         if (tsNode == null || tsNode.isNull()) {
             return;
@@ -89,6 +98,6 @@ public class JournalEventDispatcher {
         if (currentFile != null) {
             fileName = currentFile.getName();
         }
-        PersistenceService.getInstance().updateCursor(timestamp, fileName);
+        PersistenceService.getInstance().updateCursor(timestamp, fileName, journalPhysicalLineNumber);
     }
 }

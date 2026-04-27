@@ -243,8 +243,9 @@ public class JournalService {
                 }
                 System.out.println("[JournalService] Resume depuis " + lastFile
                         + " @ " + cursor.getLastTimestamp()
+                        + (cursor.getLastLineNumber() != null ? " ligne " + cursor.getLastLineNumber() : "")
                         + " (" + journalFiles.size() + " fichiers à scanner)");
-                dispatchIncremental(journalFiles, cursor.getLastTimestamp());
+                dispatchIncremental(journalFiles, cursor);
             } else {
                 dispatchAllEvents(journalFiles);
             }
@@ -267,7 +268,8 @@ public class JournalService {
             CargoEventNotificationService.getInstance().notifyCargoEvent();
             NavRouteService.getInstance().loadAndStoreNavRoute();
             ColonisationNotificationService.getInstance().notifyColonisationDataChanged();
-            DashboardContext.getInstance().refreshUI();
+            // Rafraîchissement UI global : {@link DashboardService#initActiveMissions()} (finally)
+            // après tous les {@code onBatchEnd}, pour respecter l’ordre liaisons → contenus.
         }
         return new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
 
@@ -278,33 +280,38 @@ public class JournalService {
     }
 
     /**
-     * Rejoue tous les events dont le timestamp est strictement postérieur à
-     * {@code lastTimestamp}. Les events antérieurs ou égaux sont supposés avoir déjà été
-     * appliqués lors d'une session précédente et sont ignorés.
+     * Rejoue les lignes non encore appliquées selon le curseur : préférence au numéro de ligne
+     * sur le fichier {@code resume.getLastJournalFile()} ; si {@code lastLineNumber} est absent
+     * (curseur ancien), repli sur le timestamp strictement postérieur.
      */
-    private void dispatchIncremental(List<File> journalFiles, String lastTimestamp) {
-        dispatchBatch(journalFiles, lastTimestamp);
+    private void dispatchIncremental(List<File> journalFiles, JournalCursor resume) {
+        dispatchBatch(journalFiles, resume);
     }
 
-    private void dispatchBatch(List<File> journalFiles, String minExclusiveTimestamp) {
+    private void dispatchBatch(List<File> journalFiles, JournalCursor resume) {
         DashboardContext.getInstance().setBatchLoading(true);
+        String resumeFile = resume != null ? blankToNull(resume.getLastJournalFile()) : null;
+        String resumeTs = resume != null ? blankToNull(resume.getLastTimestamp()) : null;
+        Integer resumeLine = resume != null ? resume.getLastLineNumber() : null;
+
         for (File journalFile : journalFiles) {
             // On trace le fichier courant pour que le dispatcher renseigne correctement le
             // curseur avec le nom du journal en cours.
             JournalFileTracker.getInstance().setCurrentFile(journalFile);
             try {
                 List<String> lines = Files.readAllLines(journalFile.toPath(), StandardCharsets.UTF_8);
+                int physicalLineNo = 0;
                 for (String line : lines) {
+                    physicalLineNo++;
                     try {
-                        JsonNode jsonNode = objectMapper.readTree(line);
-                        if (minExclusiveTimestamp != null) {
-                            JsonNode ts = jsonNode.get("timestamp");
-                            if (ts != null && !ts.isNull()
-                                    && ts.asText().compareTo(minExclusiveTimestamp) <= 0) {
-                                continue;
-                            }
+                        if (line == null || line.isBlank()) {
+                            continue;
                         }
-                        dispatcher.dispatch(jsonNode);
+                        JsonNode jsonNode = objectMapper.readTree(line);
+                        if (shouldSkipBatchLine(journalFile, physicalLineNo, jsonNode, resumeFile, resumeTs, resumeLine)) {
+                            continue;
+                        }
+                        dispatcher.dispatch(jsonNode, physicalLineNo);
                     } catch (Exception e) {
                         // Ignorer les lignes malformées
                     }
@@ -317,6 +324,45 @@ public class JournalService {
         // EliteDashboardApp + shutdown hook JVM). Le curseur en mémoire a été mis à jour
         // par le dispatcher à chaque event ; il sera flushé à la fermeture de l'app.
         // Fin de batch, Cargo.json, colonisation : {@link #parseAllJournalFiles()} finally
+    }
+
+    private static String blankToNull(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        return s;
+    }
+
+    /**
+     * @return {@code true} si la ligne ne doit pas être dispatchée (déjà couverte par le curseur).
+     */
+    private static boolean shouldSkipBatchLine(
+            File journalFile,
+            int physicalLineNo,
+            JsonNode jsonNode,
+            String resumeFile,
+            String resumeTs,
+            Integer resumeLine) {
+        if (resumeTs == null && resumeFile == null && resumeLine == null) {
+            return false;
+        }
+        boolean sameFile = resumeFile != null
+                && journalFile.getName().equalsIgnoreCase(resumeFile.trim());
+        if (resumeLine != null && resumeFile != null) {
+            if (sameFile) {
+                return physicalLineNo <= resumeLine;
+            }
+            // Fichiers d’après le journal du curseur : tout le contenu est nouveau.
+            return false;
+        }
+        // Curseur sans lastLineNumber : compatibilité — filtre par timestamp sur tous les fichiers.
+        if (resumeTs != null) {
+            JsonNode ts = jsonNode.get("timestamp");
+            if (ts != null && !ts.isNull() && ts.asText().compareTo(resumeTs) <= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

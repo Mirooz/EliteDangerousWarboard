@@ -18,11 +18,19 @@ public class FileheaderHandler implements JournalEventHandler {
     @Override
     public void handle(JsonNode jsonNode) {
         try {
+            // Nouveau fichier journal = client Elite actif (souvent avant LoadGame / menu).
+            commanderStatus.setOnline(true);
             if (jsonNode.has("gameversion")) {
                 commanderStatus.setGameVersion(jsonNode.get("gameversion").asText());
             }
             if (jsonNode.has("build")) {
                 commanderStatus.setGameBuild(jsonNode.get("build").asText());
+            }
+            if (jsonNode.has("Odyssey")) {
+                commanderStatus.setOdyssey(jsonNode.get("Odyssey").asBoolean());
+            }
+            if (jsonNode.has("Horizons")) {
+                commanderStatus.setHorizons(jsonNode.get("Horizons").asBoolean());
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Fileheader: " + e.getMessage());

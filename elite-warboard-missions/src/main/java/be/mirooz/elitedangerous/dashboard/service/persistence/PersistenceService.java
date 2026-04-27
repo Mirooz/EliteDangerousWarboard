@@ -178,8 +178,13 @@ public class PersistenceService {
         CommodityRegistry.getInstance().ensureSeededFromClasspathIfEmpty();
 
         JournalCursor cursor = cursorStore.getCursor();
-        System.out.println("[Persistence] Cursor restauré : " + cursor.getLastJournalFile()
-                + " @ " + cursor.getLastTimestamp());
+        if (cursor != null) {
+            String lineInfo = cursor.getLastLineNumber() != null
+                    ? " ligne " + cursor.getLastLineNumber()
+                    : " (reprise par timestamp seul)";
+            System.out.println("[Persistence] Cursor restauré : " + cursor.getLastJournalFile()
+                    + " @ " + cursor.getLastTimestamp() + lineInfo);
+        }
         return true;
     }
 
@@ -193,7 +198,15 @@ public class PersistenceService {
      * hors batch.
      */
     public void updateCursor(String lastTimestamp, String lastJournalFile) {
-        cursorStore.updateInMemory(lastTimestamp, lastJournalFile);
+        updateCursor(lastTimestamp, lastJournalFile, null);
+    }
+
+    /**
+     * Met à jour le curseur en mémoire — appelé par le dispatcher à chaque event dispatché
+     * hors batch. Si {@code lastLineNumber} est {@code null}, la ligne déjà stockée est conservée.
+     */
+    public void updateCursor(String lastTimestamp, String lastJournalFile, Integer lastLineNumber) {
+        cursorStore.updateInMemory(lastTimestamp, lastJournalFile, lastLineNumber);
     }
 
     // -------- Save API --------

@@ -6,13 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Curseur de reprise : timestamp du dernier event journal dispatché et nom du fichier journal
- * contenant cet event. Permet à {@code JournalService.parseAllJournalFiles()} de sauter le
- * replay des fichiers et lignes déjà traités lors de la session précédente.
+ * Curseur de reprise : timestamp du dernier event journal dispatché, nom du fichier journal
+ * contenant cet event, et numéro de ligne physique (1-based) de cette ligne dans le fichier.
+ * Permet à {@code JournalService.parseAllJournalFiles()} de sauter le replay des lignes déjà
+ * traitées lors de la session précédente.
  *
- * <p>Le timestamp est au format ISO-8601 UTC ({@code 2026-04-24T13:54:12Z}) tel qu'écrit
- * par Elite Dangerous dans le journal — la comparaison lexicographique est équivalente à
- * la comparaison chronologique.</p>
+ * <p>Les journaux Elite ne sont jamais réécrits en arrière : la reprise préfère
+ * {@code lastLineNumber} sur le fichier {@code lastJournalFile}. Si {@code lastLineNumber}
+ * est absent (curseurs JSON anciens), on retombe sur la comparaison lexicographique du
+ * timestamp ISO-8601 UTC.</p>
  */
 @Data
 @Builder
@@ -25,4 +27,10 @@ public class JournalCursor {
 
     /** Nom de fichier (pas chemin absolu) du dernier journal dispatché. */
     private String lastJournalFile;
+
+    /**
+     * Dernière ligne physique dispatchée dans {@code lastJournalFile} (1 = première ligne).
+     * {@code null} si curseur hérité sans ce champ.
+     */
+    private Integer lastLineNumber;
 }

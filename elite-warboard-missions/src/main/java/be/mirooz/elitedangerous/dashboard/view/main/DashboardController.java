@@ -151,6 +151,12 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             systemLabel.getStyleClass().clear();
             systemLabel.getStyleClass().addAll("clickable-system-source", "footer-value");
         }
+        // Le binding ne met à jour que la couleur ; LoadGame / Shutdown changent isOnline hors onBatchEnd.
+        commanderStatusComponent.getIsOnline().addListener((obs, wasOnline, onlineNow) -> {
+            if (statusLabel != null) {
+                updateStatusLabel();
+            }
+        });
     }
 
     private void loadComponents() {

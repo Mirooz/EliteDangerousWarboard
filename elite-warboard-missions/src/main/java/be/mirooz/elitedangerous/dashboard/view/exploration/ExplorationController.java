@@ -1,7 +1,9 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
+import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
 import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import javafx.application.Platform;
@@ -16,7 +18,7 @@ import java.util.ResourceBundle;
 /**
  * Contrôleur pour le panneau d'exploration
  */
-public class ExplorationController implements Initializable,IBatchListener {
+public class ExplorationController implements Initializable, IBatchListener, IRefreshable {
 
     // Conteneurs pour les composants
     @FXML
@@ -33,6 +35,12 @@ public class ExplorationController implements Initializable,IBatchListener {
         initializeComponents();
         setupComponentCallbacks();
         DashboardService.getInstance().addBatchListener(this);
+        UIManager.getInstance().register(this);
+    }
+
+    @Override
+    public void refreshUI() {
+        refresh();
     }
 
     @Override

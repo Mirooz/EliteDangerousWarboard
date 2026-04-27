@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningStatsService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
 import javafx.application.Platform;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -40,6 +41,8 @@ public class CommanderHandler implements JournalEventHandler {
                 // Mettre à jour le statut du commandant
                 commanderStatus.setCommanderName(name);
                 commanderStatus.setFID(fid);
+                // Identité journal reçue : session active même si LoadGame n’est pas encore écrit.
+                commanderStatus.setOnline(true);
 
                 System.out.println("Commandant - " + name + " - " + fid);
                 
@@ -57,6 +60,9 @@ public class CommanderHandler implements JournalEventHandler {
                     showNewCommanderPopup(name);
                     rereadAllJournalsForNewCommander();
                 }
+
+                // En-tête + panneaux enregistrés : hors batch uniquement (pas via DashboardContext#refreshUI).
+                UIManager.getInstance().refreshAllPanelsIfNotBatchLoading();
             }
         } catch (Exception e) {
             System.err.println("Erreur lors du parsing de Commander: " + e.getMessage());
