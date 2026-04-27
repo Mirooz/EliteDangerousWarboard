@@ -192,6 +192,22 @@ public class CarrierStatus {
         return v != null ? v : 0;
     }
 
+    /**
+     * Même principe que {@link be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.CarrierTradeOrderHandler} :
+     * le client renvoie un libellé localisé (CAPI {@code locName}, journal {@code Commodity_Localised}).
+     * Sans cela, {@link ICommodity#getVisibleName()} retombe sur le nom Inara du registre (souvent en anglais).
+     */
+    private static void applyLocalizedHintFromGameClient(ICommodity commodity, String localizedHint) {
+        if (commodity == null || localizedHint == null) {
+            return;
+        }
+        String loc = localizedHint.trim();
+        if (loc.isEmpty()) {
+            return;
+        }
+        commodity.setLocalisedName(loc);
+    }
+
     private static String firstServiceValue(Map<String, String> services, String... keys) {
         if (services == null || keys == null) {
             return "";
@@ -222,6 +238,7 @@ public class CarrierStatus {
             return;
         }
         ICommodity key = CarrierCommodityResolver.resolve(internal, loc);
+        applyLocalizedHintFromGameClient(key, loc);
         stocksByCommodity.merge(key, qty, Integer::sum);
     }
 
@@ -235,6 +252,7 @@ public class CarrierStatus {
             return;
         }
         ICommodity key = CarrierCommodityResolver.resolve(internal, loc);
+        applyLocalizedHintFromGameClient(key, loc);
         if (isFleetStockExcludedDrone(internal, loc)) {
             marketByCommodity.remove(key);
             return;
@@ -340,6 +358,7 @@ public class CarrierStatus {
         }
 
         ICommodity commodityKey = CarrierCommodityResolver.resolve(commodity, commodityLocalised);
+        applyLocalizedHintFromGameClient(commodityKey, commodityLocalised);
         int current = stocksByCommodity.getOrDefault(commodityKey, 0);
         int next = Math.max(current + delta, 0);
         if (next <= 0) {
