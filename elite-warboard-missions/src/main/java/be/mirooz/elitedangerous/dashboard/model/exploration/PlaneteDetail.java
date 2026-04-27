@@ -476,6 +476,7 @@ public class PlaneteDetail extends ACelesteBody {
         this.landable = src.landable;
         this.atmosphere = src.atmosphere;
         this.volcanism = src.volcanism;
+        this.radius=src.radius;
         this.materials = src.materials;
         this.rings = src.rings;
         this.jsonNode = src.jsonNode;

@@ -29,7 +29,6 @@ import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -317,18 +316,26 @@ public final class SpanshSystemVisitedMapper {
                 continue;
             }
             try {
-                final BioSpecies specie;
+                BioSpecies specie;
+
                 if ("Brain".equals(g.getSpecies())) {
                     specie = BioSpecies.brainTree();
-                } else {
-                    Optional<BioSpecies> resolved = resolveBioSpeciesFromSpanshGenus(g);
-                    if (resolved.isEmpty()) {
-                        log.debug(
-                                "Exobio Spansh sans correspondance BioSpecies : system={}, name={}, species={}, variant={}",
-                                planete.getStarSystem(), g.getLocalisedName(), g.getSpecies(), g.getVariant());
-                        continue;
-                    }
-                    specie = resolved.get();
+                }
+                else if (g.getVariant() == null ||g.getVariant().trim().isBlank())
+                {
+                    continue;
+                }else {
+                    specie = BioSpeciesService.getInstance().getSpecies().stream()
+                            .filter(s -> s.getName().equalsIgnoreCase(g.getLocalisedName()))
+                            .filter(s -> s.getSpecieName().equalsIgnoreCase(g.getSpecies()))
+                            .filter(s -> s.getColor().equalsIgnoreCase(g.getVariant()))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "No matching Spansh species found for system: " + planete.getStarSystem() +
+                                            ", name: " + g.getLocalisedName() +
+                                            ", species: " + g.getSpecies() +
+                                            ", variant: " + g.getVariant()
+                            ));
                 }
                 planete.setWasFootfalled(true);
                 planete.getConfirmedSpecies().stream()
@@ -347,41 +354,6 @@ public final class SpanshSystemVisitedMapper {
                 log.error("Error while processing spansh exobio", e);
             }
         }
-    }
-
-    /**
-     * Spansh renvoie souvent {@code variant} null alors que le référentiel distingue les couleurs
-     * (ex. « Cactoida Vermis - Grey »). On matche d'abord genre + espèce ; si la variante Spansh
-     * est absente, on retient la variante la plus fréquente ({@code count}) parmi les candidats.
-     */
-    private static Optional<BioSpecies> resolveBioSpeciesFromSpanshGenus(Genus g)
-            throws IOException, URISyntaxException {
-        String localGenus = g.getLocalisedName() != null ? g.getLocalisedName().trim() : "";
-        String speciesPart = g.getSpecies() != null ? g.getSpecies().trim() : "";
-        if (localGenus.isEmpty() || speciesPart.isEmpty()) {
-            return Optional.empty();
-        }
-        String spanshVariant = g.getVariant() != null ? g.getVariant().trim() : "";
-
-        List<BioSpecies> candidates = BioSpeciesService.getInstance().getSpecies().stream()
-                .filter(s -> s.getName() != null && s.getName().equalsIgnoreCase(localGenus))
-                .filter(s -> s.getSpecieName() != null && s.getSpecieName().equalsIgnoreCase(speciesPart))
-                .toList();
-
-        if (candidates.isEmpty()) {
-            return Optional.empty();
-        }
-
-        if (!spanshVariant.isEmpty()) {
-            return candidates.stream()
-                    .filter(s -> s.getColor() != null && s.getColor().equalsIgnoreCase(spanshVariant))
-                    .findFirst();
-        }
-
-        if (candidates.size() == 1) {
-            return Optional.of(candidates.get(0));
-        }
-        return candidates.stream().max(Comparator.comparingLong(BioSpecies::getCount));
     }
 
     private static int inferBioCountFromGenuses(List<Genus> genuses) {
