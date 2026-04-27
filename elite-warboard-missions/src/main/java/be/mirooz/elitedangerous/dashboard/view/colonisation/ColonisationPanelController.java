@@ -3322,6 +3322,34 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         return firstNonBlank(st.getSystemName(), "") + "\u0000" + firstNonBlank(st.getStationName(), "");
     }
 
+    /**
+     * Distance entrée étoile → station (ls), depuis le premier match qui expose {@code distanceToArrival}.
+     */
+    private static Double fleetOptimalStationDistanceLsFromMatches(NearbyExportsBestStationResult st) {
+        if (st == null || st.getMatches() == null) {
+            return null;
+        }
+        for (MatchedCommodityNearbyExport m : st.getMatches()) {
+            if (m == null || m.getExport() == null) {
+                continue;
+            }
+            if (m.getExport().getDistanceToArrival() != null) {
+                return m.getExport().getDistanceToArrival();
+            }
+        }
+        return null;
+    }
+
+    private static String formatFleetOptimalLs(double ls) {
+        if (Double.isNaN(ls) || Double.isInfinite(ls)) {
+            return "?";
+        }
+        if (Math.abs(ls) >= 1000) {
+            return String.format(Locale.ROOT, "%.0f", ls);
+        }
+        return String.format(Locale.ROOT, "%.1f", ls);
+    }
+
     private void populateFleetOptimalMarketResults(
             List<NearbyExportsBestStationResult> stations,
             Map<String, Integer> requestedTonsByMergeKey) {
@@ -3339,16 +3367,45 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             card.getStyleClass().add("colonisation-fleet-optimal-result-card");
             card.setMaxWidth(Double.MAX_VALUE);
 
-            HBox head = new HBox(4);
-            head.setAlignment(Pos.CENTER_LEFT);
             String sysText = firstNonBlank(st.getSystemName(), "—");
             String stationText = firstNonBlank(st.getStationName(), "—");
             Label sysPart = createCopyableFleetOptimalSystemLabel(sysText);
+            Label stationPart = createCopyableFleetOptimalStationLabel(stationText, c);
+
+            VBox sysCol = new VBox(2);
+            sysCol.setAlignment(Pos.TOP_LEFT);
+            sysCol.getChildren().add(sysPart);
+            if (st.getMinDistanceLy() != null) {
+                Label lySub = new Label(localizationService.getString(
+                        "colonisation.fleet.optimalMarket.distanceLy", st.getMinDistanceLy()));
+                lySub.getStyleClass().add("colonisation-fleet-optimal-result-distance-ly");
+                lySub.setWrapText(false);
+                sysCol.getChildren().add(lySub);
+            }
+
+            VBox stationCol = new VBox(2);
+            stationCol.setAlignment(Pos.TOP_RIGHT);
+            stationCol.setMaxWidth(Double.MAX_VALUE);
+            stationCol.getChildren().add(stationPart);
+            Double lsVal = fleetOptimalStationDistanceLsFromMatches(st);
+            if (lsVal != null && !lsVal.isNaN() && !lsVal.isInfinite()) {
+                Label lsSub = new Label(localizationService.getString(
+                        "colonisation.fleet.optimalMarket.distanceLs", formatFleetOptimalLs(lsVal)));
+                lsSub.getStyleClass().add("colonisation-fleet-optimal-result-distance-ls");
+                lsSub.setTextFill(Color.color(c.getRed(), c.getGreen(), c.getBlue(), 0.82));
+                lsSub.setWrapText(false);
+                stationCol.getChildren().add(lsSub);
+            }
+
             Label sep = new Label(" - ");
             sep.getStyleClass().add("colonisation-fleet-optimal-result-sep");
-            Label stationPart = createCopyableFleetOptimalStationLabel(stationText, c);
-            HBox.setHgrow(stationPart, Priority.ALWAYS);
-            head.getChildren().addAll(sysPart, sep, stationPart);
+            sep.setMinHeight(Region.USE_PREF_SIZE);
+            sep.setAlignment(Pos.TOP_CENTER);
+
+            HBox head = new HBox(8);
+            head.setAlignment(Pos.TOP_LEFT);
+            HBox.setHgrow(stationCol, Priority.ALWAYS);
+            head.getChildren().addAll(sysCol, sep, stationCol);
 
             List<String> names = new ArrayList<>();
             if (st.getMatches() != null) {

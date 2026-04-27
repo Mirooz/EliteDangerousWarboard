@@ -286,6 +286,17 @@
     -fx-opacity: 0.75;
 }
 
+.colonisation-fleet-optimal-result-distance-ly {
+    -fx-text-fill: derive(-fx-elite-cyan, -10%);
+    -fx-font-size: 11px;
+    -fx-opacity: 0.9;
+}
+
+.colonisation-fleet-optimal-result-distance-ls {
+    -fx-font-size: 11px;
+    -fx-opacity: 0.88;
+}
+
 .colonisation-fleet-optimal-results {
     -fx-padding: 6px 4px 10px 4px;
 }
