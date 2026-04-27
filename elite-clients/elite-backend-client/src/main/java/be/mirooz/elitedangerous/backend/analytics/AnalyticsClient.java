@@ -29,14 +29,6 @@ public class AnalyticsClient {
     private final Map<String, Long> panelDurations = new ConcurrentHashMap<>();
     private final Map<String, Long> panelStartTimes = new ConcurrentHashMap<>();
 
-    /**
-     * Le stub généré envoie {@code logFile} en {@code addTextBody(..., path.toString())}. On conserve
-     * l’appel à {@link AnalyticsControllerApi} et on remplace le corps multipart par un binaire ici.
-     */
-    private static final ThreadLocal<ClientErrorBinaryPayload> CLIENT_ERROR_BINARY_PAYLOAD = new ThreadLocal<>();
-
-    private record ClientErrorBinaryPayload(byte[] bytes, String fileName) {}
-
     private AnalyticsClient() {
         String baseUrl = BackendBundledProperties.get("backend.base-url", "http://localhost:8080");
         ApiClient apiClient = new ApiClient();
@@ -80,20 +72,20 @@ public class AnalyticsClient {
                 gzip.write(logFileContent);
             }
 
-
             analyticsApi.apiAnalyticsClientErrorReportPost(
                     nonBlankHeaderValue(getAppVersion(), "unknown"),
-                    nullableHeader(commanderName),
-                    nullableHeader(fid),
+                    nonBlankHeaderValue(commanderName, "Unknown"),
+                    nonBlankHeaderValue(fid, "unknown"),
                     nonBlankHeaderValue(getOperatingSystem(), "Unknown"),
-                    tempFile
-            );
+                    tempFile);
             System.out.println(String.format(
                     "[AnalyticsClient] Error report sent (file=%s, size=%.2f KB)",
                     tempFile.getName(),
                     tempFile.length() / 1024.0
             ));
 
+        } catch (ApiException e) {
+            System.err.println("[AnalyticsClient] erreur: HTTP " + e.getCode() + " — " + e.getMessage());
         } catch (Exception e) {
             System.err.println("[AnalyticsClient] erreur: " + e.getMessage());
 
@@ -108,14 +100,6 @@ public class AnalyticsClient {
     private static String nonBlankHeaderValue(String value, String fallbackIfBlank) {
         if (value == null || value.isBlank()) {
             return fallbackIfBlank;
-        }
-        return value.strip();
-    }
-
-    /** En-tête omis côté HTTP si null ou blanc ({@code if (x != null)} dans le client généré). */
-    private static String nullableHeader(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
         }
         return value.strip();
     }

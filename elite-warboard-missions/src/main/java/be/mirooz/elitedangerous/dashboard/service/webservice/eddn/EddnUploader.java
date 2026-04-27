@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSt
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.eddn.EddnClient;
+import be.mirooz.elitedangerous.eddn.EddnSchemas;
 import be.mirooz.elitedangerous.eddn.EddnUploaderId;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -114,6 +115,31 @@ public final class EddnUploader {
 
     public int queueSize() {
         return client.queueSize();
+    }
+
+    /**
+     * Après un {@code POST /api/capi/market} réussi : publie commodity/3 sur EDDN à partir du snapshot
+     * CAPI et de l’événement Docked (pas d’exigence gameVersion/gamebuild, contrairement au journal).
+     */
+    public void publishCapiMarketSnapshot(String fid, JsonNode dockedEvent, JsonNode capiMarket) {
+        if (!isEnabled()) {
+            return;
+        }
+        if (dashboardContext.isBatchLoading()) {
+            return;
+        }
+        if (fid == null || fid.isBlank() || capiMarket == null || capiMarket.isNull()) {
+            return;
+        }
+        ObjectNode message = CapiMarketEddnMessageBuilder.buildCommodityMessage(dockedEvent, capiMarket);
+        if (message == null) {
+            return;
+        }
+        String uploaderId = EddnUploaderId.fromFid(fid.trim());
+        if (uploaderId == null) {
+            return;
+        }
+        client.publish(EddnSchemas.COMMODITY_V3, uploaderId, null, null, message);
     }
 
     private boolean isPublishingAllowed() {

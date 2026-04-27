@@ -54,14 +54,15 @@
             <artifactId>jackson-databind-nullable</artifactId>
             <version>0.2.6</version>
         </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
+        <!-- Requis par openapi-generator (native) pour les corps multipart dans les *Api générés -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
             <version>4.5.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
 
