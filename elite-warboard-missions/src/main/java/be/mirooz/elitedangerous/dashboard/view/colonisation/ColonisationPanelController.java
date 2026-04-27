@@ -3670,14 +3670,12 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             } else {
                 buyOrder.getStyleClass().add("cargo-mineral-null-price");
             }
-            String priceText;
-            if (po <= 0) {
-                priceText = "—";
-            } else {
-                priceText = FleetCarrierMarketTableSupport.formatCreditsThousandsDots(r.getCarrierPurchaseBidPerTonCr());
-            }
+            long listedPerTon = r.getCarrierMarketListedPricePerTonCr();
+            String priceText = listedPerTon > 0
+                    ? FleetCarrierMarketTableSupport.formatCreditsThousandsDots(listedPerTon)
+                    : "—";
             Label price = new Label(priceText);
-            price.getStyleClass().add(po > 0 ? "cargo-mineral-total-price" : "cargo-mineral-null-price");
+            price.getStyleClass().add(listedPerTon > 0 ? "cargo-mineral-total-price" : "cargo-mineral-null-price");
             Label stock = new Label(Integer.toString(r.getStock()));
             stock.getStyleClass().add(r.getStock() > 0 ? "cargo-mineral-quantity" : "cargo-mineral-null-price");
             Label missing = new Label(r.getMissing() > 0 ? Integer.toString(r.getMissing()) : "—");

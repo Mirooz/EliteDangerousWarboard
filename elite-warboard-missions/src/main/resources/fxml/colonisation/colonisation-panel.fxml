@@ -51,8 +51,8 @@
                                                             <ColumnConstraints hgrow="SOMETIMES" minWidth="36.0"/>
                                                             <ColumnConstraints hgrow="SOMETIMES" minWidth="36.0"/>
                                                             <ColumnConstraints hgrow="SOMETIMES" minWidth="36.0"/>
-                                                            <!-- Ordre marché (▲/▼ + chiffres) : évite une colonne trop étroite -->
-                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="64.0" prefWidth="72.0"/>
+                                                            <!-- Ordre marché : en-tête long (ORDRE MARCHÉ / MARKET ORDER) + ▲/▼ + chiffres -->
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="80.0" prefWidth="80.0"/>
                                                             <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
                                                         </columnConstraints>
                                                     </GridPane>

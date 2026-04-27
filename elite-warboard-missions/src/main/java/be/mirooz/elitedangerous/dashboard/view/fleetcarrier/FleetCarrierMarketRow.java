@@ -14,7 +14,10 @@ public final class FleetCarrierMarketRow {
     private final int stock;
     private final int purchaseOrder;
     private final int saleOrder;
-    /** Crédits par tonne offerts par le carrier pour un ordre d'achat, 0 si pas d'ordre d'achat. */
+    /**
+     * Crédits/tonne issus du journal ou CAPI : enchère si le FC achète au commandant ({@code purchaseOrder}),
+     * prix catalogue si le FC vend au commandant ({@code saleOrder}). 0 si aucun ordre actif ou inconnu.
+     */
     private final long price;
     private final int missing;
 
@@ -49,5 +52,13 @@ public final class FleetCarrierMarketRow {
 
     public long getCarrierPurchaseBidPerTonCr() {
         return purchaseOrder > 0 ? price : 0L;
+    }
+
+    /** Prix affiché colonne « marché » : présent dès qu’un ordre d’achat ou de vente FC est actif. */
+    public long getCarrierMarketListedPricePerTonCr() {
+        if (purchaseOrder <= 0 && saleOrder <= 0) {
+            return 0L;
+        }
+        return price;
     }
 }

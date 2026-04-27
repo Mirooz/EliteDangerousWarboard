@@ -98,9 +98,9 @@ public final class FleetCarrierMarketTableSupport {
                         nk.getVisibleName(),
                         nk.getCargoJsonName());
             }
-            long carrierPurchaseBidPerTonCr = e.getPurchaseOrder() > 0 ? e.getPrice() : 0L;
+            long listedPerTonCr = (e.getPurchaseOrder() > 0 || e.getSaleOrder() > 0) ? e.getPrice() : 0L;
             String rowKey = ColonisationCommodityKeys.mergeKey(nk);
-            acc.put(rowKey, new FleetCarrierMarketRow(nk, display, stockVal, e.getPurchaseOrder(), e.getSaleOrder(), carrierPurchaseBidPerTonCr));
+            acc.put(rowKey, new FleetCarrierMarketRow(nk, display, stockVal, e.getPurchaseOrder(), e.getSaleOrder(), listedPerTonCr));
         }
 
         if (stocks != null) {
