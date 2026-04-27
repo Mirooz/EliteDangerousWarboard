@@ -3672,7 +3672,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             }
             long listedPerTon = r.getCarrierMarketListedPricePerTonCr();
             String priceText = listedPerTon > 0
-                    ? FleetCarrierMarketTableSupport.formatCreditsThousandsDots(listedPerTon)
+                    ? FleetCarrierMarketTableSupport.formatCreditsThousandsDots(listedPerTon) + " Cr"
                     : "—";
             Label price = new Label(priceText);
             price.getStyleClass().add(listedPerTon > 0 ? "cargo-mineral-total-price" : "cargo-mineral-null-price");
