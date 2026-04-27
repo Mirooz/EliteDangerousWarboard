@@ -66,28 +66,36 @@ public class LabelIconHelper {
     }
     
     /**
-     * Vérifie si une planète a exobio ou mapped
+     * Mappable crédits uniquement (icône « mapped »), même règle que {@code SystemVisualViewComponent} (terraformable / baseK).
+     */
+    private static boolean isCreditMappable(PlaneteDetail planet) {
+        if (planet.getPlanetClass() == null) {
+            return false;
+        }
+        int baseK = planet.getPlanetClass().getBaseK();
+        return planet.isTerraformable() || baseK > 50000;
+    }
+
+    /**
+     * Vérifie si une planète a exobio ou doit afficher l’icône « mapped » (mappable crédits seulement).
      */
     public static boolean[] checkPlanetIcons(ACelesteBody body) {
         boolean hasExobio = false;
         boolean hasMapped = false;
-        
+
         if (body instanceof PlaneteDetail planet) {
-            // Vérifier les espèces biologiques (bioSpecies) ou les espèces confirmées (confirmedSpecies)
-            if ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
-                (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty())) {
+            if ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty())
+                    || (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty())) {
                 hasExobio = true;
             }
-            if (planet.isMapped()) {
-                hasMapped = true;
-            }
+            hasMapped = isCreditMappable(planet);
         }
-        
+
         return new boolean[]{hasExobio, hasMapped};
     }
     
     /**
-     * Vérifie si un système a des planètes avec exobio ou mapped
+     * Vérifie si un système a de l’exobio ou au moins une planète mappable crédits (icône mapped).
      */
     public static boolean[] checkSystemIcons(java.util.Collection<ACelesteBody> bodies) {
         boolean hasExobio = false;
@@ -101,7 +109,7 @@ public class LabelIconHelper {
                          (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()))) {
                         hasExobio = true;
                     }
-                    if (!hasMapped && planet.isMapped()) {
+                    if (!hasMapped && isCreditMappable(planet)) {
                         hasMapped = true;
                     }
                     if (hasExobio && hasMapped) {

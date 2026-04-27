@@ -2159,20 +2159,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
                         (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty()));
 
-        // Vérifier si la planète respecte les conditions pour mapped
-        // Si la planète est déjà mapped, on affiche toujours l'icône + V vert
-        // Sinon, on affiche l'icône seulement si elle respecte les conditions (terraformable OU baseK > 50000)
-        boolean shouldShowMappedIcon = false;
+        // Icône « mapped » : uniquement mappable crédits (terraformable / baseK), pas l’exobio seul.
+        boolean shouldShowMappedIcon = isCreditMappableBody(planet);
         boolean isMapped = planet.isMapped();
-
-        if (isMapped) {
-            // Si la planète est déjà mapped, toujours afficher l'icône + V vert
-            shouldShowMappedIcon = true;
-        } else if (planet.getPlanetClass() != null) {
-            // Sinon, vérifier si elle respecte les conditions
-            int baseK = planet.getPlanetClass().getBaseK();
-            shouldShowMappedIcon = planet.isTerraformable() || baseK > 50000;
-        }
 
         if (!hasExobio && !shouldShowMappedIcon) {
             return; // Pas d'icônes à afficher
@@ -3013,16 +3002,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Ajouter l'icône mapped si nécessaire (pour les planètes)
         if (body instanceof PlaneteDetail planet && !suppressExplorationValueIndicators) {
-            // Vérifier si la planète respecte les conditions pour mapped
-            boolean shouldShowMappedIcon = false;
+            boolean shouldShowMappedIcon = isCreditMappableBody(planet);
             boolean isMapped = planet.isMapped();
-
-            if (isMapped) {
-                shouldShowMappedIcon = true;
-            } else if (planet.getPlanetClass() != null) {
-                int baseK = planet.getPlanetClass().getBaseK();
-                shouldShowMappedIcon = planet.isTerraformable() || baseK > 50000;
-            }
 
             if (shouldShowMappedIcon && mappedImage != null) {
                 ImageView mappedIconView = new ImageView(mappedImage);
@@ -3365,10 +3346,23 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     /**
-     * Vérifie si un corps est "high value" (contient exobiologie ou est mappable)
+     * Planète mappable pour les crédits scan (DSS) : terraformable ou {@code baseK > 50000} — sans tenir compte de l’exobio.
+     */
+    private boolean isCreditMappableBody(ACelesteBody body) {
+        if (!(body instanceof PlaneteDetail planet)) {
+            return false;
+        }
+        if (planet.getPlanetClass() == null) {
+            return false;
+        }
+        int baseK = planet.getPlanetClass().getBaseK();
+        return planet.isTerraformable() || baseK > 50000;
+    }
+
+    /**
+     * Vérifie si un corps est "high value" (contient exobiologie ou est mappable crédits)
      */
     private boolean isHighValueBody(ACelesteBody body) {
-        // Vérifier l'exobiologie
         if (body instanceof PlaneteDetail planet) {
             boolean hasExobio = (planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
                     (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty());
@@ -3377,11 +3371,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 return true;
             }
 
-            // Vérifier si mappable (terraformable ou baseK > 50000)
-            if (planet.getPlanetClass() != null) {
-                int baseK = planet.getPlanetClass().getBaseK();
-                return planet.isTerraformable() || baseK > 50000;
-            }
+            return isCreditMappableBody(planet);
         }
 
         return false;
