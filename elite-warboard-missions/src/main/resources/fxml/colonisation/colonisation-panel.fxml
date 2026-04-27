@@ -79,6 +79,8 @@
                                               styleClass="fleet-carrier-checkbox" selected="true"/>
                                     <CheckBox fx:id="fleetLargePadOnlyCheckBox" text="Large pads" wrapText="true" maxWidth="Infinity"
                                               styleClass="fleet-carrier-checkbox" selected="true"/>
+                                    <CheckBox fx:id="fleetUseCurrentSystemAsSourceCheckBox" wrapText="true" maxWidth="Infinity"
+                                              styleClass="fleet-carrier-checkbox" selected="false"/>
                                     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                                 styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame"
                                                 VBox.vgrow="ALWAYS">

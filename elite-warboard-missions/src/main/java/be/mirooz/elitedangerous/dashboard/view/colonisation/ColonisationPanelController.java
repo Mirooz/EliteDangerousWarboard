@@ -151,6 +151,8 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     @FXML
     private CheckBox fleetLargePadOnlyCheckBox;
     @FXML
+    private CheckBox fleetUseCurrentSystemAsSourceCheckBox;
+    @FXML
     private Button fleetFindOptimalMarketButton;
     @FXML
     private Button fleetOptimalMarketHelpButton;
@@ -392,6 +394,17 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         }
         if (fleetLargePadOnlyCheckBox != null) {
             fleetLargePadOnlyCheckBox.setSelected(true);
+        }
+        if (fleetUseCurrentSystemAsSourceCheckBox != null) {
+            fleetUseCurrentSystemAsSourceCheckBox.setSelected(false);
+            fleetUseCurrentSystemAsSourceCheckBox.setText(
+                    localizationService.getString("colonisation.fleet.optimalMarket.useCurrentSystemAsSource"));
+            Tooltip srcTip = new Tooltip();
+            srcTip.setWrapText(true);
+            srcTip.setMaxWidth(360);
+            srcTip.setShowDelay(Duration.millis(200));
+            srcTip.setText(localizationService.getString("colonisation.fleet.optimalMarket.useCurrentSystemAsSourceHint"));
+            fleetUseCurrentSystemAsSourceCheckBox.setTooltip(srcTip);
         }
         if (fleetOptimalMarketHelpButton != null) {
             fleetOptimalMarketHelpTooltip = new Tooltip();
@@ -653,6 +666,14 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         }
         if (fleetLargePadOnlyCheckBox != null) {
             fleetLargePadOnlyCheckBox.setText("Large pads");
+        }
+        if (fleetUseCurrentSystemAsSourceCheckBox != null) {
+            fleetUseCurrentSystemAsSourceCheckBox.setText(
+                    localizationService.getString("colonisation.fleet.optimalMarket.useCurrentSystemAsSource"));
+            Tooltip srcTip = fleetUseCurrentSystemAsSourceCheckBox.getTooltip();
+            if (srcTip != null) {
+                srcTip.setText(localizationService.getString("colonisation.fleet.optimalMarket.useCurrentSystemAsSourceHint"));
+            }
         }
         if (fleetFindOptimalMarketButton != null) {
             fleetFindOptimalMarketButton.setText(localizationService.getString("colonisation.fleet.optimalMarket.findButton"));
@@ -3082,10 +3103,28 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.notInitialized"));
             return;
         }
-        String refSystem = cs.getPosition() != null ? cs.getPosition().getStarSystem() : "";
-        if (refSystem == null || refSystem.isBlank()) {
+        String carrierSystem = cs.getPosition() != null ? cs.getPosition().getStarSystem() : "";
+        if (carrierSystem == null || carrierSystem.isBlank()) {
             showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noCarrierSystem"));
             return;
+        }
+        boolean useCurrentSystemAsSource = fleetUseCurrentSystemAsSourceCheckBox != null
+                && fleetUseCurrentSystemAsSourceCheckBox.isSelected();
+        final String systemArg;
+        if (useCurrentSystemAsSource) {
+            String cur = commanderStatus.getCurrentStarSystem();
+            if (cur == null || cur.isBlank()) {
+                showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noCurrentSystem"));
+                return;
+            }
+            systemArg = cur.trim();
+        } else {
+            String archSys = selectedArchitectStarSystem;
+            if (archSys == null || archSys.isBlank()) {
+                showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noArchitectSystem"));
+                return;
+            }
+            systemArg = archSys.trim();
         }
         List<CommodityRequest> requests = buildFleetOptimalMarketCommodityRequests(cs);
         final boolean avoidPlanetary = fleetAvoidPlanetaryLandingCheckBox != null && fleetAvoidPlanetaryLandingCheckBox.isSelected();
@@ -3112,7 +3151,6 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         } else {
             refreshFleetCarrierOverlayIfOpen();
         }
-        final String systemArg = refSystem.trim();
         final List<CommodityRequest> requestsArg = List.copyOf(requests);
         Thread t = new Thread(() -> {
             try {
