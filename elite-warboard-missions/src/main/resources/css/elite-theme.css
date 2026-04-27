@@ -2358,6 +2358,15 @@
     -fx-max-height: 0;
 }
 
+/* Overlay fleet : ScrollPane en mode largeur fixe — aucune piste horizontale résiduelle */
+.fleet-carrier-overlay-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+    -fx-padding: 0;
+}
+
 .cargo-minerals-grid .cargo-column-header {
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 5px 0;

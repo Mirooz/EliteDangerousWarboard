@@ -7,6 +7,7 @@ import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -37,8 +38,16 @@ import java.util.function.Supplier;
 /**
  * Fenêtre flottante « toujours au-dessus » : commodités groupées par catégorie (comme la grille colonisation),
  * sans ligne d’en-têtes de colonnes ni bandeau résumé (mêmes données et couleurs « marché optimal »).
+ * La colonne des noms garde une largeur minimaire fixe ; l’espacement horizontal entre les autres colonnes
+ * se resserre automatiquement quand la fenêtre rétrécit (pas de curseur horizontal en bas).
  */
 public class FleetCarrierOverlayComponent {
+
+    /** Largeur minimale de la colonne « nom » (px) — ne rétrécit pas quand l’overlay est réduit. */
+    private static final double FLEET_OVERLAY_NAME_COL_MIN_WIDTH = 260.0;
+    private static final double FLEET_OVERLAY_NUM_COL_MIN_WIDTH = 24.0;
+    private static final double FLEET_OVERLAY_HGAP_MAX = 10.0;
+    private static final double FLEET_OVERLAY_HGAP_MIN = -40.0;
 
     public static final double MIN_OPACITY = 0.01;
     public static final int MIN_WIDTH_OVERLAY = 420;
@@ -59,7 +68,6 @@ public class FleetCarrierOverlayComponent {
     private double overlayOpacity;
     private Label resizeHandle;
     private Slider opacitySlider;
-    private Slider textScaleSlider;
     private double textScale = 1.0;
     private StackPane stackPane;
     private Supplier<FleetCarrierOverlaySnapshot> dataSupplier;
@@ -80,7 +88,7 @@ public class FleetCarrierOverlayComponent {
 
     private void refreshLockChrome() {
         OverlayLockChrome.apply(passthrough.isClickThroughLocked(), stackPane,
-                resizeHandle, opacitySlider, textScaleSlider);
+                resizeHandle, opacitySlider);
     }
 
     public FleetCarrierOverlayComponent() {
@@ -121,6 +129,7 @@ public class FleetCarrierOverlayComponent {
         }
         FleetCarrierOverlaySnapshot snap = dataSupplier.get();
         replaceContentVBox(buildContentVBox(snap));
+        Platform.runLater(this::applyFleetOverlayGridHgapFromStage);
     }
 
     private void replaceContentVBox(VBox newCard) {
@@ -150,18 +159,14 @@ public class FleetCarrierOverlayComponent {
         VBox mirrorCard = buildContentVBox(initialSnapshot);
         resizeHandle = createResizeHandle();
         opacitySlider = createOpacitySlider();
-        textScaleSlider = createTextScaleSlider();
 
         stackPane = new StackPane();
-        stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider, textScaleSlider);
+        stackPane.getChildren().addAll(mirrorCard, resizeHandle, opacitySlider);
         StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
-        StackPane.setAlignment(textScaleSlider, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(opacitySlider, new Insets(0, 30, 0, 0));
-        StackPane.setMargin(textScaleSlider, new Insets(0, 60, 20, 0));
 
         opacitySlider.setMouseTransparent(false);
-        textScaleSlider.setMouseTransparent(false);
         resizeHandle.setMouseTransparent(false);
 
         Scene scene = new Scene(stackPane);
@@ -176,11 +181,12 @@ public class FleetCarrierOverlayComponent {
         updatePaneStyle(overlayOpacity, stackPane);
         applyTextScaleToNode(mirrorCard, textScale);
         setupOpacitySliderListener();
-        setupTextScaleSliderListener();
         setupInteractions();
         refreshLockChrome();
 
+        overlayStage.widthProperty().addListener((obs, o, n) -> applyFleetOverlayGridHgapFromStage());
         overlayStage.show();
+        Platform.runLater(this::applyFleetOverlayGridHgapFromStage);
         overlayStage.setOnCloseRequest(event -> disposeOverlayStage());
     }
 
@@ -220,7 +226,7 @@ public class FleetCarrierOverlayComponent {
         scroll.setFitToWidth(true);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scroll.getStyleClass().addAll("cargo-minerals-scroll", "colonisation-fleet-market-scroll");
+        scroll.getStyleClass().addAll("cargo-minerals-scroll", "colonisation-fleet-market-scroll", "fleet-carrier-overlay-scroll");
         VBox.setVgrow(scroll, Priority.ALWAYS);
 
         VBox inner = new VBox(4);
@@ -230,12 +236,20 @@ public class FleetCarrierOverlayComponent {
         grid.getStyleClass().addAll("cargo-minerals-grid", "colonisation-fleet-market-grid");
         for (int i = 0; i < 6; i++) {
             ColumnConstraints cc = new ColumnConstraints();
-            cc.setHgrow(i == 0 ? Priority.ALWAYS : Priority.SOMETIMES);
+            if (i == 0) {
+                cc.setMinWidth(FLEET_OVERLAY_NAME_COL_MIN_WIDTH);
+                cc.setHgrow(Priority.ALWAYS);
+            } else {
+                cc.setMinWidth(FLEET_OVERLAY_NUM_COL_MIN_WIDTH);
+                cc.setHgrow(Priority.NEVER);
+            }
             grid.getColumnConstraints().add(cc);
         }
         fillMarketGrid(grid, snap);
         inner.getChildren().add(grid);
         scroll.setContent(inner);
+        scroll.viewportBoundsProperty().addListener((obs, ov, nv) -> adjustFleetGridHgap(scroll, grid));
+        Platform.runLater(() -> adjustFleetGridHgap(scroll, grid));
         root.getChildren().add(scroll);
         return root;
     }
@@ -382,20 +396,6 @@ public class FleetCarrierOverlayComponent {
         return slider;
     }
 
-    private Slider createTextScaleSlider() {
-        Slider slider = new Slider(0.5, 3.0, textScale);
-        slider.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
-        slider.setPrefWidth(140);
-        slider.setOpacity(0.0);
-        slider.getStyleClass().add("text-scale-slider");
-        slider.setMajorTickUnit(0.5);
-        slider.setMinorTickCount(1);
-        slider.setShowTickLabels(false);
-        slider.setShowTickMarks(false);
-        slider.setSnapToTicks(false);
-        return slider;
-    }
-
     private void setupOpacitySliderListener() {
         opacitySlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             double opacity = Math.max(newVal.doubleValue(), MIN_OPACITY);
@@ -404,14 +404,50 @@ public class FleetCarrierOverlayComponent {
         });
     }
 
-    private void setupTextScaleSliderListener() {
-        textScaleSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            textScale = newVal.doubleValue();
-            if (stackPane != null && !stackPane.getChildren().isEmpty()) {
-                javafx.scene.Node card = stackPane.getChildren().get(0);
-                applyTextScaleToNode(card, textScale);
+    private void applyFleetOverlayGridHgapFromStage() {
+        if (stackPane == null || stackPane.getChildren().isEmpty()) {
+            return;
+        }
+        ScrollGridRef ref = findScrollGrid(stackPane.getChildren().get(0));
+        if (ref != null) {
+            adjustFleetGridHgap(ref.scroll(), ref.grid());
+        }
+    }
+
+    private record ScrollGridRef(ScrollPane scroll, GridPane grid) {}
+
+    private static ScrollGridRef findScrollGrid(Node root) {
+        if (!(root instanceof VBox vbox)) {
+            return null;
+        }
+        for (Node child : vbox.getChildren()) {
+            if (child instanceof ScrollPane sp && sp.getContent() instanceof VBox inner) {
+                for (Node innerChild : inner.getChildren()) {
+                    if (innerChild instanceof GridPane g) {
+                        return new ScrollGridRef(sp, g);
+                    }
+                }
             }
-        });
+        }
+        return null;
+    }
+
+    /**
+     * Répartit l’espace horizontal : colonne nom au moins la largeur min configurée,
+     * le reste pour les 5 colonnes numériques ; le {@code hgap} absorbe la contrainte de largeur.
+     */
+    private static void adjustFleetGridHgap(ScrollPane scroll, GridPane grid) {
+        double vw = scroll.getViewportBounds().getWidth();
+        if (vw <= 1 || Double.isNaN(vw)) {
+            return;
+        }
+        double pad = 28;
+        double numericMins = 5 * FLEET_OVERLAY_NUM_COL_MIN_WIDTH;
+        double fixed = pad + FLEET_OVERLAY_NAME_COL_MIN_WIDTH + numericMins;
+        double slack = vw - fixed;
+        double hg = slack / 5.0;
+        hg = Math.max(FLEET_OVERLAY_HGAP_MIN, Math.min(FLEET_OVERLAY_HGAP_MAX, hg));
+        grid.setHgap(hg);
     }
 
     private void updatePaneStyle(double opacity, StackPane pane) {
@@ -588,9 +624,6 @@ public class FleetCarrierOverlayComponent {
         double finalY = Math.max(0, Math.min(savedY, screenBounds.getHeight() - overlayStage.getHeight()));
         overlayStage.setX(finalX);
         overlayStage.setY(finalY);
-        if (textScaleSlider != null) {
-            textScaleSlider.setValue(textScale);
-        }
     }
 
     private void saveOverlayPreferences() {
