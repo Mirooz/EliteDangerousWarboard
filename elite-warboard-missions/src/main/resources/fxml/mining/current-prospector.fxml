@@ -21,9 +21,13 @@
             <Label fx:id="prospectorCounterLabel" text="1/1" styleClass="prospector-counter"/>
             <Button fx:id="nextProspectorButton" styleClass="elite-nav-button" minWidth="30" maxWidth="30"  text="▶"
                     onAction="#showNextProspector"/>
-            <Button fx:id="overlayButton"
-                    styleClass="elite-nav-button"
-                    onAction="#showProspectorOverlay"/>
+            <HBox spacing="6" alignment="CENTER">
+                <Button fx:id="overlayButton"
+                        styleClass="elite-nav-button"
+                        onAction="#showProspectorOverlay"/>
+                <ToggleButton fx:id="overlayPassThroughLockButton" mnemonicParsing="false" focusTraversable="false"
+                              styleClass="elite-nav-button overlay-pass-through-lock"/>
+            </HBox>
         </HBox>
     </HBox>
 

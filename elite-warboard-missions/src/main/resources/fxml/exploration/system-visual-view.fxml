@@ -18,7 +18,11 @@
               minWidth="400" prefWidth="480" maxWidth="480" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
             <HBox spacing="15" alignment="CENTER_LEFT">
                 <Label fx:id="systemBodiesLabel" text="CORPS DU SYSTÈME" styleClass="exploration-section-title" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="bodiesOverlayButton" styleClass="elite-nav-button" onAction="#showBodiesOverlay"/>
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Button fx:id="bodiesOverlayButton" styleClass="elite-nav-button" onAction="#showBodiesOverlay"/>
+                    <ToggleButton fx:id="bodiesOverlayPassThroughLockButton" mnemonicParsing="false" focusTraversable="false"
+                                  styleClass="elite-nav-button overlay-pass-through-lock"/>
+                </HBox>
             </HBox>
             <CheckBox fx:id="showOnlyHighValueBodiesCheckBox" text="Show only high value bodies" 
                       styleClass="exploration-filter-checkbox" 

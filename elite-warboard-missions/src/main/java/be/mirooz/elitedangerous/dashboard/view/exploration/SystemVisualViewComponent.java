@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.biologic.BodyType;
 import be.mirooz.elitedangerous.biologic.StarType;
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationArchitectMapCaptionLine;
@@ -17,7 +18,6 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.SpanshSystemVisitedService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -89,6 +89,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private TreeView<JsonTreeItem> jsonTreeView;
     @FXML
     private Button bodiesOverlayButton;
+    @FXML
+    private ToggleButton bodiesOverlayPassThroughLockButton;
     @FXML
     private Label spacingTitleLabel;
     @FXML
@@ -228,6 +230,29 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Initialiser le composant overlay
         bodiesOverlayComponent = new ExplorationBodiesOverlayComponent();
         bodiesOverlayComponent.setBodyCardFactory(this::createBodiesListForOverlay);
+        bodiesOverlayComponent.setOnOverlayClosed(() -> {
+            if (bodiesOverlayPassThroughLockButton != null) {
+                bodiesOverlayPassThroughLockButton.setSelected(false);
+            }
+        });
+        if (bodiesOverlayPassThroughLockButton != null) {
+            OverlayUi.applyOverlayLockToggleStyle(bodiesOverlayPassThroughLockButton);
+            bodiesOverlayPassThroughLockButton.setSelected(false);
+            Tooltip lt = new Tooltip();
+            lt.setWrapText(true);
+            lt.setMaxWidth(340);
+            lt.setShowDelay(Duration.millis(200));
+            bodiesOverlayPassThroughLockButton.setTooltip(lt);
+            OverlayUi.updateLockToggleGlyph(bodiesOverlayPassThroughLockButton);
+            OverlayUi.refreshLockTooltip(bodiesOverlayPassThroughLockButton, localizationService);
+            bodiesOverlayPassThroughLockButton.selectedProperty().addListener((obs, o, n) -> {
+                OverlayUi.updateLockToggleGlyph(bodiesOverlayPassThroughLockButton);
+                OverlayUi.refreshLockTooltip(bodiesOverlayPassThroughLockButton, localizationService);
+                if (bodiesOverlayComponent != null && bodiesOverlayComponent.isOverlayShowing()) {
+                    bodiesOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
+                }
+            });
+        }
         initSystemTitleClipboardAction();
 
         // Mettre à jour le texte du bouton overlay
@@ -3428,6 +3453,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
 
             updateBodiesOverlayButtonText();
+            applyBodiesOverlayPassThroughLock();
+        }
+    }
+
+    private void applyBodiesOverlayPassThroughLock() {
+        if (bodiesOverlayComponent != null && bodiesOverlayComponent.isOverlayShowing()
+                && bodiesOverlayPassThroughLockButton != null) {
+            bodiesOverlayComponent.setClickThroughLocked(bodiesOverlayPassThroughLockButton.isSelected());
         }
     }
 
@@ -3465,6 +3498,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
 
             updateBodiesOverlayButtonText();
+            applyBodiesOverlayPassThroughLock();
         });
     }
 
@@ -3473,19 +3507,35 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     private void updateBodiesOverlayButtonText() {
         if (bodiesOverlayButton != null && bodiesOverlayComponent != null) {
+            boolean open = bodiesOverlayComponent.isShowing() || bodiesOverlayComponent.isPopupShowing();
             String text;
             String icon;
 
-            if (bodiesOverlayComponent.isShowing() || bodiesOverlayComponent.isPopupShowing()) {
-                text = localizationService.getString("exploration.close");
-                icon = "✖"; // Croix pour fermer
+            if (open) {
+                text = localizationService.getString("overlay.action.close");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = localizationService.getString("exploration.close");
+                }
+                if (text == null || text.startsWith("exploration.")) {
+                    text = "Close";
+                }
+                icon = "✖";
             } else {
-                text = localizationService.getString("exploration.overlay");
-                icon = "🗔"; // Icône de fenêtre pour ouvrir
+                text = localizationService.getString("overlay.action.open");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = localizationService.getString("exploration.overlay");
+                }
+                if (text == null || text.startsWith("exploration.")) {
+                    text = "Overlay";
+                }
+                icon = OverlayUi.GLYPH_WINDOW_STACK;
             }
 
-            // Combiner l'icône et le texte
             bodiesOverlayButton.setText(icon + " " + text);
+        }
+        if (bodiesOverlayPassThroughLockButton != null) {
+            OverlayUi.updateLockToggleGlyph(bodiesOverlayPassThroughLockButton);
+            OverlayUi.refreshLockTooltip(bodiesOverlayPassThroughLockButton, localizationService);
         }
     }
 

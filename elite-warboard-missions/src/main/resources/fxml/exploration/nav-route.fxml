@@ -17,7 +17,11 @@
     <!-- En-tête avec titre et sélecteur de mode -->
     <HBox alignment="CENTER_LEFT" spacing="20" styleClass="nav-route-header">
         <Label fx:id="routeTitleLabel" text="ROUTE DE NAVIGATION" styleClass="nav-route-title"/>
-        <Button fx:id="overlayButton" styleClass="elite-nav-button" onAction="#showNavRouteOverlay" text="🗔 Overlay"/>
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Button fx:id="overlayButton" styleClass="elite-nav-button" onAction="#showNavRouteOverlay"/>
+            <ToggleButton fx:id="overlayPassThroughLockButton" mnemonicParsing="false" focusTraversable="false"
+                          styleClass="elite-nav-button overlay-pass-through-lock"/>
+        </HBox>
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>
         <HBox fx:id="modeSelectorContainer" spacing="10" alignment="CENTER_LEFT" styleClass="nav-route-mode-selector"/>
         <Separator orientation="VERTICAL" styleClass="nav-route-separator"/>

@@ -1834,6 +1834,19 @@
     -fx-cursor: default;
 }
 
+/* Verrou clic à travers (tous les overlays) : emoji lisible, taille alignée sur elite-nav-button */
+.overlay-pass-through-lock {
+    -fx-font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: normal;
+    -fx-min-width: 34px;
+    -fx-min-height: 30px;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-padding: 2px 6px;
+    -fx-text-overrun: clip;
+}
+
 /* Style spécifique pour le bouton LAST qui doit être plus large */
 .elite-nav-button.last-button {
     -fx-background-color: -fx-elite-orange;
@@ -5760,6 +5773,36 @@
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
     -fx-padding: 8px;
+}
+
+/* Liste missions : même taille que le thème de base ; min-width des boutons pour éviter les «…» */
+.target-panel-compact .target-panel-header {
+    -fx-padding: 0 0 2px 0;
+}
+
+.target-panel-compact .target-panel-title {
+    -fx-wrap-text: false;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Bouton overlay (Button) : même chrome que ailleurs — le fond du panneau est aussi -fx-elite-dark,
+   donc sans ce correctif le bouton paraît « vide » (même couleur que le panneau). */
+.target-panel-compact .button.elite-nav-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-min-width: 96px;
+}
+
+.target-panel-compact .button.elite-nav-button:hover {
+    -fx-background-color: rgba(255, 107, 0, 0.1);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-text-fill: -fx-elite-cyan;
+}
+
+.target-panel-compact .button.elite-nav-button:disabled {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-gray;
+    -fx-text-fill: -fx-elite-gray;
+    -fx-cursor: default;
 }
 
 .target-panel-compact .target-section {

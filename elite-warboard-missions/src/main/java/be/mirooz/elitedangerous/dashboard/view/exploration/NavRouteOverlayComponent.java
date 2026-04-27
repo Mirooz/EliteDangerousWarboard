@@ -4,6 +4,8 @@ import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -69,6 +71,8 @@ public class NavRouteOverlayComponent {
     private NavRouteComponent navRouteComponent;
     private Rectangle backgroundRectangle;
     private boolean wasOpenBeforeOnFoot = false; // Pour savoir si l'overlay était ouvert avant d'être "on foot"
+    private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+    private Runnable onOverlayClosed;
 
     public NavRouteOverlayComponent() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -120,12 +124,7 @@ public class NavRouteOverlayComponent {
     public void showOverlay(boolean withBordered) {
         // Si la fenêtre est déjà ouverte, on la ferme
         if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            overlayStage.close();
-            overlayStage = null;
-            if (onOverlayStateChanged != null) {
-                onOverlayStateChanged.run();
-            }
+            closeOverlay();
             return;
         }
 
@@ -168,6 +167,19 @@ public class NavRouteOverlayComponent {
      */
     public void setNavRouteComponent(NavRouteComponent component) {
         this.navRouteComponent = component;
+    }
+
+    public void setOnOverlayClosed(Runnable onOverlayClosed) {
+        this.onOverlayClosed = onOverlayClosed;
+    }
+
+    public void setClickThroughLocked(boolean locked) {
+        passthrough.setClickThroughLocked(locked, overlayStage, stackPane);
+        refreshLockChrome();
+    }
+
+    private void refreshLockChrome() {
+        OverlayLockChrome.apply(passthrough.isClickThroughLocked(), stackPane, resizeHandle, opacitySlider);
     }
 
     /**
@@ -215,15 +227,23 @@ public class NavRouteOverlayComponent {
      * Ferme l'overlay s'il est ouvert
      */
     public void closeOverlay() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage.close();
-            overlayStage = null;
-            if (onOverlayStateChanged != null) {
-                onOverlayStateChanged.run();
-            }
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
         }
+        saveOverlayPreferences();
+        popupManager.unregisterContainer(overlayStage);
+        Stage stage = overlayStage;
+        StackPane pane = stackPane;
+        overlayStage = null;
+        stackPane = null;
+        passthrough.disposeForClose(stage, pane);
+        if (onOverlayClosed != null) {
+            onOverlayClosed.run();
+        }
+        if (onOverlayStateChanged != null) {
+            onOverlayStateChanged.run();
+        }
+        stage.close();
     }
 
     /**
@@ -270,7 +290,8 @@ public class NavRouteOverlayComponent {
 
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
-        
+        refreshLockChrome();
+
         // Écouter les changements de taille pour mettre à jour le contenu
         overlayStage.widthProperty().addListener((obs, oldWidth, newWidth) -> {
             if (newWidth.doubleValue() > 0) {
@@ -280,14 +301,7 @@ public class NavRouteOverlayComponent {
 
         // Afficher l'overlay
         overlayStage.show();
-        overlayStage.setOnCloseRequest(event -> {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage = null;
-            if (onOverlayStateChanged != null) {
-                onOverlayStateChanged.run();
-            }
-        });
+        overlayStage.setOnCloseRequest(event -> closeOverlay());
     }
 
     /**
@@ -422,6 +436,9 @@ public class NavRouteOverlayComponent {
         Scene scene = overlayStage.getScene();
 
         scene.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() != MouseButton.PRIMARY) {
                 return;
             }
@@ -446,6 +463,9 @@ public class NavRouteOverlayComponent {
             }
         });
         scene.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() != MouseButton.PRIMARY) {
                 return;
             }
@@ -474,55 +494,28 @@ public class NavRouteOverlayComponent {
             }
         });
         scene.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             isResizing[0] = false;
             armWindowMove[0] = false;
         });
 
         scene.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
             double mouseY = e.getSceneY();
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                if (resizeHandle != null) {
-                    resizeHandle.setOpacity(1.0);
-                }
-                if (opacitySlider != null) {
-                    opacitySlider.setOpacity(0.8);
-                }
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                if (resizeHandle != null) {
-                    resizeHandle.setOpacity(0.8);
-                }
-                if (opacitySlider != null) {
-                    opacitySlider.setOpacity(0.8);
-                }
             }
         });
 
-        scene.addEventFilter(MouseEvent.MOUSE_EXITED, e -> {
-            if (resizeHandle != null) {
-                resizeHandle.setOpacity(0.0);
-            }
-            if (opacitySlider != null) {
-                opacitySlider.setOpacity(0.0);
-            }
-            stackPane.getStyleClass().remove("overlay-root-bordered");
-        });
-
-        scene.addEventFilter(MouseEvent.MOUSE_ENTERED, e -> {
-            if (resizeHandle != null) {
-                resizeHandle.setOpacity(0.8);
-            }
-            if (opacitySlider != null) {
-                opacitySlider.setOpacity(0.8);
-            }
-            if (!stackPane.getStyleClass().contains("overlay-root-bordered")) {
-                stackPane.getStyleClass().add("overlay-root-bordered");
-            }
-        });
     }
 
     private static Node pickNode(MouseEvent e) {

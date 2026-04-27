@@ -36,6 +36,7 @@ import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierMarketRo
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierMarketTableSupport;
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlayComponent;
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlaySnapshot;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
@@ -49,6 +50,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -124,6 +126,8 @@ public class ColonisationPanelController implements Initializable {
     private Label fleetTitleLabel;
     @FXML
     private Button fleetCarrierOverlayButton;
+    @FXML
+    private ToggleButton fleetCarrierOverlayLockButton;
     @FXML
     private Button fleetCollapseButton;
     @FXML
@@ -290,15 +294,74 @@ public class ColonisationPanelController implements Initializable {
 
     private void initFleetCarrierOverlayButton() {
         fleetCarrierOverlayComponent = new FleetCarrierOverlayComponent();
+        fleetCarrierOverlayComponent.setOnOverlayClosed(() -> {
+            if (fleetCarrierOverlayLockButton != null) {
+                fleetCarrierOverlayLockButton.setSelected(false);
+            }
+            updateFleetCarrierOverlayButtonText();
+        });
         if (fleetCarrierOverlayButton != null) {
-            fleetCarrierOverlayButton.setOnAction(e ->
-                    fleetCarrierOverlayComponent.toggleOverlay(this::buildFleetCarrierOverlaySnapshot));
+            fleetCarrierOverlayButton.setOnAction(e -> {
+                fleetCarrierOverlayComponent.toggleOverlay(this::buildFleetCarrierOverlaySnapshot);
+                updateFleetCarrierOverlayButtonText();
+                if (fleetCarrierOverlayComponent.isShowing() && fleetCarrierOverlayLockButton != null) {
+                    fleetCarrierOverlayComponent.setClickThroughLocked(fleetCarrierOverlayLockButton.isSelected());
+                }
+            });
             Tooltip ot = new Tooltip();
             ot.setWrapText(true);
             ot.setMaxWidth(320);
             ot.setShowDelay(Duration.millis(200));
             ot.setText(localizationService.getString("colonisation.fleet.overlayTooltip"));
             fleetCarrierOverlayButton.setTooltip(ot);
+        }
+        if (fleetCarrierOverlayLockButton != null) {
+            OverlayUi.applyOverlayLockToggleStyle(fleetCarrierOverlayLockButton);
+            fleetCarrierOverlayLockButton.setSelected(false);
+            Tooltip lt = new Tooltip();
+            lt.setWrapText(true);
+            lt.setMaxWidth(340);
+            lt.setShowDelay(Duration.millis(200));
+            fleetCarrierOverlayLockButton.setTooltip(lt);
+            OverlayUi.updateLockToggleGlyph(fleetCarrierOverlayLockButton);
+            OverlayUi.refreshLockTooltip(fleetCarrierOverlayLockButton, localizationService);
+            fleetCarrierOverlayLockButton.selectedProperty().addListener((obs, o, n) -> {
+                OverlayUi.updateLockToggleGlyph(fleetCarrierOverlayLockButton);
+                OverlayUi.refreshLockTooltip(fleetCarrierOverlayLockButton, localizationService);
+                if (fleetCarrierOverlayComponent != null && fleetCarrierOverlayComponent.isShowing()) {
+                    fleetCarrierOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
+                }
+            });
+        }
+        updateFleetCarrierOverlayButtonText();
+    }
+
+    private void updateFleetCarrierOverlayButtonText() {
+        if (fleetCarrierOverlayButton != null && fleetCarrierOverlayComponent != null) {
+            boolean showing = fleetCarrierOverlayComponent.isShowing();
+            String text;
+            String icon;
+            if (showing) {
+                text = localizationService.getString("overlay.action.close");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = "Close";
+                }
+                icon = "✖";
+            } else {
+                text = localizationService.getString("overlay.action.open");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = localizationService.getString("colonisation.fleet.overlayButton");
+                }
+                if (text == null || text.startsWith("colonisation.")) {
+                    text = "Overlay";
+                }
+                icon = OverlayUi.GLYPH_WINDOW_STACK;
+            }
+            fleetCarrierOverlayButton.setText(icon + " " + text);
+        }
+        if (fleetCarrierOverlayLockButton != null) {
+            OverlayUi.updateLockToggleGlyph(fleetCarrierOverlayLockButton);
+            OverlayUi.refreshLockTooltip(fleetCarrierOverlayLockButton, localizationService);
         }
     }
 
@@ -561,12 +624,12 @@ public class ColonisationPanelController implements Initializable {
         constructionsTitleLabel.setText(localizationService.getString("colonisation.constructions.title"));
         fleetTitleLabel.setText(localizationService.getString("colonisation.fleet.title"));
         if (fleetCarrierOverlayButton != null) {
-            fleetCarrierOverlayButton.setText(localizationService.getString("colonisation.fleet.overlayButton"));
             Tooltip fleetOt = fleetCarrierOverlayButton.getTooltip();
             if (fleetOt != null) {
                 fleetOt.setText(localizationService.getString("colonisation.fleet.overlayTooltip"));
             }
         }
+        updateFleetCarrierOverlayButtonText();
         if (fleetAvoidPlanetaryLandingCheckBox != null) {
             fleetAvoidPlanetaryLandingCheckBox.setText(localizationService.getString("colonisation.fleet.optimalMarket.avoidPlanetary"));
         }

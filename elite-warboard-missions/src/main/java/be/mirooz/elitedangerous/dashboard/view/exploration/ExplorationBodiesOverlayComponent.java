@@ -4,6 +4,8 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -67,6 +69,21 @@ public class ExplorationBodiesOverlayComponent {
     private SystemVisited currentSystem;
     @SuppressWarnings("unused")
     private boolean showOnlyHighValue;
+    private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+    private Runnable onOverlayClosed;
+
+    public void setOnOverlayClosed(Runnable onOverlayClosed) {
+        this.onOverlayClosed = onOverlayClosed;
+    }
+
+    public void setClickThroughLocked(boolean locked) {
+        passthrough.setClickThroughLocked(locked, overlayStage, stackPane);
+        refreshLockChrome();
+    }
+
+    private void refreshLockChrome() {
+        OverlayLockChrome.apply(passthrough.isClickThroughLocked(), stackPane, resizeHandle, opacitySlider);
+    }
 
     public ExplorationBodiesOverlayComponent() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -92,9 +109,7 @@ public class ExplorationBodiesOverlayComponent {
 
         // Si la fenêtre est déjà ouverte, on la ferme
         if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            overlayStage.close();
-            overlayStage = null;
+            closeOverlay();
             return;
         }
 
@@ -106,6 +121,9 @@ public class ExplorationBodiesOverlayComponent {
         final boolean[] isResizing = {false};
 
         node.setOnMousePressed(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() != javafx.scene.input.MouseButton.PRIMARY) {
                 return;
             }
@@ -131,6 +149,9 @@ public class ExplorationBodiesOverlayComponent {
         });
 
         node.setOnMouseDragged(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() != javafx.scene.input.MouseButton.PRIMARY) {
                 return;
             }
@@ -170,12 +191,20 @@ public class ExplorationBodiesOverlayComponent {
      * Ferme l'overlay s'il est ouvert
      */
     public void closeOverlay() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage.close();
-            overlayStage = null;
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
         }
+        saveOverlayPreferences();
+        popupManager.unregisterContainer(overlayStage);
+        Stage stage = overlayStage;
+        StackPane pane = stackPane;
+        overlayStage = null;
+        stackPane = null;
+        passthrough.disposeForClose(stage, pane);
+        if (onOverlayClosed != null) {
+            onOverlayClosed.run();
+        }
+        stage.close();
     }
 
     /**
@@ -198,6 +227,8 @@ public class ExplorationBodiesOverlayComponent {
                 contentCard = newCard;
                 // Appliquer le scaling actuel à la nouvelle carte
                 applyTextScaleToNode(newCard, textScale);
+                passthrough.reapplyLockedState(overlayStage, stackPane);
+                refreshLockChrome();
             });
         }
         // Mettre à jour le popup s'il est ouvert
@@ -426,6 +457,7 @@ public class ExplorationBodiesOverlayComponent {
     /**
      * Crée la fenêtre overlay
      */
+    @SuppressWarnings("unused")
     private void createOverlayStage(SystemVisited system, boolean showOnlyHighValue, boolean setSelected) {
         // Création de la fenêtre overlay
         overlayStage = new Stage();
@@ -454,23 +486,14 @@ public class ExplorationBodiesOverlayComponent {
         // Enregistrer le container pour les popups
         popupManager.registerContainer(overlayStage, stackPane);
         // Style racine pour cibler les scrollbars overlay
-        stackPane.getStyleClass().addAll("overlay-root");
-        if (setSelected){
-            stackPane.getStyleClass().add("overlay-root-bordered");
-        }
-        stackPane.setOnMouseExited(event -> {
-            stackPane.getStyleClass().remove("overlay-root-bordered");
-        });
+        stackPane.getStyleClass().add("overlay-root");
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
+        refreshLockChrome();
 
         // Afficher l'overlay
         overlayStage.show();
-        overlayStage.setOnCloseRequest(event -> {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage = null;
-        });
+        overlayStage.setOnCloseRequest(event -> closeOverlay());
     }
 
     /**
@@ -729,38 +752,27 @@ public class ExplorationBodiesOverlayComponent {
 
 
         scene.setOnMouseReleased(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             isResizing[0] = false;
         });
 
-        // Gestion du curseur et de la visibilité des contrôles
+        // Gestion du curseur (le cadre et les contrôles suivent le verrou via OverlayLockChrome)
         scene.setOnMouseMoved(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
             double mouseY = e.getSceneY();
 
-            // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                if (resizeHandle != null) resizeHandle.setOpacity(1.0);
-                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                if (resizeHandle != null) resizeHandle.setOpacity(0.8);
-                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
             }
-        });
-
-        // Masquer les contrôles quand la souris quitte la scène
-        scene.setOnMouseExited(e -> {
-            if (resizeHandle != null) resizeHandle.setOpacity(0.0);
-            if (opacitySlider != null) opacitySlider.setOpacity(0.0);
-        });
-
-        // Afficher les contrôles quand la souris entre dans la scène
-        scene.setOnMouseEntered(e -> {
-            if (resizeHandle != null) resizeHandle.setOpacity(0.8);
-            if (opacitySlider != null) opacitySlider.setOpacity(0.8);
         });
     }
 

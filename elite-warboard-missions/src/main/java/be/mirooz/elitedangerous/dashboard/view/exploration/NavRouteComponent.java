@@ -23,12 +23,15 @@ import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
@@ -42,6 +45,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.*;
@@ -114,7 +118,10 @@ public class NavRouteComponent implements Initializable {
     private TextField maxSystemsField;
 
     @FXML
-    private javafx.scene.control.Button overlayButton;
+    private Button overlayButton;
+
+    @FXML
+    private ToggleButton overlayPassThroughLockButton;
 
     private ComboBox<ExplorationMode> modeComboBox; // Référence au ComboBox pour les mises à jour de traduction
     private NavRouteOverlayComponent navRouteOverlayComponent;
@@ -155,7 +162,30 @@ public class NavRouteComponent implements Initializable {
         navRouteOverlayComponent = new NavRouteOverlayComponent();
         navRouteOverlayComponent.setNavRouteComponent(this); // Passer la référence pour dessiner les boules
         navRouteOverlayComponent.setOnOverlayStateChanged(this::updateOverlayButtonText);
-        
+        navRouteOverlayComponent.setOnOverlayClosed(() -> {
+            if (overlayPassThroughLockButton != null) {
+                overlayPassThroughLockButton.setSelected(false);
+            }
+        });
+        if (overlayPassThroughLockButton != null) {
+            OverlayUi.applyOverlayLockToggleStyle(overlayPassThroughLockButton);
+            overlayPassThroughLockButton.setSelected(false);
+            Tooltip lt = new Tooltip();
+            lt.setWrapText(true);
+            lt.setMaxWidth(340);
+            lt.setShowDelay(Duration.millis(200));
+            overlayPassThroughLockButton.setTooltip(lt);
+            OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+            OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+            overlayPassThroughLockButton.selectedProperty().addListener((obs, o, n) -> {
+                OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+                OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+                if (navRouteOverlayComponent != null && navRouteOverlayComponent.isShowing()) {
+                    navRouteOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
+                }
+            });
+        }
+
         // Mettre à jour le texte du bouton overlay
         updateOverlayButtonText();
 
@@ -506,6 +536,9 @@ public class NavRouteComponent implements Initializable {
         if (navRouteOverlayComponent != null) {
             navRouteOverlayComponent.showOverlay();
             updateOverlayButtonText();
+            if (navRouteOverlayComponent.isShowing() && overlayPassThroughLockButton != null) {
+                navRouteOverlayComponent.setClickThroughLocked(overlayPassThroughLockButton.isSelected());
+            }
         }
     }
 
@@ -519,20 +552,30 @@ public class NavRouteComponent implements Initializable {
             String icon;
 
             if (isOverlayShowing) {
-                text = localizationService.getString("nav.route.overlay_close");
+                text = localizationService.getString("overlay.action.close");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = localizationService.getString("nav.route.overlay_close");
+                }
                 if (text == null || text.startsWith("nav.route.")) {
-                    text = "Fermer";
+                    text = "Close";
                 }
                 icon = "✖";
             } else {
-                text = localizationService.getString("nav.route.overlay_open");
+                text = localizationService.getString("overlay.action.open");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = localizationService.getString("nav.route.overlay_open");
+                }
                 if (text == null || text.startsWith("nav.route.")) {
                     text = "Overlay";
                 }
-                icon = "🗔";
+                icon = OverlayUi.GLYPH_WINDOW_STACK;
             }
 
             overlayButton.setText(icon + " " + text);
+        }
+        if (overlayPassThroughLockButton != null) {
+            OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+            OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
         }
     }
 
@@ -1973,6 +2016,8 @@ public class NavRouteComponent implements Initializable {
         if (modeDescriptionLabel != null) {
             updateModeDescription(currentMode);
         }
+
+        updateOverlayButtonText();
     }
 
 }

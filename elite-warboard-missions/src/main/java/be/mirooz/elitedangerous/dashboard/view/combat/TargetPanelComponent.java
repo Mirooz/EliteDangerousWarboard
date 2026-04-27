@@ -7,6 +7,7 @@ import be.mirooz.elitedangerous.dashboard.model.enums.TargetType;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import javafx.geometry.HPos;
@@ -15,8 +16,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.Map;
 
@@ -36,6 +40,7 @@ public class TargetPanelComponent extends VBox {
     private final PopupManager popupManager;
     private final CopyClipboardManager copyClipboardManager;
     private final Button overlayButton;
+    private final ToggleButton overlayPassThroughLockButton;
     private Runnable onOverlayButtonClick;
 
     public TargetPanelComponent() {
@@ -46,7 +51,7 @@ public class TargetPanelComponent extends VBox {
         this.copyClipboardManager = CopyClipboardManager.getInstance();
 
         // Créer le bouton overlay
-        overlayButton = new Button("🗔");
+        overlayButton = new Button();
         overlayButton.getStyleClass().add("elite-nav-button");
         overlayButton.setOnAction(e -> {
             if (onOverlayButtonClick != null) {
@@ -54,16 +59,34 @@ public class TargetPanelComponent extends VBox {
             }
         });
 
+        overlayPassThroughLockButton = new ToggleButton();
+        OverlayUi.applyOverlayLockToggleStyle(overlayPassThroughLockButton);
+        overlayPassThroughLockButton.setSelected(false);
+        Tooltip lockTip = new Tooltip();
+        lockTip.setWrapText(true);
+        lockTip.setMaxWidth(340);
+        lockTip.setShowDelay(Duration.millis(200));
+        overlayPassThroughLockButton.setTooltip(lockTip);
+        OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+        OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+
         // Créer le titre
         mainTitle = new Label();
         mainTitle.getStyleClass().add("target-panel-title");
-        
-        // Container pour le titre et le bouton
-        HBox titleContainer = new HBox(10);
-        titleContainer.setAlignment(Pos.CENTER_LEFT);
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        titleContainer.getChildren().addAll(mainTitle, spacer, overlayButton);
+        mainTitle.setWrapText(false);
+        mainTitle.setMaxWidth(Double.MAX_VALUE);
+
+        /* Deux lignes : évite l’écrasement titre + boutons quand la colonne est étroite
+         * (et ne pas appeler setMinWidth(USE_PREF_SIZE) avant que le texte du titre soit défini). */
+        VBox titleBlock = new VBox(6);
+        titleBlock.setFillWidth(true);
+        titleBlock.getStyleClass().add("target-panel-header");
+        HBox overlayActionsRow = new HBox(8);
+        overlayActionsRow.setAlignment(Pos.CENTER_RIGHT);
+        Region overlayRowSpacer = new Region();
+        HBox.setHgrow(overlayRowSpacer, Priority.ALWAYS);
+        overlayActionsRow.getChildren().addAll(overlayRowSpacer, overlayButton, overlayPassThroughLockButton);
+        titleBlock.getChildren().addAll(mainTitle, overlayActionsRow);
 
         // Section Pirates
         pirateTitle = new Label();
@@ -88,8 +111,7 @@ public class TargetPanelComponent extends VBox {
 
         // Layout global
         this.getChildren().addAll(
-                mainTitle,
-                overlayButton,
+                titleBlock,
                 pirateTitleContainer,
                 pirateGrid,
                 separator,
@@ -280,6 +302,18 @@ public class TargetPanelComponent extends VBox {
         mainTitle.setText(localizationService.getString("targets.title"));
         pirateTitle.setText(localizationService.getString("targets.pirates"));
         conflictTitle.setText(localizationService.getString("targets.conflict"));
+        refreshOverlayLockUi();
+    }
+
+    public ToggleButton getOverlayPassThroughLockButton() {
+        return overlayPassThroughLockButton;
+    }
+
+    private void refreshOverlayLockUi() {
+        if (overlayPassThroughLockButton != null) {
+            OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+            OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+        }
     }
 
     private void setSectionVisible(Label title, GridPane grid, boolean visible) {
@@ -302,27 +336,27 @@ public class TargetPanelComponent extends VBox {
     public void updateOverlayButtonText(boolean isOverlayShowing) {
         if (overlayButton != null) {
             String text;
-            String icon;
 
             if (isOverlayShowing) {
-                text = localizationService.getString("targets.overlay_close");
-                icon = "✖"; // Croix pour fermer
+                text = localizationService.getString("overlay.action.close");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = localizationService.getString("targets.overlay_close");
+                }
+                if (text == null || text.startsWith("targets.")) {
+                    text = "Close";
+                }
+                overlayButton.setText("✖ " + text);
             } else {
-                text = localizationService.getString("targets.overlay_open");
-                icon = "🗔"; // Icône de fenêtre pour ouvrir
-            }
-
-            // Vérifier si la traduction a fonctionné, sinon utiliser un texte par défaut
-            if (text == null || text.startsWith("targets.")) {
-                if (isOverlayShowing) {
-                    text = "Fermer";
-                } else {
+                text = localizationService.getString("overlay.action.open");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = localizationService.getString("targets.overlay_open");
+                }
+                if (text == null || text.startsWith("targets.")) {
                     text = "Overlay";
                 }
+                overlayButton.setText(OverlayUi.overlayActionLabel(text));
             }
-
-            // Combiner l'icône et le texte
-            overlayButton.setText(icon + " " + text);
         }
+        refreshOverlayLockUi();
     }
 }

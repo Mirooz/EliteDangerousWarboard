@@ -10,6 +10,8 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
@@ -59,11 +61,28 @@ public class TargetOverlayComponent {
 
     private Stage overlayStage;
     private double overlayOpacity = 0.92; // Valeur par défaut
+    private Label resizeHandle;
     private Slider opacitySlider;
     private Slider textScaleSlider;
     private double textScale = 1.0;
     private StackPane stackPane;
     private VBox targetPanelComponent;
+    private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+    private Runnable onOverlayClosed;
+
+    public void setOnOverlayClosed(Runnable onOverlayClosed) {
+        this.onOverlayClosed = onOverlayClosed;
+    }
+
+    public void setClickThroughLocked(boolean locked) {
+        passthrough.setClickThroughLocked(locked, overlayStage, stackPane);
+        refreshLockChrome();
+    }
+
+    private void refreshLockChrome() {
+        OverlayLockChrome.apply(passthrough.isClickThroughLocked(), stackPane,
+                resizeHandle, opacitySlider, textScaleSlider);
+    }
 
     public TargetOverlayComponent() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -95,9 +114,7 @@ public class TargetOverlayComponent {
         
         // Si la fenêtre est déjà ouverte, on la ferme
         if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            overlayStage.close();
-            overlayStage = null;
+            closeOverlay();
             return;
         }
 
@@ -125,6 +142,8 @@ public class TargetOverlayComponent {
             // Appliquer le scaling actuel
             applyTextScaleToNode(newPanel, textScale);
             targetPanelComponent = newPanel;
+            passthrough.reapplyLockedState(overlayStage, stackPane);
+            refreshLockChrome();
         }
     }
 
@@ -132,14 +151,21 @@ public class TargetOverlayComponent {
      * Ferme l'overlay s'il est ouvert
      */
     public void closeOverlay() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            // Nettoyer le container pour les popups
-            PopupManager popupManager = PopupManager.getInstance();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage.close();
-            overlayStage = null;
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
         }
+        saveOverlayPreferences();
+        PopupManager popupManager = PopupManager.getInstance();
+        popupManager.unregisterContainer(overlayStage);
+        Stage stage = overlayStage;
+        StackPane pane = stackPane;
+        overlayStage = null;
+        stackPane = null;
+        passthrough.disposeForClose(stage, pane);
+        if (onOverlayClosed != null) {
+            onOverlayClosed.run();
+        }
+        stage.close();
     }
 
     /**
@@ -167,6 +193,8 @@ public class TargetOverlayComponent {
             // Appliquer le scaling actuel
             applyTextScaleToNode(newPanel, textScale);
             targetPanelComponent = newPanel;
+            passthrough.reapplyLockedState(overlayStage, stackPane);
+            refreshLockChrome();
         }
     }
 
@@ -206,17 +234,15 @@ public class TargetOverlayComponent {
 
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-        stackPane.getStyleClass().addAll("overlay-root", "overlay-root-bordered");
-        stackPane.setOnMouseExited(event -> {
-            stackPane.getStyleClass().remove("overlay-root-bordered");
-        });
-        
+        stackPane.getStyleClass().add("overlay-root");
+
         // Enregistrer le StackPane comme container pour les popups
         PopupManager popupManager = PopupManager.getInstance();
         popupManager.registerContainer(overlayStage, stackPane);
         
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
+        refreshLockChrome();
 
         // Afficher l'overlay
         overlayStage.show();
@@ -231,7 +257,7 @@ public class TargetOverlayComponent {
         targetPanelComponent.getStyleClass().add("mirror-overlay");
 
         // Créer l'icône de redimensionnement
-        Label resizeHandle = createResizeHandle();
+        resizeHandle = createResizeHandle();
 
         // Créer le curseur de transparence
         opacitySlider = createOpacitySlider();
@@ -712,6 +738,9 @@ public class TargetOverlayComponent {
 
         // Gestion du clic et du glisser
         scene.setOnMousePressed(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 offset[0] = e.getScreenX() - overlayStage.getX();
                 offset[1] = e.getScreenY() - overlayStage.getY();
@@ -731,6 +760,9 @@ public class TargetOverlayComponent {
         });
 
         scene.setOnMouseDragged(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 if (isResizing[0]) {
                     // Redimensionnement
@@ -758,59 +790,29 @@ public class TargetOverlayComponent {
         });
 
         scene.setOnMouseReleased(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             isResizing[0] = false;
         });
 
-        // Gestion du curseur et de la visibilité des contrôles
         scene.setOnMouseMoved(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
             double mouseY = e.getSceneY();
 
-            // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                if (stackPane.getChildren().size() > 3) {
-                    ((Label) stackPane.getChildren().get(1)).setOpacity(1.0);
-                    ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8);
-                    ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8);
-                }
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                if (stackPane.getChildren().size() > 3) {
-                    ((Label) stackPane.getChildren().get(1)).setOpacity(0.8);
-                    ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8);
-                    ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8);
-                }
             }
         });
 
-        // Masquer les contrôles quand la souris quitte la scène
-        scene.setOnMouseExited(e -> {
-            if (stackPane.getChildren().size() > 3) {
-                ((Label) stackPane.getChildren().get(1)).setOpacity(0.0);
-                ((Slider) stackPane.getChildren().get(2)).setOpacity(0.0);
-                ((Slider) stackPane.getChildren().get(3)).setOpacity(0.0);
-            }
-        });
-
-        // Afficher les contrôles quand la souris entre dans la scène
-        scene.setOnMouseEntered(e -> {
-            if (stackPane.getChildren().size() > 3) {
-                ((Label) stackPane.getChildren().get(1)).setOpacity(0.8);
-                ((Slider) stackPane.getChildren().get(2)).setOpacity(0.8);
-                ((Slider) stackPane.getChildren().get(3)).setOpacity(0.8);
-            }
-        });
-
-        // Listener pour la fermeture de la fenêtre
-        overlayStage.setOnCloseRequest(event -> {
-            saveOverlayPreferences();
-            PopupManager popupManager = PopupManager.getInstance();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage = null;
-        });
+        overlayStage.setOnCloseRequest(event -> closeOverlay());
     }
 
     /**

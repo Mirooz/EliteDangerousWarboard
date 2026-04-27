@@ -3,6 +3,8 @@ package be.mirooz.elitedangerous.dashboard.view.mining;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.webservice.ArdentApiService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
@@ -62,6 +64,22 @@ public class ProspectorOverlayComponent {
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
+    private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+    private Runnable onOverlayClosed;
+
+    public void setOnOverlayClosed(Runnable onOverlayClosed) {
+        this.onOverlayClosed = onOverlayClosed;
+    }
+
+    public void setClickThroughLocked(boolean locked) {
+        passthrough.setClickThroughLocked(locked, overlayStage, stackPane);
+        refreshLockChrome();
+    }
+
+    private void refreshLockChrome() {
+        OverlayLockChrome.apply(passthrough.isClickThroughLocked(), stackPane,
+                resizeHandle, opacitySlider, textScaleSlider);
+    }
 
     /**
      * Affiche l'overlay pour le prospecteur donné
@@ -71,11 +89,8 @@ public class ProspectorOverlayComponent {
             System.out.println("⚠️ Aucun prospecteur à afficher dans l'overlay.");
         }
 
-        // Si la fenêtre est déjà ouverte, on la ferme
         if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            overlayStage.close();
-            overlayStage = null;
+            closeOverlay();
             return;
         }
 
@@ -94,12 +109,20 @@ public class ProspectorOverlayComponent {
      * Ferme l'overlay s'il est ouvert
      */
     public void closeOverlay() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage.close();
-            overlayStage = null;
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
         }
+        saveOverlayPreferences();
+        popupManager.unregisterContainer(overlayStage);
+        Stage stage = overlayStage;
+        StackPane pane = stackPane;
+        overlayStage = null;
+        stackPane = null;
+        passthrough.disposeForClose(stage, pane);
+        if (onOverlayClosed != null) {
+            onOverlayClosed.run();
+        }
+        stage.close();
     }
 
     /**
@@ -119,6 +142,8 @@ public class ProspectorOverlayComponent {
             stackPane.getChildren().add(0, newCard);
             // Appliquer le scaling actuel à la nouvelle carte
             applyTextScaleToNode(newCard, textScale);
+            passthrough.reapplyLockedState(overlayStage, stackPane);
+            refreshLockChrome();
         }
     }
 
@@ -139,6 +164,8 @@ public class ProspectorOverlayComponent {
             stackPane.getChildren().add(0, emptyCard);
             // Appliquer le scaling actuel à la carte vide
             applyTextScaleToNode(emptyCard, textScale);
+            passthrough.reapplyLockedState(overlayStage, stackPane);
+            refreshLockChrome();
         }
     }
 
@@ -183,20 +210,14 @@ public class ProspectorOverlayComponent {
         // Enregistrer le container pour les popups
         popupManager.registerContainer(overlayStage, stackPane);
         // Style racine pour cibler les scrollbars overlay
-        stackPane.getStyleClass().addAll("overlay-root","overlay-root-bordered");
-        stackPane.setOnMouseExited(event -> {
-            stackPane.getStyleClass().remove("overlay-root-bordered");
-        });
+        stackPane.getStyleClass().add("overlay-root");
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
+        refreshLockChrome();
 
         // Afficher l'overlay
         overlayStage.show();
-        overlayStage.setOnCloseRequest(event -> {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage = null;
-        });
+        overlayStage.setOnCloseRequest(event -> closeOverlay());
     }
 
     /**
@@ -546,6 +567,9 @@ public class ProspectorOverlayComponent {
 
         // Gestion du clic et du glisser
         scene.setOnMousePressed(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 offset[0] = e.getScreenX() - overlayStage.getX();
                 offset[1] = e.getScreenY() - overlayStage.getY();
@@ -565,6 +589,9 @@ public class ProspectorOverlayComponent {
         });
 
         scene.setOnMouseDragged(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                 if (isResizing[0]) {
                     // Redimensionnement
@@ -592,47 +619,42 @@ public class ProspectorOverlayComponent {
         });
 
         scene.setOnMouseReleased(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             isResizing[0] = false;
         });
 
-        // Gestion du curseur et de la visibilité des contrôles
         scene.setOnMouseMoved(e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
             double mouseY = e.getSceneY();
 
-            // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                if (resizeHandle != null) resizeHandle.setOpacity(1.0);
-                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
-                if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                if (resizeHandle != null) resizeHandle.setOpacity(0.8);
-                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
-                if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
             }
         });
 
-        // Masquer les contrôles quand la souris quitte la scène
         scene.setOnMouseExited(e -> {
-            if (resizeHandle != null) resizeHandle.setOpacity(0.0);
-            if (opacitySlider != null) opacitySlider.setOpacity(0.0);
-            if (textScaleSlider != null) textScaleSlider.setOpacity(0.0);
-            // Masquer ring et station
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (infoContainer != null) {
                 infoContainer.setVisible(false);
                 infoContainer.setMouseTransparent(true);
             }
         });
 
-        // Afficher les contrôles quand la souris entre dans la scène
         scene.setOnMouseEntered(e -> {
-            if (resizeHandle != null) resizeHandle.setOpacity(0.8);
-            if (opacitySlider != null) opacitySlider.setOpacity(0.8);
-            if (textScaleSlider != null) textScaleSlider.setOpacity(0.8);
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             // Afficher ring et station si disponibles
             updateRingLabel();
             updateStationLabel();

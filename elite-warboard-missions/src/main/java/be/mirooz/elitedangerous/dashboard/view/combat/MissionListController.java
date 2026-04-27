@@ -22,6 +22,7 @@ import be.mirooz.elitedangerous.dashboard.view.combat.TargetPanelComponent;
 import be.mirooz.elitedangerous.dashboard.view.combat.TargetOverlayComponent;
 import be.mirooz.elitedangerous.dashboard.view.combat.CombatMissionHistoryComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -30,6 +31,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.ToggleButton;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -83,7 +85,24 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         // Configurer le bouton overlay dans le panneau de cibles
         if (targetPanel != null) {
             targetPanel.setOnOverlayButtonClick(this::showTargetOverlay);
+            ToggleButton lock = targetPanel.getOverlayPassThroughLockButton();
+            if (lock != null) {
+                lock.selectedProperty().addListener((obs, o, n) -> {
+                    OverlayUi.updateLockToggleGlyph(lock);
+                    OverlayUi.refreshLockTooltip(lock, localizationService);
+                    if (targetOverlayComponent != null && targetOverlayComponent.isShowing()) {
+                        targetOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
+                    }
+                });
+            }
         }
+        targetOverlayComponent.setOnOverlayClosed(() -> {
+            ToggleButton lock = targetPanel != null ? targetPanel.getOverlayPassThroughLockButton() : null;
+            if (lock != null) {
+                lock.setSelected(false);
+            }
+            updateOverlayButtonText();
+        });
 
         // Charger le composant d'historique des missions
         initializeHistoryComponent();
@@ -340,6 +359,10 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         } else {
             // Sinon, on l'ouvre
             targetOverlayComponent.showOverlay(stats, missions);
+            ToggleButton lock = targetPanel != null ? targetPanel.getOverlayPassThroughLockButton() : null;
+            if (lock != null) {
+                targetOverlayComponent.setClickThroughLocked(lock.isSelected());
+            }
             updateOverlayButtonText();
         }
     }

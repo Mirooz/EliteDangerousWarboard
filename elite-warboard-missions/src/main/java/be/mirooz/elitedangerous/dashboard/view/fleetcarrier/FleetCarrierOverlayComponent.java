@@ -4,6 +4,8 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommo
 import be.mirooz.elitedangerous.commons.lib.models.commodities.CommodityCategory;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -61,6 +63,25 @@ public class FleetCarrierOverlayComponent {
     private double textScale = 1.0;
     private StackPane stackPane;
     private Supplier<FleetCarrierOverlaySnapshot> dataSupplier;
+    private Runnable onOverlayClosed;
+    private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+
+    public void setOnOverlayClosed(Runnable onOverlayClosed) {
+        this.onOverlayClosed = onOverlayClosed;
+    }
+
+    /**
+     * Quand activé : la scène ignore les clics (souris « à travers » le contenu). Déverrouiller pour déplacer ou utiliser les réglages.
+     */
+    public void setClickThroughLocked(boolean locked) {
+        passthrough.setClickThroughLocked(locked, overlayStage, stackPane);
+        refreshLockChrome();
+    }
+
+    private void refreshLockChrome() {
+        OverlayLockChrome.apply(passthrough.isClickThroughLocked(), stackPane,
+                resizeHandle, opacitySlider, textScaleSlider);
+    }
 
     public FleetCarrierOverlayComponent() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -76,10 +97,7 @@ public class FleetCarrierOverlayComponent {
     public void toggleOverlay(Supplier<FleetCarrierOverlaySnapshot> dataSupplier) {
         this.dataSupplier = dataSupplier;
         if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage.close();
-            overlayStage = null;
+            disposeOverlayStage();
             return;
         }
         FleetCarrierOverlaySnapshot snap = dataSupplier != null ? dataSupplier.get() : null;
@@ -88,10 +106,7 @@ public class FleetCarrierOverlayComponent {
 
     public void closeOverlay() {
         if (overlayStage != null && overlayStage.isShowing()) {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage.close();
-            overlayStage = null;
+            disposeOverlayStage();
         }
     }
 
@@ -117,6 +132,8 @@ public class FleetCarrierOverlayComponent {
         stackPane.getChildren().remove(oldCard);
         stackPane.getChildren().add(0, newCard);
         applyTextScaleToNode(newCard, textScale);
+        passthrough.reapplyLockedState(overlayStage, stackPane);
+        refreshLockChrome();
     }
 
     private void createOverlayStage(FleetCarrierOverlaySnapshot initialSnapshot) {
@@ -154,21 +171,34 @@ public class FleetCarrierOverlayComponent {
 
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
         popupManager.registerContainer(overlayStage, stackPane);
-        stackPane.getStyleClass().addAll("overlay-root", "overlay-root-bordered");
-        stackPane.setOnMouseExited(event -> stackPane.getStyleClass().remove("overlay-root-bordered"));
+        stackPane.getStyleClass().add("overlay-root");
 
         updatePaneStyle(overlayOpacity, stackPane);
         applyTextScaleToNode(mirrorCard, textScale);
         setupOpacitySliderListener();
         setupTextScaleSliderListener();
         setupInteractions();
+        refreshLockChrome();
 
         overlayStage.show();
-        overlayStage.setOnCloseRequest(event -> {
-            saveOverlayPreferences();
-            popupManager.unregisterContainer(overlayStage);
-            overlayStage = null;
-        });
+        overlayStage.setOnCloseRequest(event -> disposeOverlayStage());
+    }
+
+    private void disposeOverlayStage() {
+        if (overlayStage == null) {
+            return;
+        }
+        saveOverlayPreferences();
+        popupManager.unregisterContainer(overlayStage);
+        Stage stage = overlayStage;
+        StackPane pane = stackPane;
+        overlayStage = null;
+        stackPane = null;
+        passthrough.disposeForClose(stage, pane);
+        if (onOverlayClosed != null) {
+            onOverlayClosed.run();
+        }
+        stage.close();
     }
 
     private VBox buildContentVBox(FleetCarrierOverlaySnapshot snap) {
@@ -441,6 +471,9 @@ public class FleetCarrierOverlayComponent {
          * en cliquant-glissant au milieu du tableau (consume sur DRAG pour éviter que le scroll prenne le geste).
          */
         scene.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() != MouseButton.PRIMARY) {
                 return;
             }
@@ -465,6 +498,9 @@ public class FleetCarrierOverlayComponent {
             }
         });
         scene.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             if (e.getButton() != MouseButton.PRIMARY) {
                 return;
             }
@@ -493,33 +529,23 @@ public class FleetCarrierOverlayComponent {
             }
         });
         scene.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             isResizing[0] = false;
             armWindowMove[0] = false;
         });
         scene.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
+            if (passthrough.isClickThroughLocked()) {
+                return;
+            }
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             if (e.getSceneX() >= sceneWidth - 25 && e.getSceneY() >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                resizeHandle.setOpacity(1.0);
-                opacitySlider.setOpacity(0.8);
-                textScaleSlider.setOpacity(0.8);
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                resizeHandle.setOpacity(0.8);
-                opacitySlider.setOpacity(0.8);
-                textScaleSlider.setOpacity(0.8);
             }
-        });
-        scene.addEventFilter(MouseEvent.MOUSE_EXITED, e -> {
-            resizeHandle.setOpacity(0.0);
-            opacitySlider.setOpacity(0.0);
-            textScaleSlider.setOpacity(0.0);
-        });
-        scene.addEventFilter(MouseEvent.MOUSE_ENTERED, e -> {
-            resizeHandle.setOpacity(0.8);
-            opacitySlider.setOpacity(0.8);
-            textScaleSlider.setOpacity(0.8);
         });
     }
 

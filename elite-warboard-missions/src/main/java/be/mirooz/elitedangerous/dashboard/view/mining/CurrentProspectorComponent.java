@@ -11,9 +11,13 @@ import be.mirooz.elitedangerous.dashboard.service.MiningService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.*;
@@ -49,6 +53,8 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     private Label currentProspectorLabel;
     @FXML
     private Button overlayButton;
+    @FXML
+    private ToggleButton overlayPassThroughLockButton;
 
     private ProspectorOverlayComponent prospectorOverlayComponent;
 
@@ -60,6 +66,29 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     public void initialize(URL location, ResourceBundle resources) {
         // Initialiser le composant overlay
         prospectorOverlayComponent = new ProspectorOverlayComponent();
+        prospectorOverlayComponent.setOnOverlayClosed(() -> {
+            if (overlayPassThroughLockButton != null) {
+                overlayPassThroughLockButton.setSelected(false);
+            }
+        });
+        if (overlayPassThroughLockButton != null) {
+            OverlayUi.applyOverlayLockToggleStyle(overlayPassThroughLockButton);
+            overlayPassThroughLockButton.setSelected(false);
+            Tooltip lt = new Tooltip();
+            lt.setWrapText(true);
+            lt.setMaxWidth(340);
+            lt.setShowDelay(Duration.millis(200));
+            overlayPassThroughLockButton.setTooltip(lt);
+            OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+            OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+            overlayPassThroughLockButton.selectedProperty().addListener((obs, o, n) -> {
+                OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+                OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+                if (prospectorOverlayComponent != null && prospectorOverlayComponent.isShowing()) {
+                    prospectorOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
+                }
+            });
+        }
         DashboardService.getInstance().addBatchListener(this);
         updateProspectors();
         updateTranslations();
@@ -245,11 +274,17 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
             String icon;
 
             if (prospectorOverlayComponent != null && prospectorOverlayComponent.isShowing()) {
-                text = getTranslation("mining.overlay_close");
+                text = localizationService.getString("overlay.action.close");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = getTranslation("mining.overlay_close");
+                }
                 icon = "✖"; // Croix pour fermer
             } else {
-                text = getTranslation("mining.overlay_open");
-                icon = "🗔"; // Icône de fenêtre pour ouvrir
+                text = localizationService.getString("overlay.action.open");
+                if (text == null || text.startsWith("overlay.")) {
+                    text = getTranslation("mining.overlay_open");
+                }
+                icon = OverlayUi.GLYPH_WINDOW_STACK;
             }
 
             // Vérifier si la traduction a fonctionné, sinon utiliser un texte par défaut
@@ -263,6 +298,10 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
 
             // Combiner l'icône et le texte
             overlayButton.setText(icon + " " + text);
+        }
+        if (overlayPassThroughLockButton != null) {
+            OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
+            OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
         }
     }
 
@@ -370,6 +409,9 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
         if (prospectorOverlayComponent != null) {
             prospectorOverlayComponent.showOverlay(getCurrentProspector());
             updateOverlayButtonText();
+            if (prospectorOverlayComponent.isShowing() && overlayPassThroughLockButton != null) {
+                prospectorOverlayComponent.setClickThroughLocked(overlayPassThroughLockButton.isSelected());
+            }
         }
     }
 
