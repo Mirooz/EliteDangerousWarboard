@@ -17,6 +17,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.Scan;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SpeciesProbability;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
@@ -2426,8 +2427,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         // Configurer la cellule personnalisée pour le TreeView
         jsonTreeView.setCellFactory(treeView -> new JsonTreeCell());
 
-        // Construire le TreeView à partir du JSON
-        JsonNode jsonNode = body.getJsonNode();
+        // Construire le TreeView à partir du JSON (journal si déjà scanné, plutôt que le JSON Spansh synthétique)
+        JsonNode jsonNode = resolveJsonNodeForDetailPanel(body);
         updateJsonSpanshSourceTag(jsonNode);
         if (jsonNode != null) {
             TreeItem<JsonTreeItem> root = buildJsonTree(jsonNode, "");
@@ -2533,15 +2534,46 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         updateJsonSpanshSourceTag(null);
     }
 
-    /** Tag « SPANSH » dans l’en-tête du panneau JSON ; masqué si pas de métadonnée {@code _source}. */
+    /** Tag « SPANSH » dans l’en-tête du panneau JSON ; masqué si le JSON affiché n’est pas un payload Spansh synthétique. */
     private void updateJsonSpanshSourceTag(JsonNode jsonNode) {
         if (jsonSpanshSourceTagLabel == null) {
             return;
         }
-        boolean spansh = jsonNode != null && jsonNode.isObject()
-                && "SPANSH".equalsIgnoreCase(jsonNode.path("_source").asText("").trim());
+        boolean spansh = isSpanshSyntheticSourceJson(jsonNode);
         jsonSpanshSourceTagLabel.setVisible(spansh);
         jsonSpanshSourceTagLabel.setManaged(spansh);
+    }
+
+    /**
+     * JSON pour le panneau détail : si le corps affiché porte encore un JSON Spansh synthétique
+     * ({@code _source: SPANSH}) alors qu’un {@link Scan} journal a mis à jour le {@link PlaneteRegistry},
+     * on utilise le JSON du registre (sans tag SPANSH, contenu aligné sur le journal).
+     */
+    private static JsonNode resolveJsonNodeForDetailPanel(ACelesteBody body) {
+        JsonNode primary = body.getJsonNode();
+        if (!isSpanshSyntheticSourceJson(primary)) {
+            return primary;
+        }
+        return PlaneteRegistry.getInstance()
+                .getByBodyID(body.getBodyID())
+                .filter(reg -> sameStarSystemLooseForJsonMerge(body, reg))
+                .map(reg -> reg.getJsonNode())
+                .filter(j -> j != null && !isSpanshSyntheticSourceJson(j))
+                .orElse(primary);
+    }
+
+    private static boolean sameStarSystemLooseForJsonMerge(ACelesteBody a, ACelesteBody b) {
+        String sa = a.getStarSystem();
+        String sb = b.getStarSystem();
+        if (sa == null || sb == null) {
+            return true;
+        }
+        return sa.equalsIgnoreCase(sb.trim());
+    }
+
+    private static boolean isSpanshSyntheticSourceJson(JsonNode n) {
+        return n != null && n.isObject()
+                && "SPANSH".equalsIgnoreCase(n.path("_source").asText("").trim());
     }
 
     /**
