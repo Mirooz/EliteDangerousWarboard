@@ -27,6 +27,7 @@ import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.HPos;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -74,7 +75,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private RadarComponent radarComponent;
     private RadarComponent overlayRadarComponent; // Cache pour le RadarComponent de l'overlay
     @FXML
-    private CheckBox showOnlyHighValueBodiesCheckBox;
+    private ToggleButton showOnlyHighValueBodiesToggle;
+    @FXML
+    private Label showOnlyHighValueBodiesLabel;
     @FXML
     private ScrollPane bodiesScrollPane;
     @FXML
@@ -217,7 +220,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (suppressExplorationValueIndicators) {
             return false;
         }
-        return showOnlyHighValueBodiesCheckBox != null && showOnlyHighValueBodiesCheckBox.isSelected();
+        return showOnlyHighValueBodiesToggle != null && showOnlyHighValueBodiesToggle.isSelected();
     }
 
     @Override
@@ -338,15 +341,41 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         });
         initMapPanControls();
 
-        // Cocher la checkbox par défaut
-        if (showOnlyHighValueBodiesCheckBox != null) {
-            showOnlyHighValueBodiesCheckBox.setSelected(true);
-        }
+        initHighValueBodiesFilterControl();
 
         initSpacingControls();
 
         // Initialiser le radar
         initializeRadar();
+    }
+
+    /** Filtre « high value » : {@link ToggleButton} façon case HUD Elite (évite le rendu natif du {@link CheckBox}). */
+    private void initHighValueBodiesFilterControl() {
+        if (showOnlyHighValueBodiesToggle == null) {
+            return;
+        }
+        showOnlyHighValueBodiesToggle.setMnemonicParsing(false);
+        showOnlyHighValueBodiesToggle.setText("");
+        showOnlyHighValueBodiesToggle.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        Label mark = new Label("✓");
+        mark.getStyleClass().add("exploration-bodies-filter-toggle-mark");
+        mark.setMouseTransparent(true);
+        mark.visibleProperty().bind(showOnlyHighValueBodiesToggle.selectedProperty());
+        StackPane inner = new StackPane(mark);
+        inner.setMinSize(16, 16);
+        inner.setPrefSize(16, 16);
+        inner.setMaxSize(16, 16);
+        inner.getStyleClass().add("exploration-bodies-filter-toggle-inner");
+        showOnlyHighValueBodiesToggle.setGraphic(inner);
+        showOnlyHighValueBodiesToggle.setSelected(true);
+        showOnlyHighValueBodiesToggle.setOnAction(e -> onFilterChanged());
+        if (showOnlyHighValueBodiesLabel != null) {
+            showOnlyHighValueBodiesLabel.setCursor(Cursor.HAND);
+            showOnlyHighValueBodiesLabel.setOnMouseClicked(e -> {
+                showOnlyHighValueBodiesToggle.setSelected(!showOnlyHighValueBodiesToggle.isSelected());
+                onFilterChanged();
+            });
+        }
     }
 
     private void initSystemTitleClipboardAction() {
@@ -2942,7 +2971,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Crée une carte pour un corps céleste avec toutes les informations
      */
     private VBox createBodyCard(ACelesteBody body, int depth, Map<Integer, Boolean> levelHasNext, Map<Integer, ACelesteBody> bodiesMap) {
-        VBox card = new VBox(5);
+        VBox card = new VBox(3);
         card.getStyleClass().add("exploration-body-card");
 
         // Largeur adaptative : évite que le fond de carte dépasse visuellement le cadre orange
@@ -2965,15 +2994,15 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
 
         // Contenu de la carte
-        VBox cardContent = new VBox(5);
-        cardContent.setPadding(new javafx.geometry.Insets(8));
+        VBox cardContent = new VBox(3);
+        cardContent.setPadding(new javafx.geometry.Insets(0, 2, 0, 2));
         // S'assurer que le contenu prend toute la largeur disponible
         cardContent.setMinWidth(0);
         cardContent.setPrefWidth(Region.USE_COMPUTED_SIZE);
         HBox.setHgrow(cardContent, Priority.ALWAYS);
 
         // Nom du corps
-        HBox headerRow = new HBox(5);
+        HBox headerRow = new HBox(4);
         headerRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         String bodyName = getBodyNameWithoutSystem(body);
@@ -3075,7 +3104,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         "-fx-text-fill: %s; " +
                                 "-fx-font-size: 15px; " +
                                 "-fx-font-weight: bold; " +
-                                "-fx-padding: 5px 10px;",
+                                "-fx-padding: 2px 6px;",
                         color));
                 speciesCountLabel.getStyleClass().add("exploration-body-exobio-count");
                 headerRow.getChildren().add(speciesCountLabel);
@@ -3097,8 +3126,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Afficher si on a des bioSpecies OU des confirmedSpecies
             if ((planet.getBioSpecies() != null && !planet.getBioSpecies().isEmpty()) ||
                     (planet.getConfirmedSpecies() != null && !planet.getConfirmedSpecies().isEmpty())) {
-                VBox speciesList = new VBox(4);
-                speciesList.setPadding(new javafx.geometry.Insets(8, 8, 8, 8));
+                VBox speciesList = new VBox(2);
+                speciesList.setPadding(new javafx.geometry.Insets(2, 4, 2, 4));
                 speciesList.getStyleClass().add("exploration-body-species-list");
 
                 // Créer une map des confirmedSpecies par nom pour lookup rapide
@@ -3140,11 +3169,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             }
                         }
 
-                        HBox speciesRow = new HBox(8);
-                        speciesRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                        speciesRow.setPadding(new javafx.geometry.Insets(4, 6, 4, 6));
-                        speciesRow.getStyleClass().add("exploration-body-species-row");
-
                         // Afficher le nom (confirmedSpecies si disponible, sinon bioSpecies)
                         String speciesName;
                         if (confirmedSpecies != null) {
@@ -3157,7 +3181,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         speciesNameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-text;");
                         speciesNameLabel.setMaxWidth(Double.MAX_VALUE);
                         speciesNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-                        HBox.setHgrow(speciesNameLabel, javafx.scene.layout.Priority.ALWAYS);
 
                         // Afficher ✓ ou ✗ si confirmedSpecies, sinon le pourcentage
                         Label statusLabel = new Label();
@@ -3187,10 +3210,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: " + color + "; -fx-font-weight: bold;");
                             statusLabel.getStyleClass().add("exploration-body-species-prob");
                         }
-                        // S'assurer que le pourcentage ne soit jamais coupé - pas de contrainte de largeur
-                        statusLabel.setMinWidth(0);
-                        statusLabel.setPrefWidth(-1);
-                        statusLabel.setMaxWidth(Double.MAX_VALUE);
 
                         // Calculer et afficher le prix
                         // Utiliser confirmedSpecies si disponible, sinon bioSpecies
@@ -3206,13 +3225,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
                         Label priceLabel = new Label(String.format("%,d Cr", price));
                         priceLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
-                        // S'assurer que le prix ne soit jamais coupé - pas de contrainte de largeur
-                        priceLabel.setMinWidth(0);
-                        priceLabel.setPrefWidth(-1);
-                        priceLabel.setMaxWidth(Double.MAX_VALUE);
-                        statusLabel.setMinWidth(Region.USE_PREF_SIZE);
-                        priceLabel.setMinWidth(Region.USE_PREF_SIZE);
-                        speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
+
+                        GridPane speciesRow = buildAlignedSpeciesRowGrid(speciesNameLabel, statusLabel, priceLabel);
 
                         // Vérifier si cette espèce est en cours d'analyse
                         boolean isAnalyzing = false;
@@ -3254,18 +3268,12 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Si cette espèce confirmée n'a pas été traitée (pas dans processedConfirmedNames),
                         // c'est qu'elle n'était pas dans les prédictions, il faut l'ajouter
                         if (confirmedName != null && !processedConfirmedNames.contains(confirmedName)) {
-                            HBox speciesRow = new HBox(8);
-                            speciesRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                            speciesRow.setPadding(new javafx.geometry.Insets(4, 6, 4, 6));
-                            speciesRow.getStyleClass().add("exploration-body-species-row");
-
                             // Afficher le nom de l'espèce confirmée
                             String speciesName = confirmedSpecies.getFullName();
                             Label speciesNameLabel = new Label(speciesName);
                             speciesNameLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-text;");
                             speciesNameLabel.setMaxWidth(Double.MAX_VALUE);
                             speciesNameLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-                            HBox.setHgrow(speciesNameLabel, javafx.scene.layout.Priority.ALWAYS);
 
                             // Afficher ✓ ou ✗ pour l'espèce confirmée
                             Label statusLabel = new Label();
@@ -3280,8 +3288,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
                             }
 
-                            statusLabel.setMinWidth(Region.USE_PREF_SIZE);
-
                             // Calculer et afficher le prix
                             long price;
                             if (!planet.isWasFootfalled()) {
@@ -3292,12 +3298,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
                             Label priceLabel = new Label(String.format("%,d Cr", price));
                             priceLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
-                            priceLabel.setMinWidth(0);
-                            priceLabel.setPrefWidth(-1);
-                            priceLabel.setMaxWidth(Double.MAX_VALUE);
-                            priceLabel.setMinWidth(Region.USE_PREF_SIZE);
 
-                            speciesRow.getChildren().addAll(speciesNameLabel, statusLabel, priceLabel);
+                            GridPane speciesRow = buildAlignedSpeciesRowGrid(speciesNameLabel, statusLabel, priceLabel);
 
                             // Vérifier si cette espèce est en cours d'analyse
                             boolean isAnalyzing = false;
@@ -3391,8 +3393,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
         bodiesListPanel.setVisible(visible);
         bodiesListPanel.setManaged(visible);
-        if (!visible && showOnlyHighValueBodiesCheckBox != null) {
-            showOnlyHighValueBodiesCheckBox.setSelected(false);
+        if (!visible && showOnlyHighValueBodiesToggle != null) {
+            showOnlyHighValueBodiesToggle.setSelected(false);
         }
     }
 
@@ -3504,9 +3506,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Crée la liste des corps pour l'overlay (similaire à updateBodiesList mais retourne un VBox)
      */
     private VBox createBodiesListForOverlay(SystemVisited system) {
-        VBox container = new VBox(5);
-        container.setSpacing(5);
-        container.setPadding(new javafx.geometry.Insets(5));
+        VBox container = new VBox(3);
+        container.setSpacing(3);
+        container.setPadding(new javafx.geometry.Insets(3));
 
         // Ajouter le radar s'il est visible dans le panel de gauche
         // Toujours vérifier l'état actuel du radar principal pour s'assurer qu'on crée le bon radar
@@ -3619,10 +3621,42 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     /**
-     * Ajoute une bordure verte autour d'un HBox pour indiquer qu'une espèce est en cours d'analyse
+     * Une ligne espèce : 3 colonnes (nom extensible, %/statut largeur fixe alignée à droite, prix aligné à droite).
      */
-    private void addBorder(HBox speciesRow) {
-        // Ajouter une classe CSS pour la bordure verte
+    private static GridPane buildAlignedSpeciesRowGrid(Label speciesNameLabel, Label statusLabel, Label priceLabel) {
+        GridPane grid = new GridPane();
+        grid.getStyleClass().add("exploration-body-species-row");
+        /* Espace modéré : la colonne noms (0) prend le surplus ; % étroite alignée à droite près des prix */
+        grid.setHgap(6);
+        grid.setVgap(0);
+        grid.setPadding(new javafx.geometry.Insets(2, 4, 2, 4));
+        grid.setMaxWidth(Double.MAX_VALUE);
+
+        ColumnConstraints nameCol = new ColumnConstraints(80, 220, Double.MAX_VALUE);
+        nameCol.setHgrow(Priority.ALWAYS);
+        nameCol.setHalignment(HPos.LEFT);
+
+        ColumnConstraints statusCol = new ColumnConstraints(56, 72, 88);
+        statusCol.setHgrow(Priority.NEVER);
+        statusCol.setHalignment(HPos.RIGHT);
+
+        ColumnConstraints priceCol = new ColumnConstraints(108, 132, 200);
+        priceCol.setHgrow(Priority.NEVER);
+        priceCol.setHalignment(HPos.RIGHT);
+
+        grid.getColumnConstraints().setAll(nameCol, statusCol, priceCol);
+
+        grid.add(speciesNameLabel, 0, 0);
+        grid.add(statusLabel, 1, 0);
+        grid.add(priceLabel, 2, 0);
+        GridPane.setHgrow(speciesNameLabel, Priority.ALWAYS);
+        return grid;
+    }
+
+    /**
+     * Ajoute une bordure verte autour d'une ligne espèce pour indiquer qu'une espèce est en cours d'analyse.
+     */
+    private void addBorder(GridPane speciesRow) {
         speciesRow.getStyleClass().add("exobio-species-analyzing");
     }
 
@@ -3662,8 +3696,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (systemBodiesLabel != null) {
             systemBodiesLabel.setText(localizationService.getString("exploration.system_bodies"));
         }
-        if (showOnlyHighValueBodiesCheckBox != null) {
-            showOnlyHighValueBodiesCheckBox.setText(localizationService.getString("exploration.show_only_high_value"));
+        if (showOnlyHighValueBodiesLabel != null) {
+            showOnlyHighValueBodiesLabel.setText(localizationService.getString("exploration.show_only_high_value"));
         }
         if (systemTitleLabel != null && currentSystem == null) {
             systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));

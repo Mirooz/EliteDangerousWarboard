@@ -13,22 +13,27 @@
     <!-- Conteneur principal : Panneau gauche + Vue visuelle (panneau JSON en overlay sur la vue centrale) -->
     <HBox spacing="10" VBox.vgrow="ALWAYS">
         <!-- Panneau gauche : Liste des corps du système -->
-        <VBox fx:id="bodiesListPanel" styleClass="exploration-bodies-list-panel" 
+        <VBox fx:id="bodiesListPanel" styleClass="exploration-bodies-list-panel" spacing="4"
               minWidth="400" prefWidth="480" maxWidth="480" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS">
-            <HBox spacing="15" alignment="CENTER_LEFT">
-                <Label fx:id="systemBodiesLabel" text="CORPS DU SYSTÈME" styleClass="exploration-section-title" HBox.hgrow="ALWAYS"/>
-                <HBox spacing="6" alignment="CENTER_LEFT">
+            <HBox spacing="8" alignment="CENTER_LEFT" styleClass="exploration-bodies-list-toolbar">
+                <Label fx:id="systemBodiesLabel" text="CORPS DU SYSTÈME"
+                       styleClass="exploration-bodies-list-section-title"
+                       HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <HBox spacing="4" alignment="CENTER_RIGHT">
                     <Button fx:id="bodiesOverlayButton" styleClass="elite-nav-button" onAction="#showBodiesOverlay"/>
                     <ToggleButton fx:id="bodiesOverlayPassThroughLockButton" mnemonicParsing="false" focusTraversable="false"
                                   styleClass="elite-nav-button overlay-pass-through-lock"/>
                 </HBox>
             </HBox>
-            <CheckBox fx:id="showOnlyHighValueBodiesCheckBox" text="Show only high value bodies" 
-                      styleClass="exploration-filter-checkbox" 
-                      onAction="#onFilterChanged"/>
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="exploration-bodies-filter-row">
+                <ToggleButton fx:id="showOnlyHighValueBodiesToggle" mnemonicParsing="false" focusTraversable="true"
+                              styleClass="exploration-bodies-filter-toggle"/>
+                <Label fx:id="showOnlyHighValueBodiesLabel" text="Show only high value bodies"
+                       styleClass="exploration-bodies-filter-label" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            </HBox>
             <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" 
                         styleClass="exploration-bodies-list-scroll" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
-                <VBox fx:id="bodiesListContainer" spacing="5" styleClass="exploration-bodies-list-container"/>
+                <VBox fx:id="bodiesListContainer" spacing="3" styleClass="exploration-bodies-list-container"/>
             </ScrollPane>
         </VBox>
         

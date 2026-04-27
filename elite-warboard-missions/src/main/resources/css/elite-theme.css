@@ -6483,7 +6483,23 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 2px;
     -fx-background-insets: 2px;
-    -fx-padding: 10px;
+    -fx-padding: 6px 8px 5px 8px;
+}
+
+/* Titre « corps du système » : orange Elite explicite (évite un rendu gris selon l’ordre des feuilles / parents) */
+.exploration-bodies-list-section-title {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 8 0 0;
+}
+
+.exploration-bodies-list-section-title .text {
+    -fx-fill: -fx-elite-orange;
+}
+
+.exploration-bodies-list-toolbar {
+    -fx-padding: 0;
 }
 
 .exploration-bodies-list-scroll {
@@ -6491,9 +6507,9 @@
     -fx-background: transparent;
     -fx-border-color: transparent;
     -fx-control-inner-background: transparent;
-    -fx-background-insets: 2px;
-    -fx-border-insets: 2px;
-    -fx-padding: 2px;
+    -fx-background-insets: 1px;
+    -fx-border-insets: 1px;
+    -fx-padding: 1px;
 }
 
 .exploration-bodies-list-scroll:focused {
@@ -6582,7 +6598,7 @@
 
 .exploration-bodies-list-container {
     -fx-background-color: transparent;
-    -fx-padding: 5px;
+    -fx-padding: 2px 2px 3px 2px;
 }
 
 .exploration-body-card {
@@ -6595,7 +6611,7 @@
     -fx-border-insets: 1px;
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
-    -fx-padding: 8px;
+    -fx-padding: 4px 6px;
 }
 
 /* Dans l'overlay, pas de fond noir */
@@ -6629,31 +6645,68 @@
     -fx-font-weight: bold;
 }
 
-.exploration-filter-checkbox {
-    -fx-text-fill: -fx-elite-text;
+/* Filtre « high value » : ToggleButton type HUD Elite (remplace CheckBox non stylable par Modena). */
+.exploration-bodies-filter-row {
+    -fx-padding: 1 0 2 0;
+    -fx-alignment: center-left;
+}
+
+.exploration-bodies-filter-label {
+    -fx-text-fill: #e8eaef;
     -fx-font-size: 12px;
-    -fx-padding: 5px 0;
 }
 
-.exploration-filter-checkbox .box {
-    -fx-background-color: -fx-elite-dark;
-    -fx-border-color: -fx-elite-orange;
-    -fx-border-width: 1px;
-    -fx-border-radius: 2px;
+.toggle-button.exploration-bodies-filter-toggle {
+    -fx-background-color: #12161d;
+    -fx-background-insets: 0;
     -fx-background-radius: 2px;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-radius: 2px;
+    -fx-border-width: 1px;
+    -fx-padding: 1px;
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-max-width: 18px;
+    -fx-max-height: 18px;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
-.exploration-filter-checkbox:selected .box {
-    -fx-background-color: -fx-elite-orange;
+.toggle-button.exploration-bodies-filter-toggle:hover {
+    -fx-border-color: derive(-fx-elite-orange, 14%);
+    -fx-background-color: derive(#12161d, 10%);
 }
 
-.exploration-filter-checkbox .mark {
-    -fx-background-color: -fx-elite-dark;
-    -fx-shape: "M 0 4 L 3 7 L 8 0 Z";
+.toggle-button.exploration-bodies-filter-toggle:armed {
+    -fx-background-color: derive(#12161d, 18%);
 }
 
-.exploration-filter-checkbox:selected .mark {
-    -fx-background-color: -fx-elite-dark;
+.toggle-button.exploration-bodies-filter-toggle:selected {
+    -fx-background-color: derive(-fx-elite-orange, -12%);
+    -fx-border-color: derive(-fx-elite-orange, 6%);
+}
+
+.toggle-button.exploration-bodies-filter-toggle:selected:hover {
+    -fx-background-color: derive(-fx-elite-orange, -6%);
+}
+
+.toggle-button.exploration-bodies-filter-toggle:focused {
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 210, 255, 0.5), 9, 0.36, 0, 0);
+}
+
+.exploration-bodies-filter-toggle-inner {
+    -fx-background-color: transparent;
+}
+
+.exploration-bodies-filter-toggle-mark {
+    -fx-text-fill: #0a0c10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
 }
 
 /* Conteneur exobio plus visible */
@@ -6679,7 +6732,7 @@
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
-    -fx-padding: 4px 10px;
+    -fx-padding: 2px 6px;
 }
 
 .exploration-system-current-badge {
@@ -6703,7 +6756,7 @@
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
-    -fx-padding: 5px;
+    -fx-padding: 3px 4px;
 }
 
 .exploration-body-species-row {
