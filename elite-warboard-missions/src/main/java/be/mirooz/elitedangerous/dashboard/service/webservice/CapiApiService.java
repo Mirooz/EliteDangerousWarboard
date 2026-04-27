@@ -16,6 +16,7 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthConnectedNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
+import be.mirooz.elitedangerous.dashboard.view.main.ConfigDialogController;
 import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnUploader;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -291,7 +292,8 @@ public final class CapiApiService {
 
                 CapiAuthNotificationComponent notification = new CapiAuthNotificationComponent(
                         popupContainer,
-                        this::requestAuthenticationAndOpenBrowser
+                        this::requestAuthenticationAndOpenBrowser,
+                        this::onCapiAuthDeclined
                 );
                 notification.opacityProperty().addListener((obs, oldValue, newValue) -> {
                     if (newValue.doubleValue() == 0.0) {
@@ -329,6 +331,30 @@ public final class CapiApiService {
             }
         }
         return null;
+    }
+
+    private void onCapiAuthDeclined() {
+        boolean wasEnabled = preferencesService.isCapiLoginEnabled();
+        if (wasEnabled) {
+            String fid = CommanderStatus.getInstance().getFID();
+            if (fid != null && !fid.isBlank()) {
+                final String fidForLogout = fid;
+                Thread t = new Thread(() -> {
+                    try {
+                        CapiFacade.getInstance().logout(fidForLogout);
+                    } catch (IOException | InterruptedException e) {
+                        if (e instanceof InterruptedException) {
+                            Thread.currentThread().interrupt();
+                        }
+                        System.err.println("CAPI logout: " + e.getMessage());
+                    }
+                }, "capi-logout");
+                t.setDaemon(true);
+                t.start();
+            }
+        }
+        preferencesService.setCapiLoginEnabled(false);
+        ConfigDialogController.applyCapiLoginPreferenceToOpenConfigDialog();
     }
 
     private void requestAuthenticationAndOpenBrowser() {

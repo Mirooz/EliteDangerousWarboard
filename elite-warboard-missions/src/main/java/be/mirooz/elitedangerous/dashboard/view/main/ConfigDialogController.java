@@ -55,6 +55,8 @@ import java.util.ResourceBundle;
  */
 public class ConfigDialogController implements Initializable {
 
+    private static volatile ConfigDialogController openConfigInstance;
+
     @FXML
     private Label configTitleLabel;
 
@@ -234,6 +236,31 @@ public class ConfigDialogController implements Initializable {
         // Stocker les valeurs initiales pour détecter les changements
         originalJournalFolder = preferencesService.getJournalFolder();
         originalCapiLoginEnabled = preferencesService.isCapiLoginEnabled();
+        openConfigInstance = this;
+    }
+
+    /**
+     * Si la fenêtre de configuration est ouverte, aligne la case CAPI sur les préférences
+     * (ex. refus de la notification d’authentification CAPI).
+     */
+    public static void applyCapiLoginPreferenceToOpenConfigDialog() {
+        ConfigDialogController c = openConfigInstance;
+        if (c == null) {
+            return;
+        }
+        Platform.runLater(() -> {
+            if (c.capiLoginEnabledCheckBox == null) {
+                return;
+            }
+            c.capiLoginEnabledCheckBox.setSelected(c.preferencesService.isCapiLoginEnabled());
+            c.updateCapiControlsState();
+        });
+    }
+
+    private void unregisterOpenConfigInstance() {
+        if (openConfigInstance == this) {
+            openConfigInstance = null;
+        }
     }
     
     private String originalJournalFolder;
@@ -660,6 +687,7 @@ public class ConfigDialogController implements Initializable {
         
         // Fermer la fenêtre
         Stage stage = (Stage) saveButton.getScene().getWindow();
+        unregisterOpenConfigInstance();
         stage.close();
     }
 
@@ -807,6 +835,7 @@ public class ConfigDialogController implements Initializable {
         // Reprendre le service (la fenêtre va se fermer)
         windowToggleService.resume();
         
+        unregisterOpenConfigInstance();
         // Fermer la fenêtre sans sauvegarder
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();

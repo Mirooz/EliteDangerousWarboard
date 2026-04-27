@@ -16,10 +16,12 @@ import javafx.util.Duration;
 public class CapiAuthNotificationComponent extends VBox {
 
     private final Runnable approveAction;
+    private final Runnable declineAction;
     private final VBox notificationStack;
 
-    public CapiAuthNotificationComponent(StackPane container, Runnable approveAction) {
+    public CapiAuthNotificationComponent(StackPane container, Runnable approveAction, Runnable declineAction) {
         this.approveAction = approveAction;
+        this.declineAction = declineAction;
         this.notificationStack = NotificationStackManager.getInstance().getOrCreateStack(container);
         LocalizationService localizationService = LocalizationService.getInstance();
 
@@ -51,12 +53,17 @@ public class CapiAuthNotificationComponent extends VBox {
             }
         });
 
-        Button closeButton = new Button(localizationService.getString("common.hide"));
-        closeButton.getStyleClass().add("capi-auth-cancel-button");
-        closeButton.setCursor(Cursor.HAND);
-        closeButton.setOnAction(e -> closeNotification());
+        Button declineButton = new Button(localizationService.getString("capi.auth.decline"));
+        declineButton.getStyleClass().add("capi-auth-cancel-button");
+        declineButton.setCursor(Cursor.HAND);
+        declineButton.setOnAction(e -> {
+            closeNotification();
+            if (this.declineAction != null) {
+                this.declineAction.run();
+            }
+        });
 
-        HBox buttons = new HBox(10, approveButton, closeButton);
+        HBox buttons = new HBox(10, approveButton, declineButton);
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         this.getChildren().addAll(headerLabel, messageLabel, buttons);
