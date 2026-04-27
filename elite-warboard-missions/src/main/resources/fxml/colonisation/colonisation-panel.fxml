@@ -82,6 +82,11 @@
                                               styleClass="fleet-carrier-checkbox" selected="true"/>
                                     <CheckBox fx:id="fleetUseCurrentSystemAsSourceCheckBox" wrapText="true" maxWidth="Infinity"
                                               styleClass="fleet-carrier-checkbox" selected="false"/>
+                                    <VBox spacing="4.0" maxWidth="Infinity" styleClass="colonisation-fleet-optimal-max-distance-filter">
+                                        <Label fx:id="fleetOptimalMarketMaxDistanceLabel" styleClass="config-label" wrapText="true"/>
+                                        <Spinner fx:id="fleetOptimalMarketMaxDistanceLySpinner" editable="true" min="1" max="500"
+                                                 initialValue="100" prefWidth="100" styleClass="config-spinner"/>
+                                    </VBox>
                                     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                                 styleClass="cargo-minerals-scroll,colonisation-fleet-market-scroll,colonisation-fleet-merged-frame"
                                                 VBox.vgrow="ALWAYS">

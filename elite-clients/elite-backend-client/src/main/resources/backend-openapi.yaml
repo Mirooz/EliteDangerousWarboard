@@ -2071,6 +2071,9 @@ components:
           type: boolean
         largePadOnly:
           type: boolean
+        maxDistance:
+          format: int32
+          type: integer
     NearbyExportsCrosscheckResponse:
       type: object
       properties:

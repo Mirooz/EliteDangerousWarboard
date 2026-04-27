@@ -28,6 +28,25 @@ import java.util.regex.Pattern;
  */
 public class ColonisationService {
 
+    /** Rayon de recherche par défaut (AL) pour l’API nearby/buy lorsqu’aucune valeur n’est fournie par l’UI. */
+    public static final int DEFAULT_NEARBY_BUY_MAX_DISTANCE_LY = 100;
+
+    /**
+     * Résultat d’une suggestion d’achat (stations + éventuelles commodités non couvertes par l’API).
+     */
+    public record NearbyBuyStationsSuggestion(
+            List<NearbyExportsBestStationResult> bestStations,
+            List<String> uncoveredCommodityNames) {
+        public NearbyBuyStationsSuggestion {
+            bestStations = bestStations != null ? List.copyOf(bestStations) : List.of();
+            uncoveredCommodityNames = uncoveredCommodityNames != null ? List.copyOf(uncoveredCommodityNames) : List.of();
+        }
+
+        public static NearbyBuyStationsSuggestion empty() {
+            return new NearbyBuyStationsSuggestion(List.of(), List.of());
+        }
+    }
+
     /** Service présent sur les stations / dépôts liés à la colonisation (journal Docked). */
     public static final String COLONISATION_STATION_SERVICE = "colonisationcontribution";
     private static final Pattern CONSTRUCTION_SITE_PREFIX_PATTERN = Pattern.compile(
@@ -125,7 +144,8 @@ public class ColonisationService {
     public List<NearbyExportsBestStationResult> suggestBuyStationsForConstructionDocks(
             List<ColonisationDockEntry> docks,
             boolean avoidPlanetaryLanding) throws IOException {
-        return suggestBuyStationsForConstructionDocks(docks, avoidPlanetaryLanding, null, false);
+        return nearbyBuyCrosscheckForDocks(docks, avoidPlanetaryLanding, null, false, DEFAULT_NEARBY_BUY_MAX_DISTANCE_LY)
+                .bestStations();
     }
 
 
@@ -134,7 +154,8 @@ public class ColonisationService {
         if (site == null) {
             return List.of();
         }
-        return suggestBuyStationsForConstructionDocks(List.of(site), avoidPlanetaryLanding, null, false);
+        return nearbyBuyCrosscheckForDocks(List.of(site), avoidPlanetaryLanding, null, false, DEFAULT_NEARBY_BUY_MAX_DISTANCE_LY)
+                .bestStations();
     }
 
     /**
@@ -150,56 +171,69 @@ public class ColonisationService {
 
     /**
      * @param systemNameOverride si non null et non vide, utilisé comme {@code systemName} API (sinon dérivé de {@code docks.get(0)}).
+     * @param maxDistanceLy rayon de recherche en années-lumière (envoyé à l’API {@code maxDistance}).
      */
-    private List<NearbyExportsBestStationResult> suggestBuyStationsForConstructionDocks(
+    private NearbyBuyStationsSuggestion nearbyBuyCrosscheckForDocks(
             List<ColonisationDockEntry> docks,
             boolean avoidPlanetaryLanding,
             String systemNameOverride,
-            boolean largePadOnly) throws IOException {
+            boolean largePadOnly,
+            int maxDistanceLy) throws IOException {
         if (docks == null || docks.isEmpty()) {
-            return List.of();
+            return NearbyBuyStationsSuggestion.empty();
         }
         String systemName = systemNameOverride != null && !systemNameOverride.isBlank()
                 ? systemNameOverride.trim()
                 : resolveReferenceStarSystemFromFirstConstruction(docks);
         if (systemName.isBlank()) {
-            return List.of();
+            return NearbyBuyStationsSuggestion.empty();
         }
         List<CommodityRequest> commodities = mergeRemainingCommodityRequests(docks);
         if (commodities.isEmpty()) {
-            return List.of();
+            return NearbyBuyStationsSuggestion.empty();
         }
+        return executeNearbyBuyCrosscheck(systemName, commodities, avoidPlanetaryLanding, largePadOnly, maxDistanceLy);
+    }
+
+    private NearbyBuyStationsSuggestion executeNearbyBuyCrosscheck(
+            String systemName,
+            List<CommodityRequest> commodities,
+            boolean avoidPlanetaryLanding,
+            boolean largePadOnly,
+            int maxDistanceLy) throws IOException {
         NearbyExportsCrosscheckRequest request = new NearbyExportsCrosscheckRequest()
                 .systemName(systemName)
                 .commodities(commodities)
                 .avoidPlanetaryLanding(avoidPlanetaryLanding)
-                .largePadOnly(largePadOnly);
+                .largePadOnly(largePadOnly)
+                .maxDistance(maxDistanceLy);
         NearbyExportsCrosscheckResponse response = ardentBackend.suggestBuyStations(request);
-        if (response.getBestStations() == null) {
-            return List.of();
-        }
-        return List.copyOf(response.getBestStations());
+        List<NearbyExportsBestStationResult> stations = response.getBestStations() != null
+                ? List.copyOf(response.getBestStations())
+                : List.of();
+        List<String> uncovered = response.getUncoveredCommodityNames() != null
+                ? List.copyOf(response.getUncoveredCommodityNames())
+                : List.of();
+        return new NearbyBuyStationsSuggestion(stations, uncovered);
     }
 
-
-    public List<NearbyExportsBestStationResult> suggestBuyStationsForCommodityRequests(
+    /**
+     * Suggestion « marché optimal » (fleet) : renvoie aussi {@link NearbyBuyStationsSuggestion#uncoveredCommodityNames()}
+     * pour l’affichage d’avertissements dans l’UI.
+     *
+     * @param maxDistanceLy rayon de recherche en AL (valeur envoyée telle quelle après validation côté UI).
+     */
+    public NearbyBuyStationsSuggestion suggestBuyStationsForCommodityRequests(
             String referenceSystemName,
             List<CommodityRequest> commodities,
             boolean avoidPlanetaryLanding,
-            boolean largePadOnly) throws IOException {
+            boolean largePadOnly,
+            int maxDistanceLy) throws IOException {
         if (referenceSystemName == null || referenceSystemName.isBlank() || commodities == null || commodities.isEmpty()) {
-            return List.of();
+            return NearbyBuyStationsSuggestion.empty();
         }
-        NearbyExportsCrosscheckRequest request = new NearbyExportsCrosscheckRequest()
-                .systemName(referenceSystemName.trim())
-                .commodities(commodities)
-                .avoidPlanetaryLanding(avoidPlanetaryLanding)
-                .largePadOnly(largePadOnly);
-        NearbyExportsCrosscheckResponse response = ardentBackend.suggestBuyStations(request);
-        if (response.getBestStations() == null) {
-            return List.of();
-        }
-        return List.copyOf(response.getBestStations());
+        return executeNearbyBuyCrosscheck(
+                referenceSystemName.trim(), commodities, avoidPlanetaryLanding, largePadOnly, maxDistanceLy);
     }
 
     /** Nom de système pour l’API : celui de la première entrée de la liste de chantiers. */

@@ -269,6 +269,11 @@
     -fx-alignment: CENTER_LEFT;
 }
 
+/* Label + spinner distance max : alignés sur les cases au-dessus, sans cadre ni fond. */
+.colonisation-fleet-optimal-max-distance-filter {
+    -fx-padding: 4px 0 0 0;
+}
+
 .colonisation-fleet-optimal-system-copy {
     -fx-text-fill: derive(-fx-elite-cyan, 5%);
     -fx-font-size: 13.5px;
@@ -299,6 +304,13 @@
 
 .colonisation-fleet-optimal-results {
     -fx-padding: 6px 4px 10px 4px;
+}
+
+.colonisation-fleet-optimal-uncovered-warning {
+    -fx-text-fill: -fx-elite-warning;
+    -fx-wrap-text: true;
+    -fx-padding: 0 0 8px 0;
+    -fx-font-weight: bold;
 }
 
 .colonisation-fleet-optimal-result-card {

@@ -24,6 +24,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSt
 import be.mirooz.elitedangerous.dashboard.model.registries.fleetcarrier.CarrierStatus;
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
+import be.mirooz.elitedangerous.dashboard.service.ColonisationService.NearbyBuyStationsSuggestion;
 import be.mirooz.elitedangerous.dashboard.service.EdColoniseService;
 import be.mirooz.elitedangerous.dashboard.service.SpanshSystemVisitedService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
@@ -108,6 +109,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -152,6 +154,10 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     private CheckBox fleetLargePadOnlyCheckBox;
     @FXML
     private CheckBox fleetUseCurrentSystemAsSourceCheckBox;
+    @FXML
+    private Label fleetOptimalMarketMaxDistanceLabel;
+    @FXML
+    private Spinner<Integer> fleetOptimalMarketMaxDistanceLySpinner;
     @FXML
     private Button fleetFindOptimalMarketButton;
     @FXML
@@ -405,6 +411,18 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             srcTip.setShowDelay(Duration.millis(200));
             srcTip.setText(localizationService.getString("colonisation.fleet.optimalMarket.useCurrentSystemAsSourceHint"));
             fleetUseCurrentSystemAsSourceCheckBox.setTooltip(srcTip);
+        }
+        if (fleetOptimalMarketMaxDistanceLabel != null) {
+            fleetOptimalMarketMaxDistanceLabel.setText(
+                    localizationService.getString("colonisation.fleet.optimalMarket.maxDistanceLyLabel"));
+        }
+        if (fleetOptimalMarketMaxDistanceLySpinner != null) {
+            Tooltip distTip = new Tooltip();
+            distTip.setWrapText(true);
+            distTip.setMaxWidth(340);
+            distTip.setShowDelay(Duration.millis(200));
+            distTip.setText(localizationService.getString("colonisation.fleet.optimalMarket.maxDistanceLyHint"));
+            fleetOptimalMarketMaxDistanceLySpinner.setTooltip(distTip);
         }
         if (fleetOptimalMarketHelpButton != null) {
             fleetOptimalMarketHelpTooltip = new Tooltip();
@@ -673,6 +691,16 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             Tooltip srcTip = fleetUseCurrentSystemAsSourceCheckBox.getTooltip();
             if (srcTip != null) {
                 srcTip.setText(localizationService.getString("colonisation.fleet.optimalMarket.useCurrentSystemAsSourceHint"));
+            }
+        }
+        if (fleetOptimalMarketMaxDistanceLabel != null) {
+            fleetOptimalMarketMaxDistanceLabel.setText(
+                    localizationService.getString("colonisation.fleet.optimalMarket.maxDistanceLyLabel"));
+        }
+        if (fleetOptimalMarketMaxDistanceLySpinner != null) {
+            Tooltip distTip = fleetOptimalMarketMaxDistanceLySpinner.getTooltip();
+            if (distTip != null) {
+                distTip.setText(localizationService.getString("colonisation.fleet.optimalMarket.maxDistanceLyHint"));
             }
         }
         if (fleetFindOptimalMarketButton != null) {
@@ -3042,6 +3070,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             if (fleetFindOptimalMarketButton != null) {
                 fleetFindOptimalMarketButton.setDisable(true);
             }
+            if (fleetOptimalMarketMaxDistanceLySpinner != null) {
+                fleetOptimalMarketMaxDistanceLySpinner.setDisable(true);
+            }
             Label empty = new Label(localizationService.getString("colonisation.fleet.notInitialized"));
             empty.getStyleClass().add("colonisation-detail-placeholder");
             empty.setWrapText(true);
@@ -3072,6 +3103,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         refreshFleetMarketGrid(cs);
         if (fleetFindOptimalMarketButton != null) {
             fleetFindOptimalMarketButton.setDisable(fleetOptimalMarketSearchInProgress);
+        }
+        if (fleetOptimalMarketMaxDistanceLySpinner != null) {
+            fleetOptimalMarketMaxDistanceLySpinner.setDisable(fleetOptimalMarketSearchInProgress);
         }
         refreshCommanderColonyPanel();
     }
@@ -3135,9 +3169,13 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             refreshFleetMarketGrid(cs);
             return;
         }
+        final int maxDistanceLy = readFleetOptimalMaxDistanceLy();
         fleetOptimalMarketSearchInProgress = true;
         if (fleetFindOptimalMarketButton != null) {
             fleetFindOptimalMarketButton.setDisable(true);
+        }
+        if (fleetOptimalMarketMaxDistanceLySpinner != null) {
+            fleetOptimalMarketMaxDistanceLySpinner.setDisable(true);
         }
         if (fleetOptimalMarketProgress != null) {
             fleetOptimalMarketProgress.setManaged(true);
@@ -3152,11 +3190,13 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             refreshFleetCarrierOverlayIfOpen();
         }
         final List<CommodityRequest> requestsArg = List.copyOf(requests);
+        final int maxDistanceLyArg = maxDistanceLy;
         Thread t = new Thread(() -> {
             try {
-                List<NearbyExportsBestStationResult> stations =
-                        colonisationService.suggestBuyStationsForCommodityRequests(
-                                systemArg, requestsArg, avoidPlanetary, largePadOnly);
+                NearbyBuyStationsSuggestion suggestion = colonisationService.suggestBuyStationsForCommodityRequests(
+                        systemArg, requestsArg, avoidPlanetary, largePadOnly, maxDistanceLyArg);
+                List<NearbyExportsBestStationResult> stations = suggestion.bestStations();
+                List<String> uncovered = suggestion.uncoveredCommodityNames();
                 Platform.runLater(() -> {
                     fleetOptimalMarketSearchInProgress = false;
                     if (fleetOptimalMarketProgress != null) {
@@ -3166,15 +3206,23 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
                     if (fleetFindOptimalMarketButton != null) {
                         fleetFindOptimalMarketButton.setDisable(false);
                     }
+                    if (fleetOptimalMarketMaxDistanceLySpinner != null) {
+                        fleetOptimalMarketMaxDistanceLySpinner.setDisable(false);
+                    }
+                    Map<String, String> missingDisplay = buildMissingDisplayByCommodity();
                     if (stations.isEmpty()) {
                         fleetCargoRowHighlightByMergeKey.clear();
-                        showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noResults"));
+                        if (!uncovered.isEmpty()) {
+                            showFleetOptimalMarketNoStationsWithUncovered(uncovered, cs, missingDisplay);
+                        } else {
+                            showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.noResults"));
+                        }
                     } else {
                         Map<String, Integer> tonsByKey = buildRequestedTonsByMergeKey(requestsArg);
                         List<NearbyExportsBestStationResult> ordered =
                                 sortFleetOptimalStationsByTotalTonsDesc(stations, tonsByKey);
                         rebuildFleetCargoHighlightsFromStations(ordered);
-                        populateFleetOptimalMarketResults(ordered, tonsByKey);
+                        populateFleetOptimalMarketResults(ordered, tonsByKey, uncovered, cs, missingDisplay);
                     }
                     refreshFleetMarketGrid(cs);
                 });
@@ -3187,6 +3235,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
                     }
                     if (fleetFindOptimalMarketButton != null) {
                         fleetFindOptimalMarketButton.setDisable(false);
+                    }
+                    if (fleetOptimalMarketMaxDistanceLySpinner != null) {
+                        fleetOptimalMarketMaxDistanceLySpinner.setDisable(false);
                     }
                     fleetCargoRowHighlightByMergeKey.clear();
                     showFleetOptimalMarketMessage(localizationService.getString("colonisation.fleet.optimalMarket.error") + " " + e.getMessage());
@@ -3226,6 +3277,91 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         l.setMaxWidth(Double.MAX_VALUE);
         l.getStyleClass().add("colonisation-detail-placeholder");
         fleetOptimalMarketResultsBox.getChildren().add(l);
+    }
+
+    private static final int FLEET_OPTIMAL_MAX_DISTANCE_LY_MIN = 1;
+    private static final int FLEET_OPTIMAL_MAX_DISTANCE_LY_MAX = 500;
+
+    private int readFleetOptimalMaxDistanceLy() {
+        if (fleetOptimalMarketMaxDistanceLySpinner == null) {
+            return ColonisationService.DEFAULT_NEARBY_BUY_MAX_DISTANCE_LY;
+        }
+        try {
+            int v = fleetOptimalMarketMaxDistanceLySpinner.getValue();
+            return Math.min(FLEET_OPTIMAL_MAX_DISTANCE_LY_MAX, Math.max(FLEET_OPTIMAL_MAX_DISTANCE_LY_MIN, v));
+        } catch (Exception e) {
+            return ColonisationService.DEFAULT_NEARBY_BUY_MAX_DISTANCE_LY;
+        }
+    }
+
+    private String fleetOptimalUncoveredCommoditiesJoined(
+            List<String> uncovered,
+            CarrierStatus cs,
+            Map<String, String> constructionDisplayByMergeKey) {
+        if (uncovered == null || uncovered.isEmpty()) {
+            return "";
+        }
+        return uncovered.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .map(n -> fleetOptimalUncoveredDisplayName(n, cs, constructionDisplayByMergeKey))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.joining(", "));
+    }
+
+    private static String fleetOptimalUncoveredDisplayName(
+            String apiName,
+            CarrierStatus cs,
+            Map<String, String> constructionDisplayByMergeKey) {
+        if (apiName == null || apiName.isBlank()) {
+            return "";
+        }
+        ICommodity c = CarrierCommodityResolver.resolve(apiName.trim(), "");
+        String mergeKey = ColonisationCommodityKeys.mergeKey(c);
+        if (constructionDisplayByMergeKey != null && mergeKey != null && !mergeKey.isBlank()) {
+            String fromConstruction = constructionDisplayByMergeKey.get(mergeKey);
+            if (fromConstruction != null && !fromConstruction.isBlank()) {
+                return fromConstruction;
+            }
+        }
+        if (cs != null && cs.isCarrierStatsInitialized()) {
+            String lbl = cs.displayLabel(c);
+            if (lbl != null && !lbl.isBlank() && !"?".equals(lbl)) {
+                return lbl;
+            }
+        }
+        String t = c.getTitleName();
+        if (t != null && !t.isBlank()) {
+            return t;
+        }
+        String v = c.getVisibleName();
+        if (v != null && !v.isBlank()) {
+            return v;
+        }
+        return apiName.trim();
+    }
+
+    /** Aucune station mais l’API signale des commodités sans offre dans le rayon. */
+    private void showFleetOptimalMarketNoStationsWithUncovered(
+            List<String> uncovered,
+            CarrierStatus cs,
+            Map<String, String> constructionDisplayByMergeKey) {
+        if (fleetOptimalMarketResultsBox == null) {
+            return;
+        }
+        fleetOptimalMarketResultsBox.getChildren().clear();
+        String joined = fleetOptimalUncoveredCommoditiesJoined(uncovered, cs, constructionDisplayByMergeKey);
+        Label warn = new Label(localizationService.getString("colonisation.fleet.optimalMarket.uncoveredWarning", joined));
+        warn.setWrapText(true);
+        warn.setMaxWidth(Double.MAX_VALUE);
+        warn.getStyleClass().add("colonisation-fleet-optimal-uncovered-warning");
+        Label sub = new Label(localizationService.getString("colonisation.fleet.optimalMarket.noResults"));
+        sub.setWrapText(true);
+        sub.setMaxWidth(Double.MAX_VALUE);
+        sub.getStyleClass().add("colonisation-detail-placeholder");
+        fleetOptimalMarketResultsBox.getChildren().addAll(warn, sub);
     }
 
     private void rebuildFleetCargoHighlightsFromStations(List<NearbyExportsBestStationResult> stations) {
@@ -3352,11 +3488,26 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
     private void populateFleetOptimalMarketResults(
             List<NearbyExportsBestStationResult> stations,
-            Map<String, Integer> requestedTonsByMergeKey) {
+            Map<String, Integer> requestedTonsByMergeKey,
+            List<String> uncoveredCommodityNames,
+            CarrierStatus cs,
+            Map<String, String> constructionDisplayByMergeKey) {
         if (fleetOptimalMarketResultsBox == null) {
             return;
         }
         fleetOptimalMarketResultsBox.getChildren().clear();
+        if (uncoveredCommodityNames != null && !uncoveredCommodityNames.isEmpty()) {
+            String joined = fleetOptimalUncoveredCommoditiesJoined(
+                    uncoveredCommodityNames, cs, constructionDisplayByMergeKey);
+            if (!joined.isEmpty()) {
+                Label uncoveredWarn = new Label(
+                        localizationService.getString("colonisation.fleet.optimalMarket.uncoveredWarning", joined));
+                uncoveredWarn.setWrapText(true);
+                uncoveredWarn.setMaxWidth(Double.MAX_VALUE);
+                uncoveredWarn.getStyleClass().add("colonisation-fleet-optimal-uncovered-warning");
+                fleetOptimalMarketResultsBox.getChildren().add(uncoveredWarn);
+            }
+        }
         int idx = 0;
         for (NearbyExportsBestStationResult st : stations) {
             if (st == null) {
