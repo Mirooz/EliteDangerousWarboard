@@ -71,6 +71,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     private Label systemTitleLabel;
     @FXML
     private Label systemBodiesLabel;
+    @FXML
+    private Button systemBodiesHelpButton;
+
+    private Tooltip systemBodiesHelpTooltip;
 
     private RadarComponent radarComponent;
     private RadarComponent overlayRadarComponent; // Cache pour le RadarComponent de l'overlay
@@ -342,6 +346,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         initMapPanControls();
 
         initHighValueBodiesFilterControl();
+        initSystemBodiesHelpButton();
 
         initSpacingControls();
 
@@ -376,6 +381,20 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 onFilterChanged();
             });
         }
+    }
+
+    private void initSystemBodiesHelpButton() {
+        if (systemBodiesHelpButton == null) {
+            return;
+        }
+        systemBodiesHelpTooltip = new Tooltip();
+        systemBodiesHelpTooltip.setWrapText(true);
+        systemBodiesHelpTooltip.setMaxWidth(380);
+        systemBodiesHelpTooltip.setShowDelay(Duration.millis(200));
+        systemBodiesHelpTooltip.setShowDuration(Duration.minutes(3));
+        systemBodiesHelpTooltip.setHideDelay(Duration.millis(800));
+        systemBodiesHelpTooltip.setText(localizationService.getString("exploration.system_bodies.helpTooltip"));
+        systemBodiesHelpButton.setTooltip(systemBodiesHelpTooltip);
     }
 
     private void initSystemTitleClipboardAction() {
@@ -3700,6 +3719,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
         if (spacingVerticalLabel != null) {
             spacingVerticalLabel.setText(localizationService.getString("exploration.spacing.vertical"));
+        }
+        if (systemBodiesHelpTooltip != null) {
+            systemBodiesHelpTooltip.setText(localizationService.getString("exploration.system_bodies.helpTooltip"));
         }
     }
 

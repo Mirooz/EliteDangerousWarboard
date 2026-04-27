@@ -18,7 +18,14 @@
             <HBox spacing="8" alignment="CENTER_LEFT" styleClass="exploration-bodies-list-toolbar">
                 <Label fx:id="systemBodiesLabel" text="CORPS DU SYSTÈME"
                        styleClass="exploration-bodies-list-section-title"
-                       HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                       minWidth="0"/>
+                <Button fx:id="systemBodiesHelpButton" mnemonicParsing="false" focusTraversable="false"
+                        styleClass="nav-route-info-button" minWidth="24.0" maxWidth="24.0" minHeight="24.0" maxHeight="24.0">
+                    <graphic>
+                        <Label text="?" styleClass="nav-route-info-icon"/>
+                    </graphic>
+                </Button>
+                <Region minWidth="8" HBox.hgrow="ALWAYS"/>
                 <HBox spacing="4" alignment="CENTER_RIGHT">
                     <Button fx:id="bodiesOverlayButton" styleClass="elite-nav-button" onAction="#showBodiesOverlay"/>
                     <ToggleButton fx:id="bodiesOverlayPassThroughLockButton" mnemonicParsing="false" focusTraversable="false"
