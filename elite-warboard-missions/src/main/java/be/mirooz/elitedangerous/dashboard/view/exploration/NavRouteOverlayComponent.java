@@ -7,11 +7,15 @@ import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -287,74 +291,6 @@ public class NavRouteOverlayComponent {
     }
 
     /**
-     * Rend un nœud déplaçable
-     */
-    private void makeNodeDraggable(javafx.scene.Node node, Stage stage) {
-        final double[] offset = new double[2];
-        final double[] resizeOffset = new double[2];
-        final boolean[] isResizing = {false};
-
-        node.setOnMousePressed(e -> {
-            if (e.getButton() != javafx.scene.input.MouseButton.PRIMARY) {
-                return;
-            }
-
-            Scene scene = stage.getScene();
-            double mouseX = e.getSceneX();
-            double mouseY = e.getSceneY();
-            double sceneWidth = scene.getWidth();
-            double sceneHeight = scene.getHeight();
-
-            // Détecter la zone de resize (25x25)
-            if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
-                isResizing[0] = true;
-                resizeOffset[0] = e.getScreenX();
-                resizeOffset[1] = e.getScreenY();
-                return;
-            }
-
-            // Sinon → déplacement
-            isResizing[0] = false;
-            offset[0] = e.getScreenX() - stage.getX();
-            offset[1] = e.getScreenY() - stage.getY();
-        });
-
-        node.setOnMouseDragged(e -> {
-            if (e.getButton() != javafx.scene.input.MouseButton.PRIMARY) {
-                return;
-            }
-
-            Scene scene = stage.getScene();
-            double mouseX = e.getSceneX();
-            double mouseY = e.getSceneY();
-            double sceneWidth = scene.getWidth();
-            double sceneHeight = scene.getHeight();
-
-            if (isResizing[0]) {
-                // Resize
-                double deltaX = e.getScreenX() - resizeOffset[0];
-                double deltaY = e.getScreenY() - resizeOffset[1];
-
-                double newWidth = stage.getWidth() + deltaX;
-                double newHeight = stage.getHeight() + deltaY;
-
-                if (newWidth >= stage.getMinWidth()) stage.setWidth(newWidth);
-                if (newHeight >= stage.getMinHeight()) stage.setHeight(newHeight);
-
-                resizeOffset[0] = e.getScreenX();
-                resizeOffset[1] = e.getScreenY();
-                return;
-            }
-
-            // Déplacement normal
-            stage.setX(e.getScreenX() - offset[0]);
-            stage.setY(e.getScreenY() - offset[1]);
-        });
-
-        node.setOnMouseReleased(e -> isResizing[0] = false);
-    }
-
-    /**
      * Crée le contenu de l'overlay
      */
     private void createOverlayContent() {
@@ -392,22 +328,13 @@ public class NavRouteOverlayComponent {
                 });
             }
 
-            // Rendre le contenu interne transparent aux événements de souris pour permettre le déplacement
-            // SAUF le routeSystemsPane qui doit rester interactif pour les clics sur les cercles
-            // Le VBox principal (overlayContainer) reste interactif pour détecter la souris
-            // Note: routeSystemsPane n'est PAS rendu transparent pour permettre les clics sur les cercles
+            // ScrollPane + route : interactifs pour les clics ; le déplacement de la fenêtre est géré par
+            // des filtres sur la Scene dans setupInteractions() (phase capture, comme l’overlay Fleet carrier).
             if (scrollPane != null) {
-                // Le ScrollPane doit permettre les événements de souris pour son contenu (routeSystemsPane)
-                // mais ne doit pas intercepter les événements pour le déplacement
-                // On le laisse non-transparent pour permettre les clics sur les cercles
                 scrollPane.setMouseTransparent(false);
                 scrollPane.setPickOnBounds(true);
             }
-            
-            // S'assurer que le VBox principal peut recevoir les événements de souris
             overlayContainer.setPickOnBounds(true);
-            
-            // S'assurer que le StackPane peut recevoir les événements de souris pour le déplacement
             stackPane.setPickOnBounds(true);
             
             // Créer le rectangle de fond avec opacité
@@ -426,10 +353,7 @@ public class NavRouteOverlayComponent {
             
             // Ajouter le rectangle de fond en premier, puis le contenu et les contrôles
             stackPane.getChildren().addAll(backgroundRectangle, overlayContainer, resizeHandle, opacitySlider);
-            
-            // Rendre le StackPane déplaçable (après avoir ajouté les enfants)
-            makeNodeDraggable(stackPane, overlayStage);
-            
+
             // Positionner les contrôles
             StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
             StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
@@ -486,47 +410,138 @@ public class NavRouteOverlayComponent {
     }
 
     /**
-     * Configure les interactions (curseur et visibilité des contrôles)
+     * Déplacement / redimensionnement : filtres en phase capture (comme Fleet carrier) pour que le drag
+     * fonctionne même au-dessus du ScrollPane et des « boules » de route.
      */
     private void setupInteractions() {
+        final double[] offset = new double[2];
+        final double[] resizeOffset = new double[2];
+        final boolean[] isResizing = {false};
+        final boolean[] armWindowMove = {false};
+
         Scene scene = overlayStage.getScene();
 
-        // Gestion du curseur et de la visibilité des contrôles sur la scène
-        scene.setOnMouseMoved(e -> {
+        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+            armWindowMove[0] = false;
+            Node pick = pickNode(e);
+            if (isInsideSliderOrScrollBar(pick)) {
+                return;
+            }
+            double sceneWidth = scene.getWidth();
+            double sceneHeight = scene.getHeight();
+            double mx = e.getSceneX();
+            double my = e.getSceneY();
+            if (mx >= sceneWidth - 25 && my >= sceneHeight - 25) {
+                isResizing[0] = true;
+                resizeOffset[0] = e.getScreenX();
+                resizeOffset[1] = e.getScreenY();
+            } else {
+                isResizing[0] = false;
+                armWindowMove[0] = true;
+                offset[0] = e.getScreenX() - overlayStage.getX();
+                offset[1] = e.getScreenY() - overlayStage.getY();
+            }
+        });
+        scene.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
+            if (e.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+            Node pick = pickNode(e);
+            if (isInsideSliderOrScrollBar(pick)) {
+                return;
+            }
+            if (isResizing[0]) {
+                double deltaX = e.getScreenX() - resizeOffset[0];
+                double deltaY = e.getScreenY() - resizeOffset[1];
+                double newWidth = overlayStage.getWidth() + deltaX;
+                double newHeight = overlayStage.getHeight() + deltaY;
+                if (newWidth >= overlayStage.getMinWidth()) {
+                    overlayStage.setWidth(newWidth);
+                }
+                if (newHeight >= overlayStage.getMinHeight()) {
+                    overlayStage.setHeight(newHeight);
+                }
+                resizeOffset[0] = e.getScreenX();
+                resizeOffset[1] = e.getScreenY();
+                e.consume();
+            } else if (armWindowMove[0]) {
+                overlayStage.setX(e.getScreenX() - offset[0]);
+                overlayStage.setY(e.getScreenY() - offset[1]);
+                e.consume();
+            }
+        });
+        scene.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            isResizing[0] = false;
+            armWindowMove[0] = false;
+        });
+
+        scene.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             double mouseX = e.getSceneX();
             double mouseY = e.getSceneY();
-
-            // Zone de redimensionnement : coin inférieur droit (25x25 pixels)
             if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
-                if (resizeHandle != null) resizeHandle.setOpacity(1.0);
-                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
+                if (resizeHandle != null) {
+                    resizeHandle.setOpacity(1.0);
+                }
+                if (opacitySlider != null) {
+                    opacitySlider.setOpacity(0.8);
+                }
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
-                if (resizeHandle != null) resizeHandle.setOpacity(0.8);
-                if (opacitySlider != null) opacitySlider.setOpacity(0.8);
+                if (resizeHandle != null) {
+                    resizeHandle.setOpacity(0.8);
+                }
+                if (opacitySlider != null) {
+                    opacitySlider.setOpacity(0.8);
+                }
             }
         });
 
-        // Masquer les contrôles et retirer le cadre orange quand la souris quitte la scène
-        scene.setOnMouseExited(e -> {
-            if (resizeHandle != null) resizeHandle.setOpacity(0.0);
-            if (opacitySlider != null) opacitySlider.setOpacity(0.0);
-            // Retirer le cadre orange quand la souris sort
+        scene.addEventFilter(MouseEvent.MOUSE_EXITED, e -> {
+            if (resizeHandle != null) {
+                resizeHandle.setOpacity(0.0);
+            }
+            if (opacitySlider != null) {
+                opacitySlider.setOpacity(0.0);
+            }
             stackPane.getStyleClass().remove("overlay-root-bordered");
         });
 
-        // Afficher les contrôles et ajouter le cadre orange quand la souris entre dans la scène
-        scene.setOnMouseEntered(e -> {
-            if (resizeHandle != null) resizeHandle.setOpacity(0.8);
-            if (opacitySlider != null) opacitySlider.setOpacity(0.8);
-            // Ajouter le cadre orange quand la souris entre
+        scene.addEventFilter(MouseEvent.MOUSE_ENTERED, e -> {
+            if (resizeHandle != null) {
+                resizeHandle.setOpacity(0.8);
+            }
+            if (opacitySlider != null) {
+                opacitySlider.setOpacity(0.8);
+            }
             if (!stackPane.getStyleClass().contains("overlay-root-bordered")) {
                 stackPane.getStyleClass().add("overlay-root-bordered");
             }
         });
+    }
+
+    private static Node pickNode(MouseEvent e) {
+        if (e.getPickResult() != null && e.getPickResult().getIntersectedNode() != null) {
+            return e.getPickResult().getIntersectedNode();
+        }
+        if (e.getTarget() instanceof Node n) {
+            return n;
+        }
+        return null;
+    }
+
+    private static boolean isInsideSliderOrScrollBar(Node node) {
+        for (Node n = node; n != null; n = n.getParent()) {
+            if (n instanceof ScrollBar || n instanceof Slider) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**

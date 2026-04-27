@@ -8,10 +8,14 @@ import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Background;
@@ -429,44 +433,70 @@ public class FleetCarrierOverlayComponent {
         final double[] offset = new double[2];
         final double[] resizeOffset = new double[2];
         final boolean[] isResizing = {false};
+        final boolean[] armWindowMove = {false};
 
         Scene scene = overlayStage.getScene();
-        scene.setOnMousePressed(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+        /*
+         * Filtres en phase capture : reçus avant le ScrollPane / la grille, pour pouvoir déplacer la fenêtre
+         * en cliquant-glissant au milieu du tableau (consume sur DRAG pour éviter que le scroll prenne le geste).
+         */
+        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+            armWindowMove[0] = false;
+            Node pick = pickNode(e);
+            if (isInsideSliderOrScrollBar(pick)) {
+                return;
+            }
+            double sceneWidth = scene.getWidth();
+            double sceneHeight = scene.getHeight();
+            double mx = e.getSceneX();
+            double my = e.getSceneY();
+            if (mx >= sceneWidth - 25 && my >= sceneHeight - 25) {
+                isResizing[0] = true;
+                resizeOffset[0] = e.getScreenX();
+                resizeOffset[1] = e.getScreenY();
+            } else {
+                isResizing[0] = false;
+                armWindowMove[0] = true;
                 offset[0] = e.getScreenX() - overlayStage.getX();
                 offset[1] = e.getScreenY() - overlayStage.getY();
-                double sceneWidth = scene.getWidth();
-                double sceneHeight = scene.getHeight();
-                if (e.getSceneX() >= sceneWidth - 25 && e.getSceneY() >= sceneHeight - 25) {
-                    isResizing[0] = true;
-                    resizeOffset[0] = e.getScreenX();
-                    resizeOffset[1] = e.getScreenY();
-                }
             }
         });
-        scene.setOnMouseDragged(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                if (isResizing[0]) {
-                    double deltaX = e.getScreenX() - resizeOffset[0];
-                    double deltaY = e.getScreenY() - resizeOffset[1];
-                    double newWidth = overlayStage.getWidth() + deltaX;
-                    double newHeight = overlayStage.getHeight() + deltaY;
-                    if (newWidth >= overlayStage.getMinWidth()) {
-                        overlayStage.setWidth(newWidth);
-                    }
-                    if (newHeight >= overlayStage.getMinHeight()) {
-                        overlayStage.setHeight(newHeight);
-                    }
-                    resizeOffset[0] = e.getScreenX();
-                    resizeOffset[1] = e.getScreenY();
-                } else {
-                    overlayStage.setX(e.getScreenX() - offset[0]);
-                    overlayStage.setY(e.getScreenY() - offset[1]);
+        scene.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
+            if (e.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+            Node pick = pickNode(e);
+            if (isInsideSliderOrScrollBar(pick)) {
+                return;
+            }
+            if (isResizing[0]) {
+                double deltaX = e.getScreenX() - resizeOffset[0];
+                double deltaY = e.getScreenY() - resizeOffset[1];
+                double newWidth = overlayStage.getWidth() + deltaX;
+                double newHeight = overlayStage.getHeight() + deltaY;
+                if (newWidth >= overlayStage.getMinWidth()) {
+                    overlayStage.setWidth(newWidth);
                 }
+                if (newHeight >= overlayStage.getMinHeight()) {
+                    overlayStage.setHeight(newHeight);
+                }
+                resizeOffset[0] = e.getScreenX();
+                resizeOffset[1] = e.getScreenY();
+                e.consume();
+            } else if (armWindowMove[0]) {
+                overlayStage.setX(e.getScreenX() - offset[0]);
+                overlayStage.setY(e.getScreenY() - offset[1]);
+                e.consume();
             }
         });
-        scene.setOnMouseReleased(e -> isResizing[0] = false);
-        scene.setOnMouseMoved(e -> {
+        scene.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            isResizing[0] = false;
+            armWindowMove[0] = false;
+        });
+        scene.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
             if (e.getSceneX() >= sceneWidth - 25 && e.getSceneY() >= sceneHeight - 25) {
@@ -481,16 +511,35 @@ public class FleetCarrierOverlayComponent {
                 textScaleSlider.setOpacity(0.8);
             }
         });
-        scene.setOnMouseExited(e -> {
+        scene.addEventFilter(MouseEvent.MOUSE_EXITED, e -> {
             resizeHandle.setOpacity(0.0);
             opacitySlider.setOpacity(0.0);
             textScaleSlider.setOpacity(0.0);
         });
-        scene.setOnMouseEntered(e -> {
+        scene.addEventFilter(MouseEvent.MOUSE_ENTERED, e -> {
             resizeHandle.setOpacity(0.8);
             opacitySlider.setOpacity(0.8);
             textScaleSlider.setOpacity(0.8);
         });
+    }
+
+    private static Node pickNode(MouseEvent e) {
+        if (e.getPickResult() != null && e.getPickResult().getIntersectedNode() != null) {
+            return e.getPickResult().getIntersectedNode();
+        }
+        if (e.getTarget() instanceof Node n) {
+            return n;
+        }
+        return null;
+    }
+
+    private static boolean isInsideSliderOrScrollBar(Node node) {
+        for (Node n = node; n != null; n = n.getParent()) {
+            if (n instanceof ScrollBar || n instanceof Slider) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void restoreOverlayPreferences() {
