@@ -86,11 +86,11 @@ public class HeaderController implements Initializable, IRefreshable {
 
     private void updateTranslations() {
         massacreSearchButton.setText(localizationService.getString("header.search.button"));
-        missionCountTextLabel.setText(localizationService.getString("header.missions"));
         earnCreditsTextLabel.setText(localizationService.getString("header.credits.earned"));
         potentialCreditsTextLabel.setText(localizationService.getString("header.credits.potential"));
         pendingCreditsTextLabel.setText(localizationService.getString("header.credits.pending"));
         lostCreditsTextLabel.setText(localizationService.getString("header.credits.lost"));
+        refreshUI();
     }
 
     public void refreshUI(){
@@ -110,18 +110,18 @@ public class HeaderController implements Initializable, IRefreshable {
         hide(lostCreditsBox);
         // Calculer les crédits selon le filtre
         if (currentFilter == MissionStatus.ACTIVE) {
-            setMissionsLabel("MISSIONS ACTIVES", filteredMissions);
+            setMissionsLabel(localizationService.getString("header.missions.label.active"), filteredMissions);
             setPotentialCredits(filteredMissions);
             setPendingCredits(filteredMissions);
         } else if (currentFilter == MissionStatus.COMPLETED) {
-            setMissionsLabel("MISSIONS COMPLÉTÉES", filteredMissions);
+            setMissionsLabel(localizationService.getString("header.missions.label.completed"), filteredMissions);
             setEarnCredits(filteredMissions);
         } else if (currentFilter == MissionStatus.FAILED) {
-            setMissionsLabel("MISSIONS ABANDONNÉES", filteredMissions);
+            setMissionsLabel(localizationService.getString("header.missions.label.failed"), filteredMissions);
             setLostCredits(filteredMissions);
 
         } else {
-            setMissionsLabel("MISSIONS", filteredMissions);
+            setMissionsLabel(localizationService.getString("header.missions"), filteredMissions);
             setEarnCredits(filteredMissions);
             setPotentialCredits(filteredMissions);
             setPendingCredits(filteredMissions);
