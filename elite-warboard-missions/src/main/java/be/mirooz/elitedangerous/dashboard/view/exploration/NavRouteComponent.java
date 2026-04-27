@@ -1429,6 +1429,7 @@ public class NavRouteComponent implements Initializable {
                 boolean hasBoost = isBoostStar(system.getStarClass());
                 Line line = createLine(x, centerY, nextX, centerY, nextSystem, isVisited, hasBoost);
                 targetPane.getChildren().add(line);
+                maybeAddRemainingJumpsLabelAboveSegmentToPane(targetPane, x, nextX, centerY, nextSystem);
                 currentX = nextX;
             }
 
@@ -1600,26 +1601,7 @@ public class NavRouteComponent implements Initializable {
                     boolean hasBoost = isBoostStar(system.getStarClass());
                     Line line = createLine(x, centerY, nextX, centerY, nextSystem, isVisited, hasBoost);
                     routeSystemsPane.getChildren().add(line);
-                    
-                    // En mode Stratum, vérifier et afficher le nombre de sauts restants pour toutes les lignes
-                    if (currentMode != null && currentMode.requiresSpanshApi()) {
-                        NavRoute freeExplorationRoute = navRouteService.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
-                        if (freeExplorationRoute != null && freeExplorationRoute.getRoute() != null && !freeExplorationRoute.getRoute().isEmpty()) {
-                            RouteSystem lastFreeSystem = freeExplorationRoute.getRoute().get(freeExplorationRoute.getRoute().size() - 1);
-                            // Vérifier si le dernier système de Free Exploration correspond à la prochaine boule
-                            if (lastFreeSystem.getSystemName().equals(nextSystem.getSystemName())) {
-                                // Utiliser le nombre de sauts restants du registre (celui du label "x jump remaining")
-                                int remainingJumps = navRouteService.getRemainingJumpsInRoute();
-                                if (remainingJumps > 0) {
-                                    // Afficher le nombre de sauts au-dessus de la ligne, au milieu
-                                    double midX = (x + nextX) / 2;
-                                    Label jumpsLabel = createJumpsRemainingLabel(midX, centerY - 15, remainingJumps);
-                                    routeSystemsPane.getChildren().add(jumpsLabel);
-                                }
-                            }
-                        }
-                    }
-                    
+                    maybeAddRemainingJumpsLabelAboveSegmentToPane(routeSystemsPane, x, nextX, centerY, nextSystem);
                     currentX = nextX;
                 }
 
@@ -1744,6 +1726,37 @@ public class NavRouteComponent implements Initializable {
         line.setMouseTransparent(true);
 
         return line;
+    }
+
+    /**
+     * Affiche le chiffre des sauts FSD restants (journal) au milieu du segment, au même titre que le panneau
+     * principal : modes Spansh et prochaine boule = dernier système de la route Free Exploration.
+     */
+    private void maybeAddRemainingJumpsLabelAboveSegmentToPane(
+            Pane pane,
+            double segmentStartX,
+            double segmentEndX,
+            double centerY,
+            RouteSystem nextSystem) {
+        if (pane == null || nextSystem == null) {
+            return;
+        }
+        if (currentMode == null || !currentMode.requiresSpanshApi()) {
+            return;
+        }
+        NavRoute freeExplorationRoute = navRouteService.getRouteForMode(ExplorationMode.FREE_EXPLORATION);
+        if (freeExplorationRoute == null || freeExplorationRoute.getRoute() == null || freeExplorationRoute.getRoute().isEmpty()) {
+            return;
+        }
+        RouteSystem lastFreeSystem = freeExplorationRoute.getRoute().get(freeExplorationRoute.getRoute().size() - 1);
+        if (!lastFreeSystem.getSystemName().equals(nextSystem.getSystemName())) {
+            return;
+        }
+        int remainingJumps = navRouteService.getRemainingJumpsInRoute();
+        if (remainingJumps > 0) {
+            double midX = (segmentStartX + segmentEndX) / 2.0;
+            pane.getChildren().add(createJumpsRemainingLabel(midX, centerY - 15, remainingJumps));
+        }
     }
 
     /**

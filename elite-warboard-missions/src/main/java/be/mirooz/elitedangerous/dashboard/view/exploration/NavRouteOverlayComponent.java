@@ -97,11 +97,12 @@ public class NavRouteOverlayComponent {
             }
         });
         
-        // Écouter les changements de RemainingJumpsInRoute pour mettre à jour le label
+        // Écouter les changements de RemainingJumpsInRoute : label texte + chiffre au-dessus du segment (redessin route)
         navRouteService.getRemainingJumpsInRouteProperty().addListener((obs, oldValue, newValue) -> {
             if (overlayStage != null && overlayStage.isShowing()) {
                 Platform.runLater(() -> {
                     updateRemainingJumpsLabel(newValue.intValue());
+                    updateOverlayContent();
                 });
             }
         });
