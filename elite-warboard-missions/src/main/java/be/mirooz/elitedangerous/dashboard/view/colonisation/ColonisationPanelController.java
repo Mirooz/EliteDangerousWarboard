@@ -460,7 +460,39 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
     private void onColonisationDataChanged() {
         ensureConstructionListLoadedAfterBatch();
+        pruneCompletedSitesFromConstructionList();
         refreshAll();
+    }
+
+    /**
+     * Retire de la liste de construction persistée les entrées dont le chantier est passé à {@link ConstructionStatus#COMPLETE}
+     * (journal {@code ColonisationConstructionDepot}).
+     */
+    private void pruneCompletedSitesFromConstructionList() {
+        if (constructionListMarketIds.isEmpty()) {
+            return;
+        }
+        boolean removedAny = false;
+        for (Long marketId : new ArrayList<>(constructionListMarketIds)) {
+            ColonisationDockEntry dock = findDockEntry(marketId);
+            if (dock == null || dock.getConstruction() == null) {
+                continue;
+            }
+            if (dock.getConstruction().getStatus() == ConstructionStatus.COMPLETE) {
+                if (constructionListMarketIds.remove(marketId)) {
+                    removedAny = true;
+                }
+            }
+        }
+        if (!removedAny) {
+            return;
+        }
+        if (selectedConstructionRow != null
+                && !constructionListMarketIds.contains(selectedConstructionRow.getMarketId())) {
+            selectedConstructionRow = null;
+        }
+        persistConstructionList();
+        refreshArchitectMapConstructionOverlayIfOpen();
     }
 
     private void ensureConstructionListLoadedAfterBatch() {
