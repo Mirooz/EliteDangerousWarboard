@@ -93,6 +93,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     @FXML
     private Label jsonBodyNameLabel;
     @FXML
+    private Label jsonSpanshSourceTagLabel;
+
+    private Tooltip jsonSpanshSourceTagTooltip;
+    @FXML
     private TreeView<JsonTreeItem> jsonTreeView;
     @FXML
     private Button bodiesOverlayButton;
@@ -347,6 +351,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         initHighValueBodiesFilterControl();
         initSystemBodiesHelpButton();
+        initJsonSpanshSourceTagTooltip();
 
         initSpacingControls();
 
@@ -395,6 +400,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         systemBodiesHelpTooltip.setHideDelay(Duration.millis(800));
         systemBodiesHelpTooltip.setText(localizationService.getString("exploration.system_bodies.helpTooltip"));
         systemBodiesHelpButton.setTooltip(systemBodiesHelpTooltip);
+    }
+
+    private void initJsonSpanshSourceTagTooltip() {
+        if (jsonSpanshSourceTagLabel == null) {
+            return;
+        }
+        jsonSpanshSourceTagTooltip = new Tooltip();
+        jsonSpanshSourceTagTooltip.setWrapText(true);
+        jsonSpanshSourceTagTooltip.setMaxWidth(320);
+        jsonSpanshSourceTagTooltip.setShowDelay(Duration.millis(200));
+        jsonSpanshSourceTagTooltip.setShowDuration(Duration.minutes(2));
+        jsonSpanshSourceTagTooltip.setHideDelay(Duration.millis(400));
+        jsonSpanshSourceTagTooltip.setText(localizationService.getString("exploration.json.spansh_source_tooltip"));
+        Tooltip.install(jsonSpanshSourceTagLabel, jsonSpanshSourceTagTooltip);
+        jsonSpanshSourceTagLabel.setCursor(Cursor.HAND);
     }
 
     private void initSystemTitleClipboardAction() {
@@ -2389,6 +2409,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Construire le TreeView à partir du JSON
         JsonNode jsonNode = body.getJsonNode();
+        updateJsonSpanshSourceTag(jsonNode);
         if (jsonNode != null) {
             TreeItem<JsonTreeItem> root = buildJsonTree(jsonNode, "");
             jsonTreeView.setRoot(root);
@@ -2452,7 +2473,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (!"event".equalsIgnoreCase(fieldKey) &&
                         !"timestamp".equalsIgnoreCase(fieldKey) &&
                         !"scantype".equalsIgnoreCase(fieldKey) &&
-                        !"parents".equalsIgnoreCase(fieldKey)) {
+                        !"parents".equalsIgnoreCase(fieldKey) &&
+                        !"_source".equals(fieldKey)) {
                     TreeItem<JsonTreeItem> child = buildJsonTree(field.getValue(), fieldKey);
                     item.getChildren().add(child);
                 }
@@ -2489,6 +2511,18 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             jsonDetailPanel.setManaged(false);
             currentJsonBody = null; // Réinitialiser le corps affiché
         }
+        updateJsonSpanshSourceTag(null);
+    }
+
+    /** Tag « SPANSH » dans l’en-tête du panneau JSON ; masqué si pas de métadonnée {@code _source}. */
+    private void updateJsonSpanshSourceTag(JsonNode jsonNode) {
+        if (jsonSpanshSourceTagLabel == null) {
+            return;
+        }
+        boolean spansh = jsonNode != null && jsonNode.isObject()
+                && "SPANSH".equalsIgnoreCase(jsonNode.path("_source").asText("").trim());
+        jsonSpanshSourceTagLabel.setVisible(spansh);
+        jsonSpanshSourceTagLabel.setManaged(spansh);
     }
 
     /**
@@ -3722,6 +3756,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
         if (systemBodiesHelpTooltip != null) {
             systemBodiesHelpTooltip.setText(localizationService.getString("exploration.system_bodies.helpTooltip"));
+        }
+        if (jsonSpanshSourceTagTooltip != null) {
+            jsonSpanshSourceTagTooltip.setText(localizationService.getString("exploration.json.spansh_source_tooltip"));
         }
     }
 

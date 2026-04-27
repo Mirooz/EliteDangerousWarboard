@@ -1503,6 +1503,20 @@
     -fx-alignment: TOP_LEFT;
 }
 
+/* Tag source Spansh (haut droite du panneau JSON, à gauche de la croix) */
+.exploration-json-source-tag {
+    -fx-text-fill: derive(-fx-elite-cyan, 12%);
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3px 9px;
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-elite-blue, 40%), derive(-fx-elite-blue, -25%));
+    -fx-background-radius: 3px;
+    -fx-border-color: derive(-fx-elite-blue, 55%);
+    -fx-border-radius: 3px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 180, 255, 0.35), 6, 0.2, 0, 0);
+}
+
 /*
  * Croix fermeture : même rendu que la fenêtre détail colonisation (carte) — texte orange,
  * pas de fond modena au survol / focus / défaut.

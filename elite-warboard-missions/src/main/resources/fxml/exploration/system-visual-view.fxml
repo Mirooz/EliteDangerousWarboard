@@ -83,6 +83,8 @@
                 <HBox spacing="10" alignment="TOP_LEFT" styleClass="colonisation-detail-window-header,exploration-json-window-header-row">
                     <Label fx:id="jsonBodyNameLabel" text="Détails JSON" styleClass="colonisation-section-subtitle"
                            wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="jsonSpanshSourceTagLabel" text="SPANSH" visible="false" managed="false"
+                           styleClass="exploration-json-source-tag"/>
                     <Button fx:id="closeJsonPanelButton" mnemonicParsing="false" focusTraversable="false"
                             text="X" styleClass="colonisation-panel-fold-button"
                             onAction="#closeJsonPanel"/>

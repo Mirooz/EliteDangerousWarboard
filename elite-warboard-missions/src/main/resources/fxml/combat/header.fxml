@@ -35,10 +35,18 @@
             </VBox>
 
             <Region HBox.hgrow="ALWAYS"/>
-            <!-- Bouton de recherche massacre -->
+            <!-- Bouton de recherche massacre + aide stack -->
             <VBox alignment="CENTER_RIGHT" spacing="5.0">
-                <Button fx:id="massacreSearchButton" mnemonicParsing="false" onAction="#openMassacreSearchDialog"
-                        styleClass="elite-button" text="RECHERCHER SYSTÈMES MASSACRE"/>
+                <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                    <Button fx:id="massacreSearchButton" mnemonicParsing="false" onAction="#openMassacreSearchDialog"
+                            styleClass="elite-button" text="RECHERCHER SYSTÈMES MASSACRE"/>
+                    <Button fx:id="massacreStackHelpButton" mnemonicParsing="false" focusTraversable="false"
+                            styleClass="nav-route-info-button" minWidth="24.0" maxWidth="24.0" minHeight="24.0" maxHeight="24.0">
+                        <graphic>
+                            <Label text="?" styleClass="nav-route-info-icon"/>
+                        </graphic>
+                    </Button>
+                </HBox>
             </VBox>
         </HBox>
     </children>
