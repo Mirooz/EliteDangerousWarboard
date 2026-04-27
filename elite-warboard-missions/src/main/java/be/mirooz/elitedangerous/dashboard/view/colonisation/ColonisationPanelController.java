@@ -856,6 +856,25 @@ public class ColonisationPanelController implements Initializable {
         updateButtonStates();
     }
 
+    private boolean isMarketIdOnSelectedArchitectSystem(long marketId) {
+        if (selectedArchitectArch == null) {
+            return false;
+        }
+        for (ColonisationDockEntry site : selectedArchitectArch.getSites()) {
+            if (site.getMarketId() == marketId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Totaux T2/T3 en-tête : à rappeler après changement de structure pour un chantier du système affiché. */
+    private void refreshArchitectImpactTotalsIfDockInSelectedSystem(long marketId) {
+        if (isMarketIdOnSelectedArchitectSystem(marketId)) {
+            Platform.runLater(this::updateArchitectSystemStatsLabel);
+        }
+    }
+
     private void updateArchitectSystemStatsLabel() {
         if (architectSystemStatsLabel == null) {
             return;
@@ -2568,14 +2587,19 @@ public class ColonisationPanelController implements Initializable {
                 .orElse(localizationService.getString("colonisation.structureType.noStats")));
 
         Runnable refreshColonyStatsIfDetailForSite = () -> {
-            if (selectedConstructionRow != null && selectedConstructionRow.getMarketId() == marketId) {
-                Platform.runLater(this::refreshConstructionDetailPanel);
-            }
-            // L'overlay de la carte contient aussi le dropdown + la section « Impact » : on le reconstruit
-            // si c'est le même site que celui actuellement ouvert.
-            if (architectMapOverlayDockMarketId != null && architectMapOverlayDockMarketId == marketId) {
-                Platform.runLater(this::refreshArchitectMapConstructionOverlayIfOpen);
-            }
+            Platform.runLater(() -> {
+                if (isMarketIdOnSelectedArchitectSystem(marketId)) {
+                    updateArchitectSystemStatsLabel();
+                }
+                if (selectedConstructionRow != null && selectedConstructionRow.getMarketId() == marketId) {
+                    refreshConstructionDetailPanel();
+                }
+                // L'overlay de la carte contient aussi le dropdown + la section « Impact » : on le reconstruit
+                // si c'est le même site que celui actuellement ouvert.
+                if (architectMapOverlayDockMarketId != null && architectMapOverlayDockMarketId == marketId) {
+                    refreshArchitectMapConstructionOverlayIfOpen();
+                }
+            });
         };
 
         Runnable rebuildCascadeMenu = () -> {
@@ -2613,6 +2637,7 @@ public class ColonisationPanelController implements Initializable {
                     .orElseGet(() -> firstStructureForCategory(catalog, cat).orElse(null));
             if (selection[0] != null) {
                 preferencesService.setColonisationUserConstructionStructure(marketId, selection[0]);
+                refreshArchitectImpactTotalsIfDockInSelectedSystem(marketId);
             }
         }
         updateCascadeLabel.run();
