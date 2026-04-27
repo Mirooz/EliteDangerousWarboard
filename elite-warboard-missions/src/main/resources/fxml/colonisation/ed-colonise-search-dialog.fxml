@@ -22,7 +22,7 @@
         <Label fx:id="descriptionLabel" styleClass="tab-description" wrapText="true" maxWidth="860"/>
 
         <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="config-panel">
-            <VBox spacing="6.0" minWidth="140.0" prefWidth="168.0">
+            <VBox spacing="6.0" prefWidth="168.0">
                 <Label fx:id="minLandablesLabel" styleClass="config-label" wrapText="true"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Label text="≥" styleClass="edcolonise-filter-geq"/>
@@ -30,7 +30,7 @@
                              styleClass="config-spinner"/>
                 </HBox>
             </VBox>
-            <VBox spacing="6.0" minWidth="140.0" prefWidth="168.0">
+            <VBox spacing="6.0" prefWidth="168.0">
                 <Label fx:id="minRingsLabel" styleClass="config-label" wrapText="true"/>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <Label text="≥" styleClass="edcolonise-filter-geq"/>
@@ -38,7 +38,7 @@
                              styleClass="config-spinner"/>
                 </HBox>
             </VBox>
-            <VBox spacing="6.0" minWidth="150.0" prefWidth="200.0">
+            <VBox spacing="6.0" prefWidth="200.0">
                 <Label fx:id="maxDistanceSolLabel" styleClass="config-label" wrapText="true"/>
                 <Spinner fx:id="maxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="110"
                          styleClass="config-spinner"/>

@@ -36,7 +36,6 @@ public class VersionUpdateNotificationComponent extends VBox {
         this.setSpacing(8);
         this.setPadding(new Insets(12, 16, 12, 16));
         this.setMaxWidth(350);
-        this.setMinWidth(300);
         this.setPrefWidth(320);
         // Limiter la hauteur pour éviter qu'il prenne toute la hauteur
         this.setMaxHeight(USE_PREF_SIZE);

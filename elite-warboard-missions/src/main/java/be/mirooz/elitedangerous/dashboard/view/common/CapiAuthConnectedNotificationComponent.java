@@ -33,7 +33,6 @@ public class CapiAuthConnectedNotificationComponent extends VBox {
         this.setSpacing(6);
         this.setPadding(new Insets(10, 14, 10, 14));
         this.setMaxWidth(320);
-        this.setMinWidth(260);
         this.setPrefWidth(300);
         this.setMaxHeight(USE_PREF_SIZE);
         this.setPrefHeight(USE_COMPUTED_SIZE);

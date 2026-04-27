@@ -9,7 +9,7 @@
       styleClass="colonisation-panel" spacing="10">
     <VBox fx:id="architectViewRoot" spacing="10.0" VBox.vgrow="ALWAYS">
         <HBox spacing="10.0" VBox.vgrow="ALWAYS" alignment="TOP_LEFT" styleClass="colonisation-split">
-            <VBox spacing="10.0" styleClass="colonisation-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minHeight="160.0" minWidth="200.0">
+            <VBox spacing="10.0" styleClass="colonisation-column" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minHeight="160.0">
                 <HBox spacing="10.0" alignment="CENTER_LEFT">
                     <Label fx:id="constructionsTitleLabel" styleClass="mining-title"/>
                     <ComboBox fx:id="architectSystemComboBox" minWidth="140.0" prefWidth="260.0" maxWidth="300.0"
@@ -41,12 +41,12 @@
                                                 <VBox spacing="6.0" maxWidth="Infinity" styleClass="colonisation-fleet-scroll-inner">
                                                     <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
                                                         <columnConstraints>
-                                                            <ColumnConstraints hgrow="ALWAYS" minWidth="120.0"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="54.0"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="52.0"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="72.0"/>
+                                                            <ColumnConstraints hgrow="ALWAYS"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES"/>
                                                         </columnConstraints>
                                                     </GridPane>
                                                 </VBox>
@@ -55,7 +55,7 @@
                                     </VBox>
                                 </VBox>
                                 <VBox fx:id="fleetOptimalMarketPanel" spacing="8.0" styleClass="colonisation-fleet-optimal-column"
-                                      minWidth="300.0" prefWidth="400.0" maxWidth="560.0" HBox.hgrow="SOMETIMES" VBox.vgrow="ALWAYS">
+                                      prefWidth="400.0" maxWidth="560.0" HBox.hgrow="SOMETIMES" VBox.vgrow="ALWAYS">
                                     <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="colonisation-fleet-optimal-toolbar">
                                         <Button fx:id="fleetFindOptimalMarketButton" mnemonicParsing="false" focusTraversable="false"
                                                 styleClass="elite-nav-button" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
@@ -108,13 +108,13 @@
                             <VBox spacing="8.0" styleClass="colonisation-finder-root" VBox.vgrow="ALWAYS">
                                 <BorderPane styleClass="colonisation-column,colonisation-search-pane" VBox.vgrow="ALWAYS">
                                     <left>
-                                        <VBox spacing="12.0" minWidth="360.0" maxWidth="420.0" styleClass="colonisation-search-filters" BorderPane.alignment="CENTER_LEFT">
+                                        <VBox spacing="12.0" maxWidth="420.0" styleClass="colonisation-search-filters" BorderPane.alignment="CENTER_LEFT">
                                             <padding>
                                                 <Insets top="10.0" right="10.0" bottom="10.0" left="4.0"/>
                                             </padding>
                                             <VBox spacing="8.0" maxWidth="Infinity">
                                                 <HBox spacing="8.0" alignment="CENTER_LEFT">
-                                                    <VBox spacing="4.0" minWidth="108.0" prefWidth="132.0">
+                                                    <VBox spacing="4.0" prefWidth="132.0">
                                                         <Label fx:id="searchMinLandablesLabel" styleClass="config-label" wrapText="true"/>
                                                         <HBox spacing="6.0" alignment="CENTER_LEFT">
                                                             <Label text="≥" styleClass="edcolonise-filter-geq"/>
@@ -122,7 +122,7 @@
                                                                      styleClass="config-spinner"/>
                                                         </HBox>
                                                     </VBox>
-                                                    <VBox spacing="4.0" minWidth="108.0" prefWidth="132.0">
+                                                    <VBox spacing="4.0" prefWidth="132.0">
                                                         <Label fx:id="searchMinRingsLabel" styleClass="config-label" wrapText="true"/>
                                                         <HBox spacing="6.0" alignment="CENTER_LEFT">
                                                             <Label text="≥" styleClass="edcolonise-filter-geq"/>
@@ -130,7 +130,7 @@
                                                                      styleClass="config-spinner"/>
                                                         </HBox>
                                                     </VBox>
-                                                    <VBox spacing="4.0" minWidth="100.0" prefWidth="108.0" maxWidth="108.0">
+                                                    <VBox spacing="4.0" prefWidth="108.0" maxWidth="108.0">
                                                         <Label fx:id="searchMaxDistanceSolLabel" styleClass="config-label" wrapText="true"/>
                                                         <Spinner fx:id="searchMaxDistanceSolSpinner" editable="true" min="1" max="2770" initialValue="800" prefWidth="100"
                                                                  styleClass="config-spinner"/>
@@ -173,7 +173,7 @@
                     </tabs>
                 </TabPane>
             </VBox>
-            <VBox spacing="8.0" minWidth="300.0" maxWidth="520.0" prefWidth="480.0" HBox.hgrow="NEVER"
+            <VBox spacing="8.0" maxWidth="520.0" prefWidth="480.0" HBox.hgrow="NEVER"
                   styleClass="colonisation-column,colonisation-detail-column" VBox.vgrow="ALWAYS">
                 <Label fx:id="constructionDetailTitleLabel" styleClass="mining-title"/>
                 <Label fx:id="statusLabel" styleClass="footer-text" wrapText="true" maxWidth="496.0"/>

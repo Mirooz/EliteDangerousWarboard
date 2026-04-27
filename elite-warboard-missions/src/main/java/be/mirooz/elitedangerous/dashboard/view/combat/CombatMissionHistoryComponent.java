@@ -137,6 +137,8 @@ public class CombatMissionHistoryComponent implements Initializable, IBatchListe
         // Système d'origine - cliquable
         Label originLabel = new Label(stats.getOriginSystem());
         originLabel.getStyleClass().addAll("history-system", "clickable-system-source");
+        originLabel.setWrapText(true);
+        originLabel.setMaxWidth(118);
         originLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.origin_system") + ": " + stats.getOriginSystem()));
         originLabel.setOnMouseClicked(e -> onClickSystem(stats.getOriginSystem(), e));
         
@@ -147,17 +149,25 @@ public class CombatMissionHistoryComponent implements Initializable, IBatchListe
         // Système destination - cliquable
         Label destLabel = new Label(stats.getDestinationSystem());
         destLabel.getStyleClass().addAll("history-system", "clickable-system-target");
+        destLabel.setWrapText(true);
+        destLabel.setMaxWidth(118);
         destLabel.setTooltip(new TooltipComponent(localizationService.getString("tooltip.destination_system") + ": " + stats.getDestinationSystem()));
         destLabel.setOnMouseClicked(e -> onClickSystem(stats.getDestinationSystem(), e));
         
         routeBox.getChildren().addAll(originLabel, arrowLabel, destLabel);
         
         // Stats
-        HBox statsBox = new HBox(20);
+        HBox statsBox = new HBox(8);
         
         Label missionsLabel = new Label(getTranslation("combat.history.missions") + ": " + stats.getCompletedMissions());
         Label killsLabel = new Label(getTranslation("combat.history.kills") + ": " + stats.getTotalKills());
         Label rewardLabel = new Label(formatPrice(stats.getTotalReward()));
+        missionsLabel.setWrapText(true);
+        killsLabel.setWrapText(true);
+        rewardLabel.setWrapText(true);
+        missionsLabel.setMaxWidth(100);
+        killsLabel.setMaxWidth(88);
+        rewardLabel.setMaxWidth(110);
         
         missionsLabel.getStyleClass().add("history-stat");
         killsLabel.getStyleClass().add("history-stat");
@@ -168,6 +178,8 @@ public class CombatMissionHistoryComponent implements Initializable, IBatchListe
         // Date de dernière activité
         Label lastActivityLabel = new Label(getTranslation("combat.history.last") + ": " + formatLastActivity(stats.getLastCompleted()));
         lastActivityLabel.getStyleClass().add("history-last-activity");
+        lastActivityLabel.setWrapText(true);
+        lastActivityLabel.setMaxWidth(300);
         
         card.getChildren().addAll(categoryLabel, routeBox, statsBox, lastActivityLabel);
         

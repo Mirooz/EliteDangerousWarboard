@@ -235,7 +235,6 @@ public class EdColoniseSearchDialogController implements Initializable {
         ColumnConstraints leftCol = new ColumnConstraints();
         leftCol.setHgrow(Priority.ALWAYS);
         ColumnConstraints rightCol = new ColumnConstraints();
-        rightCol.setMinWidth(200);
         rightCol.setPrefWidth(240);
         grid.getColumnConstraints().addAll(leftCol, rightCol);
 

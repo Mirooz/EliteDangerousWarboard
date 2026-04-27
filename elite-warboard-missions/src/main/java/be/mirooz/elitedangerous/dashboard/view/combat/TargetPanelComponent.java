@@ -97,7 +97,7 @@ public class TargetPanelComponent extends VBox {
                 conflictGrid
         );
         this.setSpacing(10);
-        this.setPadding(new Insets(15));
+        this.setPadding(new Insets(10));
 
         // Masquer par défaut
         setSectionVisible(pirateTitle, pirateGrid, false);
@@ -125,13 +125,11 @@ public class TargetPanelComponent extends VBox {
 
         // Colonnes : Source | Kills (la faction cible est maintenant un titre de groupe)
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setMinWidth(100);
-        col1.setPrefWidth(200);
+        col1.setPrefWidth(150);
         col1.setHgrow(Priority.ALWAYS);
 
         ColumnConstraints col2 = new ColumnConstraints();
-        col2.setMinWidth(80);
-        col2.setPrefWidth(120);
+        col2.setPrefWidth(72);
         col2.setHalignment(HPos.RIGHT);
         col2.setHgrow(Priority.NEVER); // kills reste fixe
 
@@ -180,6 +178,8 @@ public class TargetPanelComponent extends VBox {
             // Ajouter la faction cible comme titre de groupe
             Label targetFactionLabel = new Label(targetFaction.getTargetFaction());
             targetFactionLabel.getStyleClass().add("target-faction-header");
+            targetFactionLabel.setWrapText(true);
+            targetFactionLabel.setMaxWidth(210);
             
             // Ajouter tooltip et clic pour copier le système de destination
             String destinationSystem = findDestinationSystemForFaction(targetFaction.getTargetFaction(), missions);
@@ -200,6 +200,8 @@ public class TargetPanelComponent extends VBox {
             for (SourceFactionStats src : targetFaction.getSources().values()) {
                 Label sourceLabel = new Label("  " + src.getSourceFaction()); // Indentation pour montrer la hiérarchie
                 sourceLabel.getStyleClass().add("source-faction-label");
+                sourceLabel.setWrapText(true);
+                sourceLabel.setMaxWidth(140);
                 
                 // Ajouter tooltip et clic pour copier le système d'origine de cette faction
                 String[] sourceInfo = findOriginSystemAndStationForFaction(src.getSourceFaction(), missions);

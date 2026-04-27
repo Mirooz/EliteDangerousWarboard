@@ -46,7 +46,6 @@ public class RadarComponent {
         radarContainer.setMaxHeight(200);
         // Permettre l'expansion en largeur pour afficher les labels à droite dans le panel
         radarContainer.setPrefWidth(350); // 200 (radar) + 150 (labels)
-        radarContainer.setMinWidth(200);
         radarContainer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: -fx-elite-orange; -fx-border-width: 1px;");
         
         // Créer un Group pour le radar (sera clippé)

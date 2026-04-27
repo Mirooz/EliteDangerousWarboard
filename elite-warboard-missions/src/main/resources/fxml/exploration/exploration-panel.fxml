@@ -16,7 +16,7 @@
         
         <!-- Colonne gauche : Panel haut (Info système avec Stats intégrées) + Vue visuelle -->
             <!-- Panneau de gauche : Vue visuelle du système -->
-            <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" minWidth="400"/>
+            <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
         
         <!-- Panneau de droite : Historique avec navigation + Liste des systèmes visités -->
             <VBox fx:id="explorationHistoryDetailContainer" spacing="10" VBox.vgrow="ALWAYS"/>

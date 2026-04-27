@@ -1363,7 +1363,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Utiliser une taille fixe de 800x450 pour tous les systèmes
             double fixedWidth = 800;
             double fixedHeight = 450;
-            bodiesPane.setMinWidth(600);
             bodiesPane.setMinHeight(300);
             bodiesPane.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
             bodiesPane.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
