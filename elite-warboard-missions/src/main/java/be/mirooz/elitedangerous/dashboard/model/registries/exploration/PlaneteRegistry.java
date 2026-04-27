@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.BiologicalSignalProc
 import be.mirooz.elitedangerous.dashboard.model.exploration.ParentBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
+import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.application.Platform;
@@ -49,10 +50,79 @@ public class PlaneteRegistry {
                 && body instanceof PlaneteDetail newP) {
             // Au lieu de remplacer l'objet, on met juste à jour les champs
             oldP.updateFrom(newP);
+            syncSystemVisitedCanonicalBody(oldP);
             return;
         }
         planetesMap.put(body.getBodyID(), body);
+        syncSystemVisitedCanonicalBody(planetesMap.get(body.getBodyID()));
         getSortedBodiesForOrrery();
+    }
+
+    /**
+     * Aligner {@link SystemVisited#getCelesteBodies()} sur l'instance canonique du registre :
+     * la vue orrery lit {@code currentSystem.celesteBodies}, pas {@code planetesMap} directement.
+     */
+    private void syncSystemVisitedCanonicalBody(ACelesteBody canonical) {
+        if (canonical == null) {
+            return;
+        }
+        SystemVisited sv = resolveSystemVisitedForBody(canonical);
+        if (sv == null || sv.getCelesteBodies() == null || sv.getCelesteBodies().isEmpty()) {
+            return;
+        }
+        int id = canonical.getBodyID();
+        List<ACelesteBody> rebuilt = new ArrayList<>();
+        boolean anyChange = false;
+        boolean seenForId = false;
+
+        for (ACelesteBody b : sv.getCelesteBodies()) {
+            if (b == null) {
+                rebuilt.add(null);
+                continue;
+            }
+            if (b.getBodyID() == id) {
+                if (!seenForId) {
+                    seenForId = true;
+                    rebuilt.add(canonical);
+                    if (b != canonical) {
+                        anyChange = true;
+                    }
+                } else {
+                    anyChange = true;
+                }
+            } else {
+                rebuilt.add(b);
+            }
+        }
+        if (!seenForId) {
+            rebuilt.add(canonical);
+            anyChange = true;
+        }
+        if (anyChange) {
+            sv.setCelesteBodies(rebuilt);
+        }
+    }
+
+    private SystemVisited resolveSystemVisitedForBody(ACelesteBody canonical) {
+        String raw = canonical.getStarSystem();
+        if (raw == null || raw.isBlank()) {
+            raw = currentStarSystem;
+        }
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String t = raw.trim();
+        SystemVisitedRegistry reg = SystemVisitedRegistry.getInstance();
+        SystemVisited exact = reg.getSystem(t);
+        if (exact != null) {
+            return exact;
+        }
+        for (var e : reg.getSystems().entrySet()) {
+            if (e.getKey() != null && e.getKey().equalsIgnoreCase(t)) {
+                return e.getValue();
+            }
+        }
+        return null;
     }
 
 

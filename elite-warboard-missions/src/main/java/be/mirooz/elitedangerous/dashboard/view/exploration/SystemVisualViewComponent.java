@@ -138,11 +138,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      */
     private Image colonisationSettlementImage;
     /**
-     * Évite une boucle infinie lors du re-display après hydratation Spansh.
-     */
-    private boolean spanshOnlineHydrationSuppressed;
-
-    /**
      * Chargement Spansh : placé sur le conteneur ({@link StackPane} ou {@link AnchorPane}) qui enveloppe le
      * {@link #bodiesScrollPane}, <strong>en dehors</strong> de {@link #bodiesGroup} pour ne pas subir zoom / pan.
      */
@@ -1589,7 +1584,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
         Map<Integer, ACelesteBody> spanshByBodyId = spanshSource.getCelesteBodies().stream()
                 .filter(Objects::nonNull)
-                .filter(b -> b.getBodyID() != 0)
                 .collect(Collectors.toMap(ACelesteBody::getBodyID, b -> b, (a, b) -> a));
 
         if (target.getCelesteBodies() == null || target.getCelesteBodies().isEmpty()) {
@@ -1613,12 +1607,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 merged.add(fromSpansh);
             }
         }
+        // Corps déjà présents côté journal : pas d’écrasement Spansh, seulement exobio si le journal n’y a rien.
         for (ACelesteBody body : merged) {
-            if (body instanceof PlaneteDetail targetPlanet) {
-                ACelesteBody spanshBody = spanshByBodyId.get(body.getBodyID());
-                if (spanshBody instanceof PlaneteDetail spanshPlanet) {
-                    targetPlanet.mergeSpanshEnrichmentIfAbsent(spanshPlanet);
-                }
+            if (!(body instanceof PlaneteDetail targetPlanet)) {
+                continue;
+            }
+            if (!targetIds.contains(body.getBodyID())) {
+                continue;
+            }
+            ACelesteBody spanshBody = spanshByBodyId.get(body.getBodyID());
+            if (spanshBody instanceof PlaneteDetail spanshPlanet) {
+                targetPlanet.mergeSpanshEnrichmentIfAbsent(spanshPlanet);
             }
         }
         target.setCelesteBodies(merged);
@@ -1644,11 +1643,11 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         return null;
     }
 
+    /**
+     * Un seul appel réseau Spansh : fusionne les corps manquants dans {@link #currentSystem}, puis rafraîchit la vue.
+     */
     private void scheduleSpanshOnlineDataHydration(SystemVisited displayed) {
         if (!PreferencesService.getInstance().isSpanshExplorationLoadEnabled()) {
-            return;
-        }
-        if (spanshOnlineHydrationSuppressed) {
             return;
         }
         if (DashboardContext.getInstance().isBatchLoading()) {
@@ -1671,47 +1670,20 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                     }
                     mergeOnlineDataFromSpansh(currentSystem, spanshSv);
                     notifyAfterSpanshBodiesMerged();
-                    spanshOnlineHydrationSuppressed = true;
-                    try {
-                        displaySystem(currentSystem);
-                    } finally {
-                        spanshOnlineHydrationSuppressed = false;
-                    }
-                    // Second passage après le prochain pulse layout : corps ajoutés par Spansh + zoom
-                    Platform.runLater(() -> {
-                        spanshOnlineHydrationSuppressed = true;
-                        try {
-                            displaySystem(currentSystem,true);
-                        } finally {
-                            spanshOnlineHydrationSuppressed = false;
-                        }
-                    });
+                    displaySystem(currentSystem, true);
                 });
             } catch (Exception ignored) {
                 if (!PreferencesService.getInstance().isSpanshExplorationLoadEnabled()) {
                     return;
                 }
                 Platform.runLater(() -> {
-                    if (displayed == null || currentSystem == null || currentSystem.getSystemName() == null) {
+                    if (currentSystem == null || currentSystem.getSystemName() == null) {
                         return;
                     }
                     if (!sysKey.equalsIgnoreCase(currentSystem.getSystemName().trim())) {
                         return;
                     }
-                    spanshOnlineHydrationSuppressed = true;
-                    try {
-                        displaySystem(currentSystem, true);
-                    } finally {
-                        spanshOnlineHydrationSuppressed = false;
-                    }
-                    Platform.runLater(() -> {
-                        spanshOnlineHydrationSuppressed = true;
-                        try {
-                            displaySystem(currentSystem, true);
-                        } finally {
-                            spanshOnlineHydrationSuppressed = false;
-                        }
-                    });
+                    displaySystem(currentSystem, true);
                 });
             }
         }, "spansh-bodies-online");

@@ -467,6 +467,7 @@ public class PlaneteDetail extends ACelesteBody {
     }
 
     public void updateFrom(PlaneteDetail src) {
+        this.jsonNode = src.jsonNode;
         this.planetClass = src.planetClass;
         this.temperature = src.temperature;
         this.pressureAtm = src.pressureAtm;
@@ -479,29 +480,21 @@ public class PlaneteDetail extends ACelesteBody {
         this.radius=src.radius;
         this.materials = src.materials;
         this.rings = src.rings;
-        this.jsonNode = src.jsonNode;
-        this.wasMapped = src.wasMapped;
 
         // flags comme avant :
         this.wasDiscovered |= src.wasDiscovered;
         this.wasFootfalled |= src.wasFootfalled;
+        this.wasMapped |= src.wasMapped;
     }
 
     /**
-     * Quand le même {@code bodyID} existe déjà côté journal et côté Spansh, la fusion ne remplace pas le corps :
-     * on recopie ici matériaux + exobio issus de Spansh si la planète affichée n’a pas encore ce qu’attend la vue
-     * ({@code SystemVisualViewComponent} : listes {@code bioSpecies} / {@code confirmedSpecies}).
+     * Quand le même {@code bodyID} existe déjà côté journal : on ne modifie pas le corps Spansh vs journal,
+     * sauf pour l’exobiologie — on complète depuis Spansh uniquement si la vue n’a pas encore
+     * {@code bioSpecies} / {@code confirmedSpecies} ({@code SystemVisualViewComponent#addPlanetIcons}).
      */
     public void mergeSpanshEnrichmentIfAbsent(PlaneteDetail spansh) {
         if (spansh == null) {
             return;
-        }
-        if (spansh.isRings()) {
-            setRings(true);
-        }
-        if ((materials == null || materials.isEmpty())
-                && spansh.getMaterials() != null && !spansh.getMaterials().isEmpty()) {
-            this.materials = new HashMap<>(spansh.getMaterials());
         }
         if (lacksExobioForSystemView() && spanshHasExobioPayload(spansh)) {
             if (spansh.getNumSpeciesDetected() != null) {
