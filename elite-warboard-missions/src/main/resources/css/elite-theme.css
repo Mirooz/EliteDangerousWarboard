@@ -304,10 +304,21 @@
     -fx-opacity: 0.92;
 }
 
+.colonisation-fleet-optimal-result-total-row {
+    -fx-alignment: CENTER_LEFT;
+}
+
 .colonisation-fleet-optimal-result-total-tons {
     -fx-text-fill: -fx-elite-orange;
     -fx-font-size: 15.5px;
     -fx-font-weight: bold;
+}
+
+.colonisation-fleet-optimal-result-station-type {
+    -fx-text-fill: derive(-fx-elite-cyan, 8%);
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-opacity: 0.95;
 }
 
 /* Colonne cargo commandant : pas de second cadre cyan (le ScrollPane porte colonisation-fleet-merged-frame). */

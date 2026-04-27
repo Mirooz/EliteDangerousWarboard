@@ -37,7 +37,8 @@ import java.util.function.Supplier;
 
 /**
  * Fenêtre flottante « toujours au-dessus » : commodités groupées par catégorie (comme la grille colonisation),
- * sans ligne d’en-têtes de colonnes ni bandeau résumé (mêmes données et couleurs « marché optimal »).
+ * sans ligne d’en-têtes de colonnes ni bandeau résumé (mêmes données et couleurs « marché optimal »),
+ * et sans colonne prix (contrairement au tableau du panneau colonisation).
  * La colonne des noms garde une largeur minimaire fixe ; l’espacement horizontal entre les autres colonnes
  * se resserre automatiquement quand la fenêtre rétrécit (pas de curseur horizontal en bas).
  */
@@ -234,7 +235,7 @@ public class FleetCarrierOverlayComponent {
         inner.getStyleClass().add("colonisation-fleet-scroll-inner");
         GridPane grid = new GridPane();
         grid.getStyleClass().addAll("cargo-minerals-grid", "colonisation-fleet-market-grid");
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 5; i++) {
             ColumnConstraints cc = new ColumnConstraints();
             if (i == 0) {
                 cc.setMinWidth(FLEET_OVERLAY_NAME_COL_MIN_WIDTH);
@@ -262,7 +263,7 @@ public class FleetCarrierOverlayComponent {
             Label empty = new Label(localizationService.getString("colonisation.fleet.marketEmpty"));
             empty.getStyleClass().add("cargo-mineral-null-price");
             empty.setWrapText(true);
-            grid.add(empty, 0, 0, 6, 1);
+            grid.add(empty, 0, 0, 5, 1);
             return;
         }
         int row = 0;
@@ -273,7 +274,7 @@ public class FleetCarrierOverlayComponent {
                 Label catHead = new Label(localizationService.getString("colonisation.fleet.commodityCategory." + cat.name()));
                 catHead.getStyleClass().add("colonisation-fleet-commodity-category");
                 catHead.setMaxWidth(Double.MAX_VALUE);
-                grid.add(catHead, 0, row, 6, 1);
+                grid.add(catHead, 0, row, 5, 1);
                 row++;
                 lastCategory = cat;
             }
@@ -297,25 +298,16 @@ public class FleetCarrierOverlayComponent {
             } else {
                 buyOrder.getStyleClass().add("cargo-mineral-null-price");
             }
-            String priceText;
-            if (po <= 0) {
-                priceText = "—";
-            } else {
-                priceText = FleetCarrierMarketTableSupport.formatCreditsThousandsDots(r.getCarrierPurchaseBidPerTonCr());
-            }
-            Label price = new Label(priceText);
-            price.getStyleClass().add(po > 0 ? "cargo-mineral-total-price" : "cargo-mineral-null-price");
             Label stock = new Label(Integer.toString(r.getStock()));
             stock.getStyleClass().add(r.getStock() > 0 ? "cargo-mineral-quantity" : "cargo-mineral-null-price");
             Label missing = new Label(r.getMissing() > 0 ? Integer.toString(r.getMissing()) : "—");
             missing.getStyleClass().add(r.getMissing() > 0 ? "cargo-mineral-unit-price" : "cargo-mineral-null-price");
-            applyRowRouteHighlight(r, highlightByKey, name, shipL, stock, missing, buyOrder, price);
+            applyRowRouteHighlight(r, highlightByKey, name, shipL, stock, missing, buyOrder);
             grid.add(name, 0, row);
             grid.add(shipL, 1, row);
             grid.add(stock, 2, row);
             grid.add(missing, 3, row);
             grid.add(buyOrder, 4, row);
-            grid.add(price, 5, row);
             row++;
         }
     }
@@ -339,8 +331,8 @@ public class FleetCarrierOverlayComponent {
         return c;
     }
 
-    private static void clearRowRouteHighlight(Label name, Label shipL, Label stock, Label missing, Label buyOrder, Label price) {
-        for (Label cell : List.of(name, shipL, stock, missing, buyOrder, price)) {
+    private static void clearRowRouteHighlight(Label name, Label shipL, Label stock, Label missing, Label buyOrder) {
+        for (Label cell : List.of(name, shipL, stock, missing, buyOrder)) {
             cell.setBackground(Background.EMPTY);
         }
         name.setStyle(null);
@@ -354,18 +346,16 @@ public class FleetCarrierOverlayComponent {
             Label shipL,
             Label stock,
             Label missing,
-            Label buyOrder,
-            Label price) {
+            Label buyOrder) {
         Color c = routeColorForRow(r, highlightByKey);
         if (c == null) {
-            clearRowRouteHighlight(name, shipL, stock, missing, buyOrder, price);
+            clearRowRouteHighlight(name, shipL, stock, missing, buyOrder);
             return;
         }
         shipL.setBackground(Background.EMPTY);
         stock.setBackground(Background.EMPTY);
         missing.setBackground(Background.EMPTY);
         buyOrder.setBackground(Background.EMPTY);
-        price.setBackground(Background.EMPTY);
         name.setBackground(Background.EMPTY);
         int rr = (int) Math.round(c.getRed() * 255);
         int gg = (int) Math.round(c.getGreen() * 255);
@@ -434,7 +424,7 @@ public class FleetCarrierOverlayComponent {
 
     /**
      * Répartit l’espace horizontal : colonne nom au moins la largeur min configurée,
-     * le reste pour les 5 colonnes numériques ; le {@code hgap} absorbe la contrainte de largeur.
+     * le reste pour les 4 colonnes numériques ; le {@code hgap} absorbe la contrainte de largeur.
      */
     private static void adjustFleetGridHgap(ScrollPane scroll, GridPane grid) {
         double vw = scroll.getViewportBounds().getWidth();
@@ -442,10 +432,10 @@ public class FleetCarrierOverlayComponent {
             return;
         }
         double pad = 28;
-        double numericMins = 5 * FLEET_OVERLAY_NUM_COL_MIN_WIDTH;
+        double numericMins = 4 * FLEET_OVERLAY_NUM_COL_MIN_WIDTH;
         double fixed = pad + FLEET_OVERLAY_NAME_COL_MIN_WIDTH + numericMins;
         double slack = vw - fixed;
-        double hg = slack / 5.0;
+        double hg = slack / 4.0;
         hg = Math.max(FLEET_OVERLAY_HGAP_MIN, Math.min(FLEET_OVERLAY_HGAP_MAX, hg));
         grid.setHgap(hg);
     }

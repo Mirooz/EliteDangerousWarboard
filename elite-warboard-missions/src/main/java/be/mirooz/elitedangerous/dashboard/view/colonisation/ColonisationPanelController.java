@@ -3331,11 +3331,32 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
             int totalTons = fleetOptimalStationTotalRequestedTons(st, requestedTonsByMergeKey);
             Label totalLabel = new Label(localizationService.getString("colonisation.fleet.optimalMarket.totalTons", totalTons));
-            totalLabel.setWrapText(true);
-            totalLabel.setMaxWidth(Double.MAX_VALUE);
             totalLabel.getStyleClass().add("colonisation-fleet-optimal-result-total-tons");
 
-            card.getChildren().addAll(head, commodities, totalLabel);
+            String stationTypeText = firstNonBlank(st.getStationType(), "");
+            Node totalFooter;
+            if (stationTypeText.isBlank()) {
+                totalLabel.setWrapText(true);
+                totalLabel.setMaxWidth(Double.MAX_VALUE);
+                totalFooter = totalLabel;
+            } else {
+                HBox totalRow = new HBox(10);
+                totalRow.setAlignment(Pos.CENTER_LEFT);
+                totalRow.setMaxWidth(Double.MAX_VALUE);
+                totalRow.getStyleClass().add("colonisation-fleet-optimal-result-total-row");
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+                Label typeLabel = new Label(stationTypeText);
+                typeLabel.getStyleClass().add("colonisation-fleet-optimal-result-station-type");
+                typeLabel.setWrapText(true);
+                typeLabel.setMaxWidth(220);
+                typeLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
+                typeLabel.setAlignment(Pos.CENTER_RIGHT);
+                totalRow.getChildren().addAll(totalLabel, spacer, typeLabel);
+                totalFooter = totalRow;
+            }
+
+            card.getChildren().addAll(head, commodities, totalFooter);
             fleetOptimalMarketResultsBox.getChildren().add(card);
         }
     }
