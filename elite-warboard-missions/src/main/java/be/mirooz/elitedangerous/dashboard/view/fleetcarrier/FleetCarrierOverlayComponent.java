@@ -30,6 +30,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,7 +47,13 @@ public class FleetCarrierOverlayComponent {
 
     /** Largeur minimale de la colonne « nom » (px) — ne rétrécit pas quand l’overlay est réduit. */
     private static final double FLEET_OVERLAY_NAME_COL_MIN_WIDTH = 260.0;
-    private static final double FLEET_OVERLAY_NUM_COL_MIN_WIDTH = 24.0;
+    /** Colonnes vaisseau / stock / manquant : même plancher que {@code colonisation-panel.fxml}. */
+    private static final double FLEET_OVERLAY_TIGHT_NUM_COL_MIN_WIDTH = 36.0;
+    /** Colonne ordre de marché (▲/▼ + chiffres). */
+    private static final double FLEET_OVERLAY_MARKET_ORDER_COL_MIN_WIDTH = 64.0;
+    private static final double FLEET_OVERLAY_MARKET_ORDER_COL_PREF_WIDTH = 72.0;
+    private static final double FLEET_OVERLAY_NUMERIC_COLS_MIN_WIDTH_SUM =
+            3 * FLEET_OVERLAY_TIGHT_NUM_COL_MIN_WIDTH + FLEET_OVERLAY_MARKET_ORDER_COL_MIN_WIDTH;
     private static final double FLEET_OVERLAY_HGAP_MAX = 10.0;
     private static final double FLEET_OVERLAY_HGAP_MIN = -40.0;
 
@@ -240,8 +247,12 @@ public class FleetCarrierOverlayComponent {
             if (i == 0) {
                 cc.setMinWidth(FLEET_OVERLAY_NAME_COL_MIN_WIDTH);
                 cc.setHgrow(Priority.ALWAYS);
+            } else if (i == 4) {
+                cc.setMinWidth(FLEET_OVERLAY_MARKET_ORDER_COL_MIN_WIDTH);
+                cc.setPrefWidth(FLEET_OVERLAY_MARKET_ORDER_COL_PREF_WIDTH);
+                cc.setHgrow(Priority.NEVER);
             } else {
-                cc.setMinWidth(FLEET_OVERLAY_NUM_COL_MIN_WIDTH);
+                cc.setMinWidth(FLEET_OVERLAY_TIGHT_NUM_COL_MIN_WIDTH);
                 cc.setHgrow(Priority.NEVER);
             }
             grid.getColumnConstraints().add(cc);
@@ -266,9 +277,22 @@ public class FleetCarrierOverlayComponent {
             grid.add(empty, 0, 0, 5, 1);
             return;
         }
+        List<FleetCarrierMarketRow> visibleRows = new ArrayList<>();
+        for (FleetCarrierMarketRow r : rows) {
+            if (r != null && r.getMissing() > 0) {
+                visibleRows.add(r);
+            }
+        }
+        if (visibleRows.isEmpty()) {
+            Label empty = new Label(localizationService.getString("colonisation.fleet.overlay.noMissing"));
+            empty.getStyleClass().add("colonisation-detail-placeholder");
+            empty.setWrapText(true);
+            grid.add(empty, 0, 0, 5, 1);
+            return;
+        }
         int row = 0;
         CommodityCategory lastCategory = null;
-        for (FleetCarrierMarketRow r : rows) {
+        for (FleetCarrierMarketRow r : visibleRows) {
             CommodityCategory cat = FleetCarrierMarketTableSupport.rowCategory(r);
             if (lastCategory != cat) {
                 Label catHead = new Label(localizationService.getString("colonisation.fleet.commodityCategory." + cat.name()));
@@ -432,8 +456,7 @@ public class FleetCarrierOverlayComponent {
             return;
         }
         double pad = 28;
-        double numericMins = 4 * FLEET_OVERLAY_NUM_COL_MIN_WIDTH;
-        double fixed = pad + FLEET_OVERLAY_NAME_COL_MIN_WIDTH + numericMins;
+        double fixed = pad + FLEET_OVERLAY_NAME_COL_MIN_WIDTH + FLEET_OVERLAY_NUMERIC_COLS_MIN_WIDTH_SUM;
         double slack = vw - fixed;
         double hg = slack / 4.0;
         hg = Math.max(FLEET_OVERLAY_HGAP_MIN, Math.min(FLEET_OVERLAY_HGAP_MAX, hg));

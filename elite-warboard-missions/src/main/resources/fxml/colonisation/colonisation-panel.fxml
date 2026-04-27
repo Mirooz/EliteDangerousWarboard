@@ -48,11 +48,12 @@
                                                     <GridPane fx:id="fleetMarketGrid" styleClass="cargo-minerals-grid,colonisation-fleet-market-grid">
                                                         <columnConstraints>
                                                             <ColumnConstraints hgrow="ALWAYS"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES"/>
-                                                            <ColumnConstraints hgrow="SOMETIMES"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="36.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="36.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="36.0"/>
+                                                            <!-- Ordre marché (▲/▼ + chiffres) : évite une colonne trop étroite -->
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="64.0" prefWidth="72.0"/>
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="44.0"/>
                                                         </columnConstraints>
                                                     </GridPane>
                                                 </VBox>

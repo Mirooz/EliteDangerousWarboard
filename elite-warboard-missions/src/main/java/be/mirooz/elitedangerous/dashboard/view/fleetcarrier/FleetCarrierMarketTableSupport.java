@@ -133,11 +133,18 @@ public final class FleetCarrierMarketTableSupport {
         return out;
     }
 
+    /**
+     * Fusionne le marché FC avec les tonnages « restants chantier » ({@code missingByCommodity} = requis − fourni).
+     * Puis calcule le manquant affiché / marché optimal : {@code max(0, remaining − stock_carrier − stock_cargo_commandant)}.
+     *
+     * @param shipStockByMergeKey tonnes dans le cargo du commandant par clé de fusion ; vide ou {@code null} → 0.
+     */
     public static List<FleetCarrierMarketRow> buildMergedRows(
             CarrierStatus cs,
             Map<String, Integer> missingByCommodity,
             Map<String, String> missingDisplayByCommodity,
-            LocalizationService localizationService) {
+            LocalizationService localizationService,
+            Map<String, Integer> shipStockByMergeKey) {
         List<FleetCarrierMarketRow> base = buildMarketRows(cs);
         Map<String, FleetCarrierMarketRow> byCommodity = new LinkedHashMap<>();
         for (FleetCarrierMarketRow r : base) {
@@ -159,7 +166,13 @@ public final class FleetCarrierMarketTableSupport {
                 }
             }
         }
-        List<FleetCarrierMarketRow> out = new ArrayList<>(byCommodity.values());
+        Map<String, Integer> ship = shipStockByMergeKey != null ? shipStockByMergeKey : Map.of();
+        List<FleetCarrierMarketRow> out = new ArrayList<>(byCommodity.size());
+        for (FleetCarrierMarketRow r : byCommodity.values()) {
+            int shipTons = ship.getOrDefault(r.getCommodityKey(), 0);
+            int effectiveMissing = Math.max(0, r.getMissing() - r.getStock() - shipTons);
+            out.add(r.withMissing(effectiveMissing));
+        }
         sortRows(out, localizationService);
         return out;
     }

@@ -3087,9 +3087,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         if (!cs.isCarrierStatsInitialized()) {
             return new FleetCarrierOverlaySnapshot(false, List.of(), Map.of(), Map.of());
         }
-        List<FleetCarrierMarketRow> rows = FleetCarrierMarketTableSupport.buildMergedRows(cs,
-                buildMissingByCommodity(), buildMissingDisplayByCommodity(), localizationService);
         Map<String, Integer> ship = FleetCarrierMarketTableSupport.shipStockByMergeKey(miningService.getCargo());
+        List<FleetCarrierMarketRow> rows = FleetCarrierMarketTableSupport.buildMergedRows(cs,
+                buildMissingByCommodity(), buildMissingDisplayByCommodity(), localizationService, ship);
         Map<String, Color> highlights = new HashMap<>(fleetCargoRowHighlightByMergeKey);
         return new FleetCarrierOverlaySnapshot(true, rows, ship, highlights);
     }
@@ -3724,8 +3724,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     }
 
     private List<FleetCarrierMarketRow> buildFleetMergedRows(CarrierStatus cs) {
+        Map<String, Integer> shipStock = FleetCarrierMarketTableSupport.shipStockByMergeKey(miningService.getCargo());
         return FleetCarrierMarketTableSupport.buildMergedRows(cs,
-                buildMissingByCommodity(), buildMissingDisplayByCommodity(), localizationService);
+                buildMissingByCommodity(), buildMissingDisplayByCommodity(), localizationService, shipStock);
     }
 
     private String fleetCommodityCategoryLabel(CommodityCategory cat) {
