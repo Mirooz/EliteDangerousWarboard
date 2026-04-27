@@ -11,8 +11,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
@@ -22,7 +22,8 @@ import java.util.zip.GZIPOutputStream;
  * dans {@code elite-eddn-client-<app.profile>.properties} ({@link EddnBundledProperties#KEY_UPLOAD_URL}).
  *
  * <p>Un seul thread de travail consomme la file : les envois sont sérialisés pour limiter les pics.
- * Les appelants ne sont jamais bloqués (enqueue non-bloquant, drop du message si file pleine).</p>
+ * La file est illimitée : chaque appel à {@link #publish} est conservé jusqu'à envoi (aucun abandon
+ * pour saturation de file).</p>
  *
  * <p>Cette classe est agnostique de l'application : elle reçoit {@code softwareName}/{@code softwareVersion}
  * à la construction, et tous les autres paramètres ({@code uploaderId}, {@code gameVersion}, {@code gameBuild},
@@ -38,7 +39,6 @@ public final class EddnClient {
     private static final String DEFAULT_GATEWAY_URL = "https://eddn.edcd.io:4430/upload/";
 
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
-    private static final int DEFAULT_QUEUE_CAPACITY = 1024;
     private static final long WORKER_POLL_TIMEOUT_MS = 1_000L;
 
     private static final AtomicInteger WORKER_COUNTER = new AtomicInteger();
@@ -58,11 +58,15 @@ public final class EddnClient {
 
     /** Cible la gateway résolue via {@link EddnBundledProperties} selon {@code app.profile}. */
     public EddnClient(String softwareName, String softwareVersion) {
-        this(softwareName, softwareVersion, DEFAULT_QUEUE_CAPACITY,
+        this(softwareName, softwareVersion,
                 EddnBundledProperties.get(EddnBundledProperties.KEY_UPLOAD_URL, DEFAULT_GATEWAY_URL));
     }
 
-    public EddnClient(String softwareName, String softwareVersion, int queueCapacity, String gatewayUrl) {
+    /**
+     * Constructeur avec URL de gateway explicite (tests ou configuration avancée).
+     * File d'attente illimitée : tous les messages sont envoyés, dans l'ordre.
+     */
+    public EddnClient(String softwareName, String softwareVersion, String gatewayUrl) {
         if (softwareName == null || softwareName.isBlank()) {
             throw new IllegalArgumentException("softwareName must not be blank");
         }
@@ -76,7 +80,7 @@ public final class EddnClient {
         this.softwareVersion = softwareVersion;
         this.gatewayUrl = gatewayUrl;
         this.endpointLabel = resolveEndpointLabel(gatewayUrl);
-        this.queue = new ArrayBlockingQueue<>(queueCapacity);
+        this.queue = new LinkedBlockingQueue<>();
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .version(HttpClient.Version.HTTP_1_1)
@@ -88,7 +92,7 @@ public final class EddnClient {
 
     /**
      * Empile un message pour publication asynchrone.
-     * Non bloquant ; le message est ignoré (log) si la file est saturée.
+     * La file est illimitée : le message est toujours accepté (jusqu'à mémoire disponible).
      *
      * @param schemaRef   constante de {@link EddnSchemas}
      * @param uploaderId  id anonyme stable (cf. {@link EddnUploaderId})
@@ -155,8 +159,11 @@ public final class EddnClient {
                 body
         );
 
-        if (!queue.offer(envelope)) {
-            System.err.println("EDDN: file pleine, message " + schemaRef + " supprimé.");
+        try {
+            queue.put(envelope);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("EDDN: mise en file interrompue (" + schemaRef + ")");
         }
     }
 

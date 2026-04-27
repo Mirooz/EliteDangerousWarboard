@@ -15,14 +15,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * <p>Singleton léger qui, à chaque appel :</p>
  * <ol>
  *   <li>gate sur {@link DashboardContext#isBatchLoading()} (pas d'envoi pendant le replay journal),</li>
- *   <li>gate sur la préférence {@code eddn.enabled} (toggle utilisateur, défaut on),</li>
+ *   <li>gate sur la même préférence que l’UI : {@code eddn.send.enabled} ({@link PreferencesService#isSendDataToEddnEnabled()}),</li>
  *   <li>récupère FID, gameversion/gamebuild sur {@link CommanderStatus},</li>
  *   <li>délègue à l'{@link EddnClient} du module {@code elite-eddn-client} (queue, strip, enveloppe, POST gzip).</li>
  * </ol>
  */
 public final class EddnUploader {
-
-    public static final String PREF_EDDN_ENABLED = "eddn.enabled";
 
     private static final EddnUploader INSTANCE = new EddnUploader();
 
@@ -104,13 +102,13 @@ public final class EddnUploader {
         );
     }
 
+    /** Même interrupteur que la case « Send datas to EDDN » ({@code eddn.send.enabled}). */
     public boolean isEnabled() {
-        String v = preferences.getPreference(PREF_EDDN_ENABLED, "true");
-        return Boolean.parseBoolean(v);
+        return preferences.isSendDataToEddnEnabled();
     }
 
     public void setEnabled(boolean enabled) {
-        preferences.setPreference(PREF_EDDN_ENABLED, Boolean.toString(enabled));
+        preferences.setSendDataToEddnEnabled(enabled);
     }
 
     public int queueSize() {
@@ -134,6 +132,9 @@ public final class EddnUploader {
         }
         ObjectNode message = CapiMarketEddnMessageBuilder.buildCommodityMessage(dockedEvent, capiMarket);
         if (message == null) {
+            System.out.println(
+                    "EDDN: pas d'envoi commodity/3 depuis le CAPI (aucune commodité exploitable dans le snapshot "
+                            + "— l'événement Docked journal/1 est inchangé).");
             return;
         }
         String uploaderId = EddnUploaderId.fromFid(fid.trim());

@@ -104,12 +104,6 @@ public class ConfigDialogController implements Initializable {
     private CheckBox sendDataToEddnCheckBox;
 
     @FXML
-    private CheckBox inaraApiEnabledCheckBox;
-
-    @FXML
-    private TextField inaraApiKeyTextField;
-
-    @FXML
     private CheckBox capiLoginEnabledCheckBox;
 
     @FXML
@@ -227,9 +221,6 @@ public class ConfigDialogController implements Initializable {
 
         // Initialiser l'option d'envoi vers EDDN
         sendDataToEddnCheckBox.setSelected(preferencesService.isSendDataToEddnEnabled());
-        inaraApiEnabledCheckBox.setSelected(preferencesService.isInaraApiEnabled());
-        inaraApiKeyTextField.setText(preferencesService.getInaraApiKey());
-        applyInaraApiKeyFieldEnabledState();
         spanshLoadSystemsCheckBox.setSelected(preferencesService.isSpanshExplorationLoadEnabled());
         capiLoginEnabledCheckBox.setSelected(preferencesService.isCapiLoginEnabled());
         sendErrorLogsCheckBox.setSelected(preferencesService.isSendErrorLogsEnabled());
@@ -293,10 +284,6 @@ public class ConfigDialogController implements Initializable {
         vrModeSectionLabel.setText("VR MODE");
         sendDataToEddnCheckBox.setText(localizationService.getString("config.eddn.send.enabled"));
         sendDataToEddnCheckBox.setTooltip(new Tooltip(localizationService.getString("config.eddn.send.hint")));
-        inaraApiEnabledCheckBox.setText(localizationService.getString("config.inara.api.enabled"));
-        String inaraHint = localizationService.getString("config.inara.api.hint");
-        inaraApiEnabledCheckBox.setTooltip(new Tooltip(inaraHint));
-        inaraApiKeyTextField.setPromptText(localizationService.getString("config.inara.api.key"));
         capiLoginEnabledCheckBox.setText(localizationService.getString("config.capi.login.enabled"));
         logCapiAccountButton.setText(localizationService.getString("config.capi.connect.button"));
         sendErrorLogsCheckBox.setText(localizationService.getString("config.analytics.send.error.logs"));
@@ -608,8 +595,6 @@ public class ConfigDialogController implements Initializable {
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
         preferencesService.setTabSwitchEnabled(false);
         preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
-        preferencesService.setInaraApiEnabled(inaraApiEnabledCheckBox.isSelected());
-        preferencesService.setInaraApiKey(inaraApiKeyTextField.getText() != null ? inaraApiKeyTextField.getText() : "");
         preferencesService.setSpanshExplorationLoadEnabled(spanshLoadSystemsCheckBox.isSelected());
         boolean newCapiLogin = capiLoginEnabledCheckBox.isSelected();
         if (originalCapiLoginEnabled && !newCapiLogin) {
@@ -723,17 +708,6 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private void onCapiLoginEnabledChanged() {
         updateCapiControlsState();
-    }
-
-    @FXML
-    private void onInaraApiEnabledChanged() {
-        applyInaraApiKeyFieldEnabledState();
-    }
-
-    private void applyInaraApiKeyFieldEnabledState() {
-        if (inaraApiKeyTextField != null && inaraApiEnabledCheckBox != null) {
-            inaraApiKeyTextField.setDisable(!inaraApiEnabledCheckBox.isSelected());
-        }
     }
 
     private void updateCapiControlsState() {

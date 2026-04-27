@@ -21,11 +21,6 @@ public class CommanderShip {
     }
 
     private String ship;
-    /**
-     * Dernier {@code ShipID} journal (Loadout) ; utilisé notamment pour l'API Inara
-     * ({@code addCommanderTravelDock#shipGameID}).
-     */
-    private Integer shipGameId;
     @JsonIgnore
     private ShipCargo shipCargo = new ShipCargo();
     @JsonIgnore

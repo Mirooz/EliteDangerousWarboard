@@ -308,30 +308,6 @@ public class PreferencesService {
     }
 
     /**
-     * Envois vers l'API Inara (après snapshot marché CAPI) : évènement journal de vol {@code addCommanderTravelDock}.
-     */
-    public void setInaraApiEnabled(boolean enabled) {
-        preferences.setProperty("inara.api.enabled", String.valueOf(enabled));
-        savePreferences();
-    }
-
-    public boolean isInaraApiEnabled() {
-        return Boolean.parseBoolean(preferences.getProperty("inara.api.enabled", "false"));
-    }
-
-    public void setInaraApiKey(String key) {
-        preferences.setProperty("inara.api.key", key != null ? key : "");
-        savePreferences();
-    }
-
-    /**
-     * Clé API personnelle Inara (vide si non configurée).
-     */
-    public String getInaraApiKey() {
-        return preferences.getProperty("inara.api.key", "");
-    }
-
-    /**
      * Active ou désactive le chargement des systèmes stellaires via Spansh dans la vue exploration.
      */
     public void setSpanshExplorationLoadEnabled(boolean enabled) {

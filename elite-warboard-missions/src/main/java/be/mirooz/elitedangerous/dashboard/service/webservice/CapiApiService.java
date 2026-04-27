@@ -18,7 +18,6 @@ import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthConnectedNotificat
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.main.ConfigDialogController;
 import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnUploader;
-import be.mirooz.elitedangerous.dashboard.service.webservice.inara.InaraApiService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -226,7 +225,6 @@ public final class CapiApiService {
         JsonNode dockedNode = objectMapper.valueToTree(request.getEvent());
         String fid = r.getData().getFid();
         EddnUploader.getInstance().publishCapiMarketSnapshot(fid, dockedNode, capiNode);
-        InaraApiService.getInstance().enqueueTravelDockAfterCapiMarket(rawDockedEvent, capiNode);
         System.out.println("CAPI market: snapshot reçu, envoi EDDN commodity/3 (Warboard)");
     }
 
