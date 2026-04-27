@@ -16,6 +16,8 @@
                               HBox.hgrow="NEVER" styleClass="colonisation-architect-system-combo"/>
                     <Label fx:id="architectSystemStatsLabel" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"
                            styleClass="colonisation-architect-system-stats"/>
+                    <HBox fx:id="architectSystemImpactTotalsBox" spacing="10.0" alignment="CENTER_RIGHT"
+                          HBox.hgrow="NEVER" styleClass="colonisation-architect-impact-totals"/>
                 </HBox>
                 <TabPane fx:id="architectCenterTabPane" styleClass="colonisation-tab-pane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
                     <tabs>

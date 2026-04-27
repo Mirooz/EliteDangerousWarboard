@@ -67,6 +67,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.layout.Background;
@@ -122,6 +124,8 @@ public class ColonisationPanelController implements Initializable {
     private ComboBox<ColonisationArchitectSystem> architectSystemComboBox;
     @FXML
     private Label architectSystemStatsLabel;
+    @FXML
+    private HBox architectSystemImpactTotalsBox;
     @FXML
     private Label fleetTitleLabel;
     @FXML
@@ -237,6 +241,12 @@ public class ColonisationPanelController implements Initializable {
     private Integer selectedArchitectPlanetBodyId;
     private String selectedArchitectPlanetDisplayName;
     private final Map<Integer, String> architectBodyNamesById = new HashMap<>();
+
+    /** Icônes points de palier T2 / T3 (détail colonie + totaux en-tête). */
+    private Image colonisationTier2ImpactIcon;
+    private Image colonisationTier3ImpactIcon;
+
+    private Tooltip architectSystemImpactTotalsHelpTooltip;
 
     private boolean fleetPanelCollapsed;
     private boolean commanderPanelCollapsed;
@@ -854,6 +864,7 @@ public class ColonisationPanelController implements Initializable {
             architectSystemStatsLabel.setText("");
             architectSystemStatsLabel.setManaged(false);
             architectSystemStatsLabel.setVisible(false);
+            clearArchitectSystemImpactTotals();
             return;
         }
         architectSystemStatsLabel.setManaged(true);
@@ -876,6 +887,127 @@ public class ColonisationPanelController implements Initializable {
                 completed,
                 total,
                 remainingTons));
+        refreshArchitectSystemImpactTotals();
+    }
+
+    private void clearArchitectSystemImpactTotals() {
+        if (architectSystemImpactTotalsBox == null) {
+            return;
+        }
+        architectSystemImpactTotalsBox.getChildren().clear();
+        if (architectSystemImpactTotalsHelpTooltip != null) {
+            Tooltip.uninstall(architectSystemImpactTotalsBox, architectSystemImpactTotalsHelpTooltip);
+            architectSystemImpactTotalsHelpTooltip = null;
+        }
+        architectSystemImpactTotalsBox.setManaged(false);
+        architectSystemImpactTotalsBox.setVisible(false);
+    }
+
+    /**
+     * Totaux T2/T3 pour le système sélectionné (somme des structures choisies par chantier).
+     * Tant qu’aucun chantier du système n’est « terminé », les coûts en points de palier ne sont pas soustraits
+     * (première vague de construction).
+     */
+    private void refreshArchitectSystemImpactTotals() {
+        if (architectSystemImpactTotalsBox == null) {
+            return;
+        }
+        architectSystemImpactTotalsBox.getChildren().clear();
+        if (architectSystemImpactTotalsHelpTooltip != null) {
+            Tooltip.uninstall(architectSystemImpactTotalsBox, architectSystemImpactTotalsHelpTooltip);
+            architectSystemImpactTotalsHelpTooltip = null;
+        }
+        if (selectedArchitectArch == null) {
+            architectSystemImpactTotalsBox.setManaged(false);
+            architectSystemImpactTotalsBox.setVisible(false);
+            return;
+        }
+        int completed = 0;
+        for (ColonisationDockEntry site : selectedArchitectArch.getSites()) {
+            ColonisationConstruction c = site.getConstruction();
+            if (c != null && c.getStatus() == ConstructionStatus.COMPLETE) {
+                completed++;
+            }
+        }
+        boolean includeConstructionCosts = completed > 0;
+        int netT2 = 0;
+        int netT3 = 0;
+        for (ColonisationDockEntry site : selectedArchitectArch.getSites()) {
+            if (site.getConstruction() == null) {
+                continue;
+            }
+            Optional<Structure> chosen = preferencesService.getColonisationUserConstructionStructure(site.getMarketId());
+            if (chosen.isEmpty()) {
+                continue;
+            }
+            Structure s = chosen.get();
+            netT2 += structureTierNetContribution(s, 2, includeConstructionCosts);
+            netT3 += structureTierNetContribution(s, 3, includeConstructionCosts);
+        }
+        if (netT2 == 0 && netT3 == 0) {
+            architectSystemImpactTotalsBox.setManaged(false);
+            architectSystemImpactTotalsBox.setVisible(false);
+            return;
+        }
+        architectSystemImpactTotalsBox.setManaged(true);
+        architectSystemImpactTotalsBox.setVisible(true);
+        if (netT2 != 0) {
+            architectSystemImpactTotalsBox.getChildren().add(buildSystemImpactTotalChip(2, netT2));
+        }
+        if (netT3 != 0) {
+            architectSystemImpactTotalsBox.getChildren().add(buildSystemImpactTotalChip(3, netT3));
+        }
+        architectSystemImpactTotalsHelpTooltip = new Tooltip(
+                localizationService.getString("colonisation.architect.systemImpactTotals.tooltip"));
+        Tooltip.install(architectSystemImpactTotalsBox, architectSystemImpactTotalsHelpTooltip);
+    }
+
+    private static int structureTierNetContribution(Structure s, int tierPoint, boolean includeCost) {
+        String key = "t" + tierPoint;
+        int earn = s.earning != null ? s.earning.getOrDefault(key, 0) : 0;
+        if (!includeCost) {
+            return earn;
+        }
+        int cost = s.cost != null ? s.cost.getOrDefault(key, 0) : 0;
+        return earn + cost;
+    }
+
+    private Image tierImpactImage(int tierPoint) {
+        if (tierPoint == 2) {
+            if (colonisationTier2ImpactIcon == null) {
+                var in = getClass().getResourceAsStream("/images/colonisation/tier2-impact-points.png");
+                colonisationTier2ImpactIcon = in != null ? new Image(in) : null;
+            }
+            return colonisationTier2ImpactIcon;
+        }
+        if (tierPoint == 3) {
+            if (colonisationTier3ImpactIcon == null) {
+                var in = getClass().getResourceAsStream("/images/colonisation/tier3-impact-points.png");
+                colonisationTier3ImpactIcon = in != null ? new Image(in) : null;
+            }
+            return colonisationTier3ImpactIcon;
+        }
+        return null;
+    }
+
+    private HBox buildSystemImpactTotalChip(int tierPoint, int net) {
+        HBox chip = new HBox(4);
+        chip.setAlignment(Pos.CENTER_LEFT);
+        chip.getStyleClass().add("colonisation-architect-impact-chip");
+        Label v = new Label(String.format(localizationService.getCurrentLocale(), "%+d", net));
+        v.getStyleClass().add(net >= 0 ? "colonisation-colony-stat-value" : "colonisation-colony-stat-value-negative");
+        Image img = tierImpactImage(tierPoint);
+        if (img != null && !img.isError()) {
+            ImageView icon = new ImageView(img);
+            icon.setFitHeight(17);
+            icon.setPreserveRatio(true);
+            icon.setSmooth(true);
+            icon.getStyleClass().add("colonisation-tier-impact-icon");
+            chip.getChildren().addAll(v, icon);
+        } else {
+            chip.getChildren().add(v);
+        }
+        return chip;
     }
 
     private static int remainingTonsToDeliverAcrossSystem(ColonisationArchitectSystem arch) {
@@ -1080,9 +1212,11 @@ public class ColonisationPanelController implements Initializable {
             }
             clearArchitectVisualPanel();
             constructionDetailContent.getChildren().add(placeholderLabel("colonisation.list.empty"));
+            updateArchitectSystemStatsLabel();
             return;
         }
         renderConstructionListDetailPanel();
+        updateArchitectSystemStatsLabel();
     }
 
     private void renderConstructionListDetailPanel() {
@@ -1376,12 +1510,11 @@ public class ColonisationPanelController implements Initializable {
             return;
         }
         Structure s = chosen.get();
-        Label title = new Label("Impact");
+        Label title = new Label(localizationService.getString("colonisation.colony.impactSectionTitle"));
         title.getStyleClass().add("colonisation-section-subtitle");
         title.setMaxWidth(Double.MAX_VALUE);
         parent.getChildren().add(title);
-        int tier = Colony.getInstance().getTier();
-        parent.getChildren().add(buildColonyTierPointsRow(tier, s));
+        addColonyTierPointsRows(parent, s);
         if (s.population != null && s.population.initialIncrease != null) {
             parent.getChildren().add(buildColonyChevronStatRow("colonisation.colony.population", s.population.initialIncrease));
         }
@@ -2264,8 +2397,7 @@ public class ColonisationPanelController implements Initializable {
         head.setMaxWidth(Double.MAX_VALUE);
         panel.getChildren().add(head);
 
-        int tier = Colony.getInstance().getTier();
-        panel.getChildren().add(buildColonyTierPointsRow(tier, s));
+        addColonyTierPointsRows(panel, s);
 
         if (s.population != null) {
             if (s.population.initialIncrease != null) {
@@ -2295,28 +2427,36 @@ public class ColonisationPanelController implements Initializable {
         parent.getChildren().add(panel);
     }
 
-    private HBox buildColonyTierPointsRow(int tier, Structure s) {
+    private void addColonyTierPointsRows(VBox parent, Structure s) {
+        for (int tierPoint : new int[] {2, 3}) {
+            buildColonySingleTierPointsRow(tierPoint, s).ifPresent(parent.getChildren()::add);
+        }
+    }
+
+    private Optional<HBox> buildColonySingleTierPointsRow(int tierPoint, Structure s) {
+        String key = "t" + tierPoint;
+        Integer earning = s.earning != null ? s.earning.get(key) : null;
+        Integer cost = s.cost != null ? s.cost.get(key) : null;
+        int earnVal = earning != null ? earning : 0;
+        int costVal = cost != null ? cost : 0;
+        if (earnVal == 0 && costVal == 0) {
+            return Optional.empty();
+        }
         HBox row = new HBox(12);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMaxWidth(Double.MAX_VALUE);
         row.getStyleClass().add("colonisation-colony-stat-row");
-        Label name = new Label(localizationService.getString("colonisation.colony.tierPoints", tier));
+        Label name = new Label(localizationService.getString("colonisation.colony.tierPoints", tierPoint));
         name.getStyleClass().add("colonisation-colony-stat-label");
         name.setMinWidth(210);
         HBox right = new HBox(10);
         right.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(right, Priority.ALWAYS);
-
-        String key = "t" + tier;
-        Integer earning = s.earning != null ? s.earning.get(key) : null;
-        Integer cost = s.cost != null ? s.cost.get(key) : null;
-        int earnVal = earning != null ? earning : 0;
-        int costVal = cost != null ? cost : 0;
         if (earnVal != 0) {
-            appendColonyTierValueWithGlyph(right, earnVal, true);
+            appendColonyTierPointSegment(right, earnVal, tierPoint);
         }
         if (costVal != 0) {
-            appendColonyTierValueWithGlyph(right, costVal, false);
+            appendColonyTierPointSegment(right, costVal, tierPoint);
         }
         if (right.getChildren().isEmpty()) {
             Label dash = new Label("—");
@@ -2324,7 +2464,7 @@ public class ColonisationPanelController implements Initializable {
             right.getChildren().add(dash);
         }
         row.getChildren().addAll(name, right);
-        return row;
+        return Optional.of(row);
     }
 
     private HBox buildColonyChevronStatRow(String messageKey, int value) {
@@ -2355,20 +2495,25 @@ public class ColonisationPanelController implements Initializable {
         return String.format(localizationService.getCurrentLocale(), "%+d", v);
     }
 
-    /** Points de palier : cube si contribution ≥ 0, flèches rouges vers la gauche si &lt; 0. */
-    private void appendColonyTierValueWithGlyph(HBox right, int val, boolean isEarning) {
-        Label v = new Label(fmtSignedColonyStat(val));
-        v.getStyleClass().add(val < 0 ? "colonisation-colony-stat-value-negative" : "colonisation-colony-stat-value");
+    /**
+     * Affiche {@code +n} ou {@code -n} avec l’icône du palier (T2 cube jaune, T3 cubes verts).
+     * Les coûts dans le JSON sont négatifs ; l’affichage utilise toujours un préfixe « - » pour un coût.
+     */
+    private void appendColonyTierPointSegment(HBox right, int signedValue, int tierPoint) {
+        boolean isGain = signedValue > 0;
+        int magnitude = Math.abs(signedValue);
+        String text = (isGain ? "+" : "-") + magnitude;
+        Label v = new Label(text);
+        v.getStyleClass().add(isGain ? "colonisation-colony-stat-value" : "colonisation-colony-stat-value-negative");
         right.getChildren().add(v);
-        int n = Math.min(16, Math.max(0, Math.abs(val)));
-        if (val < 0) {
-            Label ar = new Label("<".repeat(Math.max(1, n)));
-            ar.getStyleClass().add("colonisation-colony-chevron-negative");
-            right.getChildren().add(ar);
-        } else {
-            Label cube = new Label("▣");
-            cube.getStyleClass().add(isEarning ? "colonisation-colony-cube-earn" : "colonisation-colony-cube-cost");
-            right.getChildren().add(cube);
+        Image img = tierImpactImage(tierPoint);
+        if (img != null && !img.isError()) {
+            ImageView icon = new ImageView(img);
+            icon.setFitHeight(18);
+            icon.setPreserveRatio(true);
+            icon.setSmooth(true);
+            icon.getStyleClass().add("colonisation-tier-impact-icon");
+            right.getChildren().add(icon);
         }
     }
 

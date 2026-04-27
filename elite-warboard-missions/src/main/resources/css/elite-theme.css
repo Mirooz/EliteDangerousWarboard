@@ -943,6 +943,18 @@
     -fx-font-size: 15px;
     -fx-font-weight: bold;
 }
+
+.colonisation-architect-impact-totals {
+    -fx-alignment: center-right;
+    -fx-padding: 0 0 0 10px;
+}
+.colonisation-architect-impact-chip {
+    -fx-spacing: 4px;
+    -fx-alignment: center-left;
+}
+.colonisation-tier-impact-icon {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.42), 3, 0.35, 0, 1);
+}
 .colonisation-colony-chevron-positive {
     -fx-text-fill: #3ae07a;
     -fx-font-family: "Consolas", "Courier New", monospace;
@@ -5651,10 +5663,11 @@
     -fx-effect: none;
 }
 
+/* Pas de surbrillance au survol : l'overlay reste discret au passage de la souris */
 .mirror-overlay:hover {
-    -fx-border-color: rgba(255, 107, 0, 0.8);
-    -fx-border-width: 2px;
-    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.3), 20, 0, 0, 0);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: none;
 }
 
 /* Indicateur de redimensionnement pour l'overlay */
@@ -5674,9 +5687,9 @@
 }
 
 .mirror-overlay .resize-handle:hover {
-    -fx-background-color: rgba(255, 215, 0, 0.6);
+    -fx-background-color: rgba(255, 215, 0, 0.3);
     -fx-border-color: transparent;
-    -fx-effect: dropshadow(gaussian, gold, 8, 0.8, 0, 0);
+    -fx-effect: none;
 }
 
 /* Slider de scale de texte (overlay) - style Elite Dangerous */
@@ -5703,7 +5716,7 @@
 }
 
 .opacity-slider:hover .thumb {
-    -fx-background-color: -fx-elite-cyan;
+    -fx-background-color: -fx-elite-orange;
 }
 /* Slider de scale de texte (overlay) - style Elite Dangerous */
 .text-scale-slider {
@@ -5729,7 +5742,7 @@
 }
 
 .text-scale-slider:hover .thumb {
-    -fx-background-color: -fx-elite-cyan;
+    -fx-background-color: -fx-elite-orange;
 }
 
 /* Scrollbars Elite Dangerous pour l'overlay */
@@ -5745,7 +5758,7 @@
 }
 
 .overlay-root .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: -fx-elite-cyan;
+    -fx-background-color: -fx-elite-orange;
 }
 
 .overlay-root .scroll-bar:vertical .track {
@@ -5761,7 +5774,7 @@
 
 .overlay-root .scroll-bar:vertical .increment-button:hover,
 .overlay-root .scroll-bar:vertical .decrement-button:hover {
-    -fx-background-color: -fx-elite-gray;
+    -fx-background-color: -fx-elite-darker;
 }
 
 .overlay-root .scroll-bar:vertical .increment-arrow{
@@ -5775,7 +5788,7 @@
 
 .overlay-root .scroll-bar:vertical .increment-arrow:hover,
 .overlay-root .scroll-bar:vertical .decrement-arrow:hover {
-    -fx-background-color: -fx-elite-cyan;
+    -fx-background-color: -fx-elite-orange;
 }
 
 /* Scrollbar horizontale pour l'overlay (ex: slider de taille de texte) */

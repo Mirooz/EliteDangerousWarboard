@@ -56,7 +56,6 @@ public class ProspectorOverlayComponent {
     private double textScale = 1.0;
     private StackPane stackPane;
     
-    // Labels pour afficher ring et station au hover
     private Label ringLabel;
     private Label stationLabel;
     private HBox infoContainer;
@@ -79,6 +78,28 @@ public class ProspectorOverlayComponent {
     private void refreshLockChrome() {
         OverlayLockChrome.apply(passthrough.isClickThroughLocked(), stackPane,
                 resizeHandle, opacitySlider, textScaleSlider);
+        applyInfoContainerVisibility();
+    }
+
+    /**
+     * Affiche ring / station lorsque l'overlay est interactif (pas de dépendance au survol de la scène).
+     */
+    private void applyInfoContainerVisibility() {
+        if (infoContainer == null) {
+            return;
+        }
+        if (passthrough.isClickThroughLocked()) {
+            infoContainer.setVisible(false);
+            infoContainer.setMouseTransparent(true);
+            return;
+        }
+        updateRingLabel();
+        updateStationLabel();
+        boolean hasRing = ringLabel != null && ringLabel.getText() != null && !ringLabel.getText().isEmpty();
+        boolean hasStation = stationLabel != null && stationLabel.getText() != null && !stationLabel.getText().isEmpty();
+        boolean shouldShow = hasRing || hasStation;
+        infoContainer.setVisible(shouldShow);
+        infoContainer.setMouseTransparent(!shouldShow);
     }
 
     /**
@@ -321,29 +342,19 @@ public class ProspectorOverlayComponent {
         return resizeHandle;
     }
     
-    /**
-     * Crée le label pour afficher le ring au hover
-     */
     private Label createRingLabel() {
         Label label = new Label();
         updateRingLabel();
         label.getStyleClass().add("overlay-info-label");
         label.setStyle("-fx-text-fill: -fx-elite-cyan; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 100, 150, 0.3); -fx-background-radius: 5px;");
-        label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: -fx-elite-cyan; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 200, 255, 0.5); -fx-background-radius: 5px;"));
-        label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: -fx-elite-cyan; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 100, 150, 0.3); -fx-background-radius: 5px;"));
         return label;
     }
-    
-    /**
-     * Crée le label pour afficher la station au hover
-     */
+
     private Label createStationLabel() {
         Label label = new Label();
         updateStationLabel();
         label.getStyleClass().add("overlay-info-label");
         label.setStyle("-fx-text-fill: -fx-elite-green; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 150, 0, 0.3); -fx-background-radius: 5px;");
-        label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: -fx-elite-green; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 255, 100, 0.5); -fx-background-radius: 5px;"));
-        label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: -fx-elite-green; -fx-font-weight: bold; -fx-padding: 3px 8px; -fx-background-color: rgba(0, 150, 0, 0.3); -fx-background-radius: 5px;"));
         return label;
     }
     
@@ -640,35 +651,6 @@ public class ProspectorOverlayComponent {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
             }
         });
-
-        scene.setOnMouseExited(e -> {
-            if (passthrough.isClickThroughLocked()) {
-                return;
-            }
-            if (infoContainer != null) {
-                infoContainer.setVisible(false);
-                infoContainer.setMouseTransparent(true);
-            }
-        });
-
-        scene.setOnMouseEntered(e -> {
-            if (passthrough.isClickThroughLocked()) {
-                return;
-            }
-            // Afficher ring et station si disponibles
-            updateRingLabel();
-            updateStationLabel();
-            if (infoContainer != null) {
-                boolean hasRing = ringLabel != null && ringLabel.getText() != null && !ringLabel.getText().isEmpty();
-                boolean hasStation = stationLabel != null && stationLabel.getText() != null && !stationLabel.getText().isEmpty();
-                // Afficher seulement si au moins un élément est disponible
-                boolean shouldShow = hasRing || hasStation;
-                infoContainer.setVisible(shouldShow);
-                // Si on montre, on rend l'infoContainer transparent aux événements sauf sur ses enfants réels
-                infoContainer.setMouseTransparent(!shouldShow);
-            }
-        });
-
 
     }
 
