@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
@@ -461,6 +462,7 @@ public class ExplorationBodiesOverlayComponent {
     private void createOverlayStage(SystemVisited system, boolean showOnlyHighValue, boolean setSelected) {
         // Création de la fenêtre overlay
         overlayStage = new Stage();
+        WindowToggleService.getInstance().bindOverlayOwner(overlayStage);
         overlayStage.initStyle(StageStyle.TRANSPARENT);
         overlayStage.setAlwaysOnTop(true);
         overlayStage.setTitle(localizationService.getString("exploration.exploration_bodies_overlay"));

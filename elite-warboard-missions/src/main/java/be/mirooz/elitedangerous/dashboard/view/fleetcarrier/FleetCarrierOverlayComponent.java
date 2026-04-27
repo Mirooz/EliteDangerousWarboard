@@ -7,6 +7,7 @@ import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -155,6 +156,7 @@ public class FleetCarrierOverlayComponent {
 
     private void createOverlayStage(FleetCarrierOverlaySnapshot initialSnapshot) {
         overlayStage = new Stage();
+        WindowToggleService.getInstance().bindOverlayOwner(overlayStage);
         overlayStage.initStyle(StageStyle.TRANSPARENT);
         overlayStage.setAlwaysOnTop(true);
         overlayStage.setTitle(localizationService.getString("colonisation.fleet.overlay.windowTitle"));

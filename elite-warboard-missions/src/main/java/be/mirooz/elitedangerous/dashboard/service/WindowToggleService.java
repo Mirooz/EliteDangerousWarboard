@@ -98,6 +98,25 @@ public class WindowToggleService {
     }
 
     /**
+     * Rattache un {@link Stage} flottant (overlay) au stage principal : sous Windows, la fenêtre
+     * n’apparaît plus comme une « tâche » distincte (aperçu barre des tâches, Alt+Tab).
+     * À appeler avant {@link Stage#show()}.
+     */
+    public void bindOverlayOwner(Stage overlayStage) {
+        if (overlayStage == null || mainStage == null) {
+            return;
+        }
+        overlayStage.initOwner(mainStage);
+    }
+
+    /**
+     * Stage principal après {@link #initialize(Stage, ComboBox, StackPane)} (sinon {@code null}).
+     */
+    public Stage getMainStage() {
+        return mainStage;
+    }
+
+    /**
      * Initialise le TabPane pour le changement d'onglet
      */
     public void initializeTabPane(TabPane tabPane, Tab missionsTab, Tab miningTab, Tab explorationTab, Tab colonisationTab) {

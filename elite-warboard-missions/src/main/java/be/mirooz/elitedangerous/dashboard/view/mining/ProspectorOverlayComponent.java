@@ -9,6 +9,7 @@ import be.mirooz.elitedangerous.dashboard.model.events.ProspectedAsteroid;
 import be.mirooz.elitedangerous.dashboard.service.webservice.ArdentApiService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -205,6 +206,7 @@ public class ProspectorOverlayComponent {
 
         // Création de la fenêtre overlay
         overlayStage = new Stage();
+        WindowToggleService.getInstance().bindOverlayOwner(overlayStage);
         overlayStage.initStyle(StageStyle.TRANSPARENT);
         overlayStage.setAlwaysOnTop(true);
         overlayStage.setTitle("Prospector Overlay");

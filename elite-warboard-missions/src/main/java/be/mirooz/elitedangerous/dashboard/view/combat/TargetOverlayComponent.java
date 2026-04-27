@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.model.targetpanel.SourceFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.targetpanel.TargetFactionStats;
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -213,6 +214,7 @@ public class TargetOverlayComponent {
         
         // Création de la fenêtre overlay
         overlayStage = new Stage();
+        WindowToggleService.getInstance().bindOverlayOwner(overlayStage);
         overlayStage.initStyle(StageStyle.TRANSPARENT);
         overlayStage.setAlwaysOnTop(true);
         overlayStage.setTitle("Targets Overlay");

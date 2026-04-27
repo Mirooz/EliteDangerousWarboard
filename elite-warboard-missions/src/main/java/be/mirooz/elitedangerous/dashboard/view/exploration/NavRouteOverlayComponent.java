@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.view.exploration;
 
 import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -238,6 +239,7 @@ public class NavRouteOverlayComponent {
     private void createOverlayStage(boolean withBordered) {
         // Création de la fenêtre overlay
         overlayStage = new Stage();
+        WindowToggleService.getInstance().bindOverlayOwner(overlayStage);
         overlayStage.initStyle(StageStyle.TRANSPARENT);
         overlayStage.setAlwaysOnTop(true);
         overlayStage.setTitle(localizationService.getString("nav.route.title"));
