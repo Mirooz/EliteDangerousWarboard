@@ -18,6 +18,7 @@ import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthConnectedNotificat
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.main.ConfigDialogController;
 import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnUploader;
+import be.mirooz.elitedangerous.dashboard.service.webservice.inara.InaraApiService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -95,7 +96,7 @@ public final class CapiApiService {
                     .commanderName(s.getCommanderName())
                     .event(event);
             CapiMarketDto response = capiFacade.postMarket(payload);
-            handleSuccess(payload, response);
+            handleSuccess(payload, response, journalDockedEvent);
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
         } catch (IOException e) {
@@ -203,7 +204,7 @@ public final class CapiApiService {
     // SUCCESS
     // =========================
 
-    private void handleSuccess(CapiMarketProxyRequest request, CapiMarketDto r) {
+    private void handleSuccess(CapiMarketProxyRequest request, CapiMarketDto r, JsonNode rawDockedEvent) {
         if (r == null) {
             System.err.println("CAPI market: réponse vide");
             return;
@@ -225,6 +226,7 @@ public final class CapiApiService {
         JsonNode dockedNode = objectMapper.valueToTree(request.getEvent());
         String fid = r.getData().getFid();
         EddnUploader.getInstance().publishCapiMarketSnapshot(fid, dockedNode, capiNode);
+        InaraApiService.getInstance().enqueueTravelDockAfterCapiMarket(rawDockedEvent, capiNode);
         System.out.println("CAPI market: snapshot reçu, envoi EDDN commodity/3 (Warboard)");
     }
 

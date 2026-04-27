@@ -1921,7 +1921,6 @@ public class NavRouteComponent implements Initializable {
                 remainingJumpsLabel.setText("");
                 remainingJumpsLabel.setVisible(false);
                 remainingJumpsLabel.setManaged(false);
-                System.out.println("❌ Remaining jumps label masqué (remainingJumps: " + remainingJumps + ")");
             }
         }
     }

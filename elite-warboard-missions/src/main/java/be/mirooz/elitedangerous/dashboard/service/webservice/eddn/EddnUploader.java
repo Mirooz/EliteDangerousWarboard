@@ -119,7 +119,8 @@ public final class EddnUploader {
 
     /**
      * Après un {@code POST /api/capi/market} réussi : publie commodity/3 sur EDDN à partir du snapshot
-     * CAPI et de l’événement Docked (pas d’exigence gameVersion/gamebuild, contrairement au journal).
+     * CAPI et de l’événement Docked, avec {@code gameversion}/{@code gamebuild} issus du journal
+     * ({@link CommanderStatus}, typiquement {@code LoadGame} / {@code Fileheader}).
      */
     public void publishCapiMarketSnapshot(String fid, JsonNode dockedEvent, JsonNode capiMarket) {
         if (!isEnabled()) {
@@ -139,7 +140,12 @@ public final class EddnUploader {
         if (uploaderId == null) {
             return;
         }
-        client.publish(EddnSchemas.COMMODITY_V3, uploaderId, null, null, message);
+        client.publish(
+                EddnSchemas.COMMODITY_V3,
+                uploaderId,
+                commanderStatus.getGameVersion(),
+                commanderStatus.getGameBuild(),
+                message);
     }
 
     private boolean isPublishingAllowed() {

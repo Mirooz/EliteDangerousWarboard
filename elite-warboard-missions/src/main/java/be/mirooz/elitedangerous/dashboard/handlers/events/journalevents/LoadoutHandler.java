@@ -36,6 +36,7 @@ public class LoadoutHandler implements JournalEventHandler {
                 ShipCargo oldCargo = ship.getShipCargo().copy();
                 ShipCargo oldJson = ship.getJsonShipCargo().copy();
                 ship.setShip(loadout.getShip());
+                ship.setShipGameId(loadout.getShipID());
                 ship.setMaxRange(loadout.getMaxJumpRange());
                 ship.setMaxCapacity(loadout.getCargoCapacity());
                 ship.setShipCargo(oldCargo);
