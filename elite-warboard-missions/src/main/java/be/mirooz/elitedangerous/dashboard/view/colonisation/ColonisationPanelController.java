@@ -2369,7 +2369,12 @@ public class ColonisationPanelController implements Initializable {
             selection[0] = null;
         }
         if (selection[0] == null && preferredCategory.isPresent()) {
-            selection[0] = firstStructureForCategory(catalog, preferredCategory.get()).orElse(null);
+            String cat = preferredCategory.get();
+            List<ConstructionResource> req = dock.getConstruction() != null
+                    ? dock.getConstruction().getResourcesRequired()
+                    : null;
+            selection[0] = Colony.bestMatchByResourcesRequired(catalog, cat, req)
+                    .orElseGet(() -> firstStructureForCategory(catalog, cat).orElse(null));
             if (selection[0] != null) {
                 preferencesService.setColonisationUserConstructionStructure(marketId, selection[0]);
             }
@@ -2405,6 +2410,10 @@ public class ColonisationPanelController implements Initializable {
 
     private static final Pattern SETTLEMENT_NAME_PARTS = Pattern.compile(
             "^(?<fam>.+?)\\s+T(?<tier>[12])\\s+(?<pad>[SML]|SL|ML|SM)$");
+    /** Ex. « Agriculture Large », « Research Bio Medium » ({@code construction_class.json}). */
+    private static final Pattern SETTLEMENT_NAME_SIZE = Pattern.compile(
+            "^(?<fam>.+?)\\s+(?<size>Small|Medium|Large)$",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     private static final Pattern ORBITAL_SITE_NAME_PATTERN = Pattern.compile(
             "^orbital\\s+construction\\s+site\\s*:\\s*.+$",
             Pattern.CASE_INSENSITIVE);
@@ -2587,50 +2596,71 @@ public class ColonisationPanelController implements Initializable {
         return typ != null && "Settlement".equals(typ);
     }
 
-    /** Groupe menu (ex. « Agriculture » depuis « Agriculture T1 S »). */
+    /** Groupe menu (ex. « Agriculture » depuis « Agriculture T1 S » ou « Agriculture Large »). */
     private static String settlementFamilyKey(Structure s) {
         if (s == null || s.name == null || s.name.isBlank()) {
             return "";
         }
-        Matcher m = SETTLEMENT_NAME_PARTS.matcher(s.name.trim());
-        if (m.matches()) {
-            return m.group("fam").strip();
+        String trim = s.name.trim();
+        Matcher tier = SETTLEMENT_NAME_PARTS.matcher(trim);
+        if (tier.matches()) {
+            return tier.group("fam").strip();
         }
-        return s.name.strip();
+        Matcher size = SETTLEMENT_NAME_SIZE.matcher(trim);
+        if (size.matches()) {
+            return size.group("fam").strip();
+        }
+        return trim;
     }
 
-    /** Libellé feuille : « T1 S », « T2 L », etc. */
+    /** Libellé feuille : « T1 S », « Large », etc. */
     private static String settlementTierPadLabel(Structure s) {
         if (s == null || s.name == null) {
             return "";
         }
-        Matcher m = SETTLEMENT_NAME_PARTS.matcher(s.name.trim());
-        if (m.matches()) {
-            return "T" + m.group("tier") + " " + m.group("pad");
+        String trim = s.name.trim();
+        Matcher tier = SETTLEMENT_NAME_PARTS.matcher(trim);
+        if (tier.matches()) {
+            return "T" + tier.group("tier") + " " + tier.group("pad");
         }
-        return s.name.trim();
+        Matcher size = SETTLEMENT_NAME_SIZE.matcher(trim);
+        if (size.matches()) {
+            String raw = size.group("size");
+            return raw.substring(0, 1).toUpperCase(Locale.ROOT) + raw.substring(1).toLowerCase(Locale.ROOT);
+        }
+        return trim;
     }
 
     private static int settlementTierPadSortKey(Structure s) {
         if (s == null || s.name == null) {
             return 9999;
         }
-        Matcher m = SETTLEMENT_NAME_PARTS.matcher(s.name.trim());
-        if (!m.matches()) {
-            return 5000 + s.name.hashCode() % 1000;
+        String trim = s.name.trim();
+        Matcher tier = SETTLEMENT_NAME_PARTS.matcher(trim);
+        if (tier.matches()) {
+            int tierVal = Integer.parseInt(tier.group("tier")) * 20;
+            String pad = tier.group("pad");
+            int padOrder = switch (pad) {
+                case "S" -> 0;
+                case "SM" -> 1;
+                case "M" -> 2;
+                case "ML" -> 3;
+                case "SL" -> 4;
+                case "L" -> 5;
+                default -> 9;
+            };
+            return tierVal + padOrder;
         }
-        int tier = Integer.parseInt(m.group("tier")) * 20;
-        String pad = m.group("pad");
-        int padOrder = switch (pad) {
-            case "S" -> 0;
-            case "SM" -> 1;
-            case "M" -> 2;
-            case "ML" -> 3;
-            case "SL" -> 4;
-            case "L" -> 5;
-            default -> 9;
-        };
-        return tier + padOrder;
+        Matcher size = SETTLEMENT_NAME_SIZE.matcher(trim);
+        if (size.matches()) {
+            return switch (size.group("size").toLowerCase(Locale.ROOT)) {
+                case "small" -> 0;
+                case "medium" -> 1;
+                case "large" -> 2;
+                default -> 9;
+            };
+        }
+        return 5000 + Math.floorMod(s.name.hashCode(), 1000);
     }
 
     private static String formatProgress(double progress) {

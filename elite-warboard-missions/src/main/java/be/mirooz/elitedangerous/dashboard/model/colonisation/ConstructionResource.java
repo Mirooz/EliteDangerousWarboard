@@ -52,9 +52,6 @@ public class ConstructionResource {
         String name = row.path("Name").asText("");
         String nameLocalised = row.path("Name_Localised").asText("");
         ICommodity commodity = CarrierCommodityResolver.resolve(name, nameLocalised);
-        if (name.contains("cmmcomposite")){
-            System.out.println("here");
-        }
         commodity.setLocalisedName(nameLocalised);
         return new ConstructionResource(
                 commodity,

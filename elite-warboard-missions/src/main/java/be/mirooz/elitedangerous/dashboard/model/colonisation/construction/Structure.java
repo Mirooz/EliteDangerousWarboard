@@ -11,6 +11,8 @@ public class Structure {
     public Map<String, Integer> cost;
     public Map<String, Integer> earning;
 
+    public Map<String, Integer> estimatedCargo;
+
     public Stats stats;
     public Economy economy;
     public Population population;

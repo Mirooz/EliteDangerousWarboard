@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.model.colonisation.construction;
 
+import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommodityKeys;
+import be.mirooz.elitedangerous.dashboard.model.colonisation.ConstructionResource;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -10,13 +12,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Registre colonie / construction : charge {@code /json/construction_class.json} au premier
@@ -26,8 +35,14 @@ import java.util.regex.Pattern;
  */
 public final class Colony {
 
+    private static final Logger log = LoggerFactory.getLogger(Colony.class);
+
     /** Séparateur improbable dans les champs JSON (catégorie / type / nom), pour la persistance préférences. */
     private static final char STRUCTURE_KEY_SEP = '\u001f';
+
+    private static final Comparator<Structure> STRUCTURE_TYPE_NAME_ORDER = Comparator
+            .comparing((Structure s) -> s.type != null ? s.type : "", String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(s -> s.name != null ? s.name : "", String.CASE_INSENSITIVE_ORDER);
 
     private static final ObjectMapper JSON = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -138,6 +153,116 @@ public final class Colony {
                 .filter(s -> category.equals(s.category) && type.equals(s.type))
                 .sorted(Comparator.comparing(s -> s.name != null ? s.name : "", String.CASE_INSENSITIVE_ORDER))
                 .toList();
+    }
+
+    /**
+     * Score « requis journal vs {@link Structure#estimatedCargo} » (somme des carrés des écarts), ou vide si la
+     * structure ne s’applique pas (mauvaise catégorie, pas d’estimations, aucune ligne ressource appariée).
+     */
+    private static OptionalLong structureResourceMatchScore(
+            Structure s,
+            String category,
+            List<ConstructionResource> resourcesRequired) {
+        if (s == null || s.category == null || !category.equals(s.category)) {
+            return OptionalLong.empty();
+        }
+        if (s.estimatedCargo == null || s.estimatedCargo.isEmpty()) {
+            return OptionalLong.empty();
+        }
+        Map<String, Integer> estByKey = new HashMap<>();
+        for (Map.Entry<String, Integer> e : s.estimatedCargo.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null) {
+                continue;
+            }
+            String nk = ColonisationCommodityKeys.normalizeMergeKey(e.getKey());
+            if (nk.isEmpty()) {
+                continue;
+            }
+            estByKey.merge(nk, e.getValue(), Integer::sum);
+        }
+        long score = 0L;
+        int matchedLines = 0;
+        for (ConstructionResource r : resourcesRequired) {
+            if (r == null) {
+                continue;
+            }
+            String k = ColonisationCommodityKeys.mergeKey(r.getCommodity());
+            if (k.isEmpty()) {
+                continue;
+            }
+            matchedLines++;
+            int req = r.getRequiredAmount();
+            int est = estByKey.getOrDefault(k, 0);
+            long d = (long) req - est;
+            score += d * d;
+        }
+        if (matchedLines == 0) {
+            return OptionalLong.empty();
+        }
+        return OptionalLong.of(score);
+    }
+
+    private static String structureShortLabel(Structure s) {
+        if (s == null) {
+            return "?";
+        }
+        String t = s.type != null ? s.type : "";
+        String n = s.name != null ? s.name : "";
+        if (t.isEmpty()) {
+            return n.isEmpty() ? "?" : n;
+        }
+        return n.isEmpty() ? t : t + " / " + n;
+    }
+
+    /**
+     * Parmi les structures d’une catégorie dont {@link Structure#estimatedCargo} est renseigné,
+     * retourne celle qui minimise la somme des carrés des écarts (requis journal − estimé JSON),
+     * en alignant les commodités avec {@link ColonisationCommodityKeys}.
+     * En cas d’égalité de score, le choix est déterministe (ordre type puis nom) et un log WARN liste les ex aequo.
+     */
+    public static Optional<Structure> bestMatchByResourcesRequired(
+            List<Structure> catalog,
+            String category,
+            List<ConstructionResource> resourcesRequired) {
+        if (catalog == null || category == null || category.isBlank()
+                || resourcesRequired == null || resourcesRequired.isEmpty()) {
+            return Optional.empty();
+        }
+        long bestScore = Long.MAX_VALUE;
+        List<Structure> atBestScore = new ArrayList<>();
+        for (Structure s : catalog) {
+            OptionalLong sc = structureResourceMatchScore(s, category, resourcesRequired);
+            if (sc.isEmpty()) {
+                continue;
+            }
+            long score = sc.getAsLong();
+            if (score < bestScore) {
+                bestScore = score;
+                atBestScore.clear();
+                atBestScore.add(s);
+            } else if (score == bestScore) {
+                atBestScore.add(s);
+            }
+        }
+        if (atBestScore.isEmpty()) {
+            return Optional.empty();
+        }
+        Structure best = atBestScore.stream().min(STRUCTURE_TYPE_NAME_ORDER).orElse(atBestScore.get(0));
+        if (atBestScore.size() > 1) {
+            String tied = atBestScore.stream()
+                    .map(Colony::structureShortLabel)
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .collect(Collectors.joining(", "));
+            log.info(
+                    "Colonisation: {} structures ex aequo pour l'appariement cargo (categorie={}, score SSE={}). "
+                            + "Candidates: [{}]. Choix stable (ordre type/nom): {}",
+                    atBestScore.size(),
+                    category,
+                    bestScore,
+                    tied,
+                    structureShortLabel(best));
+        }
+        return Optional.of(best);
     }
 
     /** Infobulle : données JSON (pas de tonnages cargo). */

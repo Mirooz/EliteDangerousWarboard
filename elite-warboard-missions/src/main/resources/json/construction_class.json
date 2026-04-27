@@ -22,6 +22,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 3781,
+      "water": 1609,
+      "ceramiccomposites": 1207,
+      "cmmcomposite": 11261,
+      "insulatingmembrane": 644,
+      "polymers": 1046,
+      "semiconductors": 161,
+      "superconductors": 282,
+      "aluminium": 10055,
+      "copper": 644,
+      "steel": 14076,
+      "titanium": 8205,
+      "computercomponents": 145,
+      "medicaldiagnosticequipment": 25,
+      "foodcartridges": 242,
+      "fruitandvegetables": 145,
+      "nonlethalweapons": 25,
+      "powergenerators": 65,
+      "waterpurifiers": 105
     }
   },
   {
@@ -47,6 +68,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 3781,
+      "water": 1609,
+      "ceramiccomposites": 1207,
+      "cmmcomposite": 11261,
+      "insulatingmembrane": 644,
+      "polymers": 1046,
+      "semiconductors": 161,
+      "superconductors": 282,
+      "aluminium": 10055,
+      "copper": 644,
+      "steel": 14076,
+      "titanium": 8205,
+      "computercomponents": 145,
+      "medicaldiagnosticequipment": 25,
+      "foodcartridges": 242,
+      "fruitandvegetables": 145,
+      "nonlethalweapons": 25,
+      "powergenerators": 65,
+      "waterpurifiers": 105
     }
   },
   {
@@ -69,6 +111,27 @@
     "population": {
       "initialIncrease": 5,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 15124,
+      "water": 6436,
+      "ceramiccomposites": 4828,
+      "cmmcomposite": 45044,
+      "insulatingmembrane": 1288,
+      "polymers": 2092,
+      "semiconductors": 322,
+      "superconductors": 564,
+      "aluminium": 40220,
+      "copper": 2576,
+      "steel": 56304,
+      "titanium": 32820,
+      "computercomponents": 290,
+      "medicaldiagnosticequipment": 50,
+      "foodcartridges": 484,
+      "fruitandvegetables": 290,
+      "nonlethalweapons": 50,
+      "powergenerators": 130,
+      "waterpurifiers": 210
     }
   },
   {
@@ -91,6 +154,27 @@
     "population": {
       "initialIncrease": 5,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 15124,
+      "water": 6436,
+      "ceramiccomposites": 4828,
+      "cmmcomposite": 45044,
+      "insulatingmembrane": 1288,
+      "polymers": 2092,
+      "semiconductors": 322,
+      "superconductors": 564,
+      "aluminium": 40220,
+      "copper": 2576,
+      "steel": 56304,
+      "titanium": 32820,
+      "computercomponents": 290,
+      "medicaldiagnosticequipment": 50,
+      "foodcartridges": 484,
+      "fruitandvegetables": 290,
+      "nonlethalweapons": 50,
+      "powergenerators": 130,
+      "waterpurifiers": 210
     }
   },
   {
@@ -113,6 +197,28 @@
     "population": {
       "initialIncrease": 8,
       "maxIncrease": 4
+    },
+    "estimatedCargo": {
+      "aluminium": 45248,
+      "autofabricators": 314,
+      "ceramiccomposites": 5432,
+      "cmmcomposite": 50675,
+      "computercomponents": 363,
+      "copper": 2898,
+      "foodcartridges": 605,
+      "fruitandvegetables": 363,
+      "insulatingmembrane": 1610,
+      "liquidoxygen": 17015,
+      "medicaldiagnosticequipment": 63,
+      "nonlethalweapons": 63,
+      "polymers": 2615,
+      "powergenerators": 163,
+      "semiconductors": 403,
+      "steel": 63342,
+      "superconductors": 705,
+      "titanium": 36923,
+      "water": 7241,
+      "waterpurifiers": 263
     }
   },
   {
@@ -133,6 +239,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1553,
+      "water": 621,
+      "ceramiccomposites": 497,
+      "cmmcomposite": 3912,
+      "insulatingmembrane": 311,
+      "polymers": 497,
+      "semiconductors": 56,
+      "superconductors": 100,
+      "aluminium": 515,
+      "copper": 218,
+      "steel": 5588,
+      "titanium": 4843,
+      "computercomponents": 50,
+      "medicaldiagnosticequipment": 13,
+      "foodcartridges": 94,
+      "fruitandvegetables": 50,
+      "nonlethalweapons": 13,
+      "powergenerators": 19,
+      "waterpurifiers": 38
     }
   },
   {
@@ -152,6 +279,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1553,
+      "water": 621,
+      "ceramiccomposites": 497,
+      "cmmcomposite": 3912,
+      "insulatingmembrane": 311,
+      "polymers": 497,
+      "semiconductors": 56,
+      "superconductors": 100,
+      "aluminium": 515,
+      "copper": 218,
+      "steel": 5588,
+      "titanium": 4843,
+      "computercomponents": 50,
+      "medicaldiagnosticequipment": 13,
+      "foodcartridges": 94,
+      "fruitandvegetables": 50,
+      "nonlethalweapons": 13,
+      "powergenerators": 19,
+      "waterpurifiers": 38
     }
   },
   {
@@ -171,6 +319,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1553,
+      "water": 621,
+      "ceramiccomposites": 497,
+      "cmmcomposite": 3912,
+      "insulatingmembrane": 311,
+      "polymers": 497,
+      "semiconductors": 56,
+      "superconductors": 100,
+      "aluminium": 515,
+      "copper": 218,
+      "steel": 5588,
+      "titanium": 4843,
+      "computercomponents": 50,
+      "medicaldiagnosticequipment": 13,
+      "foodcartridges": 94,
+      "fruitandvegetables": 50,
+      "nonlethalweapons": 13,
+      "powergenerators": 19,
+      "waterpurifiers": 38
     }
   },
   {
@@ -192,6 +361,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1553,
+      "water": 621,
+      "ceramiccomposites": 497,
+      "cmmcomposite": 3912,
+      "insulatingmembrane": 311,
+      "polymers": 497,
+      "semiconductors": 56,
+      "superconductors": 100,
+      "aluminium": 515,
+      "copper": 218,
+      "steel": 5588,
+      "titanium": 4843,
+      "computercomponents": 50,
+      "medicaldiagnosticequipment": 13,
+      "foodcartridges": 94,
+      "fruitandvegetables": 50,
+      "nonlethalweapons": 13,
+      "powergenerators": 19,
+      "waterpurifiers": 38
     }
   },
   {
@@ -210,6 +400,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1553,
+      "water": 621,
+      "ceramiccomposites": 497,
+      "cmmcomposite": 3912,
+      "insulatingmembrane": 311,
+      "polymers": 497,
+      "semiconductors": 56,
+      "superconductors": 100,
+      "aluminium": 515,
+      "copper": 218,
+      "steel": 5588,
+      "titanium": 4843,
+      "computercomponents": 50,
+      "medicaldiagnosticequipment": 13,
+      "foodcartridges": 94,
+      "fruitandvegetables": 50,
+      "nonlethalweapons": 13,
+      "powergenerators": 19,
+      "waterpurifiers": 38
     }
   },
   {
@@ -228,6 +439,27 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1553,
+      "water": 621,
+      "ceramiccomposites": 497,
+      "cmmcomposite": 3912,
+      "insulatingmembrane": 311,
+      "polymers": 497,
+      "semiconductors": 56,
+      "superconductors": 100,
+      "aluminium": 515,
+      "copper": 218,
+      "steel": 5588,
+      "titanium": 4843,
+      "computercomponents": 50,
+      "medicaldiagnosticequipment": 13,
+      "foodcartridges": 94,
+      "fruitandvegetables": 50,
+      "nonlethalweapons": 13,
+      "powergenerators": 19,
+      "waterpurifiers": 38
     }
   },
   {
@@ -241,6 +473,25 @@
       "wealth": 1,
       "standardOfLiving": 2,
       "developmentLevel": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 678,
+      "water": 22,
+      "ceramiccomposites": 85,
+      "insulatingmembrane": 106,
+      "polymers": 170,
+      "semiconductors": 34,
+      "superconductors": 60,
+      "aluminium": 1322,
+      "copper": 85,
+      "steel": 2542,
+      "titanium": 1525,
+      "computercomponents": 22,
+      "foodcartridges": 26,
+      "fruitandvegetables": 9,
+      "powergenerators": 9,
+      "waterpurifiers": 13,
+      "microcontrollers": 13
     }
   },
   {
@@ -253,6 +504,25 @@
     "stats": {
       "security": 1,
       "techLevel": 3
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 678,
+      "water": 22,
+      "ceramiccomposites": 85,
+      "insulatingmembrane": 106,
+      "polymers": 170,
+      "semiconductors": 34,
+      "superconductors": 60,
+      "aluminium": 1322,
+      "copper": 85,
+      "steel": 2542,
+      "titanium": 1525,
+      "computercomponents": 22,
+      "foodcartridges": 26,
+      "fruitandvegetables": 9,
+      "powergenerators": 9,
+      "waterpurifiers": 13,
+      "microcontrollers": 13
     }
   },
   {
@@ -268,6 +538,27 @@
     },
     "economy": {
       "type": "*Agricultural"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1071,
+      "water": 173,
+      "ceramiccomposites": 77,
+      "insulatingmembrane": 192,
+      "polymers": 230,
+      "aluminium": 842,
+      "copper": 46,
+      "steel": 1912,
+      "titanium": 1453,
+      "computercomponents": 12,
+      "foodcartridges": 46,
+      "fruitandvegetables": 69,
+      "powergenerators": 8,
+      "waterpurifiers": 31,
+      "grain": 92,
+      "pesticides": 123,
+      "agriculturalmedicines": 115,
+      "cropharvesters": 77,
+      "biowaste": 153
     }
   },
   {
@@ -283,6 +574,26 @@
     },
     "economy": {
       "type": "*Contraband"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 911,
+      "water": 65,
+      "ceramiccomposites": 95,
+      "insulatingmembrane": 95,
+      "polymers": 190,
+      "aluminium": 1233,
+      "copper": 57,
+      "steel": 1707,
+      "titanium": 1594,
+      "computercomponents": 19,
+      "foodcartridges": 61,
+      "fruitandvegetables": 16,
+      "powergenerators": 8,
+      "waterpurifiers": 16,
+      "beer": 380,
+      "liquor": 228,
+      "battleweapons": 23,
+      "reactivearmour": 23
     }
   },
   {
@@ -298,6 +609,28 @@
     },
     "economy": {
       "type": "*Extraction"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1028,
+      "water": 73,
+      "ceramiccomposites": 86,
+      "insulatingmembrane": 129,
+      "polymers": 215,
+      "aluminium": 921,
+      "copper": 52,
+      "steel": 2141,
+      "titanium": 1628,
+      "computercomponents": 13,
+      "foodcartridges": 52,
+      "fruitandvegetables": 18,
+      "powergenerators": 9,
+      "waterpurifiers": 22,
+      "hazardousenvironmentsuits": 13,
+      "robotics": 60,
+      "resonatingseparators": 22,
+      "bioreducinglichen": 172,
+      "geologicalequipment": 26,
+      "mutomimager": 43
     }
   },
   {
@@ -313,6 +646,24 @@
     },
     "economy": {
       "type": "*High Tech"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 780,
+      "water": 25,
+      "ceramiccomposites": 98,
+      "insulatingmembrane": 122,
+      "polymers": 195,
+      "semiconductors": 39,
+      "superconductors": 59,
+      "aluminium": 1033,
+      "copper": 88,
+      "steel": 2437,
+      "titanium": 1755,
+      "computercomponents": 25,
+      "foodcartridges": 30,
+      "fruitandvegetables": 10,
+      "powergenerators": 10,
+      "waterpurifiers": 15
     }
   },
   {
@@ -330,6 +681,29 @@
     },
     "economy": {
       "type": "*Military"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1424,
+      "water": 238,
+      "ceramiccomposites": 238,
+      "cmmcomposite": 356,
+      "insulatingmembrane": 178,
+      "polymers": 416,
+      "aluminium": 1317,
+      "copper": 131,
+      "steel": 2966,
+      "titanium": 2373,
+      "computercomponents": 42,
+      "foodcartridges": 107,
+      "fruitandvegetables": 48,
+      "powergenerators": 18,
+      "waterpurifiers": 42,
+      "microcontrollers": 18,
+      "battleweapons": 30,
+      "reactivearmour": 30,
+      "basicmedicines": 24,
+      "combatstabilisers": 48,
+      "militarygradefabrics": 36
     }
   },
   {
@@ -349,6 +723,26 @@
     },
     "economy": {
       "type": "*Military"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1458,
+      "water": 31,
+      "ceramiccomposites": 122,
+      "insulatingmembrane": 183,
+      "polymers": 243,
+      "aluminium": 1774,
+      "copper": 122,
+      "steel": 3645,
+      "titanium": 2309,
+      "computercomponents": 31,
+      "foodcartridges": 37,
+      "fruitandvegetables": 13,
+      "nonlethalweapons": 19,
+      "powergenerators": 13,
+      "waterpurifiers": 19,
+      "battleweapons": 19,
+      "combatstabilisers": 25,
+      "militarygradefabrics": 19
     }
   },
   {
@@ -365,6 +759,23 @@
       "security": 2,
       "standardOfLiving": 7,
       "developmentLevel": 3
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1479,
+      "water": 154,
+      "ceramiccomposites": 154,
+      "insulatingmembrane": 247,
+      "polymers": 370,
+      "aluminium": 1959,
+      "copper": 93,
+      "steel": 3080,
+      "titanium": 2341,
+      "computercomponents": 13,
+      "foodcartridges": 93,
+      "fruitandvegetables": 37,
+      "nonlethalweapons": 13,
+      "powergenerators": 13,
+      "waterpurifiers": 31
     }
   },
   {
@@ -383,6 +794,26 @@
     },
     "economy": {
       "type": "*High Tech"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1727,
+      "water": 278,
+      "ceramiccomposites": 155,
+      "insulatingmembrane": 309,
+      "polymers": 371,
+      "aluminium": 1357,
+      "copper": 112,
+      "steel": 3084,
+      "titanium": 2282,
+      "computercomponents": 31,
+      "medicaldiagnosticequipment": 99,
+      "foodcartridges": 75,
+      "fruitandvegetables": 50,
+      "powergenerators": 19,
+      "waterpurifiers": 38,
+      "hazardousenvironmentsuits": 25,
+      "basicmedicines": 50,
+      "combatstabilisers": 19
     }
   },
   {
@@ -401,6 +832,31 @@
     },
     "economy": {
       "type": "*High Tech"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1506,
+      "water": 157,
+      "ceramiccomposites": 157,
+      "insulatingmembrane": 314,
+      "polymers": 377,
+      "semiconductors": 51,
+      "superconductors": 88,
+      "aluminium": 1380,
+      "copper": 126,
+      "steel": 3136,
+      "titanium": 2383,
+      "computercomponents": 38,
+      "medicaldiagnosticequipment": 51,
+      "foodcartridges": 76,
+      "fruitandvegetables": 26,
+      "powergenerators": 13,
+      "waterpurifiers": 38,
+      "microcontrollers": 13,
+      "hazardousenvironmentsuits": 32,
+      "geologicalequipment": 26,
+      "mutomimager": 38,
+      "basicmedicines": 13,
+      "advancedcatalysers": 44
     }
   },
   {
@@ -420,6 +876,28 @@
     },
     "economy": {
       "type": "*Tourism"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1813,
+      "water": 324,
+      "ceramiccomposites": 130,
+      "insulatingmembrane": 259,
+      "polymers": 324,
+      "aluminium": 1269,
+      "copper": 78,
+      "steel": 2598,
+      "titanium": 1813,
+      "computercomponents": 13,
+      "fruitandvegetables": 65,
+      "powergenerators": 13,
+      "waterpurifiers": 39,
+      "beer": 389,
+      "wine": 259,
+      "liquor": 195,
+      "animalmeat": 78,
+      "fish": 39,
+      "tea": 259,
+      "coffee": 130
     }
   },
   {
@@ -439,6 +917,28 @@
     },
     "economy": {
       "type": "*Tourism"
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1738,
+      "water": 311,
+      "ceramiccomposites": 125,
+      "insulatingmembrane": 249,
+      "polymers": 311,
+      "aluminium": 1217,
+      "copper": 75,
+      "steel": 2483,
+      "titanium": 1738,
+      "computercomponents": 13,
+      "fruitandvegetables": 38,
+      "powergenerators": 13,
+      "waterpurifiers": 38,
+      "beer": 497,
+      "wine": 621,
+      "liquor": 311,
+      "animalmeat": 38,
+      "fish": 19,
+      "tea": 178,
+      "coffee": 63
     }
   },
   {
@@ -458,6 +958,31 @@
     "population": {
       "initialIncrease": 2,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 2372,
+      "ceramiccomposites": 814,
+      "cmmcomposite": 6776,
+      "polymers": 678,
+      "semiconductors": 102,
+      "superconductors": 136,
+      "aluminium": 7047,
+      "copper": 407,
+      "steel": 10164,
+      "titanium": 5760,
+      "computercomponents": 102,
+      "medicaldiagnosticequipment": 48,
+      "foodcartridges": 136,
+      "fruitandvegetables": 95,
+      "nonlethalweapons": 34,
+      "powergenerators": 68,
+      "terrainenrichmentsystems": 68,
+      "surfacestabilisers": 610,
+      "buildingfabricators": 407,
+      "structuralregulators": 678,
+      "evacuationshelter": 204,
+      "emergencypowercells": 68,
+      "survivalequipment": 55
     }
   },
   {
@@ -477,6 +1002,31 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 2372,
+      "ceramiccomposites": 814,
+      "cmmcomposite": 6776,
+      "polymers": 678,
+      "semiconductors": 102,
+      "superconductors": 136,
+      "aluminium": 7047,
+      "copper": 407,
+      "steel": 10164,
+      "titanium": 5760,
+      "computercomponents": 102,
+      "medicaldiagnosticequipment": 48,
+      "foodcartridges": 136,
+      "fruitandvegetables": 95,
+      "nonlethalweapons": 34,
+      "powergenerators": 68,
+      "terrainenrichmentsystems": 68,
+      "surfacestabilisers": 610,
+      "buildingfabricators": 407,
+      "structuralregulators": 678,
+      "evacuationshelter": 204,
+      "emergencypowercells": 68,
+      "survivalequipment": 55
     }
   },
   {
@@ -497,6 +1047,31 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 2372,
+      "ceramiccomposites": 814,
+      "cmmcomposite": 6776,
+      "polymers": 678,
+      "semiconductors": 102,
+      "superconductors": 136,
+      "aluminium": 7047,
+      "copper": 407,
+      "steel": 10164,
+      "titanium": 5760,
+      "computercomponents": 102,
+      "medicaldiagnosticequipment": 48,
+      "foodcartridges": 136,
+      "fruitandvegetables": 95,
+      "nonlethalweapons": 34,
+      "powergenerators": 68,
+      "terrainenrichmentsystems": 68,
+      "surfacestabilisers": 610,
+      "buildingfabricators": 407,
+      "structuralregulators": 678,
+      "evacuationshelter": 204,
+      "emergencypowercells": 68,
+      "survivalequipment": 55
     }
   },
   {
@@ -519,12 +1094,37 @@
     "population": {
       "initialIncrease": 10,
       "maxIncrease": 10
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 14232,
+      "ceramiccomposites": 4884,
+      "cmmcomposite": 40656,
+      "polymers": 2712,
+      "semiconductors": 408,
+      "superconductors": 544,
+      "aluminium": 42282,
+      "copper": 2442,
+      "steel": 60984,
+      "titanium": 34560,
+      "computercomponents": 408,
+      "medicaldiagnosticequipment": 44,
+      "foodcartridges": 544,
+      "fruitandvegetables": 380,
+      "nonlethalweapons": 136,
+      "powergenerators": 272,
+      "terrainenrichmentsystems": 272,
+      "surfacestabilisers": 3660,
+      "buildingfabricators": 2442,
+      "structuralregulators": 2712,
+      "evacuationshelter": 816,
+      "emergencypowercells": 272,
+      "survivalequipment": 220
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Agriculture T1 S",
+    "name": "Agriculture Small",
     "earning": {
       "t2": 1
     },
@@ -537,12 +1137,34 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "aluminium": 559,
+      "biowaste": 280,
+      "buildingfabricators": 42,
+      "ceramiccomposites": 28,
+      "computercomponents": 14,
+      "copper": 21,
+      "cropharvesters": 210,
+      "emergencypowercells": 84,
+      "evacuationshelter": 14,
+      "foodcartridges": 42,
+      "fruitandvegetables": 63,
+      "grain": 77,
+      "liquidoxygen": 224,
+      "pesticides": 126,
+      "polymers": 91,
+      "steel": 768,
+      "structuralregulators": 56,
+      "surfacestabilisers": 56,
+      "survivalequipment": 14,
+      "terrainenrichmentsystems": 70
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Agriculture T1 M",
+    "name": "Agriculture Medium",
     "earning": {
       "t2": 1
     },
@@ -555,12 +1177,34 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 448,
+      "ceramiccomposites": 56,
+      "polymers": 182,
+      "aluminium": 1118,
+      "copper": 42,
+      "steel": 1536,
+      "computercomponents": 28,
+      "foodcartridges": 84,
+      "fruitandvegetables": 126,
+      "terrainenrichmentsystems": 140,
+      "surfacestabilisers": 112,
+      "buildingfabricators": 84,
+      "structuralregulators": 112,
+      "evacuationshelter": 28,
+      "emergencypowercells": 168,
+      "survivalequipment": 28,
+      "grain": 154,
+      "pesticides": 252,
+      "cropharvesters": 420,
+      "biowaste": 560
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Agriculture T2 L",
+    "name": "Agriculture Large",
     "cost": {
       "t2": -1
     },
@@ -576,12 +1220,34 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 672,
+      "ceramiccomposites": 84,
+      "polymers": 273,
+      "aluminium": 1677,
+      "copper": 63,
+      "steel": 2304,
+      "computercomponents": 42,
+      "foodcartridges": 126,
+      "fruitandvegetables": 189,
+      "terrainenrichmentsystems": 210,
+      "surfacestabilisers": 168,
+      "buildingfabricators": 126,
+      "structuralregulators": 168,
+      "evacuationshelter": 42,
+      "emergencypowercells": 252,
+      "survivalequipment": 42,
+      "grain": 231,
+      "pesticides": 378,
+      "cropharvesters": 630,
+      "biowaste": 840
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Extraction T1 S",
+    "name": "Extraction Small",
     "earning": {
       "t2": 1
     },
@@ -594,12 +1260,34 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 177,
+      "ceramiccomposites": 59,
+      "polymers": 118,
+      "aluminium": 632,
+      "copper": 30,
+      "steel": 1028,
+      "computercomponents": 30,
+      "foodcartridges": 45,
+      "fruitandvegetables": 30,
+      "surfacestabilisers": 89,
+      "buildingfabricators": 59,
+      "structuralregulators": 74,
+      "evacuationshelter": 30,
+      "emergencypowercells": 96,
+      "survivalequipment": 15,
+      "hazardousenvironmentsuits": 15,
+      "robotics": 59,
+      "bioreducinglichen": 162,
+      "geologicalequipment": 52,
+      "mutomimager": 45
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Extraction T1 M",
+    "name": "Extraction Medium",
     "earning": {
       "t2": 1
     },
@@ -612,12 +1300,34 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 354,
+      "ceramiccomposites": 118,
+      "polymers": 236,
+      "aluminium": 1264,
+      "copper": 60,
+      "steel": 2056,
+      "computercomponents": 60,
+      "foodcartridges": 90,
+      "fruitandvegetables": 60,
+      "surfacestabilisers": 178,
+      "buildingfabricators": 118,
+      "structuralregulators": 148,
+      "evacuationshelter": 60,
+      "emergencypowercells": 192,
+      "survivalequipment": 30,
+      "hazardousenvironmentsuits": 30,
+      "robotics": 118,
+      "bioreducinglichen": 324,
+      "geologicalequipment": 104,
+      "mutomimager": 90
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Extraction T2 L",
+    "name": "Extraction Large",
     "cost": {
       "t2": -1
     },
@@ -635,12 +1345,34 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 531,
+      "ceramiccomposites": 177,
+      "polymers": 354,
+      "aluminium": 1896,
+      "copper": 90,
+      "steel": 3084,
+      "computercomponents": 90,
+      "foodcartridges": 135,
+      "fruitandvegetables": 90,
+      "surfacestabilisers": 267,
+      "buildingfabricators": 177,
+      "structuralregulators": 222,
+      "evacuationshelter": 90,
+      "emergencypowercells": 288,
+      "survivalequipment": 45,
+      "hazardousenvironmentsuits": 45,
+      "robotics": 177,
+      "bioreducinglichen": 486,
+      "geologicalequipment": 156,
+      "mutomimager": 135
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Industrial T1 S",
+    "name": "Industrial Small",
     "earning": {
       "t2": 1
     },
@@ -653,12 +1385,36 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 110,
+      "polymers": 109,
+      "semiconductors": 14,
+      "superconductors": 14,
+      "aluminium": 585,
+      "copper": 28,
+      "foodcartridges": 41,
+      "fruitandvegetables": 28,
+      "surfacestabilisers": 136,
+      "buildingfabricators": 110,
+      "structuralregulators": 136,
+      "evacuationshelter": 42,
+      "emergencypowercells": 56,
+      "survivalequipment": 28,
+      "microcontrollers": 28,
+      "thermalcoolingunits": 28,
+      "heliostaticfurnaces": 164,
+      "mineralextractors": 328,
+      "hazardousenvironmentsuits": 28,
+      "robotics": 110,
+      "resonatingseparators": 28,
+      "advancedcatalysers": 82
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Industrial T1 M",
+    "name": "Industrial Medium",
     "earning": {
       "t2": 1
     },
@@ -671,12 +1427,39 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "computercomponents": 56,
+      "liquidoxygen": 544,
+      "steel": 2038,
+      "ceramiccomposites": 220,
+      "polymers": 218,
+      "semiconductors": 28,
+      "superconductors": 28,
+      "aluminium": 1170,
+      "copper": 56,
+      "foodcartridges": 82,
+      "fruitandvegetables": 56,
+      "surfacestabilisers": 272,
+      "buildingfabricators": 220,
+      "structuralregulators": 272,
+      "evacuationshelter": 84,
+      "emergencypowercells": 112,
+      "survivalequipment": 56,
+      "microcontrollers": 56,
+      "thermalcoolingunits": 56,
+      "heliostaticfurnaces": 328,
+      "mineralextractors": 656,
+      "hazardousenvironmentsuits": 56,
+      "robotics": 220,
+      "resonatingseparators": 56,
+      "advancedcatalysers": 164
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Industrial T2 L",
+    "name": "Industrial Large",
     "cost": {
       "t2": -1
     },
@@ -693,12 +1476,39 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "computercomponents": 84,
+      "liquidoxygen": 816,
+      "steel": 3057,
+      "ceramiccomposites": 330,
+      "polymers": 327,
+      "semiconductors": 42,
+      "superconductors": 42,
+      "aluminium": 1755,
+      "copper": 84,
+      "foodcartridges": 123,
+      "fruitandvegetables": 84,
+      "surfacestabilisers": 408,
+      "buildingfabricators": 330,
+      "structuralregulators": 408,
+      "evacuationshelter": 126,
+      "emergencypowercells": 168,
+      "survivalequipment": 84,
+      "microcontrollers": 84,
+      "thermalcoolingunits": 84,
+      "heliostaticfurnaces": 492,
+      "mineralextractors": 984,
+      "hazardousenvironmentsuits": 84,
+      "robotics": 330,
+      "resonatingseparators": 84,
+      "advancedcatalysers": 246
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Military T1 S",
+    "name": "Military Small",
     "earning": {
       "t2": 1
     },
@@ -711,12 +1521,36 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 172,
+      "ceramiccomposites": 60,
+      "cmmcomposite": 356,
+      "polymers": 119,
+      "aluminium": 593,
+      "copper": 30,
+      "steel": 949,
+      "computercomponents": 42,
+      "foodcartridges": 36,
+      "fruitandvegetables": 24,
+      "surfacestabilisers": 60,
+      "buildingfabricators": 60,
+      "structuralregulators": 101,
+      "evacuationshelter": 36,
+      "emergencypowercells": 24,
+      "survivalequipment": 24,
+      "microcontrollers": 12,
+      "battleweapons": 24,
+      "reactivearmour": 24,
+      "basicmedicines": 36,
+      "combatstabilisers": 36,
+      "militarygradefabrics": 24
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Military T1 M",
+    "name": "Military Medium",
     "earning": {
       "t2": 1
     },
@@ -729,12 +1563,36 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 344,
+      "ceramiccomposites": 120,
+      "cmmcomposite": 712,
+      "polymers": 238,
+      "aluminium": 1186,
+      "copper": 60,
+      "steel": 1898,
+      "computercomponents": 84,
+      "foodcartridges": 72,
+      "fruitandvegetables": 48,
+      "surfacestabilisers": 120,
+      "buildingfabricators": 120,
+      "structuralregulators": 202,
+      "evacuationshelter": 72,
+      "emergencypowercells": 48,
+      "survivalequipment": 48,
+      "microcontrollers": 24,
+      "battleweapons": 48,
+      "reactivearmour": 48,
+      "basicmedicines": 72,
+      "combatstabilisers": 72,
+      "militarygradefabrics": 48
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Military T2 L",
+    "name": "Military Large",
     "cost": {
       "t2": -1
     },
@@ -751,12 +1609,36 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 516,
+      "ceramiccomposites": 180,
+      "cmmcomposite": 1068,
+      "polymers": 357,
+      "aluminium": 1779,
+      "copper": 90,
+      "steel": 2847,
+      "computercomponents": 126,
+      "foodcartridges": 108,
+      "fruitandvegetables": 72,
+      "surfacestabilisers": 180,
+      "buildingfabricators": 180,
+      "structuralregulators": 303,
+      "evacuationshelter": 108,
+      "emergencypowercells": 72,
+      "survivalequipment": 72,
+      "microcontrollers": 36,
+      "battleweapons": 72,
+      "reactivearmour": 72,
+      "basicmedicines": 108,
+      "combatstabilisers": 108,
+      "militarygradefabrics": 72
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Research Bio T1 S",
+    "name": "Research Bio Small",
     "cost": {
       "t2": -1
     },
@@ -773,12 +1655,38 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 351,
+      "ceramiccomposites": 41,
+      "polymers": 115,
+      "semiconductors": 21,
+      "superconductors": 21,
+      "aluminium": 607,
+      "copper": 34,
+      "steel": 945,
+      "computercomponents": 41,
+      "medicaldiagnosticequipment": 41,
+      "foodcartridges": 41,
+      "fruitandvegetables": 27,
+      "surfacestabilisers": 81,
+      "buildingfabricators": 54,
+      "structuralregulators": 81,
+      "evacuationshelter": 27,
+      "emergencypowercells": 27,
+      "survivalequipment": 14,
+      "microcontrollers": 14,
+      "hazardousenvironmentsuits": 27,
+      "geologicalequipment": 27,
+      "mutomimager": 95,
+      "basicmedicines": 14,
+      "advancedcatalysers": 95
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Research Bio T1 M",
+    "name": "Research Bio Medium",
     "cost": {
       "t2": -1
     },
@@ -795,12 +1703,38 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 702,
+      "ceramiccomposites": 82,
+      "polymers": 230,
+      "semiconductors": 42,
+      "superconductors": 42,
+      "aluminium": 1214,
+      "copper": 68,
+      "steel": 1890,
+      "computercomponents": 82,
+      "medicaldiagnosticequipment": 82,
+      "foodcartridges": 82,
+      "fruitandvegetables": 54,
+      "surfacestabilisers": 162,
+      "buildingfabricators": 108,
+      "structuralregulators": 162,
+      "evacuationshelter": 54,
+      "emergencypowercells": 54,
+      "survivalequipment": 28,
+      "microcontrollers": 28,
+      "hazardousenvironmentsuits": 54,
+      "geologicalequipment": 54,
+      "mutomimager": 190,
+      "basicmedicines": 28,
+      "advancedcatalysers": 190
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Research Bio T2 L",
+    "name": "Research Bio Large",
     "cost": {
       "t2": -1
     },
@@ -817,12 +1751,38 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 1053,
+      "ceramiccomposites": 123,
+      "polymers": 345,
+      "semiconductors": 63,
+      "superconductors": 63,
+      "aluminium": 1821,
+      "copper": 102,
+      "steel": 2835,
+      "computercomponents": 123,
+      "medicaldiagnosticequipment": 123,
+      "foodcartridges": 123,
+      "fruitandvegetables": 81,
+      "surfacestabilisers": 243,
+      "buildingfabricators": 162,
+      "structuralregulators": 243,
+      "evacuationshelter": 81,
+      "emergencypowercells": 81,
+      "survivalequipment": 42,
+      "microcontrollers": 42,
+      "hazardousenvironmentsuits": 81,
+      "geologicalequipment": 81,
+      "mutomimager": 285,
+      "basicmedicines": 42,
+      "advancedcatalysers": 285
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Tourism T1 S",
+    "name": "Tourism Small",
     "cost": {
       "t2": -1
     },
@@ -839,12 +1799,35 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 227,
+      "ceramiccomposites": 43,
+      "polymers": 114,
+      "aluminium": 509,
+      "copper": 22,
+      "steel": 707,
+      "computercomponents": 15,
+      "fruitandvegetables": 71,
+      "surfacestabilisers": 57,
+      "buildingfabricators": 29,
+      "structuralregulators": 57,
+      "evacuationshelter": 22,
+      "emergencypowercells": 15,
+      "survivalequipment": 15,
+      "beer": 311,
+      "wine": 156,
+      "liquor": 128,
+      "animalmeat": 71,
+      "fish": 36,
+      "tea": 170,
+      "coffee": 71
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Tourism T1 M",
+    "name": "Tourism Medium",
     "cost": {
       "t2": -1
     },
@@ -861,12 +1844,35 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 454,
+      "ceramiccomposites": 86,
+      "polymers": 228,
+      "aluminium": 1018,
+      "copper": 44,
+      "steel": 1414,
+      "computercomponents": 30,
+      "fruitandvegetables": 142,
+      "surfacestabilisers": 114,
+      "buildingfabricators": 58,
+      "structuralregulators": 114,
+      "evacuationshelter": 44,
+      "emergencypowercells": 30,
+      "survivalequipment": 30,
+      "beer": 622,
+      "wine": 312,
+      "liquor": 256,
+      "animalmeat": 142,
+      "fish": 72,
+      "tea": 340,
+      "coffee": 142
     }
   },
   {
     "category": "Surface",
     "type": "Settlement",
-    "name": "Tourism T2 L",
+    "name": "Tourism Large",
     "cost": {
       "t2": -1
     },
@@ -883,6 +1889,29 @@
     "population": {
       "initialIncrease": 1,
       "maxIncrease": 1
+    },
+    "estimatedCargo": {
+      "liquidoxygen": 681,
+      "ceramiccomposites": 129,
+      "polymers": 342,
+      "aluminium": 1527,
+      "copper": 66,
+      "steel": 2121,
+      "computercomponents": 45,
+      "fruitandvegetables": 213,
+      "surfacestabilisers": 171,
+      "buildingfabricators": 87,
+      "structuralregulators": 171,
+      "evacuationshelter": 66,
+      "emergencypowercells": 45,
+      "survivalequipment": 45,
+      "beer": 933,
+      "wine": 468,
+      "liquor": 384,
+      "animalmeat": 213,
+      "fish": 108,
+      "tea": 510,
+      "coffee": 213
     }
   },
   {
@@ -902,6 +1931,27 @@
     },
     "economy": {
       "type": "*Extraction"
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 252,
+      "polymers": 672,
+      "aluminium": 2352,
+      "copper": 84,
+      "steel": 3359,
+      "computercomponents": 38,
+      "foodcartridges": 51,
+      "fruitandvegetables": 34,
+      "surfacestabilisers": 756,
+      "buildingfabricators": 210,
+      "structuralregulators": 504,
+      "evacuationshelter": 51,
+      "emergencypowercells": 42,
+      "survivalequipment": 26,
+      "hazardousenvironmentsuits": 126,
+      "robotics": 252,
+      "bioreducinglichen": 714,
+      "geologicalequipment": 210,
+      "mutomimager": 160
     }
   },
   {
@@ -918,6 +1968,26 @@
       "security": -3,
       "standardOfLiving": 3,
       "developmentLevel": 3
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 126,
+      "polymers": 630,
+      "aluminium": 2433,
+      "copper": 68,
+      "steel": 3775,
+      "computercomponents": 21,
+      "foodcartridges": 68,
+      "fruitandvegetables": 42,
+      "surfacestabilisers": 588,
+      "buildingfabricators": 84,
+      "structuralregulators": 336,
+      "evacuationshelter": 68,
+      "emergencypowercells": 42,
+      "survivalequipment": 38,
+      "pesticides": 378,
+      "agriculturalmedicines": 235,
+      "cropharvesters": 210,
+      "biowaste": 630
     }
   },
   {
@@ -937,6 +2007,25 @@
     },
     "economy": {
       "type": "*Tourism"
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 134,
+      "polymers": 666,
+      "aluminium": 2483,
+      "copper": 178,
+      "steel": 3547,
+      "computercomponents": 49,
+      "foodcartridges": 54,
+      "fruitandvegetables": 36,
+      "powergenerators": 32,
+      "surfacestabilisers": 1419,
+      "buildingfabricators": 89,
+      "structuralregulators": 267,
+      "evacuationshelter": 36,
+      "emergencypowercells": 45,
+      "survivalequipment": 18,
+      "hazardousenvironmentsuits": 249,
+      "geologicalequipment": 621
     }
   },
   {
@@ -953,6 +2042,22 @@
       "security": -2,
       "standardOfLiving": 3,
       "developmentLevel": 3
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 145,
+      "aluminium": 2797,
+      "copper": 78,
+      "steel": 4051,
+      "computercomponents": 25,
+      "foodcartridges": 174,
+      "fruitandvegetables": 87,
+      "powergenerators": 25,
+      "surfacestabilisers": 1061,
+      "buildingfabricators": 290,
+      "structuralregulators": 338,
+      "evacuationshelter": 49,
+      "emergencypowercells": 49,
+      "survivalequipment": 29
     }
   },
   {
@@ -970,6 +2075,32 @@
     },
     "economy": {
       "type": "*High Tech"
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 223,
+      "polymers": 712,
+      "semiconductors": 72,
+      "superconductors": 72,
+      "aluminium": 2581,
+      "copper": 112,
+      "steel": 3560,
+      "computercomponents": 67,
+      "medicaldiagnosticequipment": 161,
+      "foodcartridges": 54,
+      "fruitandvegetables": 36,
+      "powergenerators": 36,
+      "surfacestabilisers": 534,
+      "buildingfabricators": 178,
+      "structuralregulators": 445,
+      "evacuationshelter": 36,
+      "emergencypowercells": 63,
+      "survivalequipment": 27,
+      "microcontrollers": 49,
+      "hazardousenvironmentsuits": 156,
+      "geologicalequipment": 401,
+      "mutomimager": 107,
+      "basicmedicines": 72,
+      "advancedcatalysers": 170
     }
   },
   {
@@ -987,6 +2118,30 @@
     },
     "economy": {
       "type": "*Military"
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 375,
+      "cmmcomposite": 333,
+      "polymers": 708,
+      "aluminium": 2414,
+      "copper": 105,
+      "steel": 3746,
+      "computercomponents": 75,
+      "foodcartridges": 125,
+      "fruitandvegetables": 42,
+      "powergenerators": 38,
+      "surfacestabilisers": 583,
+      "buildingfabricators": 333,
+      "structuralregulators": 542,
+      "evacuationshelter": 75,
+      "emergencypowercells": 63,
+      "survivalequipment": 50,
+      "microcontrollers": 55,
+      "battleweapons": 42,
+      "reactivearmour": 42,
+      "basicmedicines": 109,
+      "combatstabilisers": 25,
+      "militarygradefabrics": 42
     }
   },
   {
@@ -1005,6 +2160,28 @@
       "wealth": 5,
       "standardOfLiving": -2,
       "developmentLevel": 7
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 279,
+      "polymers": 744,
+      "aluminium": 2697,
+      "copper": 93,
+      "steel": 3720,
+      "computercomponents": 42,
+      "foodcartridges": 56,
+      "fruitandvegetables": 38,
+      "powergenerators": 28,
+      "surfacestabilisers": 558,
+      "buildingfabricators": 233,
+      "structuralregulators": 465,
+      "evacuationshelter": 56,
+      "emergencypowercells": 47,
+      "survivalequipment": 28,
+      "thermalcoolingunits": 103,
+      "hazardousenvironmentsuits": 117,
+      "robotics": 419,
+      "resonatingseparators": 84,
+      "advancedcatalysers": 112
     }
   },
   {
@@ -1024,6 +2201,29 @@
     },
     "economy": {
       "type": "*High Tech"
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 225,
+      "cmmcomposite": 270,
+      "polymers": 673,
+      "semiconductors": 108,
+      "superconductors": 108,
+      "aluminium": 2512,
+      "copper": 113,
+      "steel": 3768,
+      "computercomponents": 68,
+      "foodcartridges": 54,
+      "fruitandvegetables": 36,
+      "powergenerators": 27,
+      "surfacestabilisers": 539,
+      "buildingfabricators": 135,
+      "structuralregulators": 404,
+      "evacuationshelter": 45,
+      "emergencypowercells": 59,
+      "survivalequipment": 27,
+      "microcontrollers": 90,
+      "thermalcoolingunits": 211,
+      "robotics": 449
     }
   },
   {
@@ -1044,6 +2244,31 @@
     },
     "economy": {
       "type": "*Industrial"
+    },
+    "estimatedCargo": {
+      "ceramiccomposites": 249,
+      "polymers": 664,
+      "semiconductors": 75,
+      "superconductors": 75,
+      "aluminium": 2407,
+      "copper": 83,
+      "steel": 3320,
+      "computercomponents": 38,
+      "foodcartridges": 50,
+      "fruitandvegetables": 34,
+      "powergenerators": 25,
+      "surfacestabilisers": 498,
+      "buildingfabricators": 208,
+      "structuralregulators": 498,
+      "evacuationshelter": 50,
+      "emergencypowercells": 42,
+      "survivalequipment": 25,
+      "microcontrollers": 50,
+      "thermalcoolingunits": 117,
+      "heliostaticfurnaces": 415,
+      "mineralextractors": 415,
+      "hazardousenvironmentsuits": 83,
+      "robotics": 332
     }
   }
 ]
