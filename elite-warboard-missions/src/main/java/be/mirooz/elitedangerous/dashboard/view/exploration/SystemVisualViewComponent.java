@@ -3414,42 +3414,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         if (bodiesOverlayComponent != null) {
             boolean showOnlyHighValue = isHighValueBodyListFilterActive();
 
-            CommanderStatus commanderStatus = CommanderStatus.getInstance();
-            boolean isOnFoot = commanderStatus.isOnFoot();
-
-            if (isOnFoot) {
-                // Si on est à pied, utiliser le popup
-                // Si l'overlay est ouvert, le fermer
-                if (bodiesOverlayComponent.isOverlayShowing()) {
-                    bodiesOverlayComponent.closeOverlay();
-                }
-                // Si le popup est déjà ouvert, le fermer (toggle)
-                if (bodiesOverlayComponent.isPopupShowing()) {
-                    bodiesOverlayComponent.closePopup();
-                } else {
-                    // Récupérer la largeur du panneau de gauche
-                    double leftPanelWidth = 450.0; // Largeur par défaut
-                    if (bodiesListPanel != null) {
-                        leftPanelWidth = bodiesListPanel.getWidth();
-                        // Si la largeur n'est pas encore calculée, utiliser la largeur préférée ou minimale
-                        if (leftPanelWidth <= 0) {
-                            leftPanelWidth = Math.max(bodiesListPanel.getPrefWidth(), bodiesListPanel.getMinWidth());
-                        }
-                    }
-                    bodiesOverlayComponent.showPopup(currentSystem, showOnlyHighValue, leftPanelWidth);
-                }
+            // Même comportement qu’hors ODV : overlay uniquement (pas de popup dédié à pied)
+            if (bodiesOverlayComponent.isPopupShowing()) {
+                bodiesOverlayComponent.closePopup();
+            }
+            if (bodiesOverlayComponent.isShowing()) {
+                bodiesOverlayComponent.closeOverlay();
             } else {
-                // Si on n'est pas à pied, utiliser l'overlay
-                // Si le popup est ouvert, le fermer
-                if (bodiesOverlayComponent.isPopupShowing()) {
-                    bodiesOverlayComponent.closePopup();
-                }
-                // Si l'overlay est déjà ouvert, le fermer (toggle)
-                if (bodiesOverlayComponent.isShowing()) {
-                    bodiesOverlayComponent.closeOverlay();
-                } else {
-                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, true);
-                }
+                bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, true);
             }
 
             updateBodiesOverlayButtonText();
@@ -3465,8 +3437,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     /**
-     * Gère le changement d'état "à pied" pour faire la transition automatique overlay/popup
+     * Anciennement : bascule overlay/popup selon l’ODV. Désormais même logique qu’hors ODV (overlay seulement).
      */
+    @SuppressWarnings("unused")
     private void handleOnFootStateChanged(boolean isOnFoot) {
         Platform.runLater(() -> {
             if (bodiesOverlayComponent == null || currentSystem == null) {
@@ -3474,27 +3447,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
 
             boolean showOnlyHighValue = isHighValueBodyListFilterActive();
-
-            if (isOnFoot) {
-                // Si on est à pied, fermer l'overlay et ouvrir le popup
-                if (bodiesOverlayComponent.isOverlayShowing()) {
-                    bodiesOverlayComponent.closeOverlay();
-                    // Récupérer la largeur du panneau de gauche
-                    double leftPanelWidth = 450.0; // Largeur par défaut
-                    if (bodiesListPanel != null) {
-                        leftPanelWidth = bodiesListPanel.getWidth();
-                        if (leftPanelWidth <= 0) {
-                            leftPanelWidth = Math.max(bodiesListPanel.getPrefWidth(), bodiesListPanel.getMinWidth());
-                        }
-                    }
-                    bodiesOverlayComponent.showPopup(currentSystem, showOnlyHighValue, leftPanelWidth);
-                }
-            } else {
-                // Si on n'est plus à pied, fermer le popup et ouvrir l'overlay
-                if (bodiesOverlayComponent.isPopupShowing()) {
-                    bodiesOverlayComponent.closePopup();
-                    bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, false);
-                }
+            if (bodiesOverlayComponent.isPopupShowing()) {
+                bodiesOverlayComponent.closePopup();
+                bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, false);
             }
 
             updateBodiesOverlayButtonText();

@@ -285,32 +285,11 @@ public class NavRouteComponent implements Initializable {
 
     
     /**
-     * Gère le changement d'état "à pied" pour fermer/rouvrir l'overlay
+     * Anciennement : fermait l’overlay à pied et le rouvrait au retour. Désormais aucune bascule (même comportement qu’hors ODV).
      */
+    @SuppressWarnings("unused")
     private void handleOnFootStateChanged(boolean isOnFoot) {
-        Platform.runLater(() -> {
-            if (navRouteOverlayComponent == null) {
-                return;
-            }
-            
-            if (isOnFoot) {
-                // Si on est à pied, fermer l'overlay s'il est ouvert
-                if (navRouteOverlayComponent.isShowing()) {
-                    navRouteOverlayComponent.setWasOpenBeforeOnFoot(true);
-                    navRouteOverlayComponent.closeOverlay();
-                } else {
-                    navRouteOverlayComponent.setWasOpenBeforeOnFoot(false);
-                }
-            } else {
-                // Si on n'est plus à pied, rouvrir l'overlay s'il était ouvert avant
-                if (navRouteOverlayComponent.wasOpenBeforeOnFoot()) {
-                    navRouteOverlayComponent.showOverlayWithoutBordered();
-                    navRouteOverlayComponent.setWasOpenBeforeOnFoot(false);
-                }
-            }
-            
-            updateOverlayButtonText();
-        });
+        Platform.runLater(this::updateOverlayButtonText);
     }
 
     /**

@@ -70,7 +70,6 @@ public class NavRouteOverlayComponent {
     private Runnable onOverlayStateChanged;
     private NavRouteComponent navRouteComponent;
     private Rectangle backgroundRectangle;
-    private boolean wasOpenBeforeOnFoot = false; // Pour savoir si l'overlay était ouvert avant d'être "on foot"
     private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
     private Runnable onOverlayClosed;
 
@@ -134,27 +133,6 @@ public class NavRouteOverlayComponent {
         }
     }
     
-    /**
-     * Affiche l'overlay sans le cadre orange (utilisé après être revenu de "on foot")
-     */
-    public void showOverlayWithoutBordered() {
-        showOverlay(false);
-    }
-    
-    /**
-     * Définit si l'overlay était ouvert avant d'être "on foot"
-     */
-    public void setWasOpenBeforeOnFoot(boolean wasOpen) {
-        this.wasOpenBeforeOnFoot = wasOpen;
-    }
-    
-    /**
-     * Vérifie si l'overlay était ouvert avant d'être "on foot"
-     */
-    public boolean wasOpenBeforeOnFoot() {
-        return wasOpenBeforeOnFoot;
-    }
-
     /**
      * Définit le callback appelé quand l'état de l'overlay change
      */
