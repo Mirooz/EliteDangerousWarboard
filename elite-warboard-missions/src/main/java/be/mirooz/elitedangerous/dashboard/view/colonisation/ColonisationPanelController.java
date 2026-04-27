@@ -1001,8 +1001,8 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
     /**
      * Même logique que l’auto-remplissage du sélecteur de structure dans le détail chantier : sans entrée persistée,
-     * les totaux T2/T3 de l’en-tête resteraient vides tant qu’on n’ouvre pas le panneau détail. On applique donc
-     * le défaut dès qu’un système architecte est affiché.
+     * l’en-tête T2/T3 (chantiers terminés seulement) manquerait de structure déduite. On applique donc le défaut
+     * dès qu’un système architecte est affiché.
      */
     private void ensureDefaultColonisationStructuresForArchitectSystem(ColonisationArchitectSystem arch) {
         if (arch == null) {
@@ -1046,9 +1046,8 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     }
 
     /**
-     * Totaux T2/T3 pour le système sélectionné (somme des structures choisies par chantier).
-     * Tant qu’aucun chantier du système n’est « terminé », les coûts en points de palier ne sont pas soustraits
-     * (première vague de construction).
+     * Totaux T2/T3 pour le système sélectionné : uniquement les chantiers au statut
+     * {@link ConstructionStatus#COMPLETE} (structure choisie, bilan net gains + coûts de palier).
      */
     private void refreshArchitectSystemImpactTotals() {
         if (architectSystemImpactTotalsBox == null) {
@@ -1064,18 +1063,11 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             architectSystemImpactTotalsBox.setVisible(false);
             return;
         }
-        int completed = 0;
-        for (ColonisationDockEntry site : selectedArchitectArch.getSites()) {
-            ColonisationConstruction c = site.getConstruction();
-            if (c != null && c.getStatus() == ConstructionStatus.COMPLETE) {
-                completed++;
-            }
-        }
-        boolean includeConstructionCosts = completed > 0;
         int netT2 = 0;
         int netT3 = 0;
         for (ColonisationDockEntry site : selectedArchitectArch.getSites()) {
-            if (site.getConstruction() == null) {
+            ColonisationConstruction c = site.getConstruction();
+            if (c == null || c.getStatus() != ConstructionStatus.COMPLETE) {
                 continue;
             }
             Optional<Structure> chosen = preferencesService.getColonisationUserConstructionStructure(site.getMarketId());
@@ -1083,8 +1075,8 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
                 continue;
             }
             Structure s = chosen.get();
-            netT2 += structureTierNetContribution(s, 2, includeConstructionCosts);
-            netT3 += structureTierNetContribution(s, 3, includeConstructionCosts);
+            netT2 += structureTierNetContribution(s, 2, true);
+            netT3 += structureTierNetContribution(s, 3, true);
         }
         if (netT2 == 0 && netT3 == 0) {
             architectSystemImpactTotalsBox.setManaged(false);
