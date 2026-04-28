@@ -2,6 +2,14 @@
 
 **Elite Warboard** is a comprehensive companion application designed to optimize your *Elite Dangerous* experience. It analyzes your commander **journal files in real time** to provide detailed insights into **pirate mission stacking** & combat, **mining** operations, **exploration & exobiology**, and **colonization** (including **Fleet Carrier** workflows for construction and market sourcing). Whether you focus on massacre stacking, mining expeditions, deep-space exploration, or tracking colony construction and supply, this dashboard helps you **track progress**, **find opportunities**, and **maximize your earnings**. Tools are grouped into four main areas—**Pirate mission stacking**, **Mining**, **Exploration & Exobiology**, and **Colonization**. Optional **Frontier CAPI** (OAuth) and **EDDN** publishing are available from settings.
 
+**[Changelog](docs/changelog.md)** — version history.
+
+---
+
+## Download
+
+**[Latest version (GitHub Releases)](https://github.com/Mirooz/EliteDangerousWarboard/releases/latest)** — pick the installer or package for your OS; details under [Installation](#installation) below.
+
 ---
 
 ## Pirate mission stacking
@@ -48,7 +56,7 @@ See **constructions in progress** on the system map (**Architect**) and follow *
 
 ## Global application features
 
-These apply across the whole app (details: **[`docs/transversal.md`](docs/transversal.md)**).
+These apply across the whole app.
 
 | Area | What you get |
 |------|----------------|
@@ -78,7 +86,7 @@ Third-party and online services consumed by Warboard:
 
 **Client behaviour:** translated network error popups; live data when online features are used; graceful fallbacks when services are unavailable (including **CAPI maintenance** messaging). When **EDDN** publishing is enabled, the in-app configuration lists **eligible journal events**.
 
-HTTP client modules and OpenAPI build notes: **[`docs/modules/elite-clients.md`](docs/modules/elite-clients.md)**.
+Third-party HTTP/OpenAPI clients are implemented under the **`elite-clients/`** Maven aggregator in this repository.
 
 ---
 
@@ -114,18 +122,7 @@ Representative **`event`** types from Elite Dangerous journals that Warboard pro
 
 `Commander`
 
-How each **area** uses these lines (workflows, overlays): **[Pirate mission stacking](docs/modules/missions.md)** · **[Mining](docs/modules/mining.md)** · **[Exploration & Exobiology](docs/modules/exploration.md)** · **[Colonization](docs/modules/colonisation.md)** · **[Cross-cutting](docs/transversal.md)**.
-
----
-
-## More documentation
-
-| Resource | Purpose |
-|----------|---------|
-| **[`docs/README.md`](docs/README.md)** | Documentation index (tools vs Maven layout) |
-| **[`docs/changelog.md`](docs/changelog.md)** | Version history |
-| **[`docs/depot-maven.md`](docs/depot-maven.md)** | Maven multi-module layout (developers) |
-| **[`docs/modules/elite-warboard-missions.md`](docs/modules/elite-warboard-missions.md)** | Source tree of the main JavaFX app |
+How each **area** uses these lines (workflows, overlays): **[Pirate mission stacking](docs/modules/missions.md)** · **[Mining](docs/modules/mining.md)** · **[Exploration & Exobiology](docs/modules/exploration.md)** · **[Colonization](docs/modules/colonisation.md)**.
 
 ---
 
@@ -133,13 +130,13 @@ How each **area** uses these lines (workflows, overlays): **[Pirate mission stac
 
 ### Windows
 
-1. Download **`EliteWarboard-Setup.exe`** from the project’s **GitHub Releases** page.  
+1. Download **`EliteWarboard-Setup.exe`** from the [**latest release**](https://github.com/Mirooz/EliteDangerousWarboard/releases/latest).  
 2. Run the installer.  
 3. Start **Elite Warboard** from the Start Menu or desktop shortcut.
 
 ### Linux
 
-1. Download **`.deb`** or **`.flatpak`** from Releases.
+1. Download **`.deb`** or **`.flatpak`** from the [**latest release**](https://github.com/Mirooz/EliteDangerousWarboard/releases/latest).
 
 Bundled installers ship a **embedded JDK/JavaFX** where the build profile provides it—end users normally **do not** install Java separately.
 
@@ -176,8 +173,10 @@ mvn clean install
 
 ## Support
 
-Confirm the journal path, that Elite is writing `.log` files, and that your network allows API calls. If something breaks, open a GitHub **issue** with reproduction steps.
+If you hit errors in the app, open a **[GitHub issue](https://github.com/Mirooz/EliteDangerousWarboard/issues)** and describe what happened (reproduction steps help a lot).
 
-## Donations
+## 💝 Donations
+
+If you enjoy Elite Warboard and would like to support development, you can make a donation via PayPal:
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate?hosted_button_id=2GSWMTWB4SHA2)

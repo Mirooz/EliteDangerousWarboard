@@ -41,7 +41,7 @@ When the Architect (or site workflow) shows **missing commodities**, open **opti
 
 ## Fleet Carrier (CAPI)
 
-Requires **CAPI login** (OAuth via Warboard—see [`docs/transversal.md`](../transversal.md)):
+Requires **CAPI login** (OAuth via Warboard—use **Settings** / online services in the app):
 
 - **Carrier cargo** vs outstanding **buy/sell orders** (`CarrierTradeOrder`).  
 - **Overlay** highlights **missing** commodities relative to your construction sourcing.  
@@ -51,7 +51,7 @@ Requires **CAPI login** (OAuth via Warboard—see [`docs/transversal.md`](../tra
 
 ---
 
-## System search (optional — new colonizable targets)
+## System search
 
 When you want to **find a new system** to colonize (not only manage current builds):
 
@@ -84,7 +84,7 @@ When you want to **find a new system** to colonize (not only manage current buil
 | `Docked` | When at colonization-related stations, refreshes colonization services. |
 | `CarrierStats`, market buys | Refresh carrier inventory and panels. |
 
-**CAPI/OAuth** behaviour (login, logout, decline, browser failure fallback, downtime banners) is documented under **[Online services](../transversal.md#online-services-capi-eddn-analytics)**.
+**CAPI/OAuth** behaviour (login, logout, decline, browser failure fallback, downtime banners) is driven from **Settings** and in-app prompts when you enable online services.
 
 ---
 
@@ -96,6 +96,5 @@ When you want to **find a new system** to colonize (not only manage current buil
 
 ---
 
-- [← Documentation index](../README.md)  
-- [Missions](./missions.md) · [Mining](./mining.md) · [Exploration & Exobiology](./exploration.md) · [Cross‑cutting features](../transversal.md)  
-- [External APIs reference](./elite-clients.md#external-apis)
+- [← Main README](../../README.md) · **[Changelog](../changelog.md)**  
+- [Pirate mission stacking](./missions.md) · [Mining](./mining.md) · [Exploration & Exobiology](./exploration.md)

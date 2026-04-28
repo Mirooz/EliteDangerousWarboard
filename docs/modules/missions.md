@@ -20,7 +20,7 @@ Those contracts can be offered by **different factions** on **different mission 
 - **Per–target-faction** “kills remaining” and credits still tied to open contracts.
 - **Destroyed ships** log (bounties, timestamps) for proof and pacing.
 - **EdTools** / **SiriusCorp** **combat system search** from the header.
-- Optional **target overlay** so you do not need the main dashboard on screen (see [`docs/transversal.md`](../transversal.md)).
+- Optional **target overlay** so you do not need the main dashboard on screen (detachable window; placement from the overlay / **Settings** while Warboard runs).
 
 ---
 
@@ -37,7 +37,7 @@ Those contracts can be offered by **different factions** on **different mission 
 
 ### Target overlay
 
-A separate **overlay** window lists **remaining kills per faction** so you do not need the main dashboard on screen. Position it on a second monitor or over the game; behavior is described in [`docs/transversal.md`](../transversal.md).
+A separate **overlay** window lists **remaining kills per faction** so you do not need the main dashboard on screen. Position it on a second monitor or over the game; open or dock it from the missions UI and adjust behavior in **Settings** as needed.
 
 ---
 
@@ -76,7 +76,7 @@ Opens from **SEARCH COMBAT SYSTEMS** (wording may match your locale).
 
 ### Shared with other tools
 
-`Commander`, `LoadGame`, `Location`, `Docked`, `Undocked`, `FSDJump`, `Loadout`, `SupercruiseEntry`, `SupercruiseExit`, `ShutDown` — see **[Shared journal events](../transversal.md#shared-journal-events)**.
+`Commander`, `LoadGame`, `Location`, `Docked`, `Undocked`, `FSDJump`, `Loadout`, `SupercruiseEntry`, `SupercruiseExit`, `ShutDown`.
 
 ---
 
@@ -88,5 +88,5 @@ Opens from **SEARCH COMBAT SYSTEMS** (wording may match your locale).
 
 ---
 
-- [← Documentation index](../README.md)
-- [Mining](./mining.md) · [Exploration & Exobiology](./exploration.md) · [Colonization](./colonisation.md) · [Cross‑cutting features](../transversal.md)
+- [← Main README](../../README.md) · **[Changelog](../changelog.md)**  
+- [Mining](./mining.md) · [Exploration & Exobiology](./exploration.md) · [Colonization](./colonisation.md)

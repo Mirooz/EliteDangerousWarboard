@@ -72,7 +72,7 @@ Sessions are driven by **`MiningRefined`** and related journal traffic; the mode
 ## Prospector overlay
 
 - Small **always-on-top** window mirroring key mining metrics (commodities / values / session bits depending on build) so Elite can stay fullscreen.  
-- **Open / Close** from the mining UI; geometry and multi-monitor behaviour are described in [`docs/transversal.md`](../transversal.md).
+- **Open / Close** from the mining UI; geometry and multi-monitor behaviour are configured from the overlay and **Settings** while Warboard runs.
 
 <img src="../../elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png" alt="Mining prospector overlay" style="max-width: 1200px;">
 
@@ -89,7 +89,7 @@ Sessions are driven by **`MiningRefined`** and related journal traffic; the mode
 | `LaunchDrone`, `EjectCargo`, `BuyDrones`, `SellDrones` | Limpet and cargo logistics. |
 | `MarketSell` | Selling mined goods—updates monetary context for sessions/history. |
 
-**Also used** : `FSDJump` (location / session context), `Docked` / `Undocked` (station market for **station price** mode). See **[Shared journal events](../transversal.md#shared-journal-events)**.
+**Also used** : `FSDJump` (location / session context), `Docked` / `Undocked` (station market for **station price** mode), plus shared commander / ship events such as `Commander`, `LoadGame`, `Location`, `Loadout`, `SupercruiseEntry`, `SupercruiseExit`, `ShutDown`.
 
 ---
 
@@ -101,5 +101,5 @@ Sessions are driven by **`MiningRefined`** and related journal traffic; the mode
 
 ---
 
-- [← Documentation index](../README.md)  
-- [Missions](./missions.md) · [Exploration & Exobiology](./exploration.md) · [Colonization](./colonisation.md) · [Cross‑cutting features](../transversal.md)
+- [← Main README](../../README.md) · **[Changelog](../changelog.md)**  
+- [Pirate mission stacking](./missions.md) · [Exploration & Exobiology](./exploration.md) · [Colonization](./colonisation.md)

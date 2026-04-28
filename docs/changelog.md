@@ -148,3 +148,7 @@
 - **Bilingual interface** : Complete English/French support
 - **Multi account** : Automatic new commander detection
 - **Automatic commander detection** : Notification popup with automatic journal re-reading
+
+---
+
+[← Main README](../README.md)

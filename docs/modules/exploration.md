@@ -84,7 +84,7 @@ Each **group** is the **set of systems you visited** between two exploration sel
 **Signals**  
 `FSSSignalDiscovered` (exploration-side handling)
 
-**Shared** : see **[Shared journal events](../transversal.md#shared-journal-events)**.
+**Shared** with other tools: `Commander`, `LoadGame`, `Location`, `Docked`, `Undocked`, `FSDJump`, `Loadout`, `SupercruiseEntry`, `SupercruiseExit`, `ShutDown`.
 
 ---
 
@@ -96,5 +96,5 @@ Each **group** is the **set of systems you visited** between two exploration sel
 
 ---
 
-- [← Documentation index](../README.md)  
-- [Missions](./missions.md) · [Mining](./mining.md) · [Colonization](./colonisation.md) · [Cross‑cutting features](../transversal.md)
+- [← Main README](../../README.md) · **[Changelog](../changelog.md)**  
+- [Pirate mission stacking](./missions.md) · [Mining](./mining.md) · [Colonization](./colonisation.md)
