@@ -98,6 +98,7 @@ public class ExplorationService {
 
         // Stockage
         systemVisitedRegistry.getSystems().put(currentSystem, system);
+        explorationDataSaleRegistry.resyncSystemVisitedWithRegistry(currentSystem);
     }
     public void setCurrentBiologicalAnalysis(PlaneteDetail planeteDetail, BioSpecies species) {
         String prevBody = explorationDataSaleRegistry.getCurrentAnalysisBodyName();

@@ -101,6 +101,10 @@ public class PlaneteRegistry {
         if (anyChange) {
             sv.setCelesteBodies(rebuilt);
         }
+        if (sv.getSystemName() != null && !sv.getSystemName().isBlank()
+                && !DashboardContext.getInstance().isBatchLoading()) {
+            ExplorationDataSaleRegistry.getInstance().resyncSystemVisitedWithRegistry(sv.getSystemName());
+        }
     }
 
     private SystemVisited resolveSystemVisitedForBody(ACelesteBody canonical) {

@@ -43,7 +43,6 @@ public class UIManager {
     /**
      * Rafraîchit tous les {@link IRefreshable} enregistrés, seulement si le replay / scan
      * batch des journaux n’est pas en cours. Point d’entrée préféré pour un refresh global
-     * ponctuel (évite d’appeler {@link DashboardContext#refreshUI()} lié à d’autres usages).
      */
     public void refreshAllPanelsIfNotBatchLoading() {
         if (!DashboardContext.getInstance().isBatchLoading()) {

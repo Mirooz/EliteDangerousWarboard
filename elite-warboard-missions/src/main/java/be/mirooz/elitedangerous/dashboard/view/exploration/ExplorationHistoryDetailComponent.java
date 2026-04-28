@@ -11,6 +11,7 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.OrganicDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.util.DateUtil;
@@ -123,7 +124,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
 
     @Override
     public void refreshUI() {
-        //refresh();
+        refresh();
     }
     @Override
     public void onBatchStart() {
@@ -148,6 +149,7 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
 
     private void refresh(Runnable afterUpdate) {
         Platform.runLater(() -> {
+            registry.resyncAllExplorationSalesFromSystemRegistry();
             // Obtenir toutes les ventes triées
             allSales.clear();
             if (registry.getExplorationDataOnHold() != null) {
@@ -223,6 +225,21 @@ public class ExplorationHistoryDetailComponent implements Initializable, IRefres
     private void rebuildSystemCardsForCurrentSale() {
         if (systemsList == null || selectedSale == null) {
             return;
+        }
+        if (selectedSystem != null && selectedSystem.getSystemName() != null) {
+            SystemVisited canonical = SystemVisitedRegistry.getInstance().getSystem(selectedSystem.getSystemName());
+            if (canonical == null) {
+                for (var e : SystemVisitedRegistry.getInstance().getSystems().entrySet()) {
+                    if (e.getKey() != null
+                            && e.getKey().equalsIgnoreCase(selectedSystem.getSystemName().trim())) {
+                        canonical = e.getValue();
+                        break;
+                    }
+                }
+            }
+            if (canonical != null) {
+                selectedSystem = canonical;
+            }
         }
         systemsList.getChildren().clear();
         systemCardMap.clear();

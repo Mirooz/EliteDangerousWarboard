@@ -1711,6 +1711,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         return;
                     }
                     mergeOnlineDataFromSpansh(currentSystem, spanshSv);
+                    ExplorationDataSaleRegistry.getInstance().resyncSystemVisitedWithRegistry(sysKey);
                     notifyAfterSpanshBodiesMerged();
                     displaySystem(currentSystem, true);
                 });
