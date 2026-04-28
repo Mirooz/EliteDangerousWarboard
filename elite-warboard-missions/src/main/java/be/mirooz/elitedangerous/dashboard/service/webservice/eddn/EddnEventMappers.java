@@ -68,12 +68,13 @@ final class EddnEventMappers {
      */
     EddnMessages.Journal mapJournal(JsonNode raw) throws JsonProcessingException {
         ObjectNode msg = (ObjectNode) raw.deepCopy();
-        // Spec journal-README : sur Location, Latitude/Longitude sont des données personnelles à exclure.
-        // (Note : pour ApproachSettlement, au contraire, elles DOIVENT être présentes — autre schéma.)
-        if ("Location".equals(msg.path("event").asText(""))) {
-            msg.remove("Latitude");
-            msg.remove("Longitude");
-        }
+        // journal/1 : Latitude, Longitude, Traits, VoucherAmount sont en "#/definitions/disallowed"
+        // (schéma officiel) — pas seulement sur Location. Ne pas retirer via stripper global : codexentry/1
+        // autorise Traits, VoucherAmount, Latitude, Longitude sur son propre schéma.
+        msg.remove("Latitude");
+        msg.remove("Longitude");
+        msg.remove("Traits");
+        msg.remove("VoucherAmount");
         ensureStarSystem(msg);
         ensureStarPosAndSystemAddress(msg);
         ensureHorizonsOdyssey(msg);

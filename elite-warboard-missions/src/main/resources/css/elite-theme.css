@@ -6551,6 +6551,10 @@
     -fx-padding: 6px 8px 5px 8px;
 }
 
+.exploration-exobio-radar-section {
+    -fx-padding: 2 0 4 0;
+}
+
 /* Titre « corps du système » : orange Elite explicite (évite un rendu gris selon l’ordre des feuilles / parents) */
 .exploration-bodies-list-section-title {
     -fx-text-fill: -fx-elite-orange;

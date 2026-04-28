@@ -68,6 +68,8 @@ public class ExplorationController implements Initializable, IBatchListener, IRe
             VBox visualPanel = visualLoader.load();
             systemVisualView = visualLoader.getController();
             SystemVisualViewComponent.setPrimaryInstance(systemVisualView);
+            // Instance radar pour Status.json : uniquement la vue exploration (pas les clones colonisation / dialogues)
+            RadarComponent.setPrimaryInstance(systemVisualView.getRadarComponent());
             if (systemVisualViewContainer != null) {
                 systemVisualViewContainer.getChildren().add(visualPanel);
             }

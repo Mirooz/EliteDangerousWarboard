@@ -44,7 +44,12 @@ public final class EddnPersonalDataStripper {
             "HappiestSystem",
             "HomeSystem",
             "Wanted",
-            "CommanderName"
+            "CommanderName",
+            // Schémas codexentry/1 et journal/1 : champs journal présents mais interdits à l’envoi (PII).
+            "IsNewEntry",
+            "NewTraitsDiscovered",
+            // fssdiscoveryscan/1 : interdit si présent (le mapper le retire déjà sur l’ObjectNode).
+            "Progress"
     );
 
     /** Champs à retirer récursivement dans toutes les sous-entités (factions, stations, etc.). */
@@ -52,7 +57,9 @@ public final class EddnPersonalDataStripper {
             "MyReputation",
             "SquadronFaction",
             "HappiestSystem",
-            "HomeSystem"
+            "HomeSystem",
+            // fsssignaldiscovered/1 : dans chaque entrée de signals[] (PII / éphémère).
+            "TimeRemaining"
     );
 
     private EddnPersonalDataStripper() {}

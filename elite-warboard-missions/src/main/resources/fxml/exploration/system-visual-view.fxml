@@ -38,6 +38,9 @@
                 <Label fx:id="showOnlyHighValueBodiesLabel" text="Show only high value bodies"
                        styleClass="exploration-bodies-filter-label" wrapText="true" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
             </HBox>
+            <!-- Radar exobio : rempli en code ; visible uniquement pendant l’analyse biologique (Status.json) -->
+            <VBox fx:id="exobioRadarSection" spacing="4" visible="false" managed="false"
+                  styleClass="exploration-exobio-radar-section"/>
             <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" 
                         styleClass="exploration-bodies-list-scroll" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
                 <VBox fx:id="bodiesListContainer" spacing="3" styleClass="exploration-bodies-list-container"/>

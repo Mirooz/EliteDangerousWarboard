@@ -103,7 +103,11 @@ public class DirectionReaderService {
 
     public void startWatchingStatusFile(double radius,double colonyRangeMeter) {
         if (watching) {
-            System.out.println("⚠️ La surveillance de Status.json est déjà active");
+            this.colonyRangeMeter = colonyRangeMeter;
+            RadarComponent radarComponent = RadarComponent.getPrimaryInstance();
+            if (radarComponent != null) {
+                javafx.application.Platform.runLater(radarComponent::showRadar);
+            }
             return;
         }
 
@@ -120,10 +124,9 @@ public class DirectionReaderService {
 
         System.out.println("[StatusWatcher] Démarrage de la surveillance de Status.json");
         
-        // Afficher le panel du radar
-        RadarComponent radarComponent = RadarComponent.getInstance();
+        RadarComponent radarComponent = RadarComponent.getPrimaryInstance();
         if (radarComponent != null) {
-            javafx.application.Platform.runLater(() -> radarComponent.showRadar());
+            javafx.application.Platform.runLater(radarComponent::showRadar);
         }
 
         statusWatcherTask = scheduler.scheduleAtFixedRate(() -> {
@@ -199,8 +202,7 @@ public class DirectionReaderService {
         colonyRangeMeter = null;
         currentBiologicalSamplePositions.clear();
         
-        // Cacher le panel du radar
-        RadarComponent radarComponent = RadarComponent.getInstance();
+        RadarComponent radarComponent = RadarComponent.getPrimaryInstance();
         if (radarComponent != null) {
             javafx.application.Platform.runLater(radarComponent::hideRadar);
         }

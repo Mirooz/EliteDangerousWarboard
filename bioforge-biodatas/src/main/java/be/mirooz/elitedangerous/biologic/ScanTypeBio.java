@@ -15,15 +15,30 @@ public enum ScanTypeBio {
     }
 
     public static ScanTypeBio fromString(String value) {
-        if (value == null) {
+        ScanTypeBio parsed = fromStringSafe(value);
+        if (parsed == null) {
+            throw new IllegalArgumentException("Unknown ScanType: " + value);
+        }
+        return parsed;
+    }
+
+    /**
+     * Parse le ScanType du journal ScanOrganic (Log, Sample, Analyse, etc.) sans lever d’exception.
+     */
+    public static ScanTypeBio fromStringSafe(String value) {
+        if (value == null || value.isBlank()) {
             return null;
         }
+        String v = value.trim();
+        // Variantes anglaises / jeux selon version ou locale
+        if ("analyze".equalsIgnoreCase(v) || "analysis".equalsIgnoreCase(v)) {
+            return ANALYSE;
+        }
         for (ScanTypeBio type : values()) {
-            // comparaison case-insensitive sur label et sur name()
-            if (type.label.equalsIgnoreCase(value) || type.name().equalsIgnoreCase(value)) {
+            if (type.label.equalsIgnoreCase(v) || type.name().equalsIgnoreCase(v)) {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown ScanType: " + value);
+        return null;
     }
 }

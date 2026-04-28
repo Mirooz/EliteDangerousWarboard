@@ -69,6 +69,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
     @FXML
     private VBox bodiesListPanel;
+    /** Contient uniquement le radar exobio ; affiché seulement pendant l’analyse biologique. */
+    @FXML
+    private VBox exobioRadarSection;
     @FXML
     private VBox bodiesListContainer;
     @FXML
@@ -606,37 +609,35 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Initialise le composant radar
      */
     private void initializeRadar() {
-        // Créer le composant radar
         radarComponent = new RadarComponent();
+        // Ne pas appeler RadarComponent.setPrimaryInstance ici : d’autres FXML (colonisation, dialogues)
+        // chargent aussi system-visual-view et écraseraient l’instance exploration. L’enregistrement se fait
+        // dans ExplorationController après chargement de la vue principale.
 
-        // Ajouter un listener sur la visibilité du radar pour mettre à jour l'overlay
+        if (exobioRadarSection != null) {
+            exobioRadarSection.getChildren().setAll(radarComponent.getRadarPane());
+        }
+
         if (radarComponent.getRadarPane() != null) {
             radarComponent.getRadarPane().visibleProperty().addListener((obs, oldVal, newVal) -> {
-                // Mettre à jour l'overlay/popup si ouvert
+                if (exobioRadarSection != null) {
+                    exobioRadarSection.setVisible(newVal);
+                    exobioRadarSection.setManaged(newVal);
+                }
                 if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing() && currentSystem != null) {
                     boolean showOnlyHighValue = isHighValueBodyListFilterActive();
                     bodiesOverlayComponent.updateContent(currentSystem, showOnlyHighValue);
-                    // Recalculer la taille du popup si ouvert
                     if (bodiesOverlayComponent.isPopupShowing()) {
-                        Platform.runLater(() -> {
-                            bodiesOverlayComponent.resizePopup();
-                        });
+                        Platform.runLater(() -> bodiesOverlayComponent.resizePopup());
                     }
                 }
             });
         }
+    }
 
-        // Ajouter le radar au-dessus de la liste des corps
-        if (bodiesListPanel != null) {
-            // Insérer le radar après le titre et la checkbox, avant le ScrollPane
-            // Le titre est à l'index 0, la checkbox à l'index 1, le ScrollPane à l'index 2
-            // On insère le radar à l'index 2, ce qui déplace le ScrollPane à l'index 3
-            if (bodiesListPanel.getChildren().size() >= 2) {
-                bodiesListPanel.getChildren().add(2, radarComponent.getRadarPane());
-            } else {
-                bodiesListPanel.getChildren().add(radarComponent.getRadarPane());
-            }
-        }
+    /** Radar exobio de cette vue (null avant {@link #initializeRadar}). */
+    public RadarComponent getRadarComponent() {
+        return radarComponent;
     }
 
     /**

@@ -372,8 +372,10 @@ public class PlaneteDetail extends ACelesteBody {
      */
     public void addConfirmedSpecies(ScanOrganicData scanOrganicData) {
         try {
-            ScanTypeBio scanTypeBio = ScanTypeBio.fromString(scanOrganicData.getScanType());
-            if (scanTypeBio == null) return;
+            ScanTypeBio scanTypeBio = ScanTypeBio.fromStringSafe(scanOrganicData.getScanType());
+            if (scanTypeBio == null) {
+                return;
+            }
 
             BioSpecies matchingSpecies = findMatchingSpecies(scanOrganicData);
 
@@ -458,14 +460,23 @@ public class PlaneteDetail extends ACelesteBody {
 
             }
 
-            case SAMPLE, LOG -> {
-                explorationService.setCurrentBiologicalAnalysis(this, specie);
-            }
-
             default -> {
-                // Rien à faire pour les autres types
+                // Log / Sample : suivi Status.json et radar déclenchés depuis ScanOrganicHandler
             }
         }
+    }
+
+    /**
+     * Espèce confirmée correspondant au scan (après {@link #addConfirmedSpecies(ScanOrganicData)}).
+     */
+    public Optional<BioSpecies> findConfirmedSpeciesForScanOrganic(ScanOrganicData scanOrganicData) {
+        BioSpecies matchingSpecies = findMatchingSpecies(scanOrganicData);
+        if (matchingSpecies == null) {
+            return Optional.empty();
+        }
+        return confirmedSpecies.stream()
+                .filter(s -> s.getId().equalsIgnoreCase(matchingSpecies.getId()))
+                .findFirst();
     }
 
     public void updateFrom(PlaneteDetail src) {

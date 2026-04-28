@@ -4,7 +4,6 @@ import be.mirooz.elitedangerous.biologic.ScanTypeBio;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.ScanOrganicData;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
-import be.mirooz.elitedangerous.dashboard.service.DirectionReaderService;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,6 +33,7 @@ import java.util.Optional;
 public class ScanOrganicHandler implements JournalEventHandler {
 
     private final PlaneteRegistry planeteRegistry = PlaneteRegistry.getInstance();
+    private final ExplorationService explorationService = ExplorationService.getInstance();
 
     @Override
     public String getEventType() {
@@ -66,6 +66,13 @@ public class ScanOrganicHandler implements JournalEventHandler {
 
                 PlaneteDetail planete = planeteOpt.get();
                 planete.addConfirmedSpecies(scanOrganicData);
+
+                // Radar / lecture Status.json : uniquement après prise en compte du journal (Log ou Sample)
+                ScanTypeBio scanType = ScanTypeBio.fromStringSafe(scanOrganicData.getScanType());
+                if (scanType == ScanTypeBio.LOG || scanType == ScanTypeBio.SAMPLE) {
+                    planete.findConfirmedSpeciesForScanOrganic(scanOrganicData)
+                            .ifPresent(specie -> explorationService.setCurrentBiologicalAnalysis(planete, specie));
+                }
 
                 System.out.printf("🔬 Scan organique traité: %s (BodyID: %d, ScanType: %s, Species: %s)%n",
                         planete.getBodyName(), scanOrganicData.getBody(), scanOrganicData.getScanType(),
