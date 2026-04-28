@@ -2,13 +2,11 @@
 
 ## Version 1.4.0
 
-> **Note on versioning:** The last **git tag** in this repository is `v1.3.1`. Version **1.4.0** on Maven aggregates all development since that tag (including earlier `1.3.2-SNAPSHOT` / `1.3.4-SNAPSHOT` work). There is no `v1.3.4` tag.
-
-### Colonization (ED Colonize)
+### Colonization
 
 - Colonization **finder** UI with **filters**, **advanced filters**, and **pagination** for ED Colonize search
 - **Architect** panel: construction list, **tier impact** icons, **system-wide** impact, T2/T3 rules refined for **completed** colonies only; completed sites removed from construction list
-- **System visual** embedded in architect & search; **Barycentre** parent type; belt data structures; beacon deployment handling
+- **Architect and system search** show a **clearer map of the system** you are inspecting (bodies, **rings / belts**, multi-star layouts); once you **deploy the colony beacon** in-game, the view **updates to match**
 - **Fleet market** integration for colonies: **optimal market** results, **distance** display, **max distance** filter, **“Use current system as source”**
 - **Spansh** hydration in colonization system views (loading placeholder), registry **resync** after merge
 - **Colonization overlay** + multi-monitor overlay improvements
