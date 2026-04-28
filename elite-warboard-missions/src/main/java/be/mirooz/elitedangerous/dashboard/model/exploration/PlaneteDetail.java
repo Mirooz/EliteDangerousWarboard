@@ -143,12 +143,10 @@ public class PlaneteDetail extends ACelesteBody {
                                         .anyMatch(star -> star.getStarTypeString()
                                                 .equalsIgnoreCase(species.getColorConditionName()));
                             } else {
-                                // Aucun parent Star → on prend la première étoile du système (fallback)
-                                StarDetail starToUse = allStars.stream().findFirst().orElse(null);
-                                if (starToUse != null) {
-                                    radiantMatch = starToUse.getStarTypeString()
-                                            .equalsIgnoreCase(species.getColorConditionName());
-                                }
+                                // fallback sur TOUTES les étoiles
+                                radiantMatch = allStars.stream()
+                                        .anyMatch(star -> star.getStarTypeString()
+                                                .equalsIgnoreCase(species.getColorConditionName()));
                             }
                         }
 
@@ -163,11 +161,21 @@ public class PlaneteDetail extends ACelesteBody {
 
                 if (genuses != null && !genuses.isEmpty()) {
                     matchingSpecies = matchingSpecies.stream()
-                            .filter(species ->
-                                    genuses.stream().anyMatch(
-                                            genus -> genus.split("_")[2].equals(species.getKey().getFdevname().split("_")[2])
-                                    )
-                            )
+                            .filter(species -> {
+                                String speciesPart = species.getKey().getFdevname().split("_")[1];
+                                String speciesPrefix = speciesPart.length() >= 4
+                                        ? speciesPart.substring(0, 4)
+                                        : speciesPart;
+
+                                return genuses.stream().anyMatch(genus -> {
+                                    String genusPart = genus.split("_")[1];
+                                    String genusPrefix = genusPart.length() >= 4
+                                            ? genusPart.substring(0, 4)
+                                            : genusPart;
+
+                                    return genusPrefix.equalsIgnoreCase(speciesPrefix);
+                                });
+                            })
                             .toList();
                 } else {
                     SpeciesProbability brainTreeProbability = new SpeciesProbability(BioSpecies.brainTree(), 100.0);
@@ -496,31 +504,28 @@ public class PlaneteDetail extends ACelesteBody {
         if (spansh == null) {
             return;
         }
-        if (lacksExobioForSystemView() && spanshHasExobioPayload(spansh)) {
             if (spansh.getNumSpeciesDetected() != null) {
                 this.numSpeciesDetected = spansh.getNumSpeciesDetected();
             }
             if (spansh.getBioSpecies() != null && !spansh.getBioSpecies().isEmpty()) {
-                this.bioSpecies = new ArrayList<>(spansh.getBioSpecies());
+                for (Scan bioScans : spansh.getBioSpecies()){
+                    Optional<Scan> scan = this.getBioSpecies().stream()
+                            .filter(s -> s.getScanNumber()==bioScans.getScanNumber()).findFirst();
+                    if (scan.isEmpty()){
+                        this.getBioSpecies().add(bioScans);
+                    }
+                }
             }
             if (spansh.getConfirmedSpecies() != null && !spansh.getConfirmedSpecies().isEmpty()) {
-                this.confirmedSpecies = new ArrayList<>(spansh.getConfirmedSpecies());
+                for (BioSpecies confirmedSpecies : spansh.getConfirmedSpecies()) {
+                    Optional<BioSpecies> specie = this.getConfirmedSpecies().stream()
+                            .filter(s -> s.getId().equalsIgnoreCase(confirmedSpecies.getId())).findFirst();
+                    if (specie.isEmpty()){
+                        this.getConfirmedSpecies().add(confirmedSpecies);
+                    }
+                }
             }
-        }
-    }
 
-    /** Même critère que l’icône exobio dans {@code SystemVisualViewComponent#addPlanetIcons}. */
-    private boolean lacksExobioForSystemView() {
-        boolean hasBio = bioSpecies != null && !bioSpecies.isEmpty();
-        boolean hasConfirmed = confirmedSpecies != null && !confirmedSpecies.isEmpty();
-        return !hasBio && !hasConfirmed;
-    }
-
-    private static boolean spanshHasExobioPayload(PlaneteDetail spansh) {
-        boolean hasBio = spansh.getBioSpecies() != null && !spansh.getBioSpecies().isEmpty();
-        boolean hasConfirmed = spansh.getConfirmedSpecies() != null && !spansh.getConfirmedSpecies().isEmpty();
-        boolean hasCount = spansh.getNumSpeciesDetected() != null && spansh.getNumSpeciesDetected() > 0;
-        return hasBio || hasConfirmed || hasCount;
     }
 
     @Override

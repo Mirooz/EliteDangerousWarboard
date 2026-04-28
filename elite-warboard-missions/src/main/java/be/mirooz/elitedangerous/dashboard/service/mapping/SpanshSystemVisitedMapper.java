@@ -9,10 +9,7 @@ import be.mirooz.elitedangerous.backend.generated.model.Ring;
 import be.mirooz.elitedangerous.backend.generated.model.Signal;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponse;
 import be.mirooz.elitedangerous.backend.generated.model.SpanshSearchResponseDTO;
-import be.mirooz.elitedangerous.biologic.BioSpecies;
-import be.mirooz.elitedangerous.biologic.BodyType;
-import be.mirooz.elitedangerous.biologic.ScanTypeBio;
-import be.mirooz.elitedangerous.biologic.StarType;
+import be.mirooz.elitedangerous.biologic.*;
 import be.mirooz.elitedangerous.dashboard.model.exploration.*;
 import be.mirooz.elitedangerous.dashboard.service.listeners.ExplorationRefreshNotificationService;
 import be.mirooz.elitedangerous.service.BioSpeciesService;
@@ -238,8 +235,10 @@ public final class SpanshSystemVisitedMapper {
         String resolvedSystem = fallbackIfBlank(br.getSystemName(), systemName, "Unknown");
         long systemAddress = br.getSystemId64() != null ? br.getSystemId64() : valueOrZero(br.getId64());
         Double pressurePa = br.getSurfacePressure();
-        Double pressureAtm = pressurePa != null ? PlaneteDetail.pascalToAtm(pressurePa) : null;
-        Double gravityG = br.getGravity() != null ? PlaneteDetail.ms2ToG(br.getGravity()) : null;
+        Double pressureAtm = pressurePa != null ? pressurePa : null;
+        Double gravityG = br.getGravity() != null ? br.getGravity() : null;
+        VolcanismType volcanismType = VolcanismType.fromString(br.getVolcanismType());
+        AtmosphereType atmosphereType = AtmosphereType.fromString(br.getAtmosphere());
         PlaneteDetail planete = PlaneteDetail.builder()
                 .timestamp(timestampOf(br))
                 .bodyName(fallbackIfBlank(br.getName(), "Unknown body", "Unknown body"))
@@ -249,7 +248,7 @@ public final class SpanshSystemVisitedMapper {
                 .bodyID(valueOrZero(br.getBodyId()))
                 .parents(parents)
                 .wasDiscovered(true)
-                .wasMapped(true)
+                .wasMapped(false)
                 .mapped(false)
                 .rings(br.getRings() != null && !br.getRings().isEmpty())
                 .planetClass(BodyType.getBodyType(planetClassStr))
@@ -257,6 +256,8 @@ public final class SpanshSystemVisitedMapper {
                 .temperature(br.getSurfaceTemperature())
                 .pressureAtm(pressureAtm)
                 .gravityG(gravityG)
+                .volcanism(volcanismType)
+                .atmosphere(atmosphereType)
                 .landable(Boolean.TRUE.equals(br.getIsLandable()))
                 .radius(valueOrZero(br.getRadius()))
                 .terraformable(isTerraformable(br.getTerraformingState()))
@@ -295,11 +296,12 @@ public final class SpanshSystemVisitedMapper {
      * Applique signaux biologiques Spansh (FSS + SAA) sur la planète et notifie le {@link BiologicalSignalProcessor}
      * pour les corps déjà présents dans le registre.
      */
-    private static void injectSpanshExobio(PlaneteDetail planete, BodyResult br)  {
+    private static void injectSpanshExobio(PlaneteDetail planete, BodyResult br) {
         List<Genus> genuses = br.getGenuses();
         if (genuses == null || genuses.isEmpty()) {
             return;
         }
+        List<String> genesCodexList = new ArrayList<>();
         for (Genus g : genuses) {
             if (g == null) {
                 continue;
@@ -312,46 +314,56 @@ public final class SpanshSystemVisitedMapper {
             if (!isSaaGenusCodex(genusCodex)) {
                 continue;
             }
-            if (g.getLocalisedName() == null || g.getLocalisedName().isBlank()){
+            genesCodexList.add(genusCodex);
+        }
+        //Ajout de tout en scan level 2, et level 1 aussi
+        planete.calculBioScan(genesCodexList.size(), 1, null);
+        planete.calculBioScan(genesCodexList.size(), 2, genesCodexList);
+        //si variant non null (ou brain tree
+        for (Genus g : genuses) {
+            if (g == null) {
                 continue;
             }
+            if (g.getName() == null || g.getName().isBlank())
+                continue;
             try {
-                BioSpecies specie;
+                BioSpecies matchingSpecie;
+                if (g.getName().contains("Brain") || g.getName().contains("Crystalline")) {
+                    matchingSpecie = BioSpecies.brainTree();
+                } else {
+                    if (g.getVariant() == null || g.getSpecies() == null || g.getSpecies().isBlank() || g.getVariant().isBlank())
+                        continue;
 
-                if ("Brain".equals(g.getSpecies())) {
-                    specie = BioSpecies.brainTree();
-                }
-                else if (g.getVariant() == null ||g.getVariant().trim().isBlank())
-                {
-                    continue;
-                }else {
-                    specie = BioSpeciesService.getInstance().getSpecies().stream()
+                    matchingSpecie = BioSpeciesService.getInstance().getSpecies().stream()
                             .filter(s -> s.getName().equalsIgnoreCase(g.getLocalisedName()))
                             .filter(s -> s.getSpecieName().equalsIgnoreCase(g.getSpecies()))
                             .filter(s -> s.getColor().equalsIgnoreCase(g.getVariant()))
                             .findFirst()
-                            .orElseThrow(() -> new IllegalStateException(
-                                    "No matching Spansh species found for system: " + planete.getStarSystem() +
-                                            ", name: " + g.getLocalisedName() +
-                                            ", species: " + g.getSpecies() +
-                                            ", variant: " + g.getVariant()
-                            ));
+                            .orElse(null);
                 }
+
+                if (matchingSpecie == null) {
+                    System.err.println("Genus not found: " + g.getName() + g.getSpecies() + g.getVariant() + " for planet: " + planete.getBodyName());
+                    continue;
+                }
+                Optional<String> genusCodexOpt = spanshGenusToJournalCodex(g);
+                if (genusCodexOpt.isEmpty()) {
+                    continue;
+                }
+                String genusCodex = genusCodexOpt.get();
+                if (!isSaaGenusCodex(genusCodex)) {
+                    continue;
+                }
+                planete.setWasMapped(true);
                 planete.setWasFootfalled(true);
-                planete.getConfirmedSpecies().stream()
-                        .filter(s -> s.getId().equalsIgnoreCase(specie.getId()))
+                 planete.getConfirmedSpecies().stream()
+                        .filter(s -> s.getId().equalsIgnoreCase(matchingSpecie.getId()))
                         .findFirst()
-                        .orElseGet(() -> planete.createNewSpecies(specie, genusCodex, specie.getFdevname(), true));
-                SpeciesProbability speciesProbability = new SpeciesProbability(specie, 100);
-                planete.getBioSpecies().add(new Scan(1, List.of(speciesProbability)));
-                planete.setNumSpeciesDetected(
-                        planete.getNumSpeciesDetected() == null
-                                ? 1
-                                : planete.getNumSpeciesDetected() + 1
-                );
+                        .orElseGet(() -> planete.createNewSpecies(matchingSpecie, genusCodex, matchingSpecie.getFdevname(), true));
+
             }
             catch (Exception e){
-                log.error("Error while processing spansh exobio", e);
+                System.err.println("Error while processing spansh exobio " + e);
             }
         }
     }
