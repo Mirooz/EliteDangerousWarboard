@@ -622,7 +622,7 @@ public class NavRouteOverlayComponent {
         if (overlayController != null) {
             Label remainingJumpsLabel = overlayController.getRemainingJumpsLabel();
             if (remainingJumpsLabel != null) {
-                if (remainingJumps >= 0) {
+                if (remainingJumps > 0) {
                     remainingJumpsLabel.setText(localizationService.getString("nav.route.remaining_jumps", remainingJumps));
                     remainingJumpsLabel.setVisible(true);
                     remainingJumpsLabel.setManaged(true);

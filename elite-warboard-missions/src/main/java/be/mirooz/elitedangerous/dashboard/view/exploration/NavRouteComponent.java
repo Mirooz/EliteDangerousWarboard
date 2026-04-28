@@ -1974,7 +1974,7 @@ public class NavRouteComponent implements Initializable {
      */
     private void updateRemainingJumpsLabel(int remainingJumps) {
         if (remainingJumpsLabel != null && !DashboardContext.getInstance().isBatchLoading()) {
-            if (remainingJumps >= 0) {
+            if (remainingJumps > 0) {
                 remainingJumpsLabel.setText(localizationService.getString("nav.route.remaining_jumps", remainingJumps));
                 remainingJumpsLabel.setVisible(true);
                 remainingJumpsLabel.setManaged(true);

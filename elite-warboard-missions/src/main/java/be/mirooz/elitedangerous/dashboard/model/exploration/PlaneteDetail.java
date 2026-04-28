@@ -179,7 +179,7 @@ public class PlaneteDetail extends ACelesteBody {
             }
 
             List<SpeciesProbability> probabilities = computeProbabilities(matchingSpecies, count, level, genuses);
-            System.out.println("Bio pour body :" + this.bodyName + " level " + level + " count " + count + (genuses != null ? " genus " + genuses : ""));
+            //System.out.println("Bio pour body :" + this.bodyName + " level " + level + " count " + count + (genuses != null ? " genus " + genuses : ""));
             for (SpeciesProbability probability : probabilities) {
                 System.out.println("    " + probability.getBioSpecies().getFullName() + " : " + probability.getProbability());
             }
