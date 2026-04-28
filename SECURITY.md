@@ -28,5 +28,5 @@ We will acknowledge your report and keep you informed of the progress. We apprec
 
 ## Out of scope
 
-- Issues in third-party APIs (EdTools, Ardent, SiriusCorp, Spansh, Canonn Bioforge) unless they are caused by misuse in our client code
+- Issues in third-party APIs (EdTools, Ardent, SiriusCorp, Spansh, ED Colonise, Canonn Bioforge) unless they are caused by misuse in our client code
 - General best-practice recommendations without a concrete vulnerability

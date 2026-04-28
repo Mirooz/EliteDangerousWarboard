@@ -54,12 +54,12 @@ When adding features, put code in the appropriate module and follow existing pat
 
 ## Translations
 
-The UI is bilingual (English and French). When adding or changing user-facing strings:
+The UI is available in **five languages** (English, French, German, Italian, Spanish). When adding or changing user-facing strings:
 
-- Update `elite-warboard-missions/src/main/resources/messages_en.properties`
-- Update `elite-warboard-missions/src/main/resources/messages_fr.properties`
+- Update every locale file under `elite-warboard-missions/src/main/resources/`:
+  - `messages_en.properties`, `messages_fr.properties`, `messages_de.properties`, `messages_it.properties`, `messages_es.properties`
 
-Use the same key in both files.
+Use the **same key** in all five files (translate the value; copy English as a fallback only if a locale is not ready yet—prefer completing all five).
 
 ## Questions
 

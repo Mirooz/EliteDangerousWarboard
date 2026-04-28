@@ -1,510 +1,183 @@
 # Elite Dangerous Warboard
 
-> **Repository structure:** The root contains [community standard files](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-community-profiles) (README, LICENSE, Code of conduct, Contributing, Security) and this multi-module Maven project: `elite-warboard-missions` (main app), `elite-commons`, `elite-clients`, `journal-analyzer`, `bioforge-biodatas`. See [Project Structure](#-project-structure) below for details.
+**Elite Warboard** is a comprehensive companion application designed to optimize your *Elite Dangerous* experience. It analyzes your commander **journal files in real time** to provide detailed insights into **pirate mission stacking** & combat, **mining** operations, **exploration & exobiology**, and **colonization** (including **Fleet Carrier** workflows for construction and market sourcing). Whether you focus on massacre stacking, mining expeditions, deep-space exploration, or tracking colony construction and supply, this dashboard helps you **track progress**, **find opportunities**, and **maximize your earnings**. Tools are grouped into four main areas—**Pirate mission stacking**, **Mining**, **Exploration & Exobiology**, and **Colonization**. Optional **Frontier CAPI** (OAuth) and **EDDN** publishing are available from settings.
 
-## Description
+---
 
-**Elite Warboard** is a comprehensive companion application designed to optimize your Elite Dangerous gaming experience. The application analyzes game journal files in real-time to provide detailed insights into your missions, combat activities, mining operations, and exploration. Whether you're focused on massacre missions, conflict zones, mining expeditions, or deep space exploration, this dashboard helps you track progress, find opportunities, and maximize your earnings.
+## Pirate mission stacking
 
-## 🎯 Main Features
+In *Elite Dangerous*, **pirate mission stacking** is taking several **massacre (pirate hunt)** missions that all want kills **in the same place** against the **same pirate minor faction**. Contracts can come from **different factions** on **different boards**; if they all name the **same target faction**, **one qualifying kill** usually adds **+1** to **every** stacked mission, and you **turn in each mission separately** for its own reward. **Source** systems are where you pick up missions; **target** systems are where you hunt (often a **resource extraction** area).
 
-### 📊 **Massacre Stacking Management**
-- **Mission stacking** : Visualize all your active massacre missions with real-time progression. Kills from pirate massacre missions stack — meaning a single pirate kill can count simultaneously toward multiple missions, even if they come from different factions.
-  This tool provides a clear visual breakdown of your remaining kills per faction, helping you track and optimize your bounty grind efficiently.
-- **Conflict zone management** : Track your conflict zone progression and bounty rewards. The application automatically tracks your conflict zone progression and combat bonds.
-- **System search** : Find systems conducive to massacre missions via EdTools API
-- **Conflict search** : Locate civil war and conflict zones via SiriusCorp API
-- **Bounty tracking** : History of destroyed ships with bounties and timestamps
-- **Financial tracking** : Track pending and potential credits from missions
-- **Combat history** : View massacre/conflict sessions with kills and earnings
+**What Warboard adds.** Live journal tracking: kills remaining **per target faction**, destroyed-ship log with bounties, **EdTools** / **SiriusCorp** system search from the header, and a **target overlay** so quotas stay visible over the game. **Stack pirate massacre missions in one place.**
 
-<img src="elite-warboard-missions/src/main/resources/images/missionpanel.png" alt="Mission Panel" style="max-width: 1200px;">
+**→ [Pirate mission stacking](docs/modules/missions.md)** (documentation — full in-game explanation, layout, combat search, tips)
 
-### ⛏️ **Mining Operations Tracker**
-- **Session tracking** : Monitor your mining sessions with detailed statistics
-- **Mineral analysis** : Track quantities and values of mined materials
-- **Price comparison** : Compare best prices vs station prices for optimal selling
-- **Mining history** : View completed sessions with duration and earnings
-- **Real-time updates** : Live tracking of mining activities as they happen
+<img src="elite-warboard-missions/src/main/resources/images/missionpanel.png" alt="Pirate mission stacking — dashboard" style="max-width: 920px;">
 
-<img src="elite-warboard-missions/src/main/resources/images/miningpanel.png" alt="Mining Panel" style="max-width: 1200px;">
+---
 
-### 🌌 **Exploration Panel**
-- **🆕 Navigation Route System** : Complete navigation route management with multiple exploration modes
-  - **Free Exploration** : Display and track your current navigation route from Elite Dangerous
-  - **Stratum Undiscovered** : Find undiscovered Stratum Tectonicas using Spansh API
-  - **Expressway to Exomastery** : Find systems for exobiology exploration with customizable parameters
-  - **Road to Riches** : Discover valuable exploration targets with route planning
-  - **Visual route display** : Interactive horizontal route visualization with system circles and distance-based spacing
-  - **Remaining jumps tracking** : Real-time display of remaining jumps in your navigation route
-  - **System status indicators** : Visual markers for current system, visited systems, scoopable stars, and boost stars
-  - **Route overlay** : Detachable overlay window for navigation route display on your game screen
-  - **Automatic system copying** : One-click system name copying to clipboard for easy navigation
-  - **Route persistence** : Save and restore routes per exploration mode
-- **System visual view** : Interactive orrery view showing all celestial bodies in the current system
-- **Celestial body tracking** : Track all scanned planets, moons, and stars with detailed information
-- **Exobiology tracking** : Monitor organic species detection and collection with X/Y counters
-- **Mapping tracking** : Track mapped planets with visual indicators (X/Y mappable planets)
-- **Exploration history** : Navigate through exploration groups with earnings and system counts
-- **System value calculation** : Real-time calculation of system value including celestial bodies and exobiology bonuses
-- **On-hold data tracking** : Monitor unsold exploration and organic data with credit values
-- **High-value filter** : Filter to show only high-value celestial bodies
-- **JSON detail panel** : View complete JSON data for any celestial body
-- **Exploration overlay** : Display exploration bodies overlay on your Elite Dangerous game window
-- **First discovery tracking** : Track first discoveries and first footfalls
-- **Real-time updates** : Live tracking of scans, organic scans, and exploration data sales
+## Mining
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/exploboard.png" alt="Exploration Board" style="max-width: 1200px;">
+Track **active mining sessions** (refined tonnage, credits), compare **best sell price** vs **current station** prices, browse **session history**, and run **mining system search** by mineral. The **prospector overlay** floats commodity and session info over the game client.
 
-### 🚀 **Advanced Features**
-- **New commander detection** : Automatic popup and journal re-reading when switching commanders
-- **Real-time reading** : Automatic monitoring of new journal files
-- **Elite Dangerous interface** : Visual theme consistent with the game universe
-- **Network error handling** : Translated error popups in case of connection issues
-- **Bilingual interface** : English and French with explanatory descriptions
-- **Loading indicators** : Visual feedback during data processing
-- **Automatic updates** : Real-time synchronization with game events
+**→ [Mining](docs/modules/mining.md)** (documentation — session lifecycle, price toggle, search flow)
 
-## 🎮 Usage
+<img src="elite-warboard-missions/src/main/resources/images/miningpanel.png" alt="Mining — session and cargo overview" style="max-width: 920px;">
 
-### **Massacre Stacking Interface**
-- **Header** : Overview of active massacre missions, credits and statistics
-- **Left panel** : Destroyed ships journal and bounty tracking
-- **Center panel** : Mission list with massacre and conflict filters
-- **Right panel** : Target faction statistics (Pirates/Conflict zones)
-- **Footer** : Commander information and current system
-- **Kills remaining overlay** : Visual indicator of remaining kills
+---
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/targetoverlay.png" alt="Target Overlay" style="max-width: 1200px;">
+## Exploration & Exobiology
 
-### **Mining Interface**
-- **Mining panel** : Real-time mining session tracking
-- **Mineral tracking** : Live updates of mined materials and quantities
-- **Price toggle** : Switch between best prices and station prices
-- **Session history** : Complete history of mining sessions with statistics
-- **Loading indicators** : Visual feedback during data processing
-- **Prospector Overlay** : Displays an overlay on your Elite Dangerous game window
+**After you scan a planet**, Warboard **estimates which exobiology is likely present** there (**Bioforge**-based species probabilities), with **X/Y** sampling progress and exploration value. Around that: **system map (orrery)** (zoom/pan, body list), **navigation routes** (free route from `NavRoute.json` plus **Spansh**-backed modes: Stratum, Exomastery, Road to Riches), **route overlay**, **exploration history** (visited systems, **estimated scan value**, **discovered exobiology**), and optional **Synchronized system from Spansh** (planet data from Spansh **merged** with your journal so unscanned or partial bodies are easier to **preview**).
 
-<img src="elite-warboard-missions/src/main/resources/images/mining/miningoverlay.png" alt="Mining Overlay" style="max-width: 1200px;">
+**→ [Exploration & Exobiology](docs/modules/exploration.md)** (documentation — route modes, overlays, radar, JSON panel)
 
-### **Exploration Interface**
+<img src="elite-warboard-missions/src/main/resources/images/readme/exploboard.png" alt="Exploration & Exobiology — system bodies and exobiology" style="max-width: 920px;">
 
-- **🆕 Navigation Route Management** : Complete navigation route system integrated in the exploration panel
-  - **Multiple exploration modes** : Switch between Free Exploration, Stratum Undiscovered, Expressway to Exomastery, and Road to Riches
-  - **Visual route display** : Horizontal route visualization with system circles connected by lines
-    - Distance-based spacing between systems for accurate route representation
-    - Current system highlighted with larger circle
-    - Visited systems marked with different visual style
-    - Scoopable star indicators (⛽) for fuel scooping opportunities
-    - Boost star indicators for neutron stars and white dwarfs
-    - Last copied system highlighted for easy reference
-  - **Remaining jumps counter** : Real-time display of remaining jumps in your navigation route (from FSDTarget events)
-  - **Route overlay window** : Detachable overlay that can be positioned on your game screen
-    - Draggable and resizable overlay window
-    - Adjustable opacity with slider control
-    - Synchronized with main panel updates
-    - Auto-hides when going on foot, reopens when returning to ship
-  - **System interaction** : Click on any system circle to copy its name to clipboard
-  - **Route parameters** : Configure destination system and max systems for Expressway and Road to Riches modes
-  - **Route reload** : Manual route refresh for Spansh API-based modes
-  - **Mode-specific routes** : Each exploration mode maintains its own route and visited systems
-  - **Spansh API integration** : Automatic route generation using Spansh API for specialized exploration modes
+---
 
+## Colonization
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/nav.png" alt="Probability Calculation" style="max-width: 1200px;">
+See **constructions in progress** on the system map (**Architect**) and follow **tier impacts (T2/T3)** and site status from your journal so you always know where builds stand. **Optimal market search** makes **transport easier** by finding buy stations that **bundle as many of the commodities you still need as possible** (fewer stops), with distance, max-range filter, “use current system as source”, and **Fleet Carrier** order tie-ins. An optional **ED Colonize**-style finder helps discover new targets; **colonization overlay** and **CAPI** carrier tools support you in flight.
 
-- **Exobiology probability calculation** : Advanced probability calculations based on big data from [Canonn Bioforge](https://bioforge.canonn.tech/)
-  - Uses histogram data from thousands of scanned planets to predict species appearance
-  - Calculates probabilities based on multiple factors: body type, atmosphere, volcanism, temperature, gravity, and pressure
-  - Geometric mean probability calculation combined with global species rarity correction
-  - Displays species probabilities for each planet based on detected biological signals
-  - Filters species with probability < 5% to show only likely candidates
-  - **Improved species sorting** : Species grouped by name with probability-based ordering within groups
+**→ [Colonization](docs/modules/colonisation.md)** (documentation — ongoing builds, multi-commodity market runs, FC, CAPI, overlay, screenshots)
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/overlayexplo.png" alt="Probability Calculation" style="max-width: 1200px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/colonisation/newcolony.png" alt="Colonization — construction tracking and market tools" style="max-width: 920px;">
 
-- **Exobiology radar (compass)** : Real-time navigation radar for biological sample collection
-  - **Compass display** : Circular radar showing cardinal directions (N, S, E, W) with Elite Dangerous orange theme
-  - **Position indicator** : Green triangle showing your current heading and position
-  - **Sample markers** : Color-coded points for collected biological samples
-    - First sample: Magenta (#FF00FF)
-    - Second sample: Cyan (#00FFFF)
-    - Third and subsequent samples: Yellow (#FFFF00)
-  - **Exclusion circles** : Dashed circles around each sample showing the minimum distance (colony range) between biological colonies
-  - **Distance display** : Real-time distance in meters to each collected sample displayed next to the radar
-  - **Minimum distance indicator** : Shows the required minimum distance between samples (colony range) for the current species
-  - **Real-time updates** : Updates every 500ms by reading your position from Elite Dangerous Status.json file
-  - **Automatic activation** : Radar appears automatically when you start collecting biological samples on a planet
+---
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/radar3.png" alt="Exobiology Radar" style="max-width: 1200px;">
+## Global application features
 
-- **System visual view** : Interactive orrery with zoom and pan capabilities showing celestial body positions
-- **Bodies list panel** : Complete list of all celestial bodies in the system with filtering options
-- **Exploration history panel** : Navigate through exploration groups with previous/next buttons
-- **System cards** : Visual cards showing system name, body count, value, exobiology status (X/Y species), and mapping status (X/Y planets)
-- **On-hold indicators** : Display of unsold exploration data and organic data with credit values
-- **Current system button** : Quick navigation to the currently visited system
-- **Body detail panel** : JSON tree view showing complete data for selected celestial bodies
-- **Exploration overlay** : Overlay window displaying exploration bodies on your game screen
-- **Visual indicators** : Color-coded species collection status (red: 0/Y, orange: partial, green: Y/Y complete)
-- **Mapping indicators** : Color-coded mapping status for mappable planets
+These apply across the whole app (details: **[`docs/transversal.md`](docs/transversal.md)**).
 
-### **Combat System Search**
-1. Click "SEARCH COMBAT SYSTEMS" in the header
-2. Choose "MASSACRE" or "CONFLICT" tab
-3. Configure your search criteria
-4. Click "SEARCH" to get results
-5. Click on a system to copy it to clipboard
+| Area | What you get |
+|------|----------------|
+| **Journal** | Continuous tail of `.log` files; state rebuilt from journal + persisted registries. |
+| **Language** | **English**, **French**, **German**, **Italian**, and **Spanish** UI, errors, and search copy. |
+| **Commanders** | New-commander detection; preferences and snapshot data **scoped per FID**. |
+| **Overlays** | Detachable windows (missions kills, exploration bodies, nav route, colonization, mining prospector); **multi-monitor** placement; sync with main window. |
+| **CAPI** | Optional OAuth via Warboard for **station market** and **Fleet Carrier**; logout / decline flows; downtime messaging. |
+| **EDDN** | Optional anonymized journal exports (separate toggle from CAPI); eligible event types are listed in-app. |
+| **Analytics** | Optional **error log** upload to the analytics backend; **first-run consent** (off by default). |
+| **Network** | Translated error popups; graceful handling when APIs or CAPI are unavailable. |
 
-<img src="elite-warboard-missions/src/main/resources/images/searchmission2.png" alt="Combat System Search" style="max-width: 1200px;">
+---
 
-### **Mining System Search**
-1. Select the mineral you want to mine
-2. The system finds the most profitable station with mining locations
-3. View results with station information and prices
-4. Switch between different stations and rings as needed
-5. Click on a station to copy system name to clipboard
+## External APIs
 
-<img src="elite-warboard-missions/src/main/resources/images/miningsearch.png" alt="Mining System Search" style="max-width: 1200px;">
+Third-party and online services consumed by Warboard:
 
-### **Exploration History**
-- **System visit history** : Browse through all visited systems organized by exploration groups
-  - Navigate between exploration groups using Previous/Next buttons
-  - View total earnings, system count, and time range for each group
-  - Click on any system card to view it in the system visual view
-- **Current data tracking** : Monitor unsold exploration and exobiology data
-  - **Current exploration** : Shows total credits and system count for unsold exploration data
-  - **Current exobiology** : Shows total credits and species count for unsold organic data
-- **System cards** : Display system name, body count, value, exobiology status (X/Y species), and mapping status (X/Y planets)
-- **Quick navigation** : "See current system" button automatically finds and displays your current location
+- **EdTools API** — Massacre system search and hotspot detection  
+- **Ardent API** — Market information  
+- **SiriusCorp API** — Additional combat system search (pairs with EdTools)  
+- **Spansh API** — Navigation routes (*Stratum Undiscovered*, *Expressway to Exomastery*, *Road to Riches*); **system/body search** to enrich exploration and colonization views; replaces former **EDSM** integration for online system data  
+- **[ED Colonise](https://edcolonise.net/)** — Colonizable **system discovery** for the optional in-app finder (filters, body metrics, inhabited neighbours); upstream credits include **Spansh** for dumps and community telemetry (**EDDN**) on their side  
+- **Frontier Companion API (CAPI)** — OAuth-backed access for **station markets** and **fleet carrier** data  
+- **EDDN** — Optional player-contributed market telemetry (client path: `elite-eddn-client`)  
+- **Canonn Bioforge** — Big-data exobiology species probability calculations ([bioforge.canonn.tech](https://bioforge.canonn.tech/))
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/explohistory.png" alt="Exploration History" style="max-width: 1200px;">
+**Client behaviour:** translated network error popups; live data when online features are used; graceful fallbacks when services are unavailable (including **CAPI maintenance** messaging). When **EDDN** publishing is enabled, the in-app configuration lists **eligible journal events**.
 
-### **VR Integration**
-- **Keyboard and HOTAS binding** : Configure a key or HOTAS button to show/hide the dashboard
-  - **Keyboard binding** : Bind any keyboard key to toggle dashboard visibility
-  - **HOTAS binding** : Bind any button on your HOTAS controller (throttle, joystick, etc.) to toggle the dashboard
-  - **Configuration** : Set up your bindings in the application preferences/settings menu
+HTTP client modules and OpenAPI build notes: **[`docs/modules/elite-clients.md`](docs/modules/elite-clients.md)**.
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/screenexplo2.jpeg" alt="VR Integration" style="max-width: 1200px;">
+---
 
-## 🌐 Language Support
+## Supported journal events
 
-The application is available in **English and French** with complete interface translation including:
-- All menus and buttons
-- Error messages and notifications
-- System search descriptions
-- Mission types and statuses
+Representative **`event`** types from Elite Dangerous journals that Warboard processes (coverage expands with game updates; handlers may filter or merge variants):
 
-## 🛠️ Installation
+### Mission events
 
-### **Windows**
-1. Download `EliteWarboard-Setup.exe` from releases
-2. Run the installer
-3. Launch the application from Start Menu or desktop
+`MissionAccepted`, `MissionCompleted`, `MissionFailed`, `MissionRedirected`, `MissionAbandoned`, `MissionExpired`, `MissionProgress`
 
-### **Linux**
-1. Download `.deb` or `.flatpak`  from releases
+### Combat events
 
-**✅ No external downloads required** : JDK and JavaFX are embedded in the installer. No Java installation or additional dependencies needed.
+`Bounty`, `RedeemVoucher`, `FactionKillBond`, `CommitCrime`, `Died`, `ShipTargeted`
 
-### **Configuration**
-1. On first launch, configure your Elite Dangerous journal folder
-2. Default location: `C:/Users/[YourName]/Saved Games/Frontier Developments/Elite Dangerous`
-3. Select your language (English/French)
-4. The application automatically starts analyzing your journals
+### Mining events
 
+`MiningRefined`, `Cargo`, `ProspectedAsteroid`, `AsteroidCracked`, `LaunchDrone`, `EjectCargo`, `BuyDrones`, `SellDrones`, `MarketSell`
 
-## 🔧 Technologies Used
+### Exploration & exobiology events
 
-- **JDK 17** : Java Development Kit
-- **JavaFX 17** : Modern user interface
-- **Maven** : Project management and automated build
-- **Jackson** : JSON journal file analysis
-- **Lombok** : Boilerplate code reduction
-- **EdTools API** : Massacre system search and hotspot detection
-- **Ardent API** : Market information
-- **SiriusCorp API** : Conflict zone search
-- **Spansh API** : Navigation route generation for exploration modes (Stratum Undiscovered, Expressway to Exomastery, Road to Riches)
-- **Canonn Bioforge** : Big data exobiology species probability calculations based on [bioforge.canonn.tech](https://bioforge.canonn.tech/)
-- **Inno Setup** : Installer creation with embedded runtime
-- **jpackage** : Installer creation with embedded runtime
+`Scan`, `ScanOrganic`, `SellExplorationData`, `MultiSellExplorationData`, `SellOrganicData`, `FSSBodySignals`, `SAAScanComplete`, `SAASignalsFound`, `ApproachBody`, `LeaveBody`, `Embark`, `Disembark`, `NavRoute`, `NavRouteClear`, `FSDTarget`, `FSSSignalDiscovered`
 
-## 📁 Project Structure
+### Colonization & fleet carrier events
 
-```
-elite-dashboard/
-├── elite-warboard-missions/          # Main application module
-│   ├── src/main/java/be/mirooz/elitedangerous/dashboard/
-│   │   ├── controller/               # JavaFX controllers and UI management
-│   │   ├── handlers/                 # Journal event handlers and processors
-│   │   ├── model/                    # Data models, enums, and registries
-│   │   ├── service/                  # Business services (APIs, Journal, Localization)
-│   │   └── ui/                       # Custom UI components and managers
-│   ├── src/main/resources/
-│   │   ├── css/                      # Elite Dangerous theme and styling
-│   │   ├── fxml/                     # User interface layouts
-│   │   ├── images/                   # Icons, images, and assets
-│   │   └── messages_*.properties     # English and French translations
-│   └── installer.iss                  # Inno Setup installation script
-├── edtools-client/                   # EdTools API client library
-├── inara-client/                     # Inara API client library
-├── elite-commons/                    # Shared utilities and common code
-└── journal-analyzer/                # Journal file analysis tool
-```
+`ColonisationConstructionDepot`, `ColonisationContribution`, `ColonisationBeaconDeployed`, `CarrierTradeOrder`, `CarrierStats`, plus colonization-aware handling on **`Docked`** and **market** journal lines (generic `Docked` / `Undocked` are under **Ship**)
 
-## 📋 Supported Journal Events
+### Ship events
 
-The application automatically processes these Elite Dangerous events:
+`Loadout`, `LoadGame`, `Location`, `Docked`, `Undocked`, `FSDJump`, `SupercruiseEntry`, `SupercruiseExit`, `ShutDown`
 
-### **Mission Events**
-- `MissionAccepted` : Adds a new mission with target faction and destination
-- `MissionCompleted` : Marks a mission as completed
-- `MissionFailed` : Marks a mission as failed
-- `MissionRedirected` : Handles massacre mission completion and redirection
-- `MissionAbandoned` : Marks a mission as abandoned
-- `MissionExpired` : Handles expired missions
-- `MissionProgress` : Updates mission progress
+### Commander events
 
-### **Combat Events**
-- `Bounty` : Updates kill counters and bounty rewards for massacre missions
-- `RedeemVoucher` : Resets bounty and combat bond statistics after redemption
-- `FactionKillBond` : Tracks faction kill bonds
-- `CommitCrime` : Records criminal activities
-- `Died` : Handles commander death events
-- `ShipTargeted` : Tracks ship targeting events
+`Commander`
 
-### **Mining Events**
-- `MiningRefined` : Tracks refined materials and adds to mining statistics
-- `Cargo` : Monitors cargo changes during mining operations
-- `ProspectedAsteroid` : Records asteroid prospecting data and core materials
-- `AsteroidCracked` : Tracks asteroid destruction for core mining
-- `LaunchDrone` : Monitors mining drone deployment
-- `EjectCargo` : Tracks cargo ejection during mining
-- `BuyDrones` : Records mining drone purchases
-- `SellDrones` : Records mining drone sales
-- `MarketSell` : Tracks mineral sales and updates mining statistics
+How each **area** uses these lines (workflows, overlays): **[Pirate mission stacking](docs/modules/missions.md)** · **[Mining](docs/modules/mining.md)** · **[Exploration & Exobiology](docs/modules/exploration.md)** · **[Colonization](docs/modules/colonisation.md)** · **[Cross-cutting](docs/transversal.md)**.
 
-### **Exploration Events**
-- `Scan` : Tracks detailed scans of celestial bodies (planets, moons, stars) with physical properties
-- `ScanOrganic` : Records organic species scans and analysis
-- `SellExplorationData` / `MultiSellExplorationData` : Tracks exploration data sales and groups systems
-- `SellOrganicData` : Tracks organic data sales with species information
-- `FSSBodySignals` : Detects biological signals on planets
-- `SAAScanComplete` : Records Surface Area Analysis scan completions
-- `SAASignalsFound` : Tracks surface signals found during SAA scans
-- `ApproachBody` : Monitors body approach events and filters bodies with uncollected exobiology
-- `LeaveBody` : Tracks body departure events
-- `Embark` / `Disembark` : Monitors on-foot state changes for biological analysis
-- `NavRoute` : Tracks navigation route changes and loads route from NavRoute.json file
-- `NavRouteClear` : Handles navigation route clearing events
-- `FSDTarget` : Tracks Frame Shift Drive target information including remaining jumps in route
+---
 
-### **Ship Events**
-- `Loadout` : Updates ship configuration and cargo capacity
-- `LoadGame` : Sets commander online status
-- `Location` : Updates current system and station position
-- `Docked`/`Undocked` : Tracks docking status and station information
-- `FSDJump` : Tracks system jumps and updates mining session status
-- `SupercruiseEntry`/`SupercruiseExit` : Monitors supercruise transitions
-- `ShutDown` : Handles ship shutdown events
+## More documentation
 
-### **Commander Events**
-- `Commander` : Detects commander changes and triggers popup notifications
-## 🌐 External APIs
+| Resource | Purpose |
+|----------|---------|
+| **[`docs/README.md`](docs/README.md)** | Documentation index (tools vs Maven layout) |
+| **[`docs/changelog.md`](docs/changelog.md)** | Version history |
+| **[`docs/depot-maven.md`](docs/depot-maven.md)** | Maven multi-module layout (developers) |
+| **[`docs/modules/elite-warboard-missions.md`](docs/modules/elite-warboard-missions.md)** | Source tree of the main JavaFX app |
 
-- **EdTools PvE** : Massacre system search, faction conflict data, and mining system information
-- **Ardent / SiriusCorp API** : Conflict zone and civil war search, station information, and mining commodity prices
-- **Error handling** : Translated network error popups with user-friendly messages
-- **Real-time data** : Live API integration for up-to-date system information
-- **Fallback mechanisms** : Graceful handling of API unavailability
+---
 
-## 🎨 User Interface
+## Installation
 
-- **Elite Dangerous theme** : Characteristic orange/cyan colors
-- **Styled ComboBoxes** : Consistent filter styling
-- **Contextual popups** : Error messages and notifications
-- **Responsive** : Adaptive interface with optimized padding and spacing
-- **Bilingual** : Complete English/French support
+### Windows
 
-## 🚀 Build and Development
+1. Download **`EliteWarboard-Setup.exe`** from the project’s **GitHub Releases** page.  
+2. Run the installer.  
+3. Start **Elite Warboard** from the Start Menu or desktop shortcut.
 
-### **Local Build**
-JDK 17 and JavaFX 17 are required to build and run the project.
+### Linux
 
-You can simplify setup by using the Liberica JDK 17 Full
-distribution, which already includes both the JDK and JavaFX modules.
+1. Download **`.deb`** or **`.flatpak`** from Releases.
 
+Bundled installers ship a **embedded JDK/JavaFX** where the build profile provides it—end users normally **do not** install Java separately.
+
+### First launch
+
+1. Set the **Elite Dangerous journal folder** (typical Windows path: `…\Saved Games\Frontier Developments\Elite Dangerous`).  
+2. Pick your language (**English**, **French**, **German**, **Italian**, or **Spanish**).  
+3. Play as usual; new journal lines are picked up automatically.
+
+---
+
+## Technology stack (build)
+
+- **JDK 17**, **JavaFX 17**, **Maven**, **Jackson**, **Lombok**  
+- **Inno Setup** / **jpackage** for installers
+
+---
+
+## Build & development
 
 ```bash
 mvn clean install
 ```
 
-### **Installer Creation**
-#### Windows
+- **Windows installer** (requires Inno Setup): `mvn clean install -P windows-installer`  
+- **Linux installer**: `mvn clean install -P linux-installer`  
+- **Run the app**: `cd elite-warboard-missions` then `mvn exec:java`
 
-InnoSetup is required to build the Windows installer.
-```bash
-mvn clean install -P windows-installer
-# Automatically generates EliteWarboard-Setup.exe with embedded runtime
-```
-#### Linux
-```bash
-mvn clean install -P linux-installer
-# Automatically generates EliteWarboard-Setup.exe with embedded runtime
-```
+---
 
+## License
 
-### **Development**
-Run in elite-warboard-missions module:
-```bash
-mvn exec:java
-```
+[MIT License](LICENSE)
 
-## 📝 Changelog
+## Support
 
-### Version 1.3.1
+Confirm the journal path, that Elite is writing `.log` files, and that your network allows API calls. If something breaks, open a GitHub **issue** with reproduction steps.
 
-#### Fix
-- ✅ Resolved Java heap memory issue that could lead to OutOfMemoryError
-
-### Version 1.3.0
-
-#### 🆕 Navigation Route System (Main Feature)
-- ✅ **Navigation Route Panel** : Complete navigation route management system integrated in exploration panel
-- ✅ **Multiple Exploration Modes** : Support for Free Exploration, Stratum Undiscovered, Expressway to Exomastery, and Road to Riches
-- ✅ **Visual Route Display** : Interactive horizontal route visualization with system circles and distance-based spacing
-- ✅ **Remaining Jumps Tracking** : Real-time display of remaining jumps in navigation route from FSDTarget events
-- ✅ **Route Overlay Window** : Detachable, draggable, and resizable overlay for navigation route display
-  - Adjustable opacity with slider control
-  - Auto-hide when going on foot, auto-reopen when returning to ship
-  - Synchronized updates with main panel
-- ✅ **System Status Indicators** : Visual markers for current system, visited systems, scoopable stars, and boost stars
-- ✅ **One-Click System Copying** : Click any system circle to copy name to clipboard
-- ✅ **Route Parameters Configuration** : Configure destination system and max systems for Expressway and Road to Riches
-- ✅ **Spansh API Integration** : Automatic route generation using Spansh API for specialized exploration modes
-- ✅ **Route Persistence** : Save and restore routes per exploration mode with visited systems tracking
-- ✅ **Mode-Specific Routes** : Each exploration mode maintains its own route and visited systems state
-
-#### Exploration Improvements
-- ✅ **Enhanced Species Probability Sorting** : Species grouped by name with probability-based ordering (most probable first, grouped by equivalent names)
-
-#### Technical Improvements
-- ✅ **Memory Leak Fixes** : Fixed listener accumulation issues that could cause OutOfMemoryError
-- ✅ **Thread Safety** : Improved JavaFX thread safety for UI updates from background threads
-- ✅ **Error Handling** : Better error handling for popup display when windows are not registered
-
-### Version 1.2.0
-
-#### Exploration
-
-- ✅ **Exploration Panel** : Complete exploration tracking system with visual system representation
-- ✅ **System Visual View** : Interactive orrery showing all celestial bodies with zoom and pan
-- ✅ **Celestial Body Tracking** : Track all scanned planets, moons, and stars with detailed information
-- ✅ **Exobiology Tracking** : Monitor organic species detection and collection with X/Y progress indicators
-- ✅ **Mapping Tracking** : Track mapped planets with visual status indicators (X/Y mappable planets)
-- ✅ **Exploration History** : Navigate through exploration groups with earnings and system statistics
-- ✅ **System Value Calculation** : Real-time calculation including celestial bodies and exobiology bonuses
-- ✅ **On-Hold Data Tracking** : Monitor unsold exploration and organic data with credit values
-- ✅ **High-Value Filter** : Filter to show only high-value celestial bodies
-- ✅ **JSON Detail Panel** : View complete JSON data for any celestial body
-- ✅ **Exploration Overlay** : Display exploration bodies overlay on your Elite Dangerous game window
-- ✅ **First Discovery Tracking** : Track first discoveries and first footfalls
-- ✅ **Biological Analysis Support** : Track biological sample collection with position monitoring
-- ✅ **Exobiology Probability Calculation** : Advanced species prediction using big data from Canonn Bioforge with histogram-based probability calculations
-- ✅ **Exobiology Radar Navigation** : Real-time compass radar for biological sample collection with position tracking, distance display, and exclusion zone visualization
-
-### Version 1.1.0
-
-#### Mining
-
-- ✅ **Mining Operations Tracker** : Complete mining session tracking with real-time updates
-- ✅ **Mining System Search** : Find optimal mining locations with mineral filters
-- ✅ **Mineral Analysis** : Track quantities and values of mined materials
-- ✅ **Price Comparison** : Toggle between best prices and station prices
-- ✅ **Mining History** : View completed sessions with detailed statistics
-- ✅ **Network error handling** : Translated error popups for connection issues
-- ✅ **Styled ComboBoxes** : Enhanced mission filters with Elite Dangerous styling
-- 
-#### Massacre Stacking
-- ✅ **Improve massacre stacking UI** : Visual improvements
-- ✅ **Massacre stacking overlay** : Real-time overlay showing how many kills are left for each faction
-- ✅ **Combat History** : View completed massacre/conflict sessions with detailed statistics
-
-
-### Version 1.0.0
-
-#### Massacre Stacking
-
-- ✅ **Massacre Stacking Management** : Real-time massacre mission tracking and stacking
-- ✅ **System Search** : Find combat systems via EdTools and Inara APIs
-- ✅ **Destroyed Ships Journal** : Complete bounty tracking
-- ✅ **Faction Statistics** : Detailed faction bounty analysis
-- ✅ **Interactive Filtering** : Advanced mission and faction filtering
-- ✅ **Elite Dangerous Theme** : Authentic game interface styling
-- ✅ **Wing Mission Support** : Automatic wing mission detection
-- ✅ **Automatic Reset** : Bounty statistics reset on redemption
-- ✅ **Bilingual interface** : Complete English/French support
-- ✅ **Multi account** : Automatic new commander detection
-- ✅ **Automatic commander detection** : Notification popup with automatic journal re-reading
-
-## 📄 License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-## 🆘 Support
-
-If you encounter issues:
-
-1. Verify your Elite Dangerous journal folder is correctly configured
-2. Ensure Elite Dangerous is generating journal files
-3. Check your internet connection for system searches
-4. Open a GitHub issue with your problem details
-
-## 🎯 Project Goal
-
-**Elite Warboard** is designed to optimize your Elite Dangerous experience across multiple gameplay styles. Whether you're focused on combat missions, mining operations, or exploration, this dashboard helps you:
-
-### **For Combat Pilots**
-- **Efficiently stack** massacre missions to maximize earnings
-- **Quickly find** the best systems for combat missions
-- **Track in real-time** your mission progression and kills
-- **Optimize** your credit and reputation farming strategy
-
-### **For Miners**
-- **Monitor mining sessions** with detailed real-time statistics
-- **Track mineral values** and compare prices for optimal selling
-- **Analyze mining efficiency** through session history and statistics
-- **Maximize profits** by choosing the best selling locations
-
-### **For Explorers**
-- **🆕 Plan navigation routes** with multiple exploration modes (Free Exploration, Stratum Undiscovered, Expressway to Exomastery, Road to Riches)
-- **🆕 Visualize navigation routes** with interactive route display showing all systems, distances, and status
-- **🆕 Track remaining jumps** in real-time with remaining jumps counter
-- **🆕 Use route overlay** with detachable overlay window for navigation route on your game screen
-- **🆕 Find exploration targets** using Spansh API integration for specialized exploration routes
-- **Track all scanned systems** with complete celestial body information
-- **Monitor exobiology collection** with visual indicators showing collection progress (X/Y species)
-- **Navigate efficiently** with real-time radar compass showing sample positions and distances
-- **Respect colony ranges** with visual exclusion zones indicating minimum distances between samples
-- **Track mapping progress** for valuable planets with visual status indicators
-- **Calculate system values** including celestial bodies and exobiology bonuses
-- **Navigate exploration history** to review past exploration groups and earnings
-- **Visual system representation** with interactive orrery view
-- **Monitor unsold data** with on-hold indicators for exploration and organic data
-- **Identify high-value targets** with filtering options for valuable celestial bodies
-- **Predict species appearance** using advanced probability calculations based on big data
-
-### **For All Commanders**
-- **Comprehensive tracking** of all your Elite Dangerous activities
-- **Real-time updates** as you play the game
-- **Bilingual support** in English and French
-- **Professional interface** that matches the Elite Dangerous universe
-
-The application is completely self-contained and requires no external dependency installation.
-
-## 💝 Donations
-
-If you enjoy Elite Warboard and would like to support development, you can make a donation via PayPal:
+## Donations
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate?hosted_button_id=2GSWMTWB4SHA2)
