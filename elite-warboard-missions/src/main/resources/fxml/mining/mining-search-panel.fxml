@@ -42,12 +42,12 @@
             <HBox fx:id="searchResultsContainer" spacing="30" styleClass="mining-search-container"
                   alignment="CENTER_LEFT" visible="false">
                 <!-- Prix -->
-                <HBox spacing="5" styleClass="search-item" translateY="10" prefWidth="210" maxWidth="210">
+                <HBox spacing="5" styleClass="search-item" translateY="10" prefWidth="225" maxWidth="225">
                     <VBox prefWidth="120" maxWidth="120">
                         <Label fx:id="priceLabel" text="PRIX" styleClass="search-label"/>
                         <Label fx:id="headerPriceLabel" text="--" styleClass="search-price-large"/>
                     </VBox>
-                    <VBox prefWidth="60" maxWidth="90">
+                    <VBox prefWidth="90" maxWidth="100">
                         <Label fx:id="demandLabel" text="DEMANDE" styleClass="search-label"/>
                         <Label fx:id="headerDemandLabel" text="--" styleClass="search-demand-large"/>
                     </VBox>
