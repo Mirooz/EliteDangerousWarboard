@@ -154,10 +154,10 @@ public class LoggingService {
             // Désactiver les logs verbeux de JavaFX CSS parser et autres loggers internes
             Logger cssLogger = Logger.getLogger("javafx.css");
             if (cssLogger != null) {
-                cssLogger.setLevel(Level.SEVERE);
-                cssLogger.setUseParentHandlers(false);
+                //cssLogger.setLevel(Level.SEVERE);
+                //cssLogger.setUseParentHandlers(false);
             }
-            
+
             // Désactiver les autres loggers verbeux de JavaFX
             String[] verboseLoggers = {
                 "com.sun.javafx.css",
@@ -169,8 +169,8 @@ public class LoggingService {
             for (String loggerName : verboseLoggers) {
                 Logger logger = Logger.getLogger(loggerName);
                 if (logger != null) {
-                    logger.setLevel(Level.SEVERE);
-                    logger.setUseParentHandlers(false);
+                   // logger.setLevel(Level.SEVERE);
+                    //logger.setUseParentHandlers(false);
                 }
             }
             
