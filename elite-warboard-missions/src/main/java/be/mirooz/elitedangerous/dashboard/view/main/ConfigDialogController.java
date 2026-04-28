@@ -9,6 +9,7 @@ import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.persistence.PersistenceService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService;
+import be.mirooz.elitedangerous.dashboard.service.webservice.CapiApiService.CapiProfileSettingsStatus;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
@@ -173,7 +174,7 @@ public class ConfigDialogController implements Initializable {
     private final CapiApiService capiApiService = CapiApiService.getInstance();
 
     /** Dernier résultat du test {@code /profile} pour re-appliquer les libellés après changement de langue. */
-    private Boolean lastCapiProfileResult;
+    private CapiProfileSettingsStatus lastCapiProfileSettingsStatus;
     
     private boolean isCapturingBind = false;
     private String currentBindType = null; // "windowToggle", "tabSwitchLeft", "tabSwitchRight"
@@ -288,8 +289,8 @@ public class ConfigDialogController implements Initializable {
         logCapiAccountButton.setText(localizationService.getString("config.capi.connect.button"));
         sendErrorLogsCheckBox.setText(localizationService.getString("config.analytics.send.error.logs"));
         sendErrorLogsCheckBox.setTooltip(new Tooltip(localizationService.getString("config.analytics.send.error.logs.hint")));
-        if (capiLoginEnabledCheckBox != null && capiLoginEnabledCheckBox.isSelected() && lastCapiProfileResult != null) {
-            applyCapiConnectionStatusUi(lastCapiProfileResult);
+        if (capiLoginEnabledCheckBox != null && capiLoginEnabledCheckBox.isSelected() && lastCapiProfileSettingsStatus != null) {
+            applyCapiConnectionStatusUi(Optional.of(lastCapiProfileSettingsStatus));
         } else if (capiLoginEnabledCheckBox != null && capiLoginEnabledCheckBox.isSelected()) {
             refreshCapiProfileStatusAsync();
         }
@@ -693,12 +694,12 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private void logCapiAccount() {
-        applyCapiConnectionStatusUi(null);
+        applyCapiConnectionStatusUi(Optional.empty());
         logCapiAccountButton.setDisable(true);
         capiApiService.loginCapiAccount(waitApprovalOk -> {
             logCapiAccountButton.setDisable(!capiLoginEnabledCheckBox.isSelected());
             if (Boolean.TRUE.equals(waitApprovalOk)) {
-                applyCapiConnectionStatusUi(true);
+                applyCapiConnectionStatusUi(Optional.of(CapiProfileSettingsStatus.CONNECTED));
             } else {
                 refreshCapiProfileStatusAsync();
             }
@@ -720,7 +721,7 @@ public class ConfigDialogController implements Initializable {
         if (capiOn) {
             refreshCapiProfileStatusAsync();
         } else {
-            lastCapiProfileResult = null;
+            lastCapiProfileSettingsStatus = null;
         }
     }
 
@@ -728,26 +729,29 @@ public class ConfigDialogController implements Initializable {
         if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
             return;
         }
-        applyCapiConnectionStatusUi(null);
+        applyCapiConnectionStatusUi(Optional.empty());
         new Thread(() -> {
-            boolean ok = capiApiService.isProfileConnectionOk();
+            CapiProfileSettingsStatus status = capiApiService.getProfileSettingsStatus();
             Platform.runLater(() -> {
                 if (capiLoginEnabledCheckBox == null || !capiLoginEnabledCheckBox.isSelected()) {
                     return;
                 }
-                applyCapiConnectionStatusUi(ok);
+                applyCapiConnectionStatusUi(Optional.of(status));
             });
         }, "capi-profile-check").start();
     }
 
-    private void applyCapiConnectionStatusUi(Boolean connected) {
+    /**
+     * @param profile {@link Optional#empty()} pendant la vérification ; sinon le résultat du test {@code /profile}.
+     */
+    private void applyCapiConnectionStatusUi(Optional<CapiProfileSettingsStatus> profile) {
         if (capiStatusRow == null || capiStatusIconLabel == null || capiStatusTextLabel == null) {
             return;
         }
         capiStatusRow.getStyleClass().removeAll(
                 "config-capi-status-checking", "config-capi-status-connected", "config-capi-status-required"
         );
-        if (connected == null) {
+        if (profile.isEmpty()) {
             if (!capiStatusRow.getStyleClass().contains("config-capi-status-checking")) {
                 capiStatusRow.getStyleClass().add("config-capi-status-checking");
             }
@@ -755,11 +759,16 @@ public class ConfigDialogController implements Initializable {
             capiStatusTextLabel.setText(localizationService.getString("config.capi.status.checking"));
             return;
         }
-        lastCapiProfileResult = connected;
-        if (Boolean.TRUE.equals(connected)) {
+        CapiProfileSettingsStatus profileStatus = profile.get();
+        lastCapiProfileSettingsStatus = profileStatus;
+        if (profileStatus == CapiProfileSettingsStatus.CONNECTED) {
             capiStatusRow.getStyleClass().add("config-capi-status-connected");
             capiStatusIconLabel.setText("✓");
             capiStatusTextLabel.setText(localizationService.getString("config.capi.status.connected"));
+        } else if (profileStatus == CapiProfileSettingsStatus.SERVICE_DOWN) {
+            capiStatusRow.getStyleClass().add("config-capi-status-required");
+            capiStatusIconLabel.setText("!");
+            capiStatusTextLabel.setText(localizationService.getString("capi.service.down"));
         } else {
             capiStatusRow.getStyleClass().add("config-capi-status-required");
             capiStatusIconLabel.setText("✗");

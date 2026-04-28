@@ -41,6 +41,15 @@ import java.util.function.Consumer;
 
 public final class CapiApiService {
 
+    /**
+     * Résultat du test profil CAPI pour l’UI des paramètres (sans toast sur indisponibilité).
+     */
+    public enum CapiProfileSettingsStatus {
+        CONNECTED,
+        NOT_CONNECTED,
+        SERVICE_DOWN
+    }
+
     private static final CapiApiService INSTANCE = new CapiApiService();
     private static final long MARKET_MIN_INTERVAL_MS = 1000L;
 
@@ -152,12 +161,12 @@ public final class CapiApiService {
     }
 
     /**
-     * Vérifie silencieusement que {@code GET /api/capi/profile} réussit (sans popup d’authentification).
-     * Utile pour l’indicateur de statut dans les paramètres.
+     * État du profil CAPI pour la ligne de statut des paramètres.
+     * Ne déclenche pas le toast « CAPI service down » (réservé aux autres flux).
      */
-    public boolean isProfileConnectionOk() {
+    public CapiProfileSettingsStatus getProfileSettingsStatus() {
         if (!isCapiEnabled()) {
-            return false;
+            return CapiProfileSettingsStatus.NOT_CONNECTED;
         }
         try {
             CommanderStatus status = CommanderStatus.getInstance();
@@ -167,15 +176,15 @@ public final class CapiApiService {
                     status.getFID(),
                     language
             );
-            return profileResponse != null
+            boolean ok = profileResponse != null
                     && isOauthApproved(profileResponse.getStatus(), profileResponse.getError());
+            return ok ? CapiProfileSettingsStatus.CONNECTED : CapiProfileSettingsStatus.NOT_CONNECTED;
         } catch (UnauthorizedException e) {
-            return false;
+            return CapiProfileSettingsStatus.NOT_CONNECTED;
         } catch (CapiServiceDownException e) {
-            notifyCapiServiceDownDebounced();
-            return false;
+            return CapiProfileSettingsStatus.SERVICE_DOWN;
         } catch (IOException e) {
-            return false;
+            return CapiProfileSettingsStatus.NOT_CONNECTED;
         }
     }
 
