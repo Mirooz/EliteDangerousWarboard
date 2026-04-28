@@ -167,6 +167,18 @@ public final class EdColoniseSearchFilterForm {
             int minRings,
             int maxDistLy,
             EdColoniseSearchAdvancedSnapshot advanced) {
+        return mergeMainAndAdvanced(minLandables, minRings, maxDistLy, advanced, 1);
+    }
+
+    /**
+     * @param pageNo numéro de page API (≥ 1)
+     */
+    public static EdColoniseStarSystemSearchQuery mergeMainAndAdvanced(
+            int minLandables,
+            int minRings,
+            int maxDistLy,
+            EdColoniseSearchAdvancedSnapshot advanced,
+            int pageNo) {
         int distLy = Math.min(EdColoniseStarSystemSearchQuery.MAX_DISTANCE_TO_SOL_CAP, Math.max(1, maxDistLy));
         EdColoniseSearchAdvancedSnapshot adv = advanced != null ? advanced : EdColoniseSearchAdvancedSnapshot.defaults();
         int[] extras = adv.bodyMinExtras();
@@ -176,6 +188,7 @@ public final class EdColoniseSearchFilterForm {
                 .factionName(adv.factionName())
                 .hotspotTypes(adv.hotspotTypes())
                 .sortOrder(normalizeApiSortOrder(adv.sortOrder()))
+                .pageNo(pageNo)
                 .maxDistanceToSolLy(distLy)
                 .minLandables(Math.max(0, minLandables))
                 .minRings(Math.max(0, minRings));

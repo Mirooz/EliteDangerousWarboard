@@ -221,6 +221,14 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     @FXML
     private VBox searchResultsBox;
     @FXML
+    private HBox searchPaginationBox;
+    @FXML
+    private Button searchColonisablePrevPageButton;
+    @FXML
+    private Button searchColonisableNextPageButton;
+    @FXML
+    private Label searchColonisablePageLabel;
+    @FXML
     private VBox searchMapContainer;
     private final ColonisationService colonisationService = ColonisationService.getInstance();
     private final EdColoniseService edColoniseService = EdColoniseService.getInstance();
@@ -282,6 +290,12 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     private final List<BorderPane> searchResultCards = new ArrayList<>();
     private BorderPane selectedSearchResultCard;
     private EdColoniseSearchAdvancedSnapshot coloniseSearchAdvancedSnapshot = EdColoniseSearchAdvancedSnapshot.defaults();
+    /** Dernière page affichée avec succès (recherche ED Colonise onglet « nouvelle colonie »). */
+    private int coloniseSearchCurrentPage = 1;
+    private Integer coloniseSearchLastMinFollowingPages;
+    private int coloniseSearchLastResultCount;
+    private int coloniseSearchLastResultsPerPage = 10;
+    private boolean coloniseSearchHadSuccessfulResponse;
 
     private static final int MAX_DISTANCE_SOL_LY = 2770;
     private static final int MAX_NEIGHBORS_SHOWN = 3;
@@ -508,7 +522,13 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
     private void initColonisationSearchTab() {
         if (searchColonisableButton != null) {
-            searchColonisableButton.setOnAction(e -> onSearchColonisableSystems());
+            searchColonisableButton.setOnAction(e -> runColonisableStarSystemSearch(1));
+        }
+        if (searchColonisablePrevPageButton != null) {
+            searchColonisablePrevPageButton.setOnAction(e -> runColonisableStarSystemSearch(coloniseSearchCurrentPage - 1));
+        }
+        if (searchColonisableNextPageButton != null) {
+            searchColonisableNextPageButton.setOnAction(e -> runColonisableStarSystemSearch(coloniseSearchCurrentPage + 1));
         }
         if (searchMoreFiltersButton != null) {
             searchMoreFiltersButton.setOnAction(e -> onSearchMoreFilters());
@@ -695,6 +715,16 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         }
         if (searchColonisableButton != null) {
             searchColonisableButton.setText(localizationService.getString("colonisation.edcolonise.search"));
+        }
+        if (searchColonisablePrevPageButton != null) {
+            searchColonisablePrevPageButton.setText(localizationService.getString("colonisation.edcolonise.pagination.previous"));
+        }
+        if (searchColonisableNextPageButton != null) {
+            searchColonisableNextPageButton.setText(localizationService.getString("colonisation.edcolonise.pagination.next"));
+        }
+        if (searchColonisablePageLabel != null && coloniseSearchHadSuccessfulResponse) {
+            searchColonisablePageLabel.setText(
+                    localizationService.getString("colonisation.edcolonise.pagination.page", coloniseSearchCurrentPage));
         }
         if (searchHelpTooltip != null) {
             searchHelpTooltip.setText(localizationService.getString("colonisation.edcolonise.search.helpTooltip"));
@@ -1767,7 +1797,10 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
                 snap -> coloniseSearchAdvancedSnapshot = snap);
     }
 
-    private void onSearchColonisableSystems() {
+    /**
+     * Lance la recherche ED Colonise pour l’onglet « nouvelle colonie » ({@code pageNo} ≥ 1).
+     */
+    private void runColonisableStarSystemSearch(int pageNo) {
         if (searchErrorLabel != null) {
             searchErrorLabel.setVisible(false);
             searchErrorLabel.setManaged(false);
@@ -1777,8 +1810,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         int distLy = searchMaxDistanceSolSpinner != null
                 ? Math.min(MAX_DISTANCE_SOL_LY, Math.max(1, searchMaxDistanceSolSpinner.getValue()))
                 : Math.min(MAX_DISTANCE_SOL_LY, 800);
+        int page = Math.max(1, pageNo);
         EdColoniseStarSystemSearchQuery params = EdColoniseSearchFilterForm.mergeMainAndAdvanced(
-                minLand, minRing, distLy, coloniseSearchAdvancedSnapshot);
+                minLand, minRing, distLy, coloniseSearchAdvancedSnapshot, page);
         setSearchBusy(true);
         Thread t = new Thread(() -> {
             try {
@@ -1786,13 +1820,22 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
                 List<EdColoniseStarSystemSearchResult> results = response.getResults() != null
                         ? response.getResults()
                         : List.of();
+                Integer minFollowing = response.getMinFollwingPages();
+                int rpp = params.resultsPerPage();
                 Platform.runLater(() -> {
+                    coloniseSearchHadSuccessfulResponse = true;
+                    coloniseSearchCurrentPage = page;
+                    coloniseSearchLastMinFollowingPages = minFollowing;
+                    coloniseSearchLastResultCount = results.size();
+                    coloniseSearchLastResultsPerPage = rpp;
                     renderSearchResults(results);
+                    applyColoniseSearchPaginationUi();
                     setSearchBusy(false);
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     setSearchBusy(false);
+                    applyColoniseSearchPaginationUi();
                     searchErrorLabel.setText(localizationService.getString("colonisation.edcolonise.error") + " " + e.getMessage());
                     searchErrorLabel.setVisible(true);
                     searchErrorLabel.setManaged(true);
@@ -1803,9 +1846,41 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         t.start();
     }
 
+    private void applyColoniseSearchPaginationUi() {
+        if (searchPaginationBox != null) {
+            if (coloniseSearchHadSuccessfulResponse) {
+                searchPaginationBox.setVisible(true);
+                searchPaginationBox.setManaged(true);
+            }
+        }
+        if (searchColonisablePageLabel != null && coloniseSearchHadSuccessfulResponse) {
+            searchColonisablePageLabel.setText(
+                    localizationService.getString("colonisation.edcolonise.pagination.page", coloniseSearchCurrentPage));
+        }
+        if (searchColonisablePrevPageButton != null) {
+            searchColonisablePrevPageButton.setDisable(coloniseSearchCurrentPage <= 1);
+        }
+        if (searchColonisableNextPageButton != null) {
+            searchColonisableNextPageButton.setDisable(!coloniseSearchLikelyHasNextPage());
+        }
+    }
+
+    private boolean coloniseSearchLikelyHasNextPage() {
+        if (coloniseSearchLastMinFollowingPages != null) {
+            return coloniseSearchLastMinFollowingPages > 0;
+        }
+        return coloniseSearchLastResultCount >= coloniseSearchLastResultsPerPage;
+    }
+
     private void setSearchBusy(boolean busy) {
         if (searchColonisableButton != null) {
             searchColonisableButton.setDisable(busy);
+        }
+        if (searchColonisablePrevPageButton != null) {
+            searchColonisablePrevPageButton.setDisable(busy || coloniseSearchCurrentPage <= 1);
+        }
+        if (searchColonisableNextPageButton != null) {
+            searchColonisableNextPageButton.setDisable(busy || !coloniseSearchLikelyHasNextPage());
         }
         if (searchLoadingIndicator != null) {
             searchLoadingIndicator.setVisible(busy);
