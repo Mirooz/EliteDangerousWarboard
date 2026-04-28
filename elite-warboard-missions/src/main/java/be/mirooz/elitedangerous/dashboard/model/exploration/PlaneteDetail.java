@@ -372,7 +372,7 @@ public class PlaneteDetail extends ACelesteBody {
      */
     public void addConfirmedSpecies(ScanOrganicData scanOrganicData) {
         try {
-            ScanTypeBio scanTypeBio = ScanTypeBio.fromStringSafe(scanOrganicData.getScanType());
+            ScanTypeBio scanTypeBio = ScanTypeBio.fromString(scanOrganicData.getScanType());
             if (scanTypeBio == null) {
                 return;
             }
