@@ -3255,8 +3255,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 statusLabel.setText(confirmedSpecies.getSampleNumber() + "/3");
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-orange; -fx-font-weight: bold;");
                             } else {
-                                statusLabel.setText("✗");
-                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #FF0000; -fx-font-weight: bold;");
+                                String color = "#00FF88";
+                                statusLabel.setText("100,0%");
+                                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: " + color + "; -fx-font-weight: bold;");
+                                statusLabel.getStyleClass().add("exploration-body-species-prob");
                             }
                         } else {
                             double prob = sp.getProbability();
