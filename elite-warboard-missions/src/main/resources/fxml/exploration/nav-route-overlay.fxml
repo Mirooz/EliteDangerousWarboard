@@ -13,8 +13,9 @@
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
     
-    <!-- Pane pour la représentation graphique des systèmes -->
-    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" styleClass="nav-route-overlay-scroll">
+    <!-- Pane pour la représentation graphique des systèmes (grow : le fond StackPane remplit toute la hauteur) -->
+    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" styleClass="nav-route-overlay-scroll"
+                VBox.vgrow="ALWAYS">
         <Pane fx:id="routeSystemsPane" styleClass="nav-route-systems-pane"
               minHeight="70" 
               prefHeight="70"

@@ -7,10 +7,10 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayScreenGeometryHelper;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,6 +19,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -57,6 +58,10 @@ public class NavRouteOverlayComponent {
     private static final String NAV_ROUTE_OVERLAY_X_KEY = "nav_route_overlay.x";
     private static final String NAV_ROUTE_OVERLAY_Y_KEY = "nav_route_overlay.y";
     private static final String NAV_ROUTE_OVERLAY_TEXT_SCALE_KEY = "nav_route_overlay.text_scale";
+    private static final String NAV_ROUTE_OVERLAY_SCREEN_INDEX_KEY = "nav_route_overlay.screen.index";
+
+    /** Aligné sur {@code .overlay-root-bordered} dans elite-theme.css ({@code -fx-border-width: 2px}). */
+    private static final double OVERLAY_BORDER_INSET_PX = 2.0;
 
     private Stage overlayStage;
     private double overlayOpacity = 0.92;
@@ -66,7 +71,6 @@ public class NavRouteOverlayComponent {
     private StackPane stackPane;
     private VBox overlayContainer;
     private javafx.scene.layout.Pane routeSystemsPane;
-    private javafx.scene.control.ScrollPane scrollPane;
     private NavRouteOverlayController overlayController;
     private Runnable onOverlayStateChanged;
     private NavRouteComponent navRouteComponent;
@@ -196,7 +200,7 @@ public class NavRouteOverlayComponent {
         }
         
         // Dessiner les boules dans le Pane en utilisant le NavRouteComponent principal
-        navRouteComponent.drawRouteSystems(routeSystemsPane, route, availableWidth);
+        navRouteComponent.drawRouteSystems(routeSystemsPane, route, availableWidth, false);
     }
 
     /**
@@ -207,6 +211,14 @@ public class NavRouteOverlayComponent {
             return;
         }
         saveOverlayPreferences();
+        if (backgroundRectangle != null) {
+            backgroundRectangle.widthProperty().unbind();
+            backgroundRectangle.heightProperty().unbind();
+        }
+        if (overlayContainer != null) {
+            overlayContainer.prefWidthProperty().unbind();
+            overlayContainer.prefHeightProperty().unbind();
+        }
         popupManager.unregisterContainer(overlayStage);
         Stage stage = overlayStage;
         StackPane pane = stackPane;
@@ -254,16 +266,12 @@ public class NavRouteOverlayComponent {
         Scene scene = new Scene(stackPane);
         scene.setFill(Color.TRANSPARENT);
         overlayStage.setScene(scene);
-        // Ne pas appliquer l'opacité au Stage, elle est gérée par le rectangle de fond
+        overlayStage.setOpacity(1.0);
 
         // Appliquer les styles CSS
         scene.getStylesheets().add(getClass().getResource("/css/elite-theme.css").toExternalForm());
-        stackPane.getStyleClass().add("overlay-root");
-        
-        // Le cadre orange sera géré dans setupInteractions() pour éviter les conflits
-
-        // Enregistrer le StackPane comme container pour les popups
         popupManager.registerContainer(overlayStage, stackPane);
+        stackPane.getStyleClass().add("overlay-root");
 
         // Configurer les interactions (déplacement, redimensionnement)
         setupInteractions();
@@ -319,8 +327,6 @@ public class NavRouteOverlayComponent {
                 });
             }
 
-            // ScrollPane + route : interactifs pour les clics ; le déplacement de la fenêtre est géré par
-            // des filtres sur la Scene dans setupInteractions() (phase capture, comme l’overlay Fleet carrier).
             if (scrollPane != null) {
                 scrollPane.setMouseTransparent(false);
                 scrollPane.setPickOnBounds(true);
@@ -328,16 +334,27 @@ public class NavRouteOverlayComponent {
             overlayContainer.setPickOnBounds(true);
             stackPane.setPickOnBounds(true);
             
-            // Créer le rectangle de fond avec opacité
+            // Créer le rectangle de fond avec opacité : lier au StackPane (racine scène), pas au VBox.
+            // Sinon le VBox a la hauteur « pref » du contenu et le Rectangle centré laisse des bandes vides
+            // (bordure orange overlay-root vs fond noir).
             backgroundRectangle = new Rectangle();
             backgroundRectangle.setFill(Color.BLACK);
             backgroundRectangle.setMouseTransparent(true);
-            // Lier la taille du rectangle à celle du VBox
-            backgroundRectangle.widthProperty().bind(overlayContainer.widthProperty());
-            backgroundRectangle.heightProperty().bind(overlayContainer.heightProperty());
-            // S'assurer que le rectangle reste visible même à l'opacité minimale
+            // Réserver la zone de la bordure orange (sinon le Rectangle la recouvre en bas / à droite).
+            double innerInset = 2.0 * OVERLAY_BORDER_INSET_PX;
+            backgroundRectangle.widthProperty().bind(stackPane.widthProperty().subtract(innerInset));
+            backgroundRectangle.heightProperty().bind(stackPane.heightProperty().subtract(innerInset));
             backgroundRectangle.setOpacity(overlayOpacity);
-            
+            StackPane.setAlignment(backgroundRectangle, Pos.TOP_LEFT);
+            StackPane.setMargin(backgroundRectangle, new Insets(OVERLAY_BORDER_INSET_PX));
+
+            // Le contenu FXML remplit la zone intérieure (même inset que le fond).
+            overlayContainer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            overlayContainer.prefWidthProperty().bind(stackPane.widthProperty().subtract(innerInset));
+            overlayContainer.prefHeightProperty().bind(stackPane.heightProperty().subtract(innerInset));
+            StackPane.setAlignment(overlayContainer, Pos.TOP_LEFT);
+            StackPane.setMargin(overlayContainer, new Insets(OVERLAY_BORDER_INSET_PX));
+
             // Créer le slider d'opacité et le handle de redimensionnement
             opacitySlider = createOpacitySlider();
             resizeHandle = createResizeHandle();
@@ -348,8 +365,8 @@ public class NavRouteOverlayComponent {
             // Positionner les contrôles
             StackPane.setAlignment(resizeHandle, Pos.BOTTOM_RIGHT);
             StackPane.setAlignment(opacitySlider, Pos.BOTTOM_RIGHT);
-            StackPane.setMargin(opacitySlider, new Insets(0, 30, 0, 0));
-            StackPane.setMargin(resizeHandle, new Insets(0, 0, 0, 0));
+            StackPane.setMargin(opacitySlider, new Insets(0, 30, OVERLAY_BORDER_INSET_PX, 0));
+            StackPane.setMargin(resizeHandle, new Insets(0, OVERLAY_BORDER_INSET_PX, OVERLAY_BORDER_INSET_PX, 0));
             
             // Rendre les contrôles interactifs
             resizeHandle.setMouseTransparent(false);
@@ -401,8 +418,8 @@ public class NavRouteOverlayComponent {
     }
 
     /**
-     * Déplacement / redimensionnement : filtres en phase capture (comme Fleet carrier) pour que le drag
-     * fonctionne même au-dessus du ScrollPane et des « boules » de route.
+     * Filtres en phase capture (comme {@link be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlayComponent}) :
+     * reçus avant le {@code ScrollPane}, pour déplacer la fenêtre en cliquant au milieu du panneau route.
      */
     private void setupInteractions() {
         final double[] offset = new double[2];
@@ -477,22 +494,18 @@ public class NavRouteOverlayComponent {
             isResizing[0] = false;
             armWindowMove[0] = false;
         });
-
         scene.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
             if (passthrough.isClickThroughLocked()) {
                 return;
             }
             double sceneWidth = scene.getWidth();
             double sceneHeight = scene.getHeight();
-            double mouseX = e.getSceneX();
-            double mouseY = e.getSceneY();
-            if (mouseX >= sceneWidth - 25 && mouseY >= sceneHeight - 25) {
+            if (e.getSceneX() >= sceneWidth - 25 && e.getSceneY() >= sceneHeight - 25) {
                 scene.setCursor(javafx.scene.Cursor.SE_RESIZE);
             } else {
                 scene.setCursor(javafx.scene.Cursor.DEFAULT);
             }
         });
-
     }
 
     private static Node pickNode(MouseEvent e) {
@@ -513,7 +526,7 @@ public class NavRouteOverlayComponent {
         }
         return false;
     }
-    
+
     /**
      * Crée l'icône de redimensionnement
      */
@@ -596,14 +609,10 @@ public class NavRouteOverlayComponent {
         overlayStage.setWidth(width);
         double height = Math.max(savedHeight, overlayStage.getMinHeight());
         overlayStage.setHeight(height);
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        double screenWidth = screenBounds.getWidth();
-        double screenHeight = screenBounds.getHeight();
-        double finalX = Math.max(0, Math.min(savedX, screenWidth - width));
-        double finalY = Math.max(0, Math.min(savedY, screenHeight - height));
-
-        overlayStage.setX(finalX);
-        overlayStage.setY(finalY);
+        Screen targetScreen = OverlayScreenGeometryHelper.resolveScreenForRestore(
+                preferencesService, NAV_ROUTE_OVERLAY_SCREEN_INDEX_KEY, savedX, savedY, width, height);
+        Rectangle2D screenBounds = targetScreen.getVisualBounds();
+        OverlayScreenGeometryHelper.applyClampedPosition(overlayStage, screenBounds, savedX, savedY, width, height);
     }
 
     /**
@@ -634,7 +643,7 @@ public class NavRouteOverlayComponent {
     }
 
     private void saveOverlayPreferences() {
-        if (overlayStage == null || !overlayStage.isShowing()) {
+        if (overlayStage == null) {
             return;
         }
         writeOverlayGeometryPrefs();
@@ -647,6 +656,7 @@ public class NavRouteOverlayComponent {
         preferencesService.setPreference(NAV_ROUTE_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
         preferencesService.setPreference(NAV_ROUTE_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
         preferencesService.setPreference(NAV_ROUTE_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
+        OverlayScreenGeometryHelper.persistScreenIndex(preferencesService, NAV_ROUTE_OVERLAY_SCREEN_INDEX_KEY, overlayStage);
     }
 }
 

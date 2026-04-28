@@ -1320,12 +1320,11 @@ public class NavRouteComponent implements Initializable {
     }
 
     /**
-     * Dessine les boules de la route dans un Pane donné (méthode publique pour l'overlay)
-     * @param targetPane Le Pane où dessiner les boules
-     * @param route La route à afficher
-     * @param availableWidth La largeur disponible pour le dessin
+     * Dessine les boules de la route dans un Pane donné (méthode publique pour l'overlay).
+     *
+     * @param interactive si {@code false} (overlay) : pas de clic / survol / infobulle sur les boules.
      */
-    public void drawRouteSystems(javafx.scene.layout.Pane targetPane, NavRoute route, double availableWidth) {
+    public void drawRouteSystems(javafx.scene.layout.Pane targetPane, NavRoute route, double availableWidth, boolean interactive) {
         if (targetPane == null) {
             return;
         }
@@ -1429,7 +1428,7 @@ public class NavRouteComponent implements Initializable {
                 boolean hasBoost = isBoostStar(system.getStarClass());
                 Line line = createLine(x, centerY, nextX, centerY, nextSystem, isVisited, hasBoost);
                 targetPane.getChildren().add(line);
-                maybeAddRemainingJumpsLabelAboveSegmentToPane(targetPane, x, nextX, centerY, nextSystem);
+                maybeAddRemainingJumpsLabelAboveSegmentToPane(targetPane, x, nextX, centerY, nextSystem, interactive);
                 currentX = nextX;
             }
 
@@ -1442,15 +1441,22 @@ public class NavRouteComponent implements Initializable {
                 targetPane.getChildren().add(copiedIndicator);
             }
             
-            Circle circle = createCircle(x, centerY, system, isCurrent, isVisited, radius, isLastCopied);
+            Circle circle = createCircle(x, centerY, system, isCurrent, isVisited, radius, isLastCopied, interactive);
             targetPane.getChildren().add(circle);
 
             // Ajouter l'indicateur scoopable si applicable
             if (isScoopable(system.getStarClass())) {
-                Text scoopIndicator = createScoopIndicator(x, centerY, radius);
+                Text scoopIndicator = createScoopIndicator(x, centerY, radius, interactive);
                 targetPane.getChildren().add(scoopIndicator);
             }
         }
+    }
+
+    /**
+     * Dessine les boules avec interaction (copie au clic, infobulles) — équivalent à {@code drawRouteSystems(..., true)}.
+     */
+    public void drawRouteSystems(javafx.scene.layout.Pane targetPane, NavRoute route, double availableWidth) {
+        drawRouteSystems(targetPane, route, availableWidth, true);
     }
 
     /**
@@ -1601,7 +1607,7 @@ public class NavRouteComponent implements Initializable {
                     boolean hasBoost = isBoostStar(system.getStarClass());
                     Line line = createLine(x, centerY, nextX, centerY, nextSystem, isVisited, hasBoost);
                     routeSystemsPane.getChildren().add(line);
-                    maybeAddRemainingJumpsLabelAboveSegmentToPane(routeSystemsPane, x, nextX, centerY, nextSystem);
+                    maybeAddRemainingJumpsLabelAboveSegmentToPane(routeSystemsPane, x, nextX, centerY, nextSystem, true);
                     currentX = nextX;
                 }
 
@@ -1615,12 +1621,12 @@ public class NavRouteComponent implements Initializable {
                     routeSystemsPane.getChildren().add(copiedIndicator);
                 }
                 
-                Circle circle = createCircle(x, centerY, system, isCurrent, isVisited, radius, isLastCopied);
+                Circle circle = createCircle(x, centerY, system, isCurrent, isVisited, radius, isLastCopied, true);
                 routeSystemsPane.getChildren().add(circle);
 
                 // Ajouter l'indicateur scoopable si applicable
                 if (isScoopable(system.getStarClass())) {
-                    Text scoopIndicator = createScoopIndicator(x, centerY, radius);
+                    Text scoopIndicator = createScoopIndicator(x, centerY, radius, true);
                     routeSystemsPane.getChildren().add(scoopIndicator);
                 }
             }
@@ -1680,6 +1686,10 @@ public class NavRouteComponent implements Initializable {
      * Crée un indicateur visuel pour les systèmes scoopables
      */
     public Text createScoopIndicator(double x, double y, double circleRadius) {
+        return createScoopIndicator(x, y, circleRadius, true);
+    }
+
+    public Text createScoopIndicator(double x, double y, double circleRadius, boolean interactive) {
         Text indicator = new Text("⛽");
         // Ajuster la taille de la police en fonction de la taille du cercle
         double fontSize = Math.max(8, circleRadius * 0.8);
@@ -1691,8 +1701,12 @@ public class NavRouteComponent implements Initializable {
         indicator.setY(y - circleRadius - 6); // Positionner au-dessus du cercle
         indicator.getStyleClass().add("nav-route-scoop-indicator");
 
-        Tooltip tooltip = new TooltipComponent(localizationService.getString("nav.route.scoopable"));
-        Tooltip.install(indicator, tooltip);
+        if (interactive) {
+            Tooltip tooltip = new TooltipComponent(localizationService.getString("nav.route.scoopable"));
+            Tooltip.install(indicator, tooltip);
+        } else {
+            indicator.setMouseTransparent(true);
+        }
 
         return indicator;
     }
@@ -1737,7 +1751,8 @@ public class NavRouteComponent implements Initializable {
             double segmentStartX,
             double segmentEndX,
             double centerY,
-            RouteSystem nextSystem) {
+            RouteSystem nextSystem,
+            boolean interactive) {
         if (pane == null || nextSystem == null) {
             return;
         }
@@ -1755,7 +1770,11 @@ public class NavRouteComponent implements Initializable {
         int remainingJumps = navRouteService.getRemainingJumpsInRoute();
         if (remainingJumps > 0) {
             double midX = (segmentStartX + segmentEndX) / 2.0;
-            pane.getChildren().add(createJumpsRemainingLabel(midX, centerY - 15, remainingJumps));
+            Label label = createJumpsRemainingLabel(midX, centerY - 15, remainingJumps);
+            if (!interactive) {
+                label.setMouseTransparent(true);
+            }
+            pane.getChildren().add(label);
         }
     }
 
@@ -1806,6 +1825,10 @@ public class NavRouteComponent implements Initializable {
      * Crée un cercle pour représenter un système
      */
     public Circle createCircle(double x, double y, RouteSystem system, boolean isCurrent, boolean isVisited, double radius, boolean isLastCopied) {
+        return createCircle(x, y, system, isCurrent, isVisited, radius, isLastCopied, true);
+    }
+
+    public Circle createCircle(double x, double y, RouteSystem system, boolean isCurrent, boolean isVisited, double radius, boolean isLastCopied, boolean interactive) {
         Circle circle = new Circle(x, y, radius);
 
         if (isCurrent) {
@@ -1827,45 +1850,49 @@ public class NavRouteComponent implements Initializable {
 
         circle.setStrokeWidth(2.0);
 
-        // Tooltip au survol pour afficher le nom du système
-        String tooltipText = system.getSystemName();
-        if (isVisited) {
-            tooltipText += " (" + localizationService.getString("nav.route.visited") + ")";
-        }
-        if (system.getDistanceFromPrevious() > 0) {
-            tooltipText += " (" + String.format(localizationService.getString("nav.route.distance.format"), system.getDistanceFromPrevious()) + ")";
-        }
-        if (isScoopable(system.getStarClass())) {
-            tooltipText += localizationService.getString("nav.route.scoopable.suffix");
-        }
-        Tooltip tooltip = new TooltipComponent(tooltipText);
-        Tooltip.install(circle, tooltip);
-
-        // Effet hover
-        final double originalRadius = radius;
-        circle.setOnMouseEntered(e -> {
-            if (isCurrent) {
-                circle.setFill(Color.rgb(255, 107, 0, 1.0));
-            } else if (isVisited) {
-                circle.setFill(Color.rgb(128, 128, 128, 0.8));
-            } else {
-                circle.setFill(Color.rgb(0, 191, 255, 0.9));
+        if (interactive) {
+            // Tooltip au survol pour afficher le nom du système
+            String tooltipText = system.getSystemName();
+            if (isVisited) {
+                tooltipText += " (" + localizationService.getString("nav.route.visited") + ")";
             }
-            circle.setRadius(originalRadius + 2);
-        });
-        circle.setOnMouseExited(e -> {
-            if (isCurrent) {
-                circle.setFill(Color.rgb(255, 107, 0, 0.8));
-            } else if (isVisited) {
-                circle.setFill(Color.rgb(128, 128, 128, 0.6));
-            } else {
-                circle.setFill(Color.rgb(0, 191, 255, 0.6));
+            if (system.getDistanceFromPrevious() > 0) {
+                tooltipText += " (" + String.format(localizationService.getString("nav.route.distance.format"), system.getDistanceFromPrevious()) + ")";
             }
-            circle.setRadius(originalRadius);
-        });
+            if (isScoopable(system.getStarClass())) {
+                tooltipText += localizationService.getString("nav.route.scoopable.suffix");
+            }
+            Tooltip tooltip = new TooltipComponent(tooltipText);
+            Tooltip.install(circle, tooltip);
 
-        // Gestion du clic pour copier le nom du système
-        circle.setOnMouseClicked(e -> onSystemCircleClicked(e, system));
+            // Effet hover
+            final double originalRadius = radius;
+            circle.setOnMouseEntered(e -> {
+                if (isCurrent) {
+                    circle.setFill(Color.rgb(255, 107, 0, 1.0));
+                } else if (isVisited) {
+                    circle.setFill(Color.rgb(128, 128, 128, 0.8));
+                } else {
+                    circle.setFill(Color.rgb(0, 191, 255, 0.9));
+                }
+                circle.setRadius(originalRadius + 2);
+            });
+            circle.setOnMouseExited(e -> {
+                if (isCurrent) {
+                    circle.setFill(Color.rgb(255, 107, 0, 0.8));
+                } else if (isVisited) {
+                    circle.setFill(Color.rgb(128, 128, 128, 0.6));
+                } else {
+                    circle.setFill(Color.rgb(0, 191, 255, 0.6));
+                }
+                circle.setRadius(originalRadius);
+            });
+
+            // Gestion du clic pour copier le nom du système
+            circle.setOnMouseClicked(e -> onSystemCircleClicked(e, system));
+        } else {
+            circle.setMouseTransparent(true);
+        }
 
         return circle;
     }

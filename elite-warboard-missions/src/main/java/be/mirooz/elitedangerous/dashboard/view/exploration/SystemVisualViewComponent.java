@@ -245,6 +245,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             if (bodiesOverlayPassThroughLockButton != null) {
                 bodiesOverlayPassThroughLockButton.setSelected(false);
             }
+            // Fermeture via X sur l’overlay : sinon le libellé « Overlay » reste bloqué
+            scheduleBodiesOverlayToolbarChromeRefresh();
         });
         if (bodiesOverlayPassThroughLockButton != null) {
             OverlayUi.applyOverlayLockToggleStyle(bodiesOverlayPassThroughLockButton);
@@ -257,18 +259,20 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             OverlayUi.updateLockToggleGlyph(bodiesOverlayPassThroughLockButton);
             OverlayUi.refreshLockTooltip(bodiesOverlayPassThroughLockButton, localizationService);
             bodiesOverlayPassThroughLockButton.selectedProperty().addListener((obs, o, n) -> {
-                OverlayUi.updateLockToggleGlyph(bodiesOverlayPassThroughLockButton);
-                OverlayUi.refreshLockTooltip(bodiesOverlayPassThroughLockButton, localizationService);
                 if (bodiesOverlayComponent != null && bodiesOverlayComponent.isOverlayShowing()) {
                     bodiesOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
                 }
+                OverlayUi.updateLockToggleGlyph(bodiesOverlayPassThroughLockButton);
+                OverlayUi.refreshLockTooltip(bodiesOverlayPassThroughLockButton, localizationService);
+                // Panneau gauche très chargé + passthrough Win32 : repeindre le toolbar au pulse suivant
+                scheduleBodiesOverlayToolbarChromeRefresh();
             });
         }
         initSystemTitleClipboardAction();
 
         // Mettre à jour le texte du bouton overlay
         Platform.runLater(() -> {
-            updateBodiesOverlayButtonText();
+            scheduleBodiesOverlayToolbarChromeRefresh();
             updateTranslations();
         });
 
@@ -276,7 +280,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         localizationService.addLanguageChangeListener(locale -> {
             Platform.runLater(() -> {
                 updateTranslations();
-                updateBodiesOverlayButtonText();
+                scheduleBodiesOverlayToolbarChromeRefresh();
             });
         });
 
@@ -3545,8 +3549,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, true);
             }
 
-            updateBodiesOverlayButtonText();
-            applyBodiesOverlayPassThroughLock();
+            scheduleBodiesOverlayToolbarChromeRefresh();
         }
     }
 
@@ -3573,9 +3576,44 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 bodiesOverlayComponent.showOverlay(currentSystem, showOnlyHighValue, false);
             }
 
-            updateBodiesOverlayButtonText();
-            applyBodiesOverlayPassThroughLock();
+            scheduleBodiesOverlayToolbarChromeRefresh();
         });
+    }
+
+    /**
+     * Panneau gauche exploration : beaucoup de nœuds dans le {@code ScrollPane} ; après {@code Stage.show()}
+     * sur l’overlay ou après le clic à travers Windows, le HBox toolbar ne repeint pas toujours dans la même pulse.
+     */
+    private void scheduleBodiesOverlayToolbarChromeRefresh() {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::scheduleBodiesOverlayToolbarChromeRefresh);
+            return;
+        }
+        Platform.runLater(() -> Platform.runLater(this::refreshBodiesOverlayToolbarChrome));
+    }
+
+    private void refreshBodiesOverlayToolbarChrome() {
+        updateBodiesOverlayButtonText();
+        applyBodiesOverlayPassThroughLock();
+        if (bodiesOverlayButton != null) {
+            bodiesOverlayButton.applyCss();
+            bodiesOverlayButton.requestLayout();
+        }
+        if (bodiesOverlayPassThroughLockButton != null) {
+            bodiesOverlayPassThroughLockButton.applyCss();
+            bodiesOverlayPassThroughLockButton.requestLayout();
+        }
+        Parent toolbarRow = bodiesOverlayButton != null ? bodiesOverlayButton.getParent() : null;
+        if (toolbarRow == null && bodiesOverlayPassThroughLockButton != null) {
+            toolbarRow = bodiesOverlayPassThroughLockButton.getParent();
+        }
+        if (toolbarRow != null) {
+            toolbarRow.applyCss();
+            toolbarRow.requestLayout();
+        }
+        if (bodiesListPanel != null) {
+            bodiesListPanel.requestLayout();
+        }
     }
 
     /**

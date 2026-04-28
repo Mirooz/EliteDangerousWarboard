@@ -6,6 +6,7 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayScreenGeometryHelper;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import javafx.application.Platform;
@@ -27,7 +28,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -68,6 +68,7 @@ public class FleetCarrierOverlayComponent {
     private static final String OVERLAY_X_KEY = "overlay.fleet_carrier.x";
     private static final String OVERLAY_Y_KEY = "overlay.fleet_carrier.y";
     private static final String OVERLAY_TEXT_SCALE_KEY = "overlay.fleet_carrier.text_scale";
+    private static final String OVERLAY_SCREEN_INDEX_KEY = "overlay.fleet_carrier.screen.index";
 
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
@@ -635,17 +636,18 @@ public class FleetCarrierOverlayComponent {
         double savedY = Double.parseDouble(savedYStr);
         overlayOpacity = Double.parseDouble(savedOpacityStr);
         textScale = Double.parseDouble(savedTextScaleStr);
-        overlayStage.setWidth(Math.max(savedWidth, overlayStage.getMinWidth()));
-        overlayStage.setHeight(Math.max(savedHeight, overlayStage.getMinHeight()));
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        double finalX = Math.max(0, Math.min(savedX, screenBounds.getWidth() - overlayStage.getWidth()));
-        double finalY = Math.max(0, Math.min(savedY, screenBounds.getHeight() - overlayStage.getHeight()));
-        overlayStage.setX(finalX);
-        overlayStage.setY(finalY);
+        double width = Math.max(savedWidth, overlayStage.getMinWidth());
+        double height = Math.max(savedHeight, overlayStage.getMinHeight());
+        overlayStage.setWidth(width);
+        overlayStage.setHeight(height);
+        var targetScreen = OverlayScreenGeometryHelper.resolveScreenForRestore(
+                preferencesService, OVERLAY_SCREEN_INDEX_KEY, savedX, savedY, width, height);
+        Rectangle2D screenBounds = targetScreen.getVisualBounds();
+        OverlayScreenGeometryHelper.applyClampedPosition(overlayStage, screenBounds, savedX, savedY, width, height);
     }
 
     private void saveOverlayPreferences() {
-        if (overlayStage == null || !overlayStage.isShowing()) {
+        if (overlayStage == null) {
             return;
         }
         writeOverlayGeometryPrefs();
@@ -658,5 +660,6 @@ public class FleetCarrierOverlayComponent {
         preferencesService.setPreference(OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
         preferencesService.setPreference(OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
         preferencesService.setPreference(OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
+        OverlayScreenGeometryHelper.persistScreenIndex(preferencesService, OVERLAY_SCREEN_INDEX_KEY, overlayStage);
     }
 }

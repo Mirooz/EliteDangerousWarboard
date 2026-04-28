@@ -13,6 +13,7 @@ import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayScreenGeometryHelper;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.DestroyedShipsRegistery;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNumber;
@@ -27,7 +28,6 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -59,6 +59,7 @@ public class TargetOverlayComponent {
     private static final String TARGET_OVERLAY_X_KEY = "target_overlay.x";
     private static final String TARGET_OVERLAY_Y_KEY = "target_overlay.y";
     private static final String TARGET_OVERLAY_TEXT_SCALE_KEY = "target_overlay.text_scale";
+    private static final String TARGET_OVERLAY_SCREEN_INDEX_KEY = "target_overlay.screen.index";
 
     private Stage overlayStage;
     private double overlayOpacity = 0.92; // Valeur par défaut
@@ -835,14 +836,10 @@ public class TargetOverlayComponent {
         overlayStage.setWidth(width);
         double height = Math.max(savedHeight, overlayStage.getMinHeight());
         overlayStage.setHeight(height);
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        double screenWidth = screenBounds.getWidth();
-        double screenHeight = screenBounds.getHeight();
-        double finalX = Math.max(0, Math.min(savedX, screenWidth - width));
-        double finalY = Math.max(0, Math.min(savedY, screenHeight - height));
-
-        overlayStage.setX(finalX);
-        overlayStage.setY(finalY);
+        var targetScreen = OverlayScreenGeometryHelper.resolveScreenForRestore(
+                preferencesService, TARGET_OVERLAY_SCREEN_INDEX_KEY, savedX, savedY, width, height);
+        Rectangle2D screenBounds = targetScreen.getVisualBounds();
+        OverlayScreenGeometryHelper.applyClampedPosition(overlayStage, screenBounds, savedX, savedY, width, height);
         
         // Appliquer le scaling du texte
         if (textScaleSlider != null) {
@@ -858,7 +855,7 @@ public class TargetOverlayComponent {
     }
 
     private void saveOverlayPreferences() {
-        if (overlayStage == null || !overlayStage.isShowing()) {
+        if (overlayStage == null) {
             return;
         }
         writeOverlayGeometryPrefs();
@@ -871,6 +868,7 @@ public class TargetOverlayComponent {
         preferencesService.setPreference(TARGET_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
         preferencesService.setPreference(TARGET_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
         preferencesService.setPreference(TARGET_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
+        OverlayScreenGeometryHelper.persistScreenIndex(preferencesService, TARGET_OVERLAY_SCREEN_INDEX_KEY, overlayStage);
         System.out.println("💾 Préférences target overlay sauvegardées: " +
                 (int) overlayStage.getWidth() + "x" + (int) overlayStage.getHeight() +
                 " (opacité: " + String.format("%.2f", overlayOpacity) +
