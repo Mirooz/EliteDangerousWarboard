@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.backend.spansh.ExplorationMode;
 import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
+import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.beans.property.IntegerProperty;
@@ -72,6 +73,7 @@ public class NavRouteService {
         } else {
             clearRouteForMode(ExplorationMode.FREE_EXPLORATION);
         }
+        NavRouteNotificationService.getInstance().notifyRouteRefreshRequired();
     }
 
     public void setCurrentRoute(NavRoute route) {

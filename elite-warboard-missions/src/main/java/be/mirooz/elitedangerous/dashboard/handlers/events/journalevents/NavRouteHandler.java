@@ -1,8 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.handlers.events.journalevents;
 
-import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
 import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
-import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -15,8 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class NavRouteHandler implements JournalEventHandler {
 
     private final NavRouteService navRouteService = NavRouteService.getInstance();
-    private final ExplorationModeRegistry explorationModeRegistry = ExplorationModeRegistry.getInstance();
-    private final NavRouteNotificationService navRouteNotificationService = NavRouteNotificationService.getInstance();
 
     @Override
     public String getEventType() {
@@ -34,8 +30,6 @@ public class NavRouteHandler implements JournalEventHandler {
         // Toujours charger la route depuis NavRoute.json pour Free Exploration
         // Cela n'affectera pas la route Stratum qui est stockée séparément
         navRouteService.loadAndStoreNavRoute();
-
-        navRouteNotificationService.notifyRouteRefreshRequired();
     }
 }
 
