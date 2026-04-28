@@ -4,7 +4,9 @@ import be.mirooz.ardentapi.model.CommodityMaxSell;
 import be.mirooz.ardentapi.model.CommoditiesStats;
 import be.mirooz.ardentapi.model.StationMarket;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.Mineral;
+import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralNoTypeMixin;
 import be.mirooz.elitedangerous.commons.lib.models.commodities.minerals.MineralType;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -138,29 +140,21 @@ public class ArdentApiClient {
         System.out.println("Fetching imports from: " + url);
 
         HttpResponse<String> response = fetchHtml(url.toString());
+
         ObjectMapper mapper = new ObjectMapper();
+
+        // 🔥 Mixin inline pour désactiver le polymorphisme
+        mapper.addMixIn(Mineral.class, MineralNoTypeMixin.class);
 
         List<CommoditiesStats> stats =
                 mapper.readValue(response.body(), new TypeReference<>() {});
 
-        // 🔍 Post-filtrage Java (paramètres non supportés par l'API)
         return stats.stream()
-                // distance station
                 .filter(s -> maxStationDistance <= 0
                         || parseDoubleSafe(s.getStationDistance()) <= maxStationDistance)
-
-                // large pad uniquement
                 .filter(s -> !largePad || "3".equals(s.getLandingPadSize()))
-
-                // fleet carrier si demandé (filtre dans l'url)
-                //.filter(s -> fleetCarrier || !s.isFleetCarrier())
-
-                // sécurité
                 .filter(s -> s.getPrice() > 0)
-
-                // tri par prix décroissant
                 .sorted((a, b) -> Integer.compare(b.getPrice(), a.getPrice()))
-
                 .toList();
     }
 
