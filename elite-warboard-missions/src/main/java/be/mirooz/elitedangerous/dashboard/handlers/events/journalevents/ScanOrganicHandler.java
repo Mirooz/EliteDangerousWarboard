@@ -68,7 +68,7 @@ public class ScanOrganicHandler implements JournalEventHandler {
                 planete.addConfirmedSpecies(scanOrganicData);
 
                 // Radar / lecture Status.json : uniquement après prise en compte du journal (Log ou Sample)
-                ScanTypeBio scanType = ScanTypeBio.fromStringSafe(scanOrganicData.getScanType());
+                ScanTypeBio scanType = ScanTypeBio.fromString(scanOrganicData.getScanType());
                 if (scanType == ScanTypeBio.LOG || scanType == ScanTypeBio.SAMPLE) {
                     planete.findConfirmedSpeciesForScanOrganic(scanOrganicData)
                             .ifPresent(specie -> explorationService.setCurrentBiologicalAnalysis(planete, specie));
