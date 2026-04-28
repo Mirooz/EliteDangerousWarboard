@@ -265,7 +265,19 @@ public class PersistenceService {
 
     // -------- Internals --------
 
+    /**
+     * Tant qu’aucun événement journal {@code Commander} n’a fixé le FID, le scope reste {@value #DEFAULT_COMMANDER_SCOPE}
+     * : on n’écrit pas sur disque (évite un dossier fantôme à la fermeture sans jeu / sans journal).
+     */
+    private boolean hasResolvedCommanderScope() {
+        return !DEFAULT_COMMANDER_SCOPE.equals(currentCommanderScope);
+    }
+
     private void doSaveAll() {
+        if (!hasResolvedCommanderScope()) {
+            System.out.println("[Persistence] saveAll ignoré — commandant non identifié (scope=" + currentCommanderScope + ")");
+            return;
+        }
         try {
             System.out.println("[Persistence] saveAll scope=" + currentCommanderScope
                     + " dir=" + commanderBaseDir);
@@ -311,6 +323,10 @@ public class PersistenceService {
             // sauvé, on re-sauve ici par sécurité (pas d'opération coûteuse si l'état n'a
             // pas changé, et ça couvre les fermetures non propres type Ctrl+C / kill).
             cancelPendingSave();
+            if (!hasResolvedCommanderScope()) {
+                System.out.println("[Persistence] Sauvegarde finale (shutdown hook) ignorée — commandant non identifié.");
+                return;
+            }
             System.out.println("[Persistence] Sauvegarde finale (shutdown hook)...");
             doSaveAll();
         } catch (Exception e) {

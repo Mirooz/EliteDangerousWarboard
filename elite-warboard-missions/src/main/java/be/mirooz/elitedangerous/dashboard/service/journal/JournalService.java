@@ -89,7 +89,9 @@ public class JournalService {
                     AppLifecycleService.getInstance().consumeCommanderSwitchFleetRefreshFlag();
             boolean hasRecentCarrierActivity = CarrierTradeService.getInstance()
                     .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN);
-            if (forceFleetRefreshAfterCommanderSwitch || !hasRecentCarrierActivity) {
+            String fid = getCommanderFid();
+            if ((forceFleetRefreshAfterCommanderSwitch || !hasRecentCarrierActivity)
+                    && fid != null && !fid.isBlank()) {
                 CompletableFuture.runAsync(() -> {
                     boolean profileOk = CapiApiService.getInstance().checkCapiAuthentication();
                     if (profileOk) {

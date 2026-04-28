@@ -87,8 +87,19 @@ public final class CapiApiService {
         return INSTANCE;
     }
 
+    /**
+     * Le backend CAPI exige le FID Frontier ; il n’est connu qu’après un événement journal {@code Commander}.
+     */
+    private boolean hasCommanderIdentityForCapi() {
+        String fid = CommanderStatus.getInstance().getFID();
+        return fid != null && !fid.isBlank();
+    }
+
     public void sendMarketDatas(JsonNode journalDockedEvent) {
         if (!isCapiEnabled()) {
+            return;
+        }
+        if (!hasCommanderIdentityForCapi()) {
             return;
         }
         if (DashboardContext.getInstance().isBatchLoading()) {
@@ -133,6 +144,9 @@ public final class CapiApiService {
         if (!isCapiEnabled()) {
             return false;
         }
+        if (!hasCommanderIdentityForCapi()) {
+            return false;
+        }
         try {
             CommanderStatus status = CommanderStatus.getInstance();
             String language = getCurrentLanguage();
@@ -168,6 +182,9 @@ public final class CapiApiService {
         if (!isCapiEnabled()) {
             return CapiProfileSettingsStatus.NOT_CONNECTED;
         }
+        if (!hasCommanderIdentityForCapi()) {
+            return CapiProfileSettingsStatus.NOT_CONNECTED;
+        }
         try {
             CommanderStatus status = CommanderStatus.getInstance();
             String language = getCurrentLanguage();
@@ -190,6 +207,9 @@ public final class CapiApiService {
 
     public void fetchFleetCarrierData() {
         if (!isCapiEnabled()) {
+            return;
+        }
+        if (!hasCommanderIdentityForCapi()) {
             return;
         }
         try {
@@ -289,6 +309,9 @@ public final class CapiApiService {
 
     private void promptAuthenticationApproval() {
         if (!isCapiEnabled()) {
+            return;
+        }
+        if (!hasCommanderIdentityForCapi()) {
             return;
         }
         Platform.runLater(() -> {
