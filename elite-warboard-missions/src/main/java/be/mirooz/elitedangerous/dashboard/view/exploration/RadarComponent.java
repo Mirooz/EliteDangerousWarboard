@@ -52,7 +52,7 @@ public class RadarComponent {
         radarContainer.setMinHeight(PREF_RADAR_HEIGHT);
         radarContainer.setMaxHeight(PREF_RADAR_HEIGHT);
         radarContainer.setPrefWidth(PREF_RADAR_WIDTH);
-        radarContainer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: -fx-elite-orange; -fx-border-width: 1px;");
+        radarContainer.setStyle("-fx-background-color: #000000; -fx-border-color: -fx-elite-orange; -fx-border-width: 1px;");
 
         radarGroup = new Group();
         radarGroup.setLayoutX(0);
@@ -202,7 +202,7 @@ public class RadarComponent {
 
     private void drawCompassCircle(double centerX, double centerY, double radius) {
         Circle compassCircle = new Circle(centerX, centerY, radius);
-        compassCircle.setFill(Color.TRANSPARENT);
+        compassCircle.setFill(Color.BLACK);
         compassCircle.setStroke(COMPASS_STROKE);
         compassCircle.setStrokeWidth(2);
         radarGroup.getChildren().add(compassCircle);
@@ -388,7 +388,7 @@ public class RadarComponent {
                 exclusionCircle.setStroke(Color.color(sampleColor.getRed(), sampleColor.getGreen(), sampleColor.getBlue(), 0.6));
                 exclusionCircle.setStrokeWidth(1.5);
                 exclusionCircle.getStrokeDashArray().addAll(5.0, 5.0);
-                radarGroup.getChildren().add(0, exclusionCircle);
+                radarGroup.getChildren().add(exclusionCircle);
             }
 
             Circle samplePoint = new Circle(sampleX, sampleY, 4);
