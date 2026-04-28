@@ -38,6 +38,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -86,6 +87,9 @@ public class NavRouteComponent implements Initializable {
 
     @FXML
     private Pane routeSystemsPane;
+
+    @FXML
+    private StackPane navRouteGraphicStackPane;
 
     @FXML
     private HBox modeSelectorContainer;
@@ -683,6 +687,34 @@ public class NavRouteComponent implements Initializable {
         }
     }
 
+    /**
+     * Le client backend formate les erreurs HTTP Spansh avec {@code "HTTP 500"} (voir {@code SpanshFacade}).
+     */
+    private static boolean isSpanshBackendHttp500(Throwable t) {
+        while (t != null) {
+            String msg = t.getMessage();
+            if (msg != null && msg.contains("HTTP 500")) {
+                return true;
+            }
+            t = t.getCause();
+        }
+        return false;
+    }
+
+    private void showSpanshSystemNotFound500Popup() {
+        if (navRouteGraphicStackPane == null) {
+            return;
+        }
+        try {
+            new NavRouteInlineErrorToastComponent(
+                navRouteGraphicStackPane,
+                localizationService.getString("nav.route.spansh.system_not_found_500")
+            );
+        } catch (Exception ex) {
+            System.err.println("⚠️ Toast erreur Spansh (500) : " + ex.getMessage());
+        }
+    }
+
     private void ShowLoadPopup() {
         Platform.runLater(() -> {
             if (modeComboBox != null && modeComboBox.getScene() != null) {
@@ -1003,6 +1035,7 @@ public class NavRouteComponent implements Initializable {
 
             } catch (Exception e) {
                 System.err.println("❌ Erreur lors du chargement de la route " + currentMode.name() + ": " + e.getMessage());
+                final boolean spansh500NotFound = isSpanshBackendHttp500(e);
                 Platform.runLater(() -> {
                     setLoadingVisible(false);
                     // Réactiver le bouton en cas d'erreur
@@ -1010,6 +1043,9 @@ public class NavRouteComponent implements Initializable {
                         reloadButton.setDisable(false);
                     }
                     updateRouteDisplay(null);
+                    if (spansh500NotFound) {
+                        showSpanshSystemNotFound500Popup();
+                    }
                     // En cas d'erreur, la route reste dans le registre (si elle existait)
                     // On ne fait rien, l'utilisateur peut recharger manuellement
                 });

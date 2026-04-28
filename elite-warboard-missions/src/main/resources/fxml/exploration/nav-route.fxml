@@ -49,7 +49,7 @@
     </HBox>
     
     <!-- Pane pour la représentation graphique des systèmes avec indicateur de chargement -->
-    <StackPane alignment="CENTER">
+    <StackPane fx:id="navRouteGraphicStackPane" alignment="CENTER">
         <Pane fx:id="routeSystemsPane" styleClass="nav-route-systems-pane"
               minHeight="70" 
               prefHeight="70"
