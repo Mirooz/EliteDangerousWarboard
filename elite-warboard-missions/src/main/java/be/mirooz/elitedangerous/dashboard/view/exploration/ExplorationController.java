@@ -22,6 +22,8 @@ public class ExplorationController implements Initializable, IBatchListener, IRe
 
     // Conteneurs pour les composants
     @FXML
+    private VBox systemBodiesListWrapper;
+    @FXML
     private VBox systemVisualViewContainer;
     @FXML
     private VBox explorationHistoryDetailContainer;
@@ -68,6 +70,9 @@ public class ExplorationController implements Initializable, IBatchListener, IRe
             SystemVisualViewComponent.setPrimaryInstance(systemVisualView);
             if (systemVisualViewContainer != null) {
                 systemVisualViewContainer.getChildren().add(visualPanel);
+            }
+            if (systemBodiesListWrapper != null) {
+                systemVisualView.reparentBodiesListPanelTo(systemBodiesListWrapper);
             }
 
             // Charger le composant fusionné historique/détails d'exploration

@@ -3504,6 +3504,24 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         return false;
     }
 
+    /**
+     * Déplace la liste des corps vers une colonne externe (exploration : à gauche de la vue orrery).
+     * Les autres chargements du même FXML (colonisation, etc.) ne appellent pas cette méthode.
+     */
+    public void reparentBodiesListPanelTo(Pane targetColumn) {
+        if (bodiesListPanel == null || targetColumn == null) {
+            return;
+        }
+        Parent parent = bodiesListPanel.getParent();
+        if (parent instanceof Pane pane) {
+            pane.getChildren().remove(bodiesListPanel);
+        }
+        targetColumn.getChildren().add(bodiesListPanel);
+        if (targetColumn instanceof VBox) {
+            VBox.setVgrow(bodiesListPanel, Priority.ALWAYS);
+        }
+    }
+
     public void setBodiesListPanelVisible(boolean visible) {
         if (bodiesListPanel == null) {
             return;

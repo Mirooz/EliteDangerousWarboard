@@ -11,15 +11,18 @@
     <!-- Panel de route de navigation (toujours affiché) -->
     <fx:include source="nav-route.fxml"/>
 
-    <!-- Zone principale : Panel haut + Panel gauche (Vue visuelle) + Panel droit (Détails + Historique) -->
+    <!-- Zone principale : liste des corps (gauche) + vue système (centre) + historique (droite) -->
     <HBox spacing="20" styleClass="exploration-content" VBox.vgrow="ALWAYS">
-        
-        <!-- Colonne gauche : Panel haut (Info système avec Stats intégrées) + Vue visuelle -->
-            <!-- Panneau de gauche : Vue visuelle du système -->
-            <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
-        
-        <!-- Panneau de droite : Historique avec navigation + Liste des systèmes visités -->
-            <VBox fx:id="explorationHistoryDetailContainer" spacing="10" VBox.vgrow="ALWAYS"/>
+
+        <!-- Colonne corps du système (déplacée depuis system-visual-view au chargement) -->
+        <VBox fx:id="systemBodiesListWrapper" spacing="0" styleClass="exploration-bodies-list-column"
+              minWidth="400" prefWidth="480" maxWidth="480" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS"/>
+
+        <!-- Vue visuelle du système (titre + orrery, sans la liste des corps) -->
+        <VBox fx:id="systemVisualViewContainer" spacing="10" styleClass="exploration-visual-view" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
+
+        <!-- Historique avec navigation + liste des systèmes visités -->
+        <VBox fx:id="explorationHistoryDetailContainer" spacing="10" VBox.vgrow="ALWAYS"/>
 
     </HBox>
 </VBox>
