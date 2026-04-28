@@ -48,7 +48,7 @@ import java.util.Map;
 public class TargetOverlayComponent {
 
     public static final double MIN_OPPACITY = 0.01;
-    public static final int MIN_WIDTH_OVERLAY = 250;
+    public static final int MIN_WIDTH_OVERLAY = 300;
     public static final int MIN_HEIGHT_OVERLAY = 200;
     private final PreferencesService preferencesService = PreferencesService.getInstance();
 
@@ -405,14 +405,14 @@ public class TargetOverlayComponent {
         grid.setAlignment(Pos.TOP_LEFT);
         
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setMinWidth(150);
-        col1.setPrefWidth(200);
+        col1.setMinWidth(200);
+        col1.setPrefWidth(320);
         col1.setHgrow(Priority.ALWAYS);
         col1.setHalignment(HPos.LEFT);
         
         ColumnConstraints col2 = new ColumnConstraints();
-        col2.setMinWidth(150); // Augmenté encore plus pour éviter la troncature
-        col2.setPrefWidth(150);
+        col2.setMinWidth(100);
+        col2.setPrefWidth(120);
         col2.setHgrow(Priority.NEVER);
         col2.setHalignment(HPos.RIGHT);
         
@@ -443,6 +443,9 @@ public class TargetOverlayComponent {
             // Ajouter la faction cible comme titre de groupe
             Label targetFactionLabel = new Label(targetFaction.getTargetFaction());
             targetFactionLabel.getStyleClass().add("target-faction-header");
+            targetFactionLabel.setWrapText(true);
+            targetFactionLabel.setMaxWidth(Double.MAX_VALUE);
+            GridPane.setHgrow(targetFactionLabel, Priority.ALWAYS);
             
             // Ajouter tooltip et clic pour copier le système de destination
             String destinationSystem = findDestinationSystemForFaction(targetFaction.getTargetFaction(), missions);
@@ -468,9 +471,9 @@ public class TargetOverlayComponent {
             for (SourceFactionStats src : sourcesSnapshot) {
                 Label sourceLabel = new Label("  " + src.getSourceFaction());
                 sourceLabel.getStyleClass().add("source-faction-label");
-                sourceLabel.setWrapText(false);
-                sourceLabel.setPrefWidth(Region.USE_COMPUTED_SIZE);
-                sourceLabel.setMinWidth(Region.USE_COMPUTED_SIZE);
+                sourceLabel.setWrapText(true);
+                sourceLabel.setMaxWidth(Double.MAX_VALUE);
+                GridPane.setHgrow(sourceLabel, Priority.ALWAYS);
                 
                 // Ajouter tooltip et clic pour copier le système d'origine de cette faction
                 String[] sourceInfo = findOriginSystemAndStationForFaction(src.getSourceFaction(), missions);

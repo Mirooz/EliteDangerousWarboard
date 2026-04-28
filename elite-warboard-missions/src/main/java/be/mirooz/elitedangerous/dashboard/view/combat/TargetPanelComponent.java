@@ -145,15 +145,17 @@ public class TargetPanelComponent extends VBox {
         grid.setVgap(5);
         grid.setAlignment(Pos.TOP_LEFT);
 
-        // Colonnes : Source | Kills (la faction cible est maintenant un titre de groupe)
+        // Colonnes : Source (noms longs) | Kills (ex. "42 (-12)" en gras)
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setPrefWidth(150);
+        col1.setMinWidth(200);
+        col1.setPrefWidth(320);
         col1.setHgrow(Priority.ALWAYS);
 
         ColumnConstraints col2 = new ColumnConstraints();
-        col2.setPrefWidth(72);
+        col2.setMinWidth(100);
+        col2.setPrefWidth(120);
         col2.setHalignment(HPos.RIGHT);
-        col2.setHgrow(Priority.NEVER); // kills reste fixe
+        col2.setHgrow(Priority.NEVER);
 
         grid.getColumnConstraints().addAll(col1, col2);
 
@@ -201,7 +203,8 @@ public class TargetPanelComponent extends VBox {
             Label targetFactionLabel = new Label(targetFaction.getTargetFaction());
             targetFactionLabel.getStyleClass().add("target-faction-header");
             targetFactionLabel.setWrapText(true);
-            targetFactionLabel.setMaxWidth(210);
+            targetFactionLabel.setMaxWidth(Double.MAX_VALUE);
+            GridPane.setHgrow(targetFactionLabel, Priority.ALWAYS);
             
             // Ajouter tooltip et clic pour copier le système de destination
             String destinationSystem = findDestinationSystemForFaction(targetFaction.getTargetFaction(), missions);
@@ -223,7 +226,8 @@ public class TargetPanelComponent extends VBox {
                 Label sourceLabel = new Label("  " + src.getSourceFaction()); // Indentation pour montrer la hiérarchie
                 sourceLabel.getStyleClass().add("source-faction-label");
                 sourceLabel.setWrapText(true);
-                sourceLabel.setMaxWidth(140);
+                sourceLabel.setMaxWidth(Double.MAX_VALUE);
+                GridPane.setHgrow(sourceLabel, Priority.ALWAYS);
                 
                 // Ajouter tooltip et clic pour copier le système d'origine de cette faction
                 String[] sourceInfo = findOriginSystemAndStationForFaction(src.getSourceFaction(), missions);
@@ -252,6 +256,9 @@ public class TargetPanelComponent extends VBox {
                     killsLabel.setStyle("-fx-font-size: 19px; -fx-text-fill: #00FF00; ");
                 }
                 killsLabel.getStyleClass().addAll("faction-col", "kills");
+                killsLabel.setWrapText(false);
+                killsLabel.setMinWidth(Region.USE_PREF_SIZE);
+                GridPane.setHgrow(killsLabel, Priority.NEVER);
 
                 // Source dans la colonne 0, kills dans la colonne 1
                 grid.add(sourceLabel, 0, rowIndex);

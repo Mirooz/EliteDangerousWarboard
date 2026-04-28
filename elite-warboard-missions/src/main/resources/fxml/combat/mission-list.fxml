@@ -41,12 +41,12 @@
          </StackPane>
       </VBox>
 
-      <!-- Section des cibles (droite) - Compacte -->
-      <VBox HBox.hgrow="NEVER" spacing="10.0" minWidth="240" maxWidth="480">
+      <!-- Section des cibles (droite) : largeur min plus confortable pour noms de faction + kills -->
+      <VBox HBox.hgrow="NEVER" spacing="10.0" minWidth="360" maxWidth="560">
          <TargetPanelComponent fx:id="targetPanel"
                               styleClass="target-panel-compact"
-                              minWidth="200"
-                              maxWidth="480"
+                              minWidth="320"
+                              maxWidth="560"
                               prefHeight="280"
                               maxHeight="320"
                               VBox.vgrow="NEVER"/>
