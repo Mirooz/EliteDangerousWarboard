@@ -15,6 +15,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSt
 import be.mirooz.elitedangerous.dashboard.service.CarrierTradeService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthBrowserFallbackNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthConnectedNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiServiceDownNotificationComponent;
@@ -448,7 +449,9 @@ public final class CapiApiService {
         try {
             CapiLoginDto response = capiFacade.requestAuthentication(fid);
             String loginUrl = extractLoginUrl(response);
-            openBrowser(loginUrl);
+            if (!openBrowser(loginUrl) && loginUrl != null && !loginUrl.isBlank()) {
+                showCapiAuthBrowserFallbackNotification(loginUrl);
+            }
             startWaitingForApproval(fid);
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
@@ -591,20 +594,96 @@ public final class CapiApiService {
         return null;
     }
 
-    private void openBrowser(String loginUrl) {
+    /**
+     * @return {@code true} si une tentative d’ouverture du navigateur a réussi
+     */
+    private boolean openBrowser(String loginUrl) {
         if (loginUrl == null || loginUrl.isBlank()) {
             System.err.println("CAPI : loginUrl manquante");
-            return;
+            return false;
+        }
+        final URI uri;
+        try {
+            uri = URI.create(loginUrl);
+        } catch (IllegalArgumentException e) {
+            System.err.println("CAPI : loginUrl invalide: " + e.getMessage());
+            return false;
+        }
+        if (tryOpenBrowserWithDesktop(uri)) {
+            System.out.println("CAPI : ouverture navigateur pour auth Frontier");
+            return true;
+        }
+        if (tryOpenBrowserWithSystemLauncher(loginUrl)) {
+            System.out.println("CAPI : ouverture navigateur pour auth Frontier (xdg-open / équivalent)");
+            return true;
+        }
+        System.err.println("CAPI : impossible d'ouvrir le navigateur automatiquement (URL affichée dans la notification)");
+        return false;
+    }
+
+    private void showCapiAuthBrowserFallbackNotification(String loginUrl) {
+        Platform.runLater(() -> {
+            try {
+                Window ownerWindow = getBestOwnerWindow();
+                if (!(ownerWindow instanceof Stage ownerStage)) {
+                    System.err.println("CAPI : aucune fenêtre pour afficher l’URL d’auth");
+                    System.err.println("CAPI : ouvrez manuellement : " + loginUrl);
+                    return;
+                }
+                Scene scene = ownerStage.getScene();
+                StackPane popupContainer = findPopupContainer(scene != null ? scene.getRoot() : null);
+                if (popupContainer == null) {
+                    System.err.println("CAPI : popupContainer introuvable pour l’URL d’auth");
+                    System.err.println("CAPI : ouvrez manuellement : " + loginUrl);
+                    return;
+                }
+                ownerStage.toFront();
+                new CapiAuthBrowserFallbackNotificationComponent(popupContainer, loginUrl);
+            } catch (Exception e) {
+                System.err.println("CAPI : erreur notification URL navigateur: " + e.getMessage());
+                System.err.println("CAPI : ouvrez manuellement : " + loginUrl);
+            }
+        });
+    }
+
+    /**
+     * Sur Linux, {@link Desktop#isDesktopSupported()} peut être vrai alors que {@link Desktop.Action#BROWSE}
+     * n'est pas disponible (message « The BROWSE action is not supported on the current platform! »).
+     */
+    private static boolean tryOpenBrowserWithDesktop(URI uri) {
+        if (!Desktop.isDesktopSupported()) {
+            return false;
+        }
+        Desktop desktop = Desktop.getDesktop();
+        if (!desktop.isSupported(Desktop.Action.BROWSE)) {
+            return false;
         }
         try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(URI.create(loginUrl));
-                System.out.println("CAPI : ouverture navigateur pour auth Frontier");
-            } else {
-                System.err.println("CAPI : navigateur non supporté. URL: " + loginUrl);
-            }
+            desktop.browse(uri);
+            return true;
         } catch (Exception e) {
-            System.err.println("CAPI : erreur ouverture navigateur: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static boolean tryOpenBrowserWithSystemLauncher(String url) {
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        ProcessBuilder pb;
+        if (os.contains("win")) {
+            pb = new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url);
+        } else if (os.contains("mac")) {
+            pb = new ProcessBuilder("open", url);
+        } else {
+            pb = new ProcessBuilder("xdg-open", url);
+        }
+        pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+        pb.redirectError(ProcessBuilder.Redirect.DISCARD);
+        try {
+            pb.start();
+            return true;
+        } catch (IOException e) {
+            System.err.println("CAPI : erreur ouverture navigateur (fallback): " + e.getMessage());
+            return false;
         }
     }
 

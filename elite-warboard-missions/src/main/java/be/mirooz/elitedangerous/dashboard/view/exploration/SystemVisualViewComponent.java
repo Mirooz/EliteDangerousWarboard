@@ -3306,13 +3306,16 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: -fx-elite-orange; -fx-font-weight: bold;");
                             } else {
                                 String color = "#00FF88";
-                                statusLabel.setText("100,0%");
+                                statusLabel.setText("100%");
                                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: " + color + "; -fx-font-weight: bold;");
                                 statusLabel.getStyleClass().add("exploration-body-species-prob");
                             }
                         } else {
                             double prob = sp.getProbability();
-                            statusLabel.setText(String.format("%.1f%%", prob));
+                            double probRoundedTenth = Math.round(prob * 10.0) / 10.0;
+                            statusLabel.setText(probRoundedTenth >= 100.0
+                                    ? "100%"
+                                    : String.format("%.1f%%", prob));
 
                             String color = "#00FF88"; // vert par défaut
 

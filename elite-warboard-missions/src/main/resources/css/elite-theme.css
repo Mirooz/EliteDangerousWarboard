@@ -3822,6 +3822,17 @@
     -fx-font-family: "Arial", sans-serif;
 }
 
+.capi-auth-url-field {
+    -fx-font-size: 11px;
+    -fx-font-family: "Consolas", "Monaco", "Courier New", monospace;
+    -fx-text-fill: -fx-elite-success;
+    -fx-background-color: rgba(0, 0, 0, 0.35);
+    -fx-border-color: rgba(0, 174, 239, 0.45);
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 6 8 6 8;
+}
+
 .capi-auth-approve-button {
     -fx-background-color: -fx-elite-success;
     -fx-text-fill: -fx-elite-dark;
