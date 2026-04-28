@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,8 +77,7 @@ public class JournalService {
             if (commanderName == null || commanderName.isEmpty()) {
                 commanderName = "Unknown";
             }
-            // Récupérer la version de l'application depuis le pom.xml parent
-            boolean profileOk = analyticsService.startSession(commanderName);
+            analyticsService.startSession(commanderName);
 
             // Utiliser la nouvelle méthode qui traite tous les fichiers et met à jour les missions
             List<Mission> missions = parseAllJournalFiles();
@@ -89,8 +89,13 @@ public class JournalService {
                     AppLifecycleService.getInstance().consumeCommanderSwitchFleetRefreshFlag();
             boolean hasRecentCarrierActivity = CarrierTradeService.getInstance()
                     .hasRecentJournalCarrierActivity(SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN);
-            if (profileOk && (forceFleetRefreshAfterCommanderSwitch || !hasRecentCarrierActivity)) {
-                CapiApiService.getInstance().fetchFleetCarrierData();
+            if (forceFleetRefreshAfterCommanderSwitch || !hasRecentCarrierActivity) {
+                CompletableFuture.runAsync(() -> {
+                    boolean profileOk = CapiApiService.getInstance().checkCapiAuthentication();
+                    if (profileOk) {
+                        CapiApiService.getInstance().fetchFleetCarrierData();
+                    }
+                });
             }
 
             return missions;

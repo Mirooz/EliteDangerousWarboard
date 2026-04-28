@@ -194,7 +194,7 @@ paths:
       tags:
       - Capi Controller
       summary: Proxy CAPI données fleet carrier
-      description: "Réponses JSON : DTO CapiFleetCarrierDto (200, 401 ou 502)."
+      description: "Réponses JSON : DTO CapiFleetCarrierDto (200, 401, 418 ou 502)."
       requestBody:
         content:
           application/json:
@@ -273,9 +273,9 @@ paths:
       tags:
       - Capi Controller
       summary: Proxy CAPI marché (snapshot pour publication EDDN côté client)
-      description: "Réponses JSON : DTO CapiMarketDto (200, 401, 409 ou 502). Le champ\
-        \ data.capiMarket est un objet JSON (réponse Frontier /market) pour publication\
-        \ EDDN commodity/3 depuis le Warboard."
+      description: "Réponses JSON : DTO CapiMarketDto (200, 401, 409, 418 ou 502).\
+        \ Le champ data.capiMarket est un objet JSON (réponse Frontier /market) pour\
+        \ publication EDDN commodity/3 depuis le Warboard."
       requestBody:
         content:
           application/json:
@@ -293,7 +293,7 @@ paths:
       tags:
       - Capi Controller
       summary: Vérifie token CAPI et récupère le profil Frontier
-      description: "Réponses JSON : DTO CapiProfileDto (200, 400, 401 ou 502)."
+      description: "Réponses JSON : DTO CapiProfileDto (200, 400, 401, 418 ou 502)."
       parameters:
       - name: commanderName
         in: query

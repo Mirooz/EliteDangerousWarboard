@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.webservice;
 
 import be.mirooz.elitedangerous.backend.capi.CapiFacade;
+import be.mirooz.elitedangerous.backend.capi.CapiServiceDownException;
 import be.mirooz.elitedangerous.backend.capi.CapiWaitApprovalResponse;
 import be.mirooz.elitedangerous.backend.capi.UnauthorizedException;
 import be.mirooz.elitedangerous.backend.generated.model.CapiApiErrorBody;
@@ -16,6 +17,7 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthConnectedNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.CapiAuthNotificationComponent;
+import be.mirooz.elitedangerous.dashboard.view.common.CapiServiceDownNotificationComponent;
 import be.mirooz.elitedangerous.dashboard.view.main.ConfigDialogController;
 import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnUploader;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
@@ -61,6 +63,8 @@ public final class CapiApiService {
      * Empêche plusieurs boucles de long polling concurrentes pour un même commandant.
      */
     private final AtomicBoolean waitingForApproval = new AtomicBoolean(false);
+    private final Object capiServiceDownNotifyLock = new Object();
+    private long lastCapiServiceDownNotifMs;
 
     /**
      * Rappel UI après fin d’attente OAuth (bouton config) ; consommé une fois.
@@ -98,6 +102,8 @@ public final class CapiApiService {
             handleSuccess(payload, response, journalDockedEvent);
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
+        } catch (CapiServiceDownException e) {
+            notifyCapiServiceDownDebounced();
         } catch (IOException e) {
             System.err.println("Market send error: " + e.getMessage());
         }
@@ -135,6 +141,9 @@ public final class CapiApiService {
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
             return false;
+        } catch (CapiServiceDownException e) {
+            notifyCapiServiceDownDebounced();
+            return false;
         } catch (IOException e) {
             System.err.println("CAPI profile check failed: " + e.getMessage());
             promptAuthenticationApproval();
@@ -162,6 +171,9 @@ public final class CapiApiService {
                     && isOauthApproved(profileResponse.getStatus(), profileResponse.getError());
         } catch (UnauthorizedException e) {
             return false;
+        } catch (CapiServiceDownException e) {
+            notifyCapiServiceDownDebounced();
+            return false;
         } catch (IOException e) {
             return false;
         }
@@ -188,6 +200,8 @@ public final class CapiApiService {
             System.out.println("CAPI fleet carrier synced: " + carrierTrade.getCarrierStatus());
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
+        } catch (CapiServiceDownException e) {
+            notifyCapiServiceDownDebounced();
         } catch (IOException e) {
             System.err.println("CAPI fleet carrier fetch failed: " + e.getMessage());
         }
@@ -333,6 +347,39 @@ public final class CapiApiService {
         return null;
     }
 
+    private static final long CAPI_SERVICE_DOWN_NOTIF_MIN_INTERVAL_MS = 15_000L;
+
+    /**
+     * Toast d’avertissement centré ; anti-spam si plusieurs appels CAPI renvoient 418 en rafale.
+     */
+    private void notifyCapiServiceDownDebounced() {
+        long now = System.currentTimeMillis();
+        synchronized (capiServiceDownNotifyLock) {
+            if (now - lastCapiServiceDownNotifMs < CAPI_SERVICE_DOWN_NOTIF_MIN_INTERVAL_MS) {
+                return;
+            }
+            lastCapiServiceDownNotifMs = now;
+        }
+        Platform.runLater(() -> {
+            try {
+                Window ownerWindow = getBestOwnerWindow();
+                if (!(ownerWindow instanceof Stage ownerStage)) {
+                    System.err.println("CAPI service down : aucune fenêtre pour la notification");
+                    return;
+                }
+                Scene scene = ownerStage.getScene();
+                StackPane popupContainer = findPopupContainer(scene != null ? scene.getRoot() : null);
+                if (popupContainer == null) {
+                    System.err.println("CAPI service down : popupContainer introuvable");
+                    return;
+                }
+                new CapiServiceDownNotificationComponent(popupContainer);
+            } catch (Exception e) {
+                System.err.println("CAPI service down : erreur affichage notification: " + e.getMessage());
+            }
+        });
+    }
+
     private void onCapiAuthDeclined() {
         boolean wasEnabled = preferencesService.isCapiLoginEnabled();
         if (wasEnabled) {
@@ -373,6 +420,9 @@ public final class CapiApiService {
             startWaitingForApproval(fid);
         } catch (UnauthorizedException e) {
             handleFrontierAuth(e.getError());
+            notifyLoginApprovalUiCallback(false);
+        } catch (CapiServiceDownException e) {
+            notifyCapiServiceDownDebounced();
             notifyLoginApprovalUiCallback(false);
         } catch (IOException e) {
             System.err.println("CAPI : erreur requestAuthentication: " + e.getMessage());
@@ -442,6 +492,10 @@ public final class CapiApiService {
                     // approved=false (timeout serveur attendu ou réponse négative) → on reboucle sans attendre
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
+                    notifyLoginApprovalUiCallback(false);
+                    return;
+                } catch (CapiServiceDownException e) {
+                    notifyCapiServiceDownDebounced();
                     notifyLoginApprovalUiCallback(false);
                     return;
                 } catch (IOException ioe) {

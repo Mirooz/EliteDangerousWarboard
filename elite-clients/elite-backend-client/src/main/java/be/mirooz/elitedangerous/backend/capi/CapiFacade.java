@@ -121,6 +121,9 @@ public final class CapiFacade {
                 request, HttpResponse.BodyHandlers.ofString());
         int status = response.statusCode();
         String body = response.body();
+        if (status == 418) {
+            throw new CapiServiceDownException();
+        }
         if (status == 400) {
             throw new IOException("CAPI wait-approval: requête rejetée (400) - " + body);
         }
@@ -151,6 +154,9 @@ public final class CapiFacade {
         if (e.getCode() == 401) {
             CapiApiErrorBody error = parseUnauthorizedError(e.getResponseBody());
             throw new UnauthorizedException(error);
+        }
+        if (e.getCode() == 418) {
+            throw new CapiServiceDownException();
         }
         throw new IOException(
                 "CAPI backend " + operation + " call failed: HTTP " + e.getCode() + " - " + e.getMessage(),

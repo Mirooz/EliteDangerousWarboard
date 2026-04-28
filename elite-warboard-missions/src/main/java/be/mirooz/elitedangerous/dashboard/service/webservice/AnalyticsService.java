@@ -17,14 +17,12 @@ import be.mirooz.elitedangerous.backend.spansh.SpanshFacade;
 public class AnalyticsService {
 
     private static final AnalyticsService INSTANCE = new AnalyticsService();
-    private final CapiApiService capiApiService;
     private final AnalyticsClient analyticsClient;
     private final SpanshFacade spanshFacade;
     
     private AnalyticsService() {
         this.analyticsClient = AnalyticsClient.getInstance();
         this.spanshFacade = SpanshFacade.getInstance();
-        this.capiApiService = CapiApiService.getInstance();
     }
     
     public static AnalyticsService getInstance() {
@@ -32,14 +30,11 @@ public class AnalyticsService {
     }
     
     /**
-     * Démarre une session analytics pour un commandant.
-     *
-     * @return {@code true} si le contrôle profil CAPI est OK (authentification Frontier valide).
+     * Démarre une session analytics pour un commandant (appel réseau déjà asynchrone côté client).
+     * Ne bloque pas le thread appelant : aucune vérification CAPI ici.
      */
-    public boolean startSession(String commanderName) {
-        boolean profileOk = capiApiService.checkCapiAuthentication();
+    public void startSession(String commanderName) {
         analyticsClient.startSession(commanderName);
-        return profileOk;
     }
     
     /**

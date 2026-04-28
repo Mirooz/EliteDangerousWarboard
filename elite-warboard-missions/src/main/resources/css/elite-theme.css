@@ -3874,6 +3874,23 @@
     -fx-font-family: "Arial Black", "Arial", sans-serif;
 }
 
+/* Toast « CAPI service down » (HTTP 418) — même coin que « CAPI connected », accent rouge */
+.capi-service-down-notification {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-danger;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 0, 0.45), 12, 0, 0, 2);
+}
+
+.capi-service-down-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-danger;
+    -fx-font-family: "Arial Black", "Arial", sans-serif;
+}
+
 /* Styles pour la fenêtre de dialogue de recherche massacre - Style Elite Dangerous */
 .dialog-content {
     -fx-background-color: -fx-elite-dark;
