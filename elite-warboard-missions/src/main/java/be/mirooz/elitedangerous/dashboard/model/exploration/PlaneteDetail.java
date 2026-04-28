@@ -159,23 +159,20 @@ public class PlaneteDetail extends ACelesteBody {
             // Niveau 2 : filtre par genuses
             if (level == 2) {
 
+                if(bodyName.contains("Wregoe JE-W c16-3")){
+                    System.out.println("here");
+                }
                 if (genuses != null && !genuses.isEmpty()) {
                     matchingSpecies = matchingSpecies.stream()
-                            .filter(species -> {
-                                String speciesPart = species.getKey().getFdevname().split("_")[1];
-                                String speciesPrefix = speciesPart.length() >= 4
-                                        ? speciesPart.substring(0, 4)
-                                        : speciesPart;
+                            .filter(species ->
+                                    genuses.stream().anyMatch(genus -> {
+                                        String g = genus.split("_")[2];
+                                        String s = species.getKey().getFdevname().split("_")[2];
 
-                                return genuses.stream().anyMatch(genus -> {
-                                    String genusPart = genus.split("_")[1];
-                                    String genusPrefix = genusPart.length() >= 4
-                                            ? genusPart.substring(0, 4)
-                                            : genusPart;
-
-                                    return genusPrefix.equalsIgnoreCase(speciesPrefix);
-                                });
-                            })
+                                        return g.length() >= 4 && s.length() >= 4
+                                                && g.substring(0, 4).equalsIgnoreCase(s.substring(0, 4));
+                                    })
+                            )
                             .toList();
                 } else {
                     SpeciesProbability brainTreeProbability = new SpeciesProbability(BioSpecies.brainTree(), 100.0);
