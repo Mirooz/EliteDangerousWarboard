@@ -75,11 +75,7 @@ public class NavRouteOverlayComponent {
     private Runnable onOverlayClosed;
 
     public NavRouteOverlayComponent() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (overlayStage != null && overlayStage.isShowing()) {
-                saveOverlayPreferences();
-            }
-        }));
+        preferencesService.registerOverlayGeometrySaver(this::persistOverlayGeometryForShutdown);
 
         // Écouter les changements de langue pour mettre à jour l'overlay
         localizationService.addLanguageChangeListener(locale -> {
@@ -630,18 +626,27 @@ public class NavRouteOverlayComponent {
         }
     }
 
-    /**
-     * Sauvegarde les préférences de l'overlay
-     */
-    private void saveOverlayPreferences() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            preferencesService.setPreference(NAV_ROUTE_OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
-            preferencesService.setPreference(NAV_ROUTE_OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
-            preferencesService.setPreference(NAV_ROUTE_OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
-            preferencesService.setPreference(NAV_ROUTE_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
-            preferencesService.setPreference(NAV_ROUTE_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
-            preferencesService.setPreference(NAV_ROUTE_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
+    public void persistOverlayGeometryForShutdown() {
+        if (overlayStage == null) {
+            return;
         }
+        writeOverlayGeometryPrefs();
+    }
+
+    private void saveOverlayPreferences() {
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
+        }
+        writeOverlayGeometryPrefs();
+    }
+
+    private void writeOverlayGeometryPrefs() {
+        preferencesService.setPreference(NAV_ROUTE_OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
+        preferencesService.setPreference(NAV_ROUTE_OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
+        preferencesService.setPreference(NAV_ROUTE_OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
+        preferencesService.setPreference(NAV_ROUTE_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
+        preferencesService.setPreference(NAV_ROUTE_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
+        preferencesService.setPreference(NAV_ROUTE_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
     }
 }
 

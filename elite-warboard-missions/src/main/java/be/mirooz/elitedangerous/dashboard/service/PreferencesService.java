@@ -14,12 +14,15 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javafx.application.Platform;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Service pour gérer les préférences utilisateur
@@ -29,6 +32,11 @@ public class PreferencesService {
     private static PreferencesService instance;
     private final Properties preferences;
     private final Path preferencesFile;
+
+    /**
+     * Callbacks overlay : chacun appelle {@link #setPreference} pour écrire dans {@code preferences.properties}.
+     */
+    private final List<Runnable> overlayGeometrySaversBeforeExit = new CopyOnWriteArrayList<>();
 
     /** Cache JSON des stations d’achat suggérées (colonisation), à côté de {@code preferences.properties}. */
     private static final String COLONISATION_SUGGESTED_BUY_STATIONS_FILE = "colonisation-suggested-stations.json";
@@ -195,6 +203,30 @@ public class PreferencesService {
             }
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement des préférences: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Enregistre la sauvegarde géométrie / opacité d’un overlay (fichier prefs, pas autre persistance).
+     */
+    public void registerOverlayGeometrySaver(Runnable saver) {
+        overlayGeometrySaversBeforeExit.add(saver);
+    }
+
+    /**
+     * Thread JavaFX uniquement : à appeler avant {@code Stage.hide()} sur la fenêtre principale
+     * (les overlays owned sont fermés ensuite).
+     */
+    public void flushOverlayGeometryToPreferencesFile() {
+        if (!Platform.isFxApplicationThread()) {
+            return;
+        }
+        for (Runnable r : overlayGeometrySaversBeforeExit) {
+            try {
+                r.run();
+            } catch (Exception e) {
+                System.err.println("[Preferences] overlay geometry flush: " + e.getMessage());
+            }
         }
     }
 

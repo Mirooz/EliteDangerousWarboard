@@ -86,12 +86,8 @@ public class TargetOverlayComponent {
     }
 
     public TargetOverlayComponent() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (overlayStage != null && overlayStage.isShowing()) {
-                saveOverlayPreferences();
-            }
-        }));
-        
+        preferencesService.registerOverlayGeometrySaver(this::persistOverlayGeometryForShutdown);
+
         // Écouter les changements de langue pour mettre à jour l'overlay
         LocalizationService.getInstance().addLanguageChangeListener(locale -> {
             if (overlayStage != null && overlayStage.isShowing()) {
@@ -854,22 +850,31 @@ public class TargetOverlayComponent {
         }
     }
 
-    /**
-     * Sauvegarde les préférences de l'overlay
-     */
-    private void saveOverlayPreferences() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            preferencesService.setPreference(TARGET_OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
-            preferencesService.setPreference(TARGET_OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
-            preferencesService.setPreference(TARGET_OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
-            preferencesService.setPreference(TARGET_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
-            preferencesService.setPreference(TARGET_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
-            preferencesService.setPreference(TARGET_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
-            System.out.println("💾 Préférences target overlay sauvegardées: " +
-                    (int) overlayStage.getWidth() + "x" + (int) overlayStage.getHeight() +
-                    " (opacité: " + String.format("%.2f", overlayOpacity) + 
-                    ", position: " + (int) overlayStage.getX() + "," + (int) overlayStage.getY() +
-                    ", scaling: " + String.format("%.2f", textScale) + ")");
+    public void persistOverlayGeometryForShutdown() {
+        if (overlayStage == null) {
+            return;
         }
+        writeOverlayGeometryPrefs();
+    }
+
+    private void saveOverlayPreferences() {
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
+        }
+        writeOverlayGeometryPrefs();
+    }
+
+    private void writeOverlayGeometryPrefs() {
+        preferencesService.setPreference(TARGET_OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
+        preferencesService.setPreference(TARGET_OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
+        preferencesService.setPreference(TARGET_OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
+        preferencesService.setPreference(TARGET_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
+        preferencesService.setPreference(TARGET_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
+        preferencesService.setPreference(TARGET_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
+        System.out.println("💾 Préférences target overlay sauvegardées: " +
+                (int) overlayStage.getWidth() + "x" + (int) overlayStage.getHeight() +
+                " (opacité: " + String.format("%.2f", overlayOpacity) +
+                ", position: " + (int) overlayStage.getX() + "," + (int) overlayStage.getY() +
+                ", scaling: " + String.format("%.2f", textScale) + ")");
     }
 }

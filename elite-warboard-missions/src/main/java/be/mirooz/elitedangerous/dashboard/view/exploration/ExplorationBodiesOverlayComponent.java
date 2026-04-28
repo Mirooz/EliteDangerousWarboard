@@ -87,11 +87,14 @@ public class ExplorationBodiesOverlayComponent {
     }
 
     public ExplorationBodiesOverlayComponent() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (overlayStage != null && overlayStage.isShowing()) {
-                saveOverlayPreferences();
-            }
-        }));
+        preferencesService.registerOverlayGeometrySaver(this::persistOverlayGeometryForShutdown);
+    }
+
+    public void persistOverlayGeometryForShutdown() {
+        if (overlayStage == null) {
+            return;
+        }
+        writeOverlayGeometryPrefs();
     }
 
     /**
@@ -810,17 +813,19 @@ public class ExplorationBodiesOverlayComponent {
         overlayStage.setY(finalY);
     }
 
-    /**
-     * Sauvegarde les préférences de l'overlay
-     */
     private void saveOverlayPreferences() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
-            preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
-            preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
-            preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
-            preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
-            preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
         }
+        writeOverlayGeometryPrefs();
+    }
+
+    private void writeOverlayGeometryPrefs() {
+        preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
+        preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
+        preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
+        preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
+        preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
+        preferencesService.setPreference(EXPLORATION_BODIES_OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
     }
 }

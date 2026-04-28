@@ -101,11 +101,14 @@ public class FleetCarrierOverlayComponent {
     }
 
     public FleetCarrierOverlayComponent() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (overlayStage != null && overlayStage.isShowing()) {
-                saveOverlayPreferences();
-            }
-        }));
+        preferencesService.registerOverlayGeometrySaver(this::persistOverlayGeometryForShutdown);
+    }
+
+    public void persistOverlayGeometryForShutdown() {
+        if (overlayStage == null) {
+            return;
+        }
+        writeOverlayGeometryPrefs();
     }
 
     /**
@@ -642,13 +645,18 @@ public class FleetCarrierOverlayComponent {
     }
 
     private void saveOverlayPreferences() {
-        if (overlayStage != null && overlayStage.isShowing()) {
-            preferencesService.setPreference(OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
-            preferencesService.setPreference(OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
-            preferencesService.setPreference(OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
-            preferencesService.setPreference(OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
-            preferencesService.setPreference(OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
-            preferencesService.setPreference(OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
+        if (overlayStage == null || !overlayStage.isShowing()) {
+            return;
         }
+        writeOverlayGeometryPrefs();
+    }
+
+    private void writeOverlayGeometryPrefs() {
+        preferencesService.setPreference(OVERLAY_WIDTH_KEY, String.valueOf((int) overlayStage.getWidth()));
+        preferencesService.setPreference(OVERLAY_HEIGHT_KEY, String.valueOf((int) overlayStage.getHeight()));
+        preferencesService.setPreference(OVERLAY_OPACITY_KEY, String.valueOf(overlayOpacity));
+        preferencesService.setPreference(OVERLAY_X_KEY, String.valueOf((int) overlayStage.getX()));
+        preferencesService.setPreference(OVERLAY_Y_KEY, String.valueOf((int) overlayStage.getY()));
+        preferencesService.setPreference(OVERLAY_TEXT_SCALE_KEY, String.valueOf(textScale));
     }
 }

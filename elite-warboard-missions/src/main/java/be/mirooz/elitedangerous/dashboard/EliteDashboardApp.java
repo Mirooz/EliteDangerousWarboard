@@ -98,7 +98,8 @@ public class EliteDashboardApp extends Application {
             });
 
             stage.setOnCloseRequest(event -> {
-                // Sauvegarder la position et la taille avant de fermer
+                // Overlays owned : écrire géométrie dans preferences.properties avant hide du stage principal
+                preferencesService.flushOverlayGeometryToPreferencesFile();
                 saveWindowPosition(stage);
                 stage.hide();
                 AppLifecycleService.getInstance().shutdown("window-close-request", null);

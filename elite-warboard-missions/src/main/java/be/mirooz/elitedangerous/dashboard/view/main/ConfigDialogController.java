@@ -816,6 +816,7 @@ public class ConfigDialogController implements Initializable {
             err.showAndWait();
             return;
         }
+        PreferencesService.getInstance().flushOverlayGeometryToPreferencesFile();
         AppLifecycleService.getInstance().shutdown("commander-data-directory-reset", null, true);
     }
 
