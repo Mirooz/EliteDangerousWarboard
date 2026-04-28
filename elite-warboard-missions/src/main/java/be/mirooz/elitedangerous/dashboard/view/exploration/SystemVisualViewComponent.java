@@ -17,7 +17,9 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.Scan;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SpeciesProbability;
 import be.mirooz.elitedangerous.dashboard.model.exploration.StarDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
 import be.mirooz.elitedangerous.dashboard.service.ExplorationService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
@@ -146,7 +148,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     /** Appelé sur le thread JavaFX juste après {@link #mergeOnlineDataFromSpansh} (liste d’historique, etc.). */
     private Runnable afterSpanshBodiesMerged;
 
+    /** Système affiché : préférer l’instance du {@link SystemVisitedRegistry} ; corps via {@link PlaneteRegistry#resolveCelesteBodiesForView}. */
     private SystemVisited currentSystem;
+    private final PlaneteRegistry planeteRegistry = PlaneteRegistry.getInstance();
     private Map<Integer, BodyPosition> bodyPositions = new HashMap<>();
     private Scale zoomTransform;
     private double currentZoom = 1.0;
@@ -187,7 +191,6 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     }
 
     private ACelesteBody currentJsonBody; // Corps actuellement affiché dans le panneau JSON
-    private Integer filteredBodyID; // BodyID à filtrer (null = pas de filtre)
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
@@ -881,6 +884,39 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
     public void displaySystem(SystemVisited system){
         displaySystem(system,false);
     }
+
+    private static String normalizedSystemName(SystemVisited s) {
+        if (s == null || s.getSystemName() == null) {
+            return null;
+        }
+        String t = s.getSystemName().trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    /**
+     * Instance unique du système dans le registre visité (même nom), sinon l’argument (ex. colonisation hors registre).
+     */
+    private static SystemVisited resolveDisplayedSystemVisited(SystemVisited system) {
+        if (system == null) {
+            return null;
+        }
+        String n = normalizedSystemName(system);
+        if (n == null) {
+            return system;
+        }
+        SystemVisitedRegistry reg = SystemVisitedRegistry.getInstance();
+        SystemVisited from = reg.getSystem(n);
+        if (from != null) {
+            return from;
+        }
+        for (var e : reg.getSystems().entrySet()) {
+            if (e.getKey() != null && e.getKey().equalsIgnoreCase(n)) {
+                return e.getValue();
+            }
+        }
+        return system;
+    }
+
     /**
      * Affiche les corps célestes d'un système dans la vue visuelle avec tri orrery et liens visuels
      */
@@ -890,20 +926,21 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
         Platform.runLater(() -> {
             hideSpanshLoadingLayer();
+            SystemVisited viewSys = resolveDisplayedSystemVisited(system);
+            String oldName = normalizedSystemName(this.currentSystem);
+            String newName = normalizedSystemName(viewSys);
             // Fermer le panneau JSON si un nouveau système est sélectionné
-            if (this.currentSystem != null && system != null &&
-                    !this.currentSystem.equals(system)) {
+            if (this.currentSystem != null && viewSys != null && !Objects.equals(oldName, newName)) {
                 closeJsonPanel();
             }
 
             // Réinitialiser le corps JSON affiché si on change de système
-            if (system == null || (this.currentSystem != null && system != null &&
-                    !this.currentSystem.equals(system))) {
+            if (viewSys == null || (oldName != null && newName != null && !oldName.equals(newName))) {
                 currentJsonBody = null;
             }
 
-            boolean systemSelectionChanged = this.currentSystem != system;
-            this.currentSystem = system;
+            boolean systemSelectionChanged = !Objects.equals(oldName, newName);
+            this.currentSystem = viewSys;
 
             // On reset le déplacement manuel uniquement quand on change de système sélectionné.
             // (Un refresh/re-render du même système, ex. slider spacing, garde la position courante.)
@@ -918,8 +955,8 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
             // Mettre à jour le titre avec le nom du système
             if (systemTitleLabel != null) {
-                if (system != null && system.getSystemName() != null) {
-                    systemTitleLabel.setText(system.getSystemName());
+                if (viewSys != null && viewSys.getSystemName() != null) {
+                    systemTitleLabel.setText(viewSys.getSystemName());
                 } else {
                     systemTitleLabel.setText(localizationService.getString("exploration.system_visual_view"));
                 }
@@ -931,10 +968,10 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             // Mettre à jour l'overlay si il est ouvert
             if (bodiesOverlayComponent != null && bodiesOverlayComponent.isShowing()) {
                 boolean showOnlyHighValue = isHighValueBodyListFilterActive();
-                bodiesOverlayComponent.updateContent(system, showOnlyHighValue);
+                bodiesOverlayComponent.updateContent(viewSys, showOnlyHighValue);
             }
 
-            if (system == null) {
+            if (viewSys == null) {
                 restoreExplorationBodiesHeader();
                 updateBodiesList(null);
                 return;
@@ -947,26 +984,27 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
             if (awaitSpansh) {
                 showSpanshLoadingPlaceholder();
-                scheduleSpanshOnlineDataHydration(system);
+                scheduleSpanshOnlineDataHydration(viewSys);
                 return;
             }
 
             restoreExplorationBodiesHeader();
             // Mettre à jour la liste des corps à gauche
-            updateBodiesList(system);
+            updateBodiesList(viewSys);
 
             // Le zoom optimal sera calculé après le positionnement des corps
 
             if (systemSelectionChanged && PreferencesService.getInstance().isSpanshExplorationLoadEnabled()) {
-                scheduleSpanshOnlineDataHydration(system);
+                scheduleSpanshOnlineDataHydration(viewSys);
             }
 
+            List<ACelesteBody> viewBodies = planeteRegistry.resolveCelesteBodiesForView(viewSys);
             // Créer une map pour lookup rapide
-            Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
+            Map<Integer, ACelesteBody> bodiesMap = viewBodies.stream()
                     .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
 
             // Trier selon la hiérarchie orrery
-            List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
+            List<ACelesteBody> sortedBodies = sortBodiesHierarchically(viewBodies);
 
             // Disposer les corps : étoiles verticalement à gauche, planètes en chaîne horizontale, lunes verticalement
             // Ajouter un gap pour que les planètes ne collent pas au bord (espacements réduits ~15 % via
@@ -1628,10 +1666,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * du premier corps céleste connu. Retourne {@code null} si aucun corps n'a d'adresse valide.
      */
     private static Long extractSystemAddress(SystemVisited sv) {
-        if (sv == null || sv.getCelesteBodies() == null) {
+        if (sv == null) {
             return null;
         }
-        for (var body : sv.getCelesteBodies()) {
+        List<ACelesteBody> bodies = PlaneteRegistry.getInstance().resolveCelesteBodiesForView(sv);
+        if (bodies.isEmpty()) {
+            return null;
+        }
+        for (var body : bodies) {
             if (body == null) {
                 continue;
             }
@@ -2833,16 +2875,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         bodiesListContainer.getChildren().clear();
 
-        if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
+        List<ACelesteBody> viewBodies = planeteRegistry.resolveCelesteBodiesForView(system);
+        if (system == null || viewBodies.isEmpty()) {
             return;
         }
 
         // Créer une map pour lookup rapide
-        Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
+        Map<Integer, ACelesteBody> bodiesMap = viewBodies.stream()
                 .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
 
         // Trier les corps hiérarchiquement
-        List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
+        List<ACelesteBody> sortedBodies = sortBodiesHierarchically(viewBodies);
 
         // Créer une map pour savoir si un corps a des frères suivants au même niveau
         Map<Integer, Boolean> hasNextSibling = new HashMap<>();
@@ -2914,6 +2957,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
 
         // Appliquer le filtre de bodyID si actif (pour n'afficher que le corps approché avec exobio non collecté)
+        Integer filteredBodyID = ExplorationDataSaleRegistry.getInstance().getFilteredBodyID();
         if (filteredBodyID != null && CommanderStatus.getInstance().getCurrentStarSystem().equals(system.getSystemName())) {
             filteredBodies = filteredBodies.stream()
                     .filter(body -> body.getBodyID() == filteredBodyID)
@@ -3296,18 +3340,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                         // Vérifier si cette espèce est en cours d'analyse
                         boolean isAnalyzing = false;
                         ExplorationService explorationService = ExplorationService.getInstance();
-                        if (explorationService.isBiologicalAnalysisInProgress() &&
-                                explorationService.getCurrentAnalysisPlanet() != null &&
-                                explorationService.getCurrentAnalysisPlanet().getBodyID() == planet.getBodyID() &&
-                                explorationService.getCurrentAnalysisSpecies() != null) {
+                        String analysisBody = explorationService.getCurrentAnalysisBodyName();
+                        String analysisSpeciesId = explorationService.getCurrentAnalysisSpeciesId();
+                        if (explorationService.isBiologicalAnalysisInProgress()
+                                && analysisBody != null
+                                && analysisSpeciesId != null
+                                && analysisBody.equals(planet.getBodyName())) {
 
-                            BioSpecies currentSpecies = explorationService.getCurrentAnalysisSpecies();
                             BioSpecies speciesToCheck = (confirmedSpecies != null) ? confirmedSpecies : bioSpecies;
 
-                            // Comparer les espèces par nom
-                            if (speciesToCheck != null && currentSpecies != null &&
-                                    speciesToCheck.getName() != null && currentSpecies.getName() != null &&
-                                    speciesToCheck.getName().equals(currentSpecies.getName())) {
+                            if (speciesToCheck != null
+                                    && analysisSpeciesId.equalsIgnoreCase(speciesToCheck.getId())) {
                                 isAnalyzing = true;
                             }
                         }
@@ -3369,19 +3412,14 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                             // Vérifier si cette espèce est en cours d'analyse
                             boolean isAnalyzing = false;
                             ExplorationService explorationService = ExplorationService.getInstance();
-                            if (explorationService.isBiologicalAnalysisInProgress() &&
-                                    explorationService.getCurrentAnalysisPlanet() != null &&
-                                    explorationService.getCurrentAnalysisPlanet().getBodyID() == planet.getBodyID() &&
-                                    explorationService.getCurrentAnalysisSpecies() != null) {
-
-                                BioSpecies currentSpecies = explorationService.getCurrentAnalysisSpecies();
-
-                                // Comparer les espèces par nom
-                                if (confirmedSpecies != null && currentSpecies != null &&
-                                        confirmedSpecies.getName() != null && currentSpecies.getName() != null &&
-                                        confirmedSpecies.getName().equals(currentSpecies.getName())) {
-                                    isAnalyzing = true;
-                                }
+                            String analysisBody = explorationService.getCurrentAnalysisBodyName();
+                            String analysisSpeciesId = explorationService.getCurrentAnalysisSpeciesId();
+                            if (explorationService.isBiologicalAnalysisInProgress()
+                                    && analysisBody != null
+                                    && analysisSpeciesId != null
+                                    && analysisBody.equals(planet.getBodyName())
+                                    && analysisSpeciesId.equalsIgnoreCase(confirmedSpecies.getId())) {
+                                isAnalyzing = true;
                             }
 
                             // Ajouter le speciesRow à la liste
@@ -3648,16 +3686,17 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             }
         }
 
-        if (system == null || system.getCelesteBodies() == null || system.getCelesteBodies().isEmpty()) {
+        List<ACelesteBody> viewBodies = planeteRegistry.resolveCelesteBodiesForView(system);
+        if (system == null || viewBodies.isEmpty()) {
             return container;
         }
 
         // Créer une map pour lookup rapide
-        Map<Integer, ACelesteBody> bodiesMap = system.getCelesteBodies().stream()
+        Map<Integer, ACelesteBody> bodiesMap = viewBodies.stream()
                 .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
 
         // Trier les corps hiérarchiquement
-        List<ACelesteBody> sortedBodies = sortBodiesHierarchically(system.getCelesteBodies());
+        List<ACelesteBody> sortedBodies = sortBodiesHierarchically(viewBodies);
 
         // Filtrer les corps si nécessaire (seulement les high value)
         List<ACelesteBody> filteredBodies = sortedBodies;
@@ -3668,6 +3707,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         }
 
         // Appliquer le filtre de bodyID si actif (pour n'afficher que le corps approché avec exobio non collecté)
+        Integer filteredBodyID = ExplorationDataSaleRegistry.getInstance().getFilteredBodyID();
         if (filteredBodyID != null && CommanderStatus.getInstance().getCurrentStarSystem().equals(system.getSystemName())) {
             filteredBodies = filteredBodies.stream()
                     .filter(body -> body.getBodyID() == filteredBodyID)
@@ -3753,10 +3793,9 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
      * Filtre la liste des corps pour n'afficher que le corps approché avec exobio non collecté
      */
     @Override
+    @SuppressWarnings("unused")
     public void onBodyFilter(Integer bodyID) {
         Platform.runLater(() -> {
-            filteredBodyID = bodyID;
-            // Rafraîchir la liste des corps avec le nouveau filtre
             if (currentSystem != null) {
                 updateBodiesList(currentSystem);
             }

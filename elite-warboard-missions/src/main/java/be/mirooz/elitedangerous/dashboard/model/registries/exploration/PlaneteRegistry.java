@@ -59,8 +59,8 @@ public class PlaneteRegistry {
     }
 
     /**
-     * Aligner {@link SystemVisited#getCelesteBodies()} sur l'instance canonique du registre :
-     * la vue orrery lit {@code currentSystem.celesteBodies}, pas {@code planetesMap} directement.
+     * Aligner {@link SystemVisited#getCelesteBodies()} sur l'instance canonique du registre.
+     * La vue lit les corps via {@link #resolveCelesteBodiesForView(SystemVisited)} (système courant = {@code planetesMap}).
      */
     private void syncSystemVisitedCanonicalBody(ACelesteBody canonical) {
         if (canonical == null) {
@@ -206,6 +206,50 @@ public class PlaneteRegistry {
 
     public void setCurrentStarSystem(String currentStarSystem) {
         this.currentStarSystem = currentStarSystem;
+    }
+
+    /**
+     * {@code true} si ce {@link SystemVisited} est le système courant du registre planètes (carte journal / jump).
+     */
+    public boolean isLiveRegistrySystem(SystemVisited system) {
+        if (system == null || system.getSystemName() == null || currentStarSystem == null) {
+            return false;
+        }
+        return system.getSystemName().trim().equalsIgnoreCase(currentStarSystem.trim());
+    }
+
+    /**
+     * Corps à afficher pour ce système : une seule logique pour la vue — si le système est celui du registre
+     * et que la carte n'est pas vide, on part des instances canoniques de {@link #planetesMap} (ordre orrery),
+     * puis on ajoute tout corps présent seulement dans le {@link SystemVisited} (ex. enrichissement Spansh).
+     * Sinon, la liste persistée du {@link SystemVisited}.
+     */
+    public List<ACelesteBody> resolveCelesteBodiesForView(SystemVisited system) {
+        if (system == null) {
+            return List.of();
+        }
+        Collection<ACelesteBody> visitedCol = system.getCelesteBodies();
+        if (visitedCol == null) {
+            visitedCol = List.of();
+        }
+        if (!isLiveRegistrySystem(system) || planetesMap.isEmpty()) {
+            return new ArrayList<>(visitedCol);
+        }
+        List<ACelesteBody> fromMap = getSortedBodiesForOrrery();
+        Set<Integer> seen = new HashSet<>();
+        List<ACelesteBody> out = new ArrayList<>(fromMap.size() + 8);
+        for (ACelesteBody b : fromMap) {
+            if (b != null) {
+                seen.add(b.getBodyID());
+                out.add(b);
+            }
+        }
+        visitedCol.stream()
+                .filter(Objects::nonNull)
+                .filter(b -> !seen.contains(b.getBodyID()))
+                .sorted(Comparator.comparing(ACelesteBody::getBodyID))
+                .forEach(out::add);
+        return out;
     }
 
     public void setAllPlanetes(Collection<ACelesteBody> planetes) {

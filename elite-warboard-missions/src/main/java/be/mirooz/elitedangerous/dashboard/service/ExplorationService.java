@@ -5,8 +5,10 @@ import be.mirooz.elitedangerous.dashboard.model.exploration.ACelesteBody;
 import be.mirooz.elitedangerous.dashboard.model.exploration.PlaneteDetail;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Position;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
-import lombok.Getter;
 
 import java.util.*;
 
@@ -14,14 +16,46 @@ public class ExplorationService {
     private static final ExplorationService INSTANCE = new ExplorationService();
 
     private final SystemVisitedRegistry systemVisitedRegistry = SystemVisitedRegistry.getInstance();
+    private final ExplorationDataSaleRegistry explorationDataSaleRegistry = ExplorationDataSaleRegistry.getInstance();
+    private final PlaneteRegistry planeteRegistry = PlaneteRegistry.getInstance();
 
-    @Getter
-    // Analyse biologique en cours
-    private PlaneteDetail currentAnalysisPlanet = null;
-    @Getter
-    private BioSpecies currentAnalysisSpecies = null;
+    private ExplorationService() {
+    }
 
-    private ExplorationService() {}
+    private void setAnalysisInRegistry(String bodyName, String speciesId) {
+        explorationDataSaleRegistry.setCurrentAnalysisBodyName(bodyName);
+        explorationDataSaleRegistry.setCurrentAnalysisSpeciesId(speciesId);
+    }
+
+    public String getCurrentAnalysisBodyName() {
+        return explorationDataSaleRegistry.getCurrentAnalysisBodyName();
+    }
+
+    public String getCurrentAnalysisSpeciesId() {
+        return explorationDataSaleRegistry.getCurrentAnalysisSpeciesId();
+    }
+
+    /**
+     * Retire les échantillons / logs de l'espèce confirmée identifiée sur le corps indiqué
+     * (même logique qu'avant avec la référence {@link BioSpecies}).
+     */
+    private void removeSamplesFromConfirmedSpecies(String bodyName, String speciesId) {
+        if (bodyName == null || speciesId == null) {
+            return;
+        }
+        String starSystem = CommanderStatus.getInstance().getCurrentStarSystem();
+        if (starSystem == null || starSystem.isBlank()) {
+            return;
+        }
+        planeteRegistry.getPlaneteByName(bodyName, starSystem)
+                .filter(PlaneteDetail.class::isInstance)
+                .map(PlaneteDetail.class::cast)
+                .flatMap(p -> p.getConfirmedSpecies().stream()
+                        .filter(s -> speciesId.equalsIgnoreCase(s.getId()))
+                        .findFirst())
+                .ifPresent(BioSpecies::removeAllSamples);
+    }
+
     public static ExplorationService getInstance() {
         return INSTANCE;
     }
@@ -66,19 +100,28 @@ public class ExplorationService {
         systemVisitedRegistry.getSystems().put(currentSystem, system);
     }
     public void setCurrentBiologicalAnalysis(PlaneteDetail planeteDetail, BioSpecies species) {
-        if (planeteDetail != null &&  species != null) {
-            if (planeteDetail != currentAnalysisPlanet || !species.getId().equals(currentAnalysisSpecies.getId())) {
-                if (currentAnalysisSpecies!= null)
-                    currentAnalysisSpecies.removeAllSamples();
+        String prevBody = explorationDataSaleRegistry.getCurrentAnalysisBodyName();
+        String prevSpeciesId = explorationDataSaleRegistry.getCurrentAnalysisSpeciesId();
+
+        if (planeteDetail != null && species != null) {
+            boolean bodyChanged = !Objects.equals(planeteDetail.getBodyName(), prevBody);
+            boolean speciesChanged = !Objects.equals(species.getId(), prevSpeciesId);
+            if (bodyChanged || speciesChanged) {
+                if (prevSpeciesId != null) {
+                    removeSamplesFromConfirmedSpecies(prevBody, prevSpeciesId);
+                }
                 clearCurrentBiologicalAnalysis();
             }
             Position samplePosition = DirectionReaderService.getInstance().readCurrentPosition(planeteDetail.getRadius());
             DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().add(samplePosition);
-            DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius(),species.getColonyRangeMeters());
+            DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius(), species.getColonyRangeMeters());
 
         }
-        this.currentAnalysisPlanet = planeteDetail;
-        this.currentAnalysisSpecies = species;
+        if (planeteDetail != null && species != null) {
+            setAnalysisInRegistry(planeteDetail.getBodyName(), species.getId());
+        } else {
+            setAnalysisInRegistry(null, null);
+        }
     }
 
     public List<Position> getCurrentBiologicalSamplesPosition() {
@@ -95,8 +138,7 @@ public class ExplorationService {
      */
     public void clearCurrentBiologicalAnalysis() {
         DirectionReaderService.getInstance().stopWatchingStatusFile();
-        this.currentAnalysisPlanet = null;
-        this.currentAnalysisSpecies = null;
+        setAnalysisInRegistry(null, null);
         DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().clear();
     }
 
@@ -104,10 +146,12 @@ public class ExplorationService {
      * Indique si une analyse biologique est en cours.
      */
     public boolean isBiologicalAnalysisInProgress() {
-        return currentAnalysisPlanet != null && currentAnalysisSpecies != null;
+        return explorationDataSaleRegistry.getCurrentAnalysisBodyName() != null
+                && explorationDataSaleRegistry.getCurrentAnalysisSpeciesId() != null;
     }
 
     public boolean isCurrentBiologicalAnalysisOnCurrentPlanet(String planeteName) {
-        return currentAnalysisPlanet != null && currentAnalysisPlanet.getBodyName().equals(planeteName);
+        String body = explorationDataSaleRegistry.getCurrentAnalysisBodyName();
+        return body != null && body.equals(planeteName);
     }
 }

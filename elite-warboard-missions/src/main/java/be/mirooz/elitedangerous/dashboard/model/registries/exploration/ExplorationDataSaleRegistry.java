@@ -28,6 +28,16 @@ public class ExplorationDataSaleRegistry {
 
     private ExplorationDataOnHold explorationDataOnHold = null;
 
+    /** Analyse biologique en cours : nom du corps et id d'espèce (persistés avec le registry). */
+    @JsonProperty("currentAnalysisBodyName")
+    private String currentAnalysisBodyName;
+    @JsonProperty("currentAnalysisSpeciesId")
+    private String currentAnalysisSpeciesId;
+
+    /** Filtre liste corps (exobio) : un seul {@code bodyID}, ou null. */
+    @JsonProperty("filteredBodyID")
+    private Integer filteredBodyID;
+
     private ExplorationDataSaleRegistry() {
     }
 
@@ -139,6 +149,9 @@ public class ExplorationDataSaleRegistry {
     public void clearAll(){
         clearOnHold();
         getAllSales().clear();
+        currentAnalysisBodyName = null;
+        currentAnalysisSpeciesId = null;
+        filteredBodyID = null;
     }
     /**
      * Retourne le nombre de ventes dans le registry.

@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service.listeners;
 
+import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 
 import java.util.List;
@@ -105,6 +106,7 @@ public class ExplorationRefreshNotificationService {
      */
     public void notifyBodyFilter(Integer bodyID) {
         System.out.println("Notify body filter Explo for bodyID:" + bodyID);
+        ExplorationDataSaleRegistry.getInstance().setFilteredBodyID(bodyID);
         for (BodyFilterListener listener : bodyFilterListeners) {
             try {
                 listener.onBodyFilter(bodyID);

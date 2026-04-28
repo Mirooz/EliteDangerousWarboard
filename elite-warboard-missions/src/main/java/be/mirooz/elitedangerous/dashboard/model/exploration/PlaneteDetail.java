@@ -159,9 +159,6 @@ public class PlaneteDetail extends ACelesteBody {
             // Niveau 2 : filtre par genuses
             if (level == 2) {
 
-                if(bodyName.contains("Wregoe JE-W c16-3")){
-                    System.out.println("here");
-                }
                 if (genuses != null && !genuses.isEmpty()) {
                     matchingSpecies = matchingSpecies.stream()
                             .filter(species ->
