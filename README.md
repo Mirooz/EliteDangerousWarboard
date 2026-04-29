@@ -50,7 +50,7 @@ See **constructions in progress** on the system map (**Architect**) and follow *
 
 **→ [Colonization](docs/modules/colonisation.md)** (documentation — ongoing builds, multi-commodity market runs, FC, CAPI, overlay, screenshots)
 
-<img src="elite-warboard-missions/src/main/resources/images/readme/colonisation/newcolony.png" alt="Colonization — construction tracking and market tools" style="max-width: 920px;">
+<img src="elite-warboard-missions/src/main/resources/images/readme/colonisation/architectview.png" alt="Colonization — construction tracking and market tools" style="max-width: 920px;">
 
 ---
 
