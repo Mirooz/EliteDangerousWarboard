@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -44,7 +45,7 @@ public class DirectionReaderService {
     }
 
     @Getter
-    private final List<Position> currentBiologicalSamplePositions = new ArrayList<>();
+    private final List<Position> currentBiologicalSamplePositions = new CopyOnWriteArrayList<>();
     private ScheduledFuture<?> statusWatcherTask;
     // Thread de surveillance
     private volatile boolean watching = false;
