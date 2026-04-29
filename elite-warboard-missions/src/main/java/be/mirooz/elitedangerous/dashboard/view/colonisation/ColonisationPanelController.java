@@ -3393,6 +3393,10 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             return ColonisationService.DEFAULT_NEARBY_BUY_MAX_DISTANCE_LY;
         }
         try {
+            // Spinner éditable : le texte n’est appliqué au modèle qu’après commit (souvent au blur).
+            // Sans ceci, un clic sur « marché optimal » alors que le focus est encore dans le champ
+            // lit l’ancienne valeur via getValue().
+            fleetOptimalMarketMaxDistanceLySpinner.commitValue();
             int v = fleetOptimalMarketMaxDistanceLySpinner.getValue();
             return Math.min(FLEET_OPTIMAL_MAX_DISTANCE_LY_MAX, Math.max(FLEET_OPTIMAL_MAX_DISTANCE_LY_MIN, v));
         } catch (Exception e) {
