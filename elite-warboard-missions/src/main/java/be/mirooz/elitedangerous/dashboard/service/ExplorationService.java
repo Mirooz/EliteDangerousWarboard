@@ -9,6 +9,7 @@ import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderSt
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationDataSaleRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.PlaneteRegistry;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.SystemVisitedRegistry;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 
 import java.util.*;
 
@@ -113,9 +114,11 @@ public class ExplorationService {
                 }
                 clearCurrentBiologicalAnalysis();
             }
-            Position samplePosition = DirectionReaderService.getInstance().readCurrentPosition(planeteDetail.getRadius());
-            DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().add(samplePosition);
-            DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius(), species.getColonyRangeMeters());
+            if (!DashboardContext.getInstance().isBatchLoading()) {
+                Position samplePosition = DirectionReaderService.getInstance().readCurrentPosition(planeteDetail.getRadius());
+                DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().add(samplePosition);
+                DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius(), species.getColonyRangeMeters());
+            }
 
         }
         if (planeteDetail != null && species != null) {

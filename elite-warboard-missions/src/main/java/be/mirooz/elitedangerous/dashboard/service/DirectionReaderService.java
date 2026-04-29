@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.view.exploration.RadarComponent;
 import be.mirooz.elitedangerous.dashboard.model.exploration.Position;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.beans.property.ObjectProperty;
@@ -102,6 +103,9 @@ public class DirectionReaderService {
     private volatile long lastModified = 0;
 
     public void startWatchingStatusFile(double radius,double colonyRangeMeter) {
+        if (DashboardContext.getInstance().isBatchLoading()) {
+            return;
+        }
         if (watching) {
             this.colonyRangeMeter = colonyRangeMeter;
             RadarComponent radarComponent = RadarComponent.getPrimaryInstance();
@@ -192,6 +196,9 @@ public class DirectionReaderService {
      * Arrête la surveillance du fichier Status.json
      */
     public void stopWatchingStatusFile() {
+        if (DashboardContext.getInstance().isBatchLoading()) {
+            return;
+        }
         watching = false;
         if (statusWatcherTask != null){
             statusWatcherTask.cancel(true);
