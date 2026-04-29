@@ -147,7 +147,7 @@ public final class EddnClient {
                              String gameVersion,
                              String gameBuild,
                              ObjectNode body) {
-        EddnPersonalDataStripper.stripInPlace(body);
+        EddnPersonalDataStripper.stripInPlace(body, schemaRef);
 
         ObjectNode envelope = EddnEnvelope.build(
                 schemaRef,

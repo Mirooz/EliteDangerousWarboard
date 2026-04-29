@@ -127,7 +127,11 @@
                             <useLongIntegers>true</useLongIntegers>
                             <useDoubleNumbers>true</useDoubleNumbers>
                             <includeJsr303Annotations>false</includeJsr303Annotations>
-                            <includeAdditionalProperties>false</includeAdditionalProperties>
+                            <!-- true : les schémas EDDN « message » avec additionalProperties: true (ex. journal/1)
+                                 produisent une Map Jackson (@JsonAnySetter) pour tout champ non listé dans properties
+                                 (BodyName, Signals, …) — désérialisation / sérialisation complète. Les schémas stricts
+                                 (additionalProperties: false sur le corps message) ne gagnent pas cette Map. -->
+                            <includeAdditionalProperties>true</includeAdditionalProperties>
                             <includeGeneratedAnnotation>false</includeGeneratedAnnotation>
                             <initializeCollections>false</initializeCollections>
                             <generateBuilders>true</generateBuilders>

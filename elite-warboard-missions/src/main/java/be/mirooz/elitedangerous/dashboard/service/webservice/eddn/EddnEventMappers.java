@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service.webservice.eddn;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.eddn.EddnEnvelope;
+import be.mirooz.elitedangerous.eddn.EddnJournalMessageSanitizer;
 import be.mirooz.elitedangerous.eddn.EddnMessages;
 import be.mirooz.elitedangerous.eddn.generated.EddnMessage__10;
 import be.mirooz.elitedangerous.eddn.generated.EddnMessage__3;
@@ -20,23 +21,17 @@ import java.util.Set;
 /**
  * Mappers : {@code journal JsonNode} → {@code EDDN POJO typé} ({@link EddnMessages}).
  *
- * <p>Un mapper par schéma EDDN. Chaque mapper renvoie un POJO typé généré à partir des JSON Schemas
- * officiels, garantissant par construction que l'output respecte {@code additionalProperties: false}
- * pour les schémas stricts (les setters et la {@code @JsonPropertyOrder} héritée du POJO généré
- * définissent exactement les champs sérialisables).</p>
+ * <p>La plupart des mappers renvoient un POJO généré à partir des JSON Schemas officiels, ce qui garantit
+ * par construction {@code additionalProperties: false} sur les schémas stricts.</p>
  *
- * <p>Deux techniques cohabitent, selon la complexité :</p>
+ * <p>Deux techniques cohabitent :</p>
  * <ul>
- *   <li><b>Field-by-field</b> : lecture explicite des champs du raw event et appel des setters du POJO.
- *       Utilisé pour {@code DockingGranted}, {@code DockingDenied}, {@code FSSSignalDiscovered} où le
- *       reshaping (signals[] en particulier) est trop spécifique pour un mapping automatique.</li>
- *   <li><b>Enrich + {@link ObjectMapper#treeToValue treeToValue}</b> : l'{@link ObjectNode} enrichi
- *       (StarSystem / StarPos / horizons / odyssey injectés au besoin) est converti en POJO par Jackson.
- *       Les champs inconnus du POJO sont silencieusement droppés ({@code FAIL_ON_UNKNOWN_PROPERTIES=false}
- *       configuré sur {@link EddnEnvelope#mapper()}). Utilisé pour les schémas strict-mais-riches
- *       (ApproachSettlement, CodexEntry, FSS*, NavBeaconScan, ScanBaryCentre, FCMaterials) et pour le
- *       {@code journal/1} lax (la POJO Journal expose un {@code Map<String,Object> additionalProperties}
- *       qui préserve les champs event-spécifiques).</li>
+ *   <li><b>Field-by-field</b> : {@code DockingGranted}, {@code DockingDenied}, {@code FSSSignalDiscovered}
+ *       (reshaping trop spécifique pour {@code treeToValue}).</li>
+ *   <li><b>Enrich + {@link ObjectMapper#treeToValue treeToValue}</b> : {@link ObjectNode} enrichi converti
+ *       en POJO. Schémas stricts : champs inconnus ignorés ({@code FAIL_ON_UNKNOWN_PROPERTIES=false}).
+ *       {@code journal/1} : le POJO généré inclut une carte {@code additionalProperties} (jsonschema2pojo
+ *       avec {@code includeAdditionalProperties=true}) pour BodyName, Signals, …</li>
  * </ul>
  *
  * <p>Les mappers <b>fichier-compagnon</b> ({@link #mapCommodity}, {@link #mapOutfitting},
@@ -57,24 +52,20 @@ final class EddnEventMappers {
     }
 
     // ==================================================================
-    //  Schéma journal/1 (lax) : 6 events, additionalProperties géré par le POJO
+    //  Schéma journal/1 : POJO avec additionalProperties (jsonschema2pojo) + sanitaire schéma-driven
     // ==================================================================
 
     /**
-     * Mappe un event {@code Docked / FSDJump / Location / CarrierJump / Scan / SAASignalsFound}
-     * vers {@link EddnMessages.Journal}. Les champs event-spécifiques (ex. {@code BodyName},
-     * {@code StationType}, {@code Signals}…) finissent dans {@code additionalProperties} du POJO
-     * et sont re-sérialisés intacts.
+     * Prépare le corps {@code message} pour {@code journal/1}. Le POJO {@link EddnMessages.Journal} est
+     * généré avec {@code additionalProperties} Jackson ({@code @JsonAnySetter}) pour tout champ hors
+     * {@code properties} explicites du schéma ({@code BodyName}, {@code Signals}, …).
+     *
+     * <p>Le nettoyage {@link EddnJournalMessageSanitizer} retire les racines {@code disallowed} lues une
+     * fois dans le schéma bundlé, puis l’enrichissement complète les champs requis journal/1.</p>
      */
     EddnMessages.Journal mapJournal(JsonNode raw) throws JsonProcessingException {
         ObjectNode msg = (ObjectNode) raw.deepCopy();
-        // journal/1 : Latitude, Longitude, Traits, VoucherAmount sont en "#/definitions/disallowed"
-        // (schéma officiel) — pas seulement sur Location. Ne pas retirer via stripper global : codexentry/1
-        // autorise Traits, VoucherAmount, Latitude, Longitude sur son propre schéma.
-        msg.remove("Latitude");
-        msg.remove("Longitude");
-        msg.remove("Traits");
-        msg.remove("VoucherAmount");
+        EddnJournalMessageSanitizer.prepareJournalV1MessageInPlace(msg);
         ensureStarSystem(msg);
         ensureStarPosAndSystemAddress(msg);
         ensureHorizonsOdyssey(msg);

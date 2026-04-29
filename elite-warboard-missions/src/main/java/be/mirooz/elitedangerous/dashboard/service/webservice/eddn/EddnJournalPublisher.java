@@ -12,11 +12,10 @@ import com.fasterxml.jackson.databind.JsonNode;
  * {@link EddnEventMappers mapper typé} qui renvoie un POJO EDDN généré, puis publie via
  * {@link EddnUploader}.
  *
- * <p>La classe ne manipule plus aucun {@link com.fasterxml.jackson.databind.node.ObjectNode} :
- * toute la logique de mapping / enrichissement / transformation spec vit dans
- * {@link EddnEventMappers}. Le flux est donc :</p>
+ * <p>Toute la logique de mapping / enrichissement / transformation spec vit dans
+ * {@link EddnEventMappers}. Le flux est :</p>
  * <pre>
- *   JsonNode raw  →  mapper.mapXxx(raw)  →  EddnMessages.Xxx POJO  →  uploader.publishMessage(...)
+ *   JsonNode raw  →  mapper.mapXxx(raw)  →  EddnMessages.* POJO  →  uploader.publishMessage(...)
  * </pre>
  *
  * <p>Le routeur conserve une seule responsabilité annexe : tracker le contexte commandant
