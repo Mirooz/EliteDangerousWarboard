@@ -1307,7 +1307,7 @@ public class ExplorationJournalEventSimulatorTool {
         }
     }
 
-    private static final class JournalContext {
+    static final class JournalContext {
         private String currentStarSystem;
         private long currentSystemAddress;
         private String lastDockedStarSystem;
@@ -1352,7 +1352,7 @@ public class ExplorationJournalEventSimulatorTool {
     private record WeightedMode(ScanGenerationMode mode, int weight) {
     }
 
-    private static final class BodyNode {
+    static final class BodyNode {
         private final int bodyId;
         private final String bodyName;
         private final BodyKind kind;
@@ -1388,7 +1388,7 @@ public class ExplorationJournalEventSimulatorTool {
         }
     }
 
-    private static final class OrganicCycleState {
+    static final class OrganicCycleState {
         private int speciesIndex;
         private int nextStep;
     }
@@ -1415,7 +1415,7 @@ public class ExplorationJournalEventSimulatorTool {
     ) {
     }
 
-    private static final class SystemModel {
+    static final class SystemModel {
         private final String starSystem;
         private long systemAddress;
         private int maxBodyId;
