@@ -11,9 +11,11 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExplorationJournalEventSimulatorToolTest {
@@ -40,37 +42,117 @@ class ExplorationJournalEventSimulatorToolTest {
     }
 
     @Test
-    void scanReprendLeSystemeEtLAdresseCourants() throws Exception {
+    void timestampEstToujoursLeDernierPlusUneSeconde() throws Exception {
         Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
         Files.writeString(log, """
                 { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
                 """, StandardCharsets.UTF_8);
 
         ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(7));
+        tool.simulateAndAppend("scan", tempDir, Map.of("timestamp", "2099-01-01T00:00:00Z"));
+
+        JsonNode appended = readLastJsonLine(log);
+        assertEquals("2026-04-30T10:00:01Z", appended.path("timestamp").asText());
+    }
+
+    @Test
+    void premierScanDuSystemeEstToujoursUneEtoileAvecNomCoherent() throws Exception {
+        Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
+        Files.writeString(log, """
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
+                """, StandardCharsets.UTF_8);
+
+        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(9));
         tool.simulateAndAppend("scan", tempDir, Map.of());
 
         JsonNode appended = readLastJsonLine(log);
         assertEquals("Scan", appended.path("event").asText());
-        assertEquals("Swoilz EY-G b41-0", appended.path("StarSystem").asText());
-        assertEquals(684105803617L, appended.path("SystemAddress").asLong());
+        assertTrue(appended.has("StarType"));
+        assertTrue(Pattern.compile("^Swoilz EY-G b41-0 [A-Z]$").matcher(appended.path("BodyName").asText()).matches());
     }
 
     @Test
-    void scanOrganicCibleLaPlaneteDuDernierSystemeDocke() throws Exception {
+    void scansSuivantsRespectentUneHierarchieClassiqueSansSublune() throws Exception {
         Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
         Files.writeString(log, """
-                { "timestamp":"2026-04-30T10:00:00Z", "event":"Scan", "BodyName":"Other System A 1", "BodyID":1, "StarSystem":"Other System", "SystemAddress":111, "PlanetClass":"Rocky body" }
-                { "timestamp":"2026-04-30T10:01:00Z", "event":"Scan", "BodyName":"Docked System A 7", "BodyID":7, "StarSystem":"Docked System", "SystemAddress":222, "PlanetClass":"Rocky body" }
-                { "timestamp":"2026-04-30T10:02:00Z", "event":"Docked", "StarSystem":"Docked System", "SystemAddress":222, "StationName":"Port Example", "MarketID":123 }
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
                 """, StandardCharsets.UTF_8);
 
-        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(9));
-        tool.simulateAndAppend("scanorganic", tempDir, Map.of());
+        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(2));
+        tool.simulateAndAppend("scan", tempDir, Map.of()); // first: star
+        tool.simulateAndAppend("scan", tempDir, Map.of());
+        tool.simulateAndAppend("scan", tempDir, Map.of());
+        tool.simulateAndAppend("scan", tempDir, Map.of());
 
-        JsonNode appended = readLastJsonLine(log);
-        assertEquals("ScanOrganic", appended.path("event").asText());
-        assertEquals(222L, appended.path("SystemAddress").asLong());
-        assertEquals(7, appended.path("Body").asInt());
+        List<JsonNode> scans = readScanLines(log);
+        assertTrue(scans.size() >= 4);
+        JsonNode first = scans.get(0);
+        assertTrue(first.has("StarType"));
+
+        for (int i = 1; i < scans.size(); i++) {
+            JsonNode scan = scans.get(i);
+            String bodyName = scan.path("BodyName").asText();
+            JsonNode parents = scan.path("Parents");
+
+            if (scan.has("StarType")) {
+                assertTrue(Pattern.compile("^Swoilz EY-G b41-0 [A-Z]$").matcher(bodyName).matches());
+                continue;
+            }
+
+            if (!parents.isArray() || parents.isEmpty()) {
+                throw new AssertionError("Parents manquant pour body " + bodyName);
+            }
+
+            boolean hasPlanetParent = false;
+            for (JsonNode parent : parents) {
+                if (parent.has("Planet")) {
+                    hasPlanetParent = true;
+                    break;
+                }
+            }
+            if (hasPlanetParent) {
+                // lune: "<system> <StarLetter> <n> <letter>"
+                assertTrue(Pattern.compile("^Swoilz EY-G b41-0 [A-Z] \\d+ [a-z]$").matcher(bodyName).matches());
+            } else {
+                // planète: "<system> <StarLetter> <n>"
+                assertTrue(Pattern.compile("^Swoilz EY-G b41-0 [A-Z] \\d+$").matcher(bodyName).matches());
+            }
+        }
+    }
+
+    @Test
+    void dockedEtScanOrganicExigentUnePlaneteSelectionnee() throws Exception {
+        Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
+        Files.writeString(log, """
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
+                { "timestamp":"2026-04-30T10:00:01Z", "event":"Scan", "ScanType":"AutoScan", "BodyName":"Swoilz EY-G b41-0 A", "BodyID":1, "Parents":[ {"Null":0} ], "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617, "DistanceFromArrivalLS":0.0, "StarType":"M", "Subclass":3, "StellarMass":0.3, "Radius":300000000.0, "AbsoluteMagnitude":9.1, "Age_MY":1000, "SurfaceTemperature":3000.0, "Luminosity":"V", "SemiMajorAxis":1000000000.0, "Eccentricity":0.0, "OrbitalInclination":0.0, "Periapsis":0.0, "OrbitalPeriod":1000.0, "AscendingNode":0.0, "MeanAnomaly":0.0, "RotationPeriod":1000.0, "AxialTilt":0.0, "WasDiscovered":false, "WasMapped":false, "WasFootfalled":false }
+                """, StandardCharsets.UTF_8);
+
+        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(3));
+        assertThrows(IllegalArgumentException.class, () -> tool.simulateAndAppend("docked", tempDir, Map.of()));
+        assertThrows(IllegalArgumentException.class, () -> tool.simulateAndAppend("scanorganic", tempDir, Map.of()));
+    }
+
+    @Test
+    void dockedEtScanOrganicUtilisentLaPlaneteSelectionnee() throws Exception {
+        Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
+        Files.writeString(log, """
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
+                { "timestamp":"2026-04-30T10:00:01Z", "event":"Scan", "ScanType":"Detailed", "BodyName":"Swoilz EY-G b41-0 A 1", "BodyID":12, "Parents":[ {"Star":1}, {"Null":0} ], "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617, "DistanceFromArrivalLS":250.0, "TidalLock":true, "TerraformState":"", "PlanetClass":"Rocky body", "Atmosphere":"", "AtmosphereType":"None", "Volcanism":"", "MassEM":0.01, "Radius":1000000.0, "SurfaceGravity":1.0, "SurfaceTemperature":200.0, "SurfacePressure":0.0, "Landable":true, "Materials":[ {"Name":"iron", "Percent":20.0} ], "Composition":{"Ice":0.0, "Rock":0.7, "Metal":0.3}, "SemiMajorAxis":1000.0, "Eccentricity":0.0, "OrbitalInclination":0.0, "Periapsis":0.0, "OrbitalPeriod":1000.0, "AscendingNode":0.0, "MeanAnomaly":0.0, "RotationPeriod":1000.0, "AxialTilt":0.0, "WasDiscovered":false, "WasMapped":false, "WasFootfalled":false }
+                """, StandardCharsets.UTF_8);
+
+        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(6));
+        tool.simulateAndAppend("docked", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode docked = readLastJsonLine(log);
+        assertEquals("Docked", docked.path("event").asText());
+        assertEquals("Swoilz EY-G b41-0 A 1", docked.path("Body").asText());
+        assertEquals(12, docked.path("BodyID").asInt());
+
+        tool.simulateAndAppend("scanorganic", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode organic = readLastJsonLine(log);
+        assertEquals("ScanOrganic", organic.path("event").asText());
+        assertEquals(684105803617L, organic.path("SystemAddress").asLong());
+        assertEquals(12, organic.path("Body").asInt());
     }
 
     @Test
@@ -78,10 +160,13 @@ class ExplorationJournalEventSimulatorToolTest {
         Path oldLog = tempDir.resolve("Journal.2026-04-30T090000.01.log");
         Path latestLog = tempDir.resolve("Journal.2026-04-30T100000.01.log");
         Files.writeString(oldLog, "{ \"timestamp\":\"2026-04-30T09:00:00Z\", \"event\":\"Fileheader\" }\n", StandardCharsets.UTF_8);
-        Files.writeString(latestLog, "{ \"timestamp\":\"2026-04-30T10:00:00Z\", \"event\":\"Fileheader\" }\n", StandardCharsets.UTF_8);
+        Files.writeString(latestLog, """
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"Fileheader" }
+                { "timestamp":"2026-04-30T10:00:01Z", "event":"Scan", "ScanType":"Detailed", "BodyName":"Swoilz EY-G b41-0 A 1", "BodyID":12, "Parents":[ {"Star":1}, {"Null":0} ], "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617, "DistanceFromArrivalLS":250.0, "TidalLock":true, "TerraformState":"", "PlanetClass":"Rocky body", "Atmosphere":"", "AtmosphereType":"None", "Volcanism":"", "MassEM":0.01, "Radius":1000000.0, "SurfaceGravity":1.0, "SurfaceTemperature":200.0, "SurfacePressure":0.0, "Landable":true, "Materials":[ {"Name":"iron", "Percent":20.0} ], "Composition":{"Ice":0.0, "Rock":0.7, "Metal":0.3}, "SemiMajorAxis":1000.0, "Eccentricity":0.0, "OrbitalInclination":0.0, "Periapsis":0.0, "OrbitalPeriod":1000.0, "AscendingNode":0.0, "MeanAnomaly":0.0, "RotationPeriod":1000.0, "AxialTilt":0.0, "WasDiscovered":false, "WasMapped":false, "WasFootfalled":false }
+                """, StandardCharsets.UTF_8);
 
         ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(2));
-        Path updated = tool.simulateAndAppend("docked", tempDir, Map.of());
+        Path updated = tool.simulateAndAppend("docked", tempDir, Map.of("selected-body-id", "12"));
 
         assertEquals(latestLog, updated);
         List<String> oldLines = Files.readAllLines(oldLog, StandardCharsets.UTF_8);
@@ -94,5 +179,19 @@ class ExplorationJournalEventSimulatorToolTest {
         List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
         String last = lines.get(lines.size() - 1);
         return MAPPER.readTree(last);
+    }
+
+    private static List<JsonNode> readScanLines(Path file) throws Exception {
+        List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+        return lines.stream()
+                .map(line -> {
+                    try {
+                        return MAPPER.readTree(line);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .filter(node -> "Scan".equals(node.path("event").asText()))
+                .toList();
     }
 }

@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -41,6 +43,7 @@ public class ExplorationJournalEventSimulatorTool {
     private static final List<String> SYSTEM_PREFIXES = List.of(
             "Swoilz", "Dryooe", "Bleia", "Hypua", "Prua", "Trifid"
     );
+    private static final List<String> STAR_TYPES = List.of("M", "K", "G", "F", "A");
 
     private final Random random;
 
@@ -141,10 +144,65 @@ public class ExplorationJournalEventSimulatorTool {
 
             updateMaxBodyIdFromNode(context, node);
 
-            if ("Scan".equals(event) && node.has("PlanetClass")) {
-                buildPlanetFromScan(node).ifPresent(planet -> registerPlanet(context, planet));
+            if ("Scan".equals(event)) {
+                buildBodyNodeFromScan(node, context.lastTimestamp).ifPresent(body -> {
+                    SystemModel model = context.systems.computeIfAbsent(
+                            key(body.starSystem),
+                            k -> new SystemModel(body.starSystem, body.systemAddress)
+                    );
+                    if (model.systemAddress <= 0 && body.systemAddress > 0) {
+                        model.systemAddress = body.systemAddress;
+                    }
+                    model.register(body);
+                    if (body.isPlanetary()) {
+                        registerPlanet(context, new PlanetContext(body.bodyName, body.bodyId, body.starSystem, body.systemAddress));
+                        context.selectedPlanet = body;
+                    }
+                });
             } else if (isPlanetProximityEvent(event, node)) {
-                buildPlanetFromGenericBodyEvent(node).ifPresent(planet -> registerPlanet(context, planet));
+                buildPlanetFromGenericBodyEvent(node).ifPresent(planet -> {
+                    registerPlanet(context, planet);
+                    SystemModel model = context.systems.computeIfAbsent(
+                            key(planet.starSystem),
+                            k -> new SystemModel(planet.starSystem, planet.systemAddress)
+                    );
+                    BodyNode existing = model.getBody(planet.bodyId);
+                    if (existing != null && existing.isPlanetary()) {
+                        context.selectedPlanet = existing;
+                    } else {
+                        BodyNode provisional = new BodyNode(
+                                planet.bodyId,
+                                planet.bodyName,
+                                BodyKind.PLANET,
+                                planet.starSystem,
+                                planet.systemAddress,
+                                model.primaryStarId,
+                                null,
+                                null,
+                                context.lastTimestamp
+                        );
+                        model.register(provisional);
+                        context.selectedPlanet = provisional;
+                    }
+                });
+            } else if ("Docked".equals(event)) {
+                int bodyId = node.path("BodyID").asInt(-1);
+                if (bodyId >= 0 && context.lastDockedStarSystem != null) {
+                    SystemModel dockedModel = context.systems.get(key(context.lastDockedStarSystem));
+                    if (dockedModel != null) {
+                        BodyNode selected = dockedModel.getBody(bodyId);
+                        if (selected != null && selected.isPlanetary()) {
+                            context.selectedPlanet = selected;
+                        }
+                    }
+                }
+            } else if ("ScanOrganic".equals(event)) {
+                long systemAddress = node.path("SystemAddress").asLong(0L);
+                int bodyId = node.path("Body").asInt(-1);
+                String scanType = textValue(node, "ScanType");
+                if (systemAddress > 0 && bodyId >= 0 && scanType != null) {
+                    context.lastOrganicScanTypeByBody.put(organicBodyKey(systemAddress, bodyId), scanType);
+                }
             }
         }
 
@@ -181,26 +239,6 @@ public class ExplorationJournalEventSimulatorTool {
             return false;
         }
         return "Planet".equalsIgnoreCase(node.path("BodyType").asText("")) || node.path("OnPlanet").asBoolean(false);
-    }
-
-    private static Optional<PlanetContext> buildPlanetFromScan(JsonNode node) {
-        if (!node.has("BodyID") || !node.has("StarSystem")) {
-            return Optional.empty();
-        }
-        int bodyId = node.path("BodyID").asInt(-1);
-        if (bodyId < 0) {
-            return Optional.empty();
-        }
-        String starSystem = textValue(node, "StarSystem");
-        if (starSystem == null || starSystem.isBlank()) {
-            return Optional.empty();
-        }
-        long systemAddress = node.path("SystemAddress").asLong(0L);
-        String bodyName = textValue(node, "BodyName");
-        if (bodyName == null || bodyName.isBlank()) {
-            bodyName = starSystem + " Body " + bodyId;
-        }
-        return Optional.of(new PlanetContext(bodyName, bodyId, starSystem, systemAddress));
     }
 
     private static Optional<PlanetContext> buildPlanetFromGenericBodyEvent(JsonNode node) {
@@ -258,7 +296,7 @@ public class ExplorationJournalEventSimulatorTool {
         long systemAddress = parseLongOption(options, "system-address")
                 .orElseGet(() -> generateDifferentAddress(context.currentSystemAddress));
 
-        ObjectNode node = createBaseEvent("FSDJump", context, options);
+        ObjectNode node = createBaseEvent("FSDJump", context);
         node.put("Taxi", false);
         node.put("Multicrew", false);
         node.put("StarSystem", newSystem);
@@ -292,33 +330,433 @@ public class ExplorationJournalEventSimulatorTool {
         String starSystem = options.getOrDefault("system", defaultSystemName(context));
         long systemAddress = parseLongOption(options, "system-address")
                 .orElseGet(() -> resolveSystemAddressForSystem(context, starSystem));
+        SystemModel model = context.systems.computeIfAbsent(
+                key(starSystem),
+                k -> new SystemModel(starSystem, systemAddress)
+        );
+        if (model.systemAddress <= 0) {
+            model.systemAddress = systemAddress;
+        }
+        if (context.currentStarSystem != null && context.currentStarSystem.equalsIgnoreCase(starSystem) && context.currentSystemAddress > 0) {
+            model.systemAddress = context.currentSystemAddress;
+        }
 
-        int bodyId = parseIntOption(options, "body-id")
-                .orElseGet(() -> nextBodyIdForSystem(context, starSystem));
-        String bodyName = options.getOrDefault("body-name", starSystem + " A " + bodyId);
+        GeneratedScanBody generatedBody = generateScanBody(model, options);
 
-        ObjectNode node = createBaseEvent("Scan", context, options);
-        node.put("ScanType", options.getOrDefault("scan-type", "Detailed"));
-        node.put("BodyName", bodyName);
-        node.put("BodyID", bodyId);
+        ObjectNode node = createBaseEvent("Scan", context);
+        node.put("ScanType", generatedBody.scanType);
+        node.put("BodyName", generatedBody.bodyName);
+        node.put("BodyID", generatedBody.bodyId);
 
         ArrayNode parents = node.putArray("Parents");
-        parents.addObject().put("Star", 1);
-        parents.addObject().put("Null", 0);
+        if (generatedBody.kind == BodyKind.STAR) {
+            parents.addObject().put("Null", 0);
+        } else if (generatedBody.kind == BodyKind.PLANET) {
+            parents.addObject().put("Star", generatedBody.starParentId);
+            parents.addObject().put("Null", 0);
+        } else {
+            parents.addObject().put("Planet", generatedBody.planetParentId);
+            parents.addObject().put("Star", generatedBody.starParentId);
+            parents.addObject().put("Null", 0);
+        }
 
+        node.put("StarSystem", model.starSystem);
+        node.put("SystemAddress", model.systemAddress);
+        node.put("DistanceFromArrivalLS", generatedBody.distanceFromArrivalLs);
+
+        if (generatedBody.kind == BodyKind.STAR) {
+            fillStarScanFields(node);
+        } else {
+            fillPlanetScanFields(node, generatedBody.kind == BodyKind.MOON);
+        }
+        model.register(generatedBody.toBodyNode(model.starSystem, model.systemAddress, context.lastTimestamp));
+        return node;
+    }
+
+    private ObjectNode createScanOrganicEvent(JournalContext context, Map<String, String> options) {
+        BodyNode selectedPlanet = resolveSelectedPlanet(context, options)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Aucune planete selectionnee: utilisez --selected-body-id ou scannez/selectionnez une planete avant ScanOrganic"
+                ));
+
+        long systemAddress = parseLongOption(options, "system-address").orElse(selectedPlanet.systemAddress);
+        int bodyId = parseIntOption(options, "body-id").orElse(selectedPlanet.bodyId);
+
+        ObjectNode node = createBaseEvent("ScanOrganic", context);
+        node.put("ScanType", options.getOrDefault("scan-type", nextOrganicScanType(context, selectedPlanet)));
+        node.put("Genus", "$Codex_Ent_Stratum_Genus_Name;");
+        node.put("Genus_Localised", "Stratum");
+        node.put("Species", "$Codex_Ent_Stratum_07_Name;");
+        node.put("Species_Localised", "Stratum Tectonicas");
+        node.put("Variant", "$Codex_Ent_Stratum_07_L_Name;");
+        node.put("Variant_Localised", "Stratum Tectonicas - Turquoise");
+        node.put("WasLogged", false);
+        node.put("SystemAddress", systemAddress);
+        node.put("Body", bodyId);
+        return node;
+    }
+
+    private ObjectNode createDockedEvent(JournalContext context, Map<String, String> options) {
+        BodyNode selectedPlanet = resolveSelectedPlanet(context, options)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Aucune planete selectionnee: utilisez --selected-body-id/--selected-body-name avant Docked"
+                ));
+
+        String starSystem = options.getOrDefault("system", selectedPlanet.starSystem);
+        long systemAddress = parseLongOption(options, "system-address")
+                .orElse(selectedPlanet.systemAddress);
+        String defaultStation = selectedPlanet.bodyName + " Relay";
+
+        ObjectNode node = createBaseEvent("Docked", context);
+        node.put("StationName", options.getOrDefault("station-name", defaultStation));
+        node.put("StationType", options.getOrDefault("station-type", "Coriolis"));
+        node.put("Taxi", false);
+        node.put("Multicrew", false);
         node.put("StarSystem", starSystem);
         node.put("SystemAddress", systemAddress);
-        node.put("DistanceFromArrivalLS", round(randomInRange(30.0, 3200.0), 6));
+        node.put("MarketID", parseLongOption(options, "market-id").orElse(Math.abs(random.nextLong(9_999_999_999L))));
+        node.putObject("StationFaction").put("Name", "Pilots Federation Local Branch");
+        node.put("StationGovernment", "$government_Democracy;");
+        node.put("StationGovernment_Localised", "Democratie");
+        node.put("StationAllegiance", "PilotsFederation");
+
+        ArrayNode services = node.putArray("StationServices");
+        services.add("dock");
+        services.add("autodock");
+        services.add("contacts");
+        services.add("exploration");
+        services.add("stationMenu");
+
+        node.put("StationEconomy", "$economy_HighTech;");
+        node.put("StationEconomy_Localised", "Haute Technologie");
+        node.put("Body", selectedPlanet.bodyName);
+        node.put("BodyID", selectedPlanet.bodyId);
+        node.put("DistFromStarLS", selectedPlanet.distanceFromArrivalLs != null
+                ? round(Math.max(1.0, selectedPlanet.distanceFromArrivalLs + randomInRange(-50.0, 120.0)), 3)
+                : round(randomInRange(15.0, 1200.0), 3));
+        return node;
+    }
+
+    private ObjectNode createBaseEvent(String eventName, JournalContext context) {
+        ObjectNode node = OBJECT_MAPPER.createObjectNode();
+        node.put("timestamp", nextTimestamp(context));
+        node.put("event", eventName);
+        return node;
+    }
+
+    private String nextTimestamp(JournalContext context) {
+        Instant base = context.lastTimestamp == null ? Instant.now() : context.lastTimestamp.plusSeconds(1);
+        return base.truncatedTo(ChronoUnit.SECONDS).toString();
+    }
+
+    private String defaultSystemName(JournalContext context) {
+        if (context.currentStarSystem != null && !context.currentStarSystem.isBlank()) {
+            return context.currentStarSystem;
+        }
+        if (context.lastScannedPlanet != null && context.lastScannedPlanet.starSystem != null) {
+            return context.lastScannedPlanet.starSystem;
+        }
+        return "Simulation Alpha";
+    }
+
+    private long resolveSystemAddressForSystem(JournalContext context, String starSystem) {
+        if (starSystem != null && context.currentStarSystem != null
+                && starSystem.equalsIgnoreCase(context.currentStarSystem)
+                && context.currentSystemAddress > 0) {
+            return context.currentSystemAddress;
+        }
+        SystemModel model = context.systems.get(key(starSystem));
+        if (model != null && model.systemAddress > 0) {
+            return model.systemAddress;
+        }
+        PlanetContext bySystem = context.lastPlanetBySystem.get(key(starSystem));
+        if (bySystem != null && bySystem.systemAddress > 0) {
+            return bySystem.systemAddress;
+        }
+        if (context.lastDockedStarSystem != null && context.lastDockedStarSystem.equalsIgnoreCase(starSystem)
+                && context.lastDockedSystemAddress > 0) {
+            return context.lastDockedSystemAddress;
+        }
+        return generateDifferentAddress(context.currentSystemAddress);
+    }
+
+    private GeneratedScanBody generateScanBody(SystemModel model, Map<String, String> options) {
+        Integer forcedBodyId = parseIntOption(options, "body-id").orElse(null);
+        if (model.starCount() == 0) {
+            return buildFirstStar(model, forcedBodyId);
+        }
+
+        ScanGenerationMode mode = pickScanMode(model);
+        return switch (mode) {
+            case ANOTHER_STAR -> buildAdditionalStar(model, forcedBodyId);
+            case MOON_AROUND_PLANET -> buildMoonAroundPlanet(model, pickMoonParentPlanet(model), forcedBodyId);
+            case MOON_FROM_EXISTING_MOON -> {
+                BodyNode moonReference = pickExistingMoon(model);
+                BodyNode parentPlanet = moonReference != null
+                        ? model.getBody(moonReference.planetParentId)
+                        : null;
+                if (parentPlanet == null || parentPlanet.kind != BodyKind.PLANET) {
+                    yield buildMoonAroundPlanet(model, pickMoonParentPlanet(model), forcedBodyId);
+                }
+                yield buildMoonAroundPlanet(model, parentPlanet, forcedBodyId);
+            }
+            case PLANET_AROUND_STAR, FIRST_STAR -> buildPlanetAroundStar(model, pickStarForPlanet(model), forcedBodyId);
+        };
+    }
+
+    private ScanGenerationMode pickScanMode(SystemModel model) {
+        List<WeightedMode> modes = new ArrayList<>();
+        if (model.starCount() == 0) {
+            return ScanGenerationMode.FIRST_STAR;
+        }
+        int planetCount = model.planetCount();
+        int moonCount = model.moonCount();
+
+        if (planetCount == 0) {
+            modes.add(new WeightedMode(ScanGenerationMode.PLANET_AROUND_STAR, 78));
+            modes.add(new WeightedMode(ScanGenerationMode.ANOTHER_STAR, 22));
+        } else if (moonCount == 0) {
+            modes.add(new WeightedMode(ScanGenerationMode.PLANET_AROUND_STAR, 52));
+            modes.add(new WeightedMode(ScanGenerationMode.ANOTHER_STAR, 14));
+            modes.add(new WeightedMode(ScanGenerationMode.MOON_AROUND_PLANET, 34));
+        } else {
+            modes.add(new WeightedMode(ScanGenerationMode.PLANET_AROUND_STAR, 48));
+            modes.add(new WeightedMode(ScanGenerationMode.ANOTHER_STAR, 14));
+            modes.add(new WeightedMode(ScanGenerationMode.MOON_AROUND_PLANET, 30));
+            modes.add(new WeightedMode(ScanGenerationMode.MOON_FROM_EXISTING_MOON, 8));
+        }
+
+        int total = modes.stream().mapToInt(m -> m.weight).sum();
+        int roll = random.nextInt(total);
+        int cursor = 0;
+        for (WeightedMode mode : modes) {
+            cursor += mode.weight;
+            if (roll < cursor) {
+                return mode.mode;
+            }
+        }
+        return modes.get(modes.size() - 1).mode;
+    }
+
+    private GeneratedScanBody buildFirstStar(SystemModel model, Integer forcedBodyId) {
+        char starLetter = nextStarLetter(model);
+        int bodyId = forcedBodyId != null ? forcedBodyId : model.nextBodyId();
+        String bodyName = model.starSystem + " " + starLetter;
+        return new GeneratedScanBody(
+                bodyId,
+                bodyName,
+                BodyKind.STAR,
+                null,
+                null,
+                "AutoScan",
+                0.0
+        );
+    }
+
+    private GeneratedScanBody buildAdditionalStar(SystemModel model, Integer forcedBodyId) {
+        char starLetter = nextStarLetter(model);
+        int bodyId = forcedBodyId != null ? forcedBodyId : model.nextBodyId();
+        String bodyName = model.starSystem + " " + starLetter;
+        return new GeneratedScanBody(
+                bodyId,
+                bodyName,
+                BodyKind.STAR,
+                null,
+                null,
+                "AutoScan",
+                round(randomInRange(450.0, 160000.0), 6)
+        );
+    }
+
+    private GeneratedScanBody buildPlanetAroundStar(SystemModel model, BodyNode starParent, Integer forcedBodyId) {
+        if (starParent == null) {
+            return buildAdditionalStar(model, forcedBodyId);
+        }
+        char starLetter = readStarLetter(model.starSystem, starParent.bodyName)
+                .orElse('A');
+        int planetIndex = nextPlanetIndexForStar(model, starParent.bodyId, starLetter);
+        int bodyId = forcedBodyId != null ? forcedBodyId : model.nextBodyId();
+        String bodyName = model.starSystem + " " + starLetter + " " + planetIndex;
+        return new GeneratedScanBody(
+                bodyId,
+                bodyName,
+                BodyKind.PLANET,
+                starParent.bodyId,
+                null,
+                "Detailed",
+                round(randomInRange(30.0, 4200.0), 6)
+        );
+    }
+
+    private GeneratedScanBody buildMoonAroundPlanet(SystemModel model, BodyNode planetParent, Integer forcedBodyId) {
+        if (planetParent == null) {
+            return buildPlanetAroundStar(model, pickStarForPlanet(model), forcedBodyId);
+        }
+        Character moonLetter = nextMoonLetterForPlanet(model, planetParent.bodyId);
+        if (moonLetter == null) {
+            moonLetter = 'a';
+        }
+        int bodyId = forcedBodyId != null ? forcedBodyId : model.nextBodyId();
+        Integer starParentId = planetParent.starParentId != null
+                ? planetParent.starParentId
+                : model.primaryStarId;
+        String bodyName = planetParent.bodyName + " " + moonLetter;
+        return new GeneratedScanBody(
+                bodyId,
+                bodyName,
+                BodyKind.MOON,
+                starParentId,
+                planetParent.bodyId,
+                "Detailed",
+                round(Math.max(planetParent.distanceFromArrivalLs != null ? planetParent.distanceFromArrivalLs + randomInRange(0.2, 40.0) : randomInRange(45.0, 4400.0), 1.0), 6)
+        );
+    }
+
+    private BodyNode pickStarForPlanet(SystemModel model) {
+        List<BodyNode> stars = model.stars();
+        if (stars.isEmpty()) {
+            return null;
+        }
+        if (model.primaryStarId != null && random.nextDouble() < 0.72) {
+            BodyNode primary = model.getBody(model.primaryStarId);
+            if (primary != null) {
+                return primary;
+            }
+        }
+        return stars.get(random.nextInt(stars.size()));
+    }
+
+    private BodyNode pickMoonParentPlanet(SystemModel model) {
+        List<BodyNode> planets = model.planets();
+        if (planets.isEmpty()) {
+            return null;
+        }
+        return planets.get(random.nextInt(planets.size()));
+    }
+
+    private BodyNode pickExistingMoon(SystemModel model) {
+        List<BodyNode> moons = model.moons();
+        if (moons.isEmpty()) {
+            return null;
+        }
+        return moons.get(random.nextInt(moons.size()));
+    }
+
+    private char nextStarLetter(SystemModel model) {
+        boolean[] used = new boolean[26];
+        for (BodyNode star : model.stars()) {
+            readStarLetter(model.starSystem, star.bodyName).ifPresent(letter -> {
+                int index = letter - 'A';
+                if (index >= 0 && index < used.length) {
+                    used[index] = true;
+                }
+            });
+        }
+        for (int i = 0; i < used.length; i++) {
+            if (!used[i]) {
+                return (char) ('A' + i);
+            }
+        }
+        return (char) ('A' + random.nextInt(26));
+    }
+
+    private int nextPlanetIndexForStar(SystemModel model, int starBodyId, char starLetter) {
+        int max = 0;
+        for (BodyNode planet : model.planets()) {
+            if (planet.starParentId != null && planet.starParentId == starBodyId) {
+                Optional<Integer> idx = readPlanetIndex(model.starSystem, planet.bodyName, starLetter);
+                if (idx.isPresent()) {
+                    max = Math.max(max, idx.get());
+                }
+            }
+        }
+        return Math.max(1, max + 1);
+    }
+
+    private Character nextMoonLetterForPlanet(SystemModel model, int planetBodyId) {
+        char max = 0;
+        for (BodyNode moon : model.moons()) {
+            if (moon.planetParentId != null && moon.planetParentId == planetBodyId) {
+                char letter = readMoonLetter(moon.bodyName).orElse((char) 0);
+                if (letter > max) {
+                    max = letter;
+                }
+            }
+        }
+        return max == 0 ? 'a' : (max == 'z' ? 'z' : (char) (max + 1));
+    }
+
+    private static Optional<Character> readStarLetter(String starSystem, String bodyName) {
+        if (starSystem == null || bodyName == null) {
+            return Optional.empty();
+        }
+        Pattern p = Pattern.compile("^" + Pattern.quote(starSystem) + " ([A-Z])$");
+        Matcher m = p.matcher(bodyName);
+        if (!m.matches()) {
+            return Optional.empty();
+        }
+        return Optional.of(m.group(1).charAt(0));
+    }
+
+    private static Optional<Integer> readPlanetIndex(String starSystem, String bodyName, char starLetter) {
+        if (starSystem == null || bodyName == null) {
+            return Optional.empty();
+        }
+        Pattern p = Pattern.compile("^" + Pattern.quote(starSystem) + " " + starLetter + " (\\d+)$");
+        Matcher m = p.matcher(bodyName);
+        if (!m.matches()) {
+            return Optional.empty();
+        }
+        return Optional.of(Integer.parseInt(m.group(1)));
+    }
+
+    private static Optional<Character> readMoonLetter(String bodyName) {
+        if (bodyName == null) {
+            return Optional.empty();
+        }
+        Pattern p = Pattern.compile("^.+ [A-Z] \\d+ ([a-z])$");
+        Matcher m = p.matcher(bodyName);
+        if (!m.matches()) {
+            return Optional.empty();
+        }
+        return Optional.of(m.group(1).charAt(0));
+    }
+
+    private void fillStarScanFields(ObjectNode node) {
+        String starType = STAR_TYPES.get(random.nextInt(STAR_TYPES.size()));
+        node.put("StarType", starType);
+        node.put("Subclass", random.nextInt(8));
+        node.put("StellarMass", round(randomInRange(0.08, 2.5), 6));
+        node.put("Radius", round(randomInRange(90_000_000.0, 690_000_000.0), 6));
+        node.put("AbsoluteMagnitude", round(randomInRange(2.0, 14.0), 6));
+        node.put("Age_MY", random.nextInt(13000));
+        node.put("SurfaceTemperature", round(randomInRange(2400.0, 7700.0), 6));
+        node.put("Luminosity", "V");
+        node.put("SemiMajorAxis", randomInRange(1.8E10, 4.1E12));
+        node.put("Eccentricity", round(randomInRange(0.0, 0.4), 6));
+        node.put("OrbitalInclination", round(randomInRange(-80.0, 80.0), 6));
+        node.put("Periapsis", round(randomInRange(0.0, 359.0), 6));
+        node.put("OrbitalPeriod", randomInRange(1_200_000.0, 3_400_000_000.0));
+        node.put("AscendingNode", round(randomInRange(-150.0, 150.0), 6));
+        node.put("MeanAnomaly", round(randomInRange(0.0, 359.0), 6));
+        node.put("RotationPeriod", randomInRange(42000.0, 420000.0));
+        node.put("AxialTilt", 0.0);
+        node.put("WasDiscovered", false);
+        node.put("WasMapped", false);
+        node.put("WasFootfalled", false);
+    }
+
+    private void fillPlanetScanFields(ObjectNode node, boolean moon) {
         node.put("TidalLock", random.nextBoolean());
         node.put("TerraformState", "");
-        node.put("PlanetClass", options.getOrDefault("planet-class", "High metal content body"));
+        node.put("PlanetClass", moon ? "Rocky body" : "High metal content body");
         node.put("Atmosphere", "");
         node.put("AtmosphereType", "None");
         node.put("Volcanism", "");
         node.put("MassEM", round(randomInRange(0.001, 0.008), 6));
         node.put("Radius", round(randomInRange(650000.0, 1450000.0), 6));
-        node.put("SurfaceGravity", round(randomInRange(0.95, 2.15), 6));
-        node.put("SurfaceTemperature", round(randomInRange(90.0, 610.0), 6));
+        node.put("SurfaceGravity", round(randomInRange(0.85, 2.25), 6));
+        node.put("SurfaceTemperature", round(randomInRange(80.0, 650.0), 6));
         node.put("SurfacePressure", 0.0);
         node.put("Landable", true);
 
@@ -352,118 +790,88 @@ public class ExplorationJournalEventSimulatorTool {
         node.put("WasDiscovered", false);
         node.put("WasMapped", false);
         node.put("WasFootfalled", false);
-        return node;
     }
 
-    private ObjectNode createScanOrganicEvent(JournalContext context, Map<String, String> options) {
-        PlanetContext organicTarget = resolveOrganicTargetPlanet(context)
-                .orElseGet(() -> new PlanetContext(
-                        defaultSystemName(context) + " A " + nextBodyIdForSystem(context, defaultSystemName(context)),
-                        nextBodyIdForSystem(context, defaultSystemName(context)),
-                        defaultSystemName(context),
-                        resolveSystemAddressForSystem(context, defaultSystemName(context))
-                ));
-
-        int bodyId = parseIntOption(options, "body-id").orElse(organicTarget.bodyId);
-        long systemAddress = parseLongOption(options, "system-address").orElse(organicTarget.systemAddress);
-
-        ObjectNode node = createBaseEvent("ScanOrganic", context, options);
-        node.put("ScanType", options.getOrDefault("scan-type", "Log"));
-        node.put("Genus", "$Codex_Ent_Stratum_Genus_Name;");
-        node.put("Genus_Localised", "Stratum");
-        node.put("Species", "$Codex_Ent_Stratum_07_Name;");
-        node.put("Species_Localised", "Stratum Tectonicas");
-        node.put("Variant", "$Codex_Ent_Stratum_07_L_Name;");
-        node.put("Variant_Localised", "Stratum Tectonicas - Turquoise");
-        node.put("WasLogged", false);
-        node.put("SystemAddress", systemAddress);
-        node.put("Body", bodyId);
-        return node;
+    private String nextOrganicScanType(JournalContext context, BodyNode selectedPlanet) {
+        String key = organicBodyKey(selectedPlanet.systemAddress, selectedPlanet.bodyId);
+        String last = context.lastOrganicScanTypeByBody.get(key);
+        if (last == null) {
+            return "Log";
+        }
+        return switch (last.toLowerCase(Locale.ROOT)) {
+            case "log" -> "Sample";
+            case "sample" -> "Analyse";
+            default -> "Sample";
+        };
     }
 
-    private ObjectNode createDockedEvent(JournalContext context, Map<String, String> options) {
-        String starSystem = options.getOrDefault("system", defaultSystemName(context));
-        long systemAddress = parseLongOption(options, "system-address")
-                .orElseGet(() -> resolveSystemAddressForSystem(context, starSystem));
-
-        ObjectNode node = createBaseEvent("Docked", context, options);
-        node.put("StationName", options.getOrDefault("station-name", "Warboard Simulation Port"));
-        node.put("StationType", options.getOrDefault("station-type", "Coriolis"));
-        node.put("Taxi", false);
-        node.put("Multicrew", false);
-        node.put("StarSystem", starSystem);
-        node.put("SystemAddress", systemAddress);
-        node.put("MarketID", parseLongOption(options, "market-id").orElse(Math.abs(random.nextLong(9_999_999_999L))));
-        node.putObject("StationFaction").put("Name", "Pilots Federation Local Branch");
-        node.put("StationGovernment", "$government_Democracy;");
-        node.put("StationGovernment_Localised", "Democratie");
-        node.put("StationAllegiance", "PilotsFederation");
-
-        ArrayNode services = node.putArray("StationServices");
-        services.add("dock");
-        services.add("autodock");
-        services.add("contacts");
-        services.add("exploration");
-        services.add("stationMenu");
-
-        node.put("StationEconomy", "$economy_HighTech;");
-        node.put("StationEconomy_Localised", "Haute Technologie");
-        node.put("DistFromStarLS", round(randomInRange(15.0, 1200.0), 3));
-        return node;
-    }
-
-    private Optional<PlanetContext> resolveOrganicTargetPlanet(JournalContext context) {
-        if (context.lastDockedStarSystem != null && !context.lastDockedStarSystem.isBlank()) {
-            PlanetContext fromDockedSystem = context.lastPlanetBySystem.get(key(context.lastDockedStarSystem));
-            if (fromDockedSystem != null) {
-                return Optional.of(fromDockedSystem);
+    private Optional<BodyNode> resolveSelectedPlanet(JournalContext context, Map<String, String> options) {
+        Optional<Integer> selectedBodyIdOpt = parseIntOption(options, "selected-body-id");
+        if (selectedBodyIdOpt.isPresent()) {
+            int bodyId = selectedBodyIdOpt.get();
+            Optional<BodyNode> byId = findBodyById(context, bodyId);
+            if (byId.isPresent() && byId.get().isPlanetary()) {
+                return byId;
             }
         }
-        return Optional.ofNullable(context.lastScannedPlanet);
+
+        String selectedBodyName = options.get("selected-body-name");
+        if (selectedBodyName != null && !selectedBodyName.isBlank()) {
+            Optional<BodyNode> byName = findBodyByName(context, selectedBodyName.trim());
+            if (byName.isPresent() && byName.get().isPlanetary()) {
+                return byName;
+            }
+        }
+
+        if (context.selectedPlanet != null) {
+            return Optional.of(context.selectedPlanet);
+        }
+
+        if (context.currentStarSystem != null) {
+            SystemModel model = context.systems.get(key(context.currentStarSystem));
+            if (model != null) {
+                return model.latestPlanetaryBody();
+            }
+        }
+        return context.findAnyPlanetaryBody();
     }
 
-    private ObjectNode createBaseEvent(String eventName, JournalContext context, Map<String, String> options) {
-        ObjectNode node = OBJECT_MAPPER.createObjectNode();
-        node.put("timestamp", options.getOrDefault("timestamp", nextTimestamp(context)));
-        node.put("event", eventName);
-        return node;
+    private Optional<BodyNode> findBodyById(JournalContext context, int bodyId) {
+        if (context.currentStarSystem != null) {
+            SystemModel current = context.systems.get(key(context.currentStarSystem));
+            if (current != null) {
+                BodyNode body = current.getBody(bodyId);
+                if (body != null) {
+                    return Optional.of(body);
+                }
+            }
+        }
+        for (SystemModel model : context.systems.values()) {
+            BodyNode body = model.getBody(bodyId);
+            if (body != null) {
+                return Optional.of(body);
+            }
+        }
+        return Optional.empty();
     }
 
-    private String nextTimestamp(JournalContext context) {
-        Instant base = context.lastTimestamp == null ? Instant.now() : context.lastTimestamp.plusSeconds(1);
-        return base.truncatedTo(ChronoUnit.SECONDS).toString();
-    }
-
-    private String defaultSystemName(JournalContext context) {
-        if (context.currentStarSystem != null && !context.currentStarSystem.isBlank()) {
-            return context.currentStarSystem;
+    private Optional<BodyNode> findBodyByName(JournalContext context, String bodyName) {
+        if (context.currentStarSystem != null) {
+            SystemModel current = context.systems.get(key(context.currentStarSystem));
+            if (current != null) {
+                Optional<BodyNode> found = current.findBodyByName(bodyName);
+                if (found.isPresent()) {
+                    return found;
+                }
+            }
         }
-        if (context.lastScannedPlanet != null && context.lastScannedPlanet.starSystem != null) {
-            return context.lastScannedPlanet.starSystem;
+        for (SystemModel model : context.systems.values()) {
+            Optional<BodyNode> found = model.findBodyByName(bodyName);
+            if (found.isPresent()) {
+                return found;
+            }
         }
-        return "Simulation Alpha";
-    }
-
-    private long resolveSystemAddressForSystem(JournalContext context, String starSystem) {
-        if (starSystem != null && context.currentStarSystem != null
-                && starSystem.equalsIgnoreCase(context.currentStarSystem)
-                && context.currentSystemAddress > 0) {
-            return context.currentSystemAddress;
-        }
-        PlanetContext bySystem = context.lastPlanetBySystem.get(key(starSystem));
-        if (bySystem != null && bySystem.systemAddress > 0) {
-            return bySystem.systemAddress;
-        }
-        if (context.lastDockedStarSystem != null && context.lastDockedStarSystem.equalsIgnoreCase(starSystem)
-                && context.lastDockedSystemAddress > 0) {
-            return context.lastDockedSystemAddress;
-        }
-        return generateDifferentAddress(context.currentSystemAddress);
-    }
-
-    private int nextBodyIdForSystem(JournalContext context, String starSystem) {
-        int current = context.maxBodyIdBySystem.getOrDefault(key(starSystem), 0);
-        return Math.max(1, current + 1);
+        return Optional.empty();
     }
 
     private String generateNextSystemName(String currentSystem) {
@@ -542,6 +950,58 @@ public class ExplorationJournalEventSimulatorTool {
         return starSystem == null ? "" : starSystem.toLowerCase(Locale.ROOT);
     }
 
+    private static String organicBodyKey(long systemAddress, int bodyId) {
+        return systemAddress + ":" + bodyId;
+    }
+
+    private static Optional<BodyNode> buildBodyNodeFromScan(JsonNode node, Instant timestamp) {
+        int bodyId = node.path("BodyID").asInt(-1);
+        String bodyName = textValue(node, "BodyName");
+        String starSystem = textValue(node, "StarSystem");
+        long systemAddress = node.path("SystemAddress").asLong(0L);
+        if (bodyId < 0 || bodyName == null || starSystem == null || starSystem.isBlank()) {
+            return Optional.empty();
+        }
+
+        Integer starParentId = null;
+        Integer planetParentId = null;
+        JsonNode parents = node.path("Parents");
+        if (parents.isArray()) {
+            for (JsonNode parent : parents) {
+                if (parent.has("Star") && starParentId == null) {
+                    starParentId = parent.path("Star").asInt();
+                } else if (parent.has("Planet") && planetParentId == null) {
+                    planetParentId = parent.path("Planet").asInt();
+                }
+            }
+        }
+
+        BodyKind kind;
+        if (node.has("StarType")) {
+            kind = BodyKind.STAR;
+        } else if (node.has("PlanetClass")) {
+            kind = planetParentId != null ? BodyKind.MOON : BodyKind.PLANET;
+        } else {
+            return Optional.empty();
+        }
+
+        Double distance = node.has("DistanceFromArrivalLS")
+                ? node.path("DistanceFromArrivalLS").asDouble()
+                : null;
+
+        return Optional.of(new BodyNode(
+                bodyId,
+                bodyName,
+                kind,
+                starSystem,
+                systemAddress,
+                starParentId,
+                planetParentId,
+                distance,
+                timestamp
+        ));
+    }
+
     private static String textValue(JsonNode node, String fieldName) {
         if (node == null || fieldName == null) {
             return null;
@@ -577,7 +1037,8 @@ public class ExplorationJournalEventSimulatorTool {
                 Exemples:
                   ... -Dexec.args="fsdjump --journal-dir=elite-warboard-missions/src/main/resources/exemple"
                   ... -Dexec.args="scan --scan-type=Detailed"
-                  ... -Dexec.args="scanorganic --scan-type=Sample"
+                  ... -Dexec.args="scanorganic --scan-type=Sample --selected-body-id=12"
+                  ... -Dexec.args="docked --selected-body-name=Swoilz RE-U c18-3 B 1"
                 """);
     }
 
@@ -640,11 +1101,182 @@ public class ExplorationJournalEventSimulatorTool {
         private String lastDockedStarSystem;
         private long lastDockedSystemAddress;
         private PlanetContext lastScannedPlanet;
+        private BodyNode selectedPlanet;
         private Instant lastTimestamp;
         private final Map<String, PlanetContext> lastPlanetBySystem = new HashMap<>();
         private final Map<String, Integer> maxBodyIdBySystem = new HashMap<>();
+        private final Map<String, SystemModel> systems = new HashMap<>();
+        private final Map<String, String> lastOrganicScanTypeByBody = new HashMap<>();
+
+        private Optional<BodyNode> findAnyPlanetaryBody() {
+            for (SystemModel model : systems.values()) {
+                Optional<BodyNode> body = model.latestPlanetaryBody();
+                if (body.isPresent()) {
+                    return body;
+                }
+            }
+            return Optional.empty();
+        }
     }
 
     private record PlanetContext(String bodyName, int bodyId, String starSystem, long systemAddress) {
+    }
+
+    private enum BodyKind {
+        STAR,
+        PLANET,
+        MOON
+    }
+
+    private enum ScanGenerationMode {
+        FIRST_STAR,
+        PLANET_AROUND_STAR,
+        ANOTHER_STAR,
+        MOON_AROUND_PLANET,
+        MOON_FROM_EXISTING_MOON
+    }
+
+    private record WeightedMode(ScanGenerationMode mode, int weight) {
+    }
+
+    private static final class BodyNode {
+        private final int bodyId;
+        private final String bodyName;
+        private final BodyKind kind;
+        private final String starSystem;
+        private final long systemAddress;
+        private final Integer starParentId;
+        private final Integer planetParentId;
+        private final Double distanceFromArrivalLs;
+        private final Instant timestamp;
+
+        private BodyNode(int bodyId,
+                         String bodyName,
+                         BodyKind kind,
+                         String starSystem,
+                         long systemAddress,
+                         Integer starParentId,
+                         Integer planetParentId,
+                         Double distanceFromArrivalLs,
+                         Instant timestamp) {
+            this.bodyId = bodyId;
+            this.bodyName = bodyName;
+            this.kind = kind;
+            this.starSystem = starSystem;
+            this.systemAddress = systemAddress;
+            this.starParentId = starParentId;
+            this.planetParentId = planetParentId;
+            this.distanceFromArrivalLs = distanceFromArrivalLs;
+            this.timestamp = timestamp;
+        }
+
+        private boolean isPlanetary() {
+            return kind == BodyKind.PLANET || kind == BodyKind.MOON;
+        }
+    }
+
+    private static final class SystemModel {
+        private final String starSystem;
+        private long systemAddress;
+        private int maxBodyId;
+        private Integer primaryStarId;
+        private final Map<Integer, BodyNode> bodiesById = new HashMap<>();
+
+        private SystemModel(String starSystem, long systemAddress) {
+            this.starSystem = starSystem;
+            this.systemAddress = systemAddress;
+        }
+
+        private void register(BodyNode body) {
+            bodiesById.put(body.bodyId, body);
+            maxBodyId = Math.max(maxBodyId, body.bodyId);
+            if (body.kind == BodyKind.STAR) {
+                if (primaryStarId == null) {
+                    primaryStarId = body.bodyId;
+                } else if (readStarLetter(starSystem, body.bodyName).orElse('Z') == 'A') {
+                    primaryStarId = body.bodyId;
+                }
+            }
+        }
+
+        private int nextBodyId() {
+            return Math.max(1, maxBodyId + 1);
+        }
+
+        private int starCount() {
+            return (int) bodiesById.values().stream().filter(b -> b.kind == BodyKind.STAR).count();
+        }
+
+        private int planetCount() {
+            return (int) bodiesById.values().stream().filter(b -> b.kind == BodyKind.PLANET).count();
+        }
+
+        private int moonCount() {
+            return (int) bodiesById.values().stream().filter(b -> b.kind == BodyKind.MOON).count();
+        }
+
+        private List<BodyNode> stars() {
+            return bodiesById.values().stream()
+                    .filter(b -> b.kind == BodyKind.STAR)
+                    .sorted(Comparator.comparingInt(b -> b.bodyId))
+                    .toList();
+        }
+
+        private List<BodyNode> planets() {
+            return bodiesById.values().stream()
+                    .filter(b -> b.kind == BodyKind.PLANET)
+                    .sorted(Comparator.comparingInt(b -> b.bodyId))
+                    .toList();
+        }
+
+        private List<BodyNode> moons() {
+            return bodiesById.values().stream()
+                    .filter(b -> b.kind == BodyKind.MOON)
+                    .sorted(Comparator.comparingInt(b -> b.bodyId))
+                    .toList();
+        }
+
+        private BodyNode getBody(Integer bodyId) {
+            if (bodyId == null) {
+                return null;
+            }
+            return bodiesById.get(bodyId);
+        }
+
+        private Optional<BodyNode> latestPlanetaryBody() {
+            return bodiesById.values().stream()
+                    .filter(BodyNode::isPlanetary)
+                    .max(Comparator.comparing(b -> b.timestamp != null ? b.timestamp : Instant.EPOCH));
+        }
+
+        private Optional<BodyNode> findBodyByName(String bodyName) {
+            return bodiesById.values().stream()
+                    .filter(b -> b.bodyName.equalsIgnoreCase(bodyName))
+                    .findFirst();
+        }
+    }
+
+    private record GeneratedScanBody(
+            int bodyId,
+            String bodyName,
+            BodyKind kind,
+            Integer starParentId,
+            Integer planetParentId,
+            String scanType,
+            double distanceFromArrivalLs
+    ) {
+        BodyNode toBodyNode(String starSystem, long systemAddress, Instant timestamp) {
+            return new BodyNode(
+                    bodyId,
+                    bodyName,
+                    kind,
+                    starSystem,
+                    systemAddress,
+                    starParentId,
+                    planetParentId,
+                    distanceFromArrivalLs,
+                    timestamp
+            );
+        }
     }
 }
