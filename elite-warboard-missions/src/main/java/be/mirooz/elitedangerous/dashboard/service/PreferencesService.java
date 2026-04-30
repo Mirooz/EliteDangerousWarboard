@@ -325,6 +325,21 @@ public class PreferencesService {
     }
 
     /**
+     * Active ou désactive la compression gzip des uploads EDDN (activée par défaut).
+     */
+    public void setEddnGzipEnabled(boolean enabled) {
+        preferences.setProperty("eddn.send.gzip.enabled", String.valueOf(enabled));
+        savePreferences();
+    }
+
+    /**
+     * Vérifie si la compression gzip est activée pour EDDN (activée par défaut).
+     */
+    public boolean isEddnGzipEnabled() {
+        return Boolean.parseBoolean(preferences.getProperty("eddn.send.gzip.enabled", "true"));
+    }
+
+    /**
      * Active ou désactive les appels CAPI backend.
      */
     public void setCapiLoginEnabled(boolean enabled) {

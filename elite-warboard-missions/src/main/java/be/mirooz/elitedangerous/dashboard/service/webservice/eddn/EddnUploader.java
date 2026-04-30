@@ -111,6 +111,15 @@ public final class EddnUploader {
         preferences.setSendDataToEddnEnabled(enabled);
     }
 
+    public boolean isGzipEnabled() {
+        return preferences.isEddnGzipEnabled();
+    }
+
+    public void setGzipEnabled(boolean enabled) {
+        preferences.setEddnGzipEnabled(enabled);
+        client.setGzipEnabled(enabled);
+    }
+
     public int queueSize() {
         return client.queueSize();
     }

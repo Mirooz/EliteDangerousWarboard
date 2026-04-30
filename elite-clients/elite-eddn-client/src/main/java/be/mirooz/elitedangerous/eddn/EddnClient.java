@@ -55,6 +55,7 @@ public final class EddnClient {
     private final BlockingQueue<ObjectNode> queue;
     private final Thread worker;
     private volatile boolean running = true;
+    private volatile boolean gzipEnabled = true;
 
     /** Cible la gateway résolue via {@link EddnBundledProperties} selon {@code app.profile}. */
     public EddnClient(String softwareName, String softwareVersion) {
@@ -171,6 +172,14 @@ public final class EddnClient {
         return queue.size();
     }
 
+    /**
+     * Active/désactive la compression gzip à l'envoi (activée par défaut).
+     * Si désactivée, le body est envoyé en JSON UTF-8 non compressé.
+     */
+    public void setGzipEnabled(boolean enabled) {
+        this.gzipEnabled = enabled;
+    }
+
     /** Arrête le worker (optionnel : le thread est daemon, la JVM peut sortir sans). */
     public void shutdown() {
         running = false;
@@ -201,21 +210,24 @@ public final class EddnClient {
     private void post(ObjectNode envelope) {
         try {
             byte[] json = mapper.writeValueAsBytes(envelope);
-            byte[] gzipped = gzip(json);
+            byte[] payload = gzipEnabled ? gzip(json) : json;
 
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(gatewayUrl))
                     .timeout(REQUEST_TIMEOUT)
                     .header("Content-Type", "application/json; charset=utf-8")
-                    .header("Content-Encoding", "gzip")
-                    .POST(HttpRequest.BodyPublishers.ofByteArray(gzipped))
-                    .build();
+                    .POST(HttpRequest.BodyPublishers.ofByteArray(payload));
+            if (gzipEnabled) {
+                requestBuilder.header("Content-Encoding", "gzip");
+            }
+            HttpRequest request = requestBuilder.build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             int status = response.statusCode();
             String schemaRef = envelope.path("$schemaRef").asText("?");
             if (status == 200) {
-                System.out.println("EDDN: envoyé " + schemaRef + " (" + endpointLabel + ", " + gzipped.length + " o gzip)");
+                String encodingLabel = gzipEnabled ? "gzip" : "plain-json";
+                System.out.println("EDDN: envoyé " + schemaRef + " (" + endpointLabel + ", " + payload.length + " o " + encodingLabel + ")");
                 return;
             }
             System.err.println("EDDN: rejet " + status + " pour " + schemaRef + " (" + endpointLabel + ")"
