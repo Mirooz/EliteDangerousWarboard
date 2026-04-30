@@ -1103,15 +1103,15 @@ public class ExplorationJournalEventSimulatorTool {
         return signal;
     }
 
-    private List<OrganicSpeciesProfile> pickOrganicSignatures(int signalCount) {
+    private List<OrganicSignature> pickOrganicSignatures(int signalCount) {
         if (signalCount <= 0) {
             return List.of();
         }
-        int count = Math.min(signalCount, ORGANIC_SPECIES_SEQUENCE.size());
-        int start = random.nextInt(ORGANIC_SPECIES_SEQUENCE.size());
-        List<OrganicSpeciesProfile> signatures = new ArrayList<>(count);
+        int count = Math.min(signalCount, ORGANIC_SIGNATURE_POOL.size());
+        int start = random.nextInt(ORGANIC_SIGNATURE_POOL.size());
+        List<OrganicSignature> signatures = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            signatures.add(ORGANIC_SPECIES_SEQUENCE.get((start + i) % ORGANIC_SPECIES_SEQUENCE.size()));
+            signatures.add(ORGANIC_SIGNATURE_POOL.get((start + i) % ORGANIC_SIGNATURE_POOL.size()));
         }
         return signatures;
     }
@@ -1217,7 +1217,7 @@ public class ExplorationJournalEventSimulatorTool {
     private static void printUsage() {
         System.out.println("""
                 Usage:
-                  mvn -pl elite-warboard-missions exec:java -Dexec.mainClass=be.mirooz.elitedangerous.dashboard.tools.ExplorationJournalEventSimulatorTool -Dexec.args="<event> [--journal-dir=PATH] [--key=value]"
+                  mvn -pl elite-journal-simulator exec:java -Dexec.mainClass=be.mirooz.elitedangerous.dashboard.tools.ExplorationJournalEventSimulatorTool -Dexec.args="<event> [--journal-dir=PATH] [--key=value]"
 
                 Events supportes:
                   fsdjump
@@ -1228,7 +1228,7 @@ public class ExplorationJournalEventSimulatorTool {
                   saasignalsfound
 
                 Exemples:
-                  ... -Dexec.args="fsdjump --journal-dir=elite-warboard-missions/src/main/resources/exemple"
+                  ... -Dexec.args="fsdjump --journal-dir=elite-journal-simulator/src/main/resources/exemple"
                   ... -Dexec.args="scan --scan-type=Detailed"
                   ... -Dexec.args="scanorganic --selected-body-id=12"
                   ... -Dexec.args="docked --selected-body-name=Swoilz RE-U c18-3 B 1"
@@ -1273,6 +1273,7 @@ public class ExplorationJournalEventSimulatorTool {
 
             List<Path> candidates = new ArrayList<>();
             candidates.add(Path.of("src/main/resources/exemple"));
+            candidates.add(Path.of("elite-journal-simulator/src/main/resources/exemple"));
             candidates.add(Path.of("elite-warboard-missions/src/main/resources/exemple"));
             candidates.add(Path.of(
                     System.getProperty("user.home"),
@@ -1302,6 +1303,7 @@ public class ExplorationJournalEventSimulatorTool {
         private final Map<String, Integer> maxBodyIdBySystem = new HashMap<>();
         private final Map<String, SystemModel> systems = new HashMap<>();
         private final Map<String, String> lastOrganicScanTypeByBody = new HashMap<>();
+        private final Map<String, OrganicCycleState> lastOrganicCycleByBody = new HashMap<>();
 
         private Optional<BodyNode> findAnyPlanetaryBody() {
             for (SystemModel model : systems.values()) {
@@ -1382,6 +1384,12 @@ public class ExplorationJournalEventSimulatorTool {
             String speciesLocalised,
             String variantCodex,
             String variantLocalised
+    ) {
+    }
+
+    private record OrganicSignature(
+            String genusCodex,
+            String genusLocalised
     ) {
     }
 

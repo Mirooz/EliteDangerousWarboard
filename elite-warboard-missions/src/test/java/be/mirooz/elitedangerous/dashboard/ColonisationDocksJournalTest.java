@@ -93,11 +93,11 @@ class ColonisationDocksJournalTest {
         if (Files.isDirectory(saved)) {
             return saved;
         }
-        Path fromModule = Path.of("src/main/resources/exemple");
+        Path fromModule = Path.of("../elite-journal-simulator/src/main/resources/exemple");
         if (Files.isDirectory(fromModule)) {
             return fromModule;
         }
-        Path fromRepoRoot = Path.of("elite-warboard-missions/src/main/resources/exemple");
+        Path fromRepoRoot = Path.of("elite-journal-simulator/src/main/resources/exemple");
         if (Files.isDirectory(fromRepoRoot)) {
             return fromRepoRoot;
         }

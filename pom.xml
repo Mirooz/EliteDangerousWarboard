@@ -16,6 +16,7 @@
         <module>elite-clients</module>
         <module>elite-commons</module>
         <module>elite-warboard-missions</module>
+        <module>elite-journal-simulator</module>
         <module>journal-analyzer</module>
         <module>bioforge-biodatas</module>
     </modules>
