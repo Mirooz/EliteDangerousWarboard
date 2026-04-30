@@ -105,9 +105,6 @@ public class ConfigDialogController implements Initializable {
     private CheckBox sendDataToEddnCheckBox;
 
     @FXML
-    private CheckBox eddnCompressGzipCheckBox;
-
-    @FXML
     private CheckBox capiLoginEnabledCheckBox;
 
     @FXML
@@ -225,8 +222,6 @@ public class ConfigDialogController implements Initializable {
 
         // Initialiser l'option d'envoi vers EDDN
         sendDataToEddnCheckBox.setSelected(preferencesService.isSendDataToEddnEnabled());
-        eddnCompressGzipCheckBox.setSelected(preferencesService.isEddnCompressGzipEnabled());
-        onSendDataToEddnChanged();
         spanshLoadSystemsCheckBox.setSelected(preferencesService.isSpanshExplorationLoadEnabled());
         capiLoginEnabledCheckBox.setSelected(preferencesService.isCapiLoginEnabled());
         sendErrorLogsCheckBox.setSelected(preferencesService.isSendErrorLogsEnabled());
@@ -290,8 +285,6 @@ public class ConfigDialogController implements Initializable {
         vrModeSectionLabel.setText("VR MODE");
         sendDataToEddnCheckBox.setText(localizationService.getString("config.eddn.send.enabled"));
         sendDataToEddnCheckBox.setTooltip(new Tooltip(localizationService.getString("config.eddn.send.hint")));
-        eddnCompressGzipCheckBox.setText(localizationService.getString("config.eddn.gzip.enabled"));
-        eddnCompressGzipCheckBox.setTooltip(new Tooltip(localizationService.getString("config.eddn.gzip.hint")));
         capiLoginEnabledCheckBox.setText(localizationService.getString("config.capi.login.enabled"));
         logCapiAccountButton.setText(localizationService.getString("config.capi.connect.button"));
         sendErrorLogsCheckBox.setText(localizationService.getString("config.analytics.send.error.logs"));
@@ -603,7 +596,6 @@ public class ConfigDialogController implements Initializable {
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
         preferencesService.setTabSwitchEnabled(false);
         preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
-        preferencesService.setEddnCompressGzipEnabled(eddnCompressGzipCheckBox.isSelected());
         preferencesService.setSpanshExplorationLoadEnabled(spanshLoadSystemsCheckBox.isSelected());
         boolean newCapiLogin = capiLoginEnabledCheckBox.isSelected();
         if (originalCapiLoginEnabled && !newCapiLogin) {
@@ -717,12 +709,6 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private void onCapiLoginEnabledChanged() {
         updateCapiControlsState();
-    }
-
-    @FXML
-    private void onSendDataToEddnChanged() {
-        boolean enabled = sendDataToEddnCheckBox.isSelected();
-        eddnCompressGzipCheckBox.setDisable(!enabled);
     }
 
     private void updateCapiControlsState() {

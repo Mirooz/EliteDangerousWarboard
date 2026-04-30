@@ -55,9 +55,6 @@
             <!-- Section EDDN / CAPI -->
             <VBox spacing="10.0" styleClass="config-section">
                 <CheckBox fx:id="sendDataToEddnCheckBox" text="Send datas to EDDN"
-                          onAction="#onSendDataToEddnChanged"
-                          styleClass="config-checkbox"/>
-                <CheckBox fx:id="eddnGzipCheckBox" text="Compress EDDN messages (gzip)"
                           styleClass="config-checkbox"/>
 
                 <CheckBox fx:id="capiLoginEnabledCheckBox" text="Connect Frontier Companion API"
