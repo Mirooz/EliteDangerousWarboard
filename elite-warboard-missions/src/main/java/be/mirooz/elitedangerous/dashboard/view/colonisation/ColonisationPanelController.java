@@ -38,6 +38,7 @@ import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierMarketTa
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlayComponent;
 import be.mirooz.elitedangerous.dashboard.view.fleetcarrier.FleetCarrierOverlaySnapshot;
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
@@ -296,6 +297,11 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     private int coloniseSearchLastResultCount;
     private int coloniseSearchLastResultsPerPage = 10;
     private boolean coloniseSearchHadSuccessfulResponse;
+    /**
+     * Autorise un unique chargement Spansh automatique quand le batch journal est terminé (démarrage app).
+     * Ensuite, les chargements Spansh du panneau colonisation se font uniquement sur sélection utilisateur.
+     */
+    private boolean initialSpanshLoadAfterBatchPending = true;
 
     private static final int MAX_DISTANCE_SOL_LY = 2770;
     private static final int MAX_NEIGHBORS_SHOWN = 3;
@@ -621,7 +627,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             if (suppressArchitectComboListener || newV == null) {
                 return;
             }
-            selectArchitectSystem(newV);
+            selectArchitectSystem(newV, true);
         });
     }
 
@@ -874,7 +880,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
                     suppressArchitectComboListener = false;
                 }
             }
-            selectArchitectSystem(toSelect);
+            selectArchitectSystem(toSelect, false);
             if (globalMatch != null && Objects.equals(globalMatch.getStarSystem(), toSelect.getStarSystem())) {
                 selectConstructionRow(globalMatch);
             }
@@ -939,7 +945,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         return built.get(0);
     }
 
-    private void selectArchitectSystem(ColonisationArchitectSystem arch) {
+    private void selectArchitectSystem(ColonisationArchitectSystem arch, boolean userInitiated) {
         boolean systemChanged = selectedArchitectArch == null
                 || !Objects.equals(selectedArchitectArch.getStarSystem(), arch.getStarSystem());
         selectedArchitectArch = arch;
@@ -968,11 +974,28 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             architectCenterTabPane.getSelectionModel().select(architectSystemViewTab);
         }
         applyArchitectColonisationOverlayToMapView();
-        loadArchitectVisualForSelectedSystem(selectedArchitectStarSystem);
+        if (shouldLoadSpanshForArchitectSelection(userInitiated)) {
+            loadArchitectVisualForSelectedSystem(selectedArchitectStarSystem);
+        }
         resetSuggestedStationsForSelection();
         updateArchitectSystemStatsLabel();
         refreshConstructionDetailPanel();
         updateButtonStates();
+    }
+
+    private boolean shouldLoadSpanshForArchitectSelection(boolean userInitiated) {
+        if (userInitiated) {
+            initialSpanshLoadAfterBatchPending = false;
+            return true;
+        }
+        if (!initialSpanshLoadAfterBatchPending) {
+            return false;
+        }
+        if (DashboardContext.getInstance().isBatchLoading()) {
+            return false;
+        }
+        initialSpanshLoadAfterBatchPending = false;
+        return true;
     }
 
     private boolean isMarketIdOnSelectedArchitectSystem(long marketId) {
