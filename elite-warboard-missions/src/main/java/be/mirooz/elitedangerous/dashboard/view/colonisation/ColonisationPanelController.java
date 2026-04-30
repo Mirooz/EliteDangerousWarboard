@@ -878,6 +878,8 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             if (globalMatch != null && Objects.equals(globalMatch.getStarSystem(), toSelect.getStarSystem())) {
                 selectConstructionRow(globalMatch);
             }
+            // Même sélection par défaut (combo) que manuelle : enrichir l’orrery via Spansh.
+            loadArchitectVisualForSelectedSystem(selectedArchitectStarSystem);
         }
     }
 
