@@ -156,6 +156,45 @@ class ExplorationJournalEventSimulatorToolTest {
     }
 
     @Test
+    void fssBodySignalsEtSaaSignalsFoundSontLiesALaPlaneteSelectionnee() throws Exception {
+        Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
+        Files.writeString(log, """
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
+                { "timestamp":"2026-04-30T10:00:01Z", "event":"Scan", "ScanType":"Detailed", "BodyName":"Swoilz EY-G b41-0 A 1", "BodyID":12, "Parents":[ {"Star":1}, {"Null":0} ], "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617, "DistanceFromArrivalLS":250.0, "TidalLock":true, "TerraformState":"", "PlanetClass":"Rocky body", "Atmosphere":"", "AtmosphereType":"None", "Volcanism":"", "MassEM":0.01, "Radius":1000000.0, "SurfaceGravity":1.0, "SurfaceTemperature":200.0, "SurfacePressure":0.0, "Landable":true, "Materials":[ {"Name":"iron", "Percent":20.0} ], "Composition":{"Ice":0.0, "Rock":0.7, "Metal":0.3}, "SemiMajorAxis":1000.0, "Eccentricity":0.0, "OrbitalInclination":0.0, "Periapsis":0.0, "OrbitalPeriod":1000.0, "AscendingNode":0.0, "MeanAnomaly":0.0, "RotationPeriod":1000.0, "AxialTilt":0.0, "WasDiscovered":false, "WasMapped":false, "WasFootfalled":false }
+                """, StandardCharsets.UTF_8);
+
+        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(8));
+        tool.simulateAndAppend("fssbodysignals", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode fss = readLastJsonLine(log);
+        assertEquals("FSSBodySignals", fss.path("event").asText());
+        assertEquals("Swoilz EY-G b41-0 A 1", fss.path("BodyName").asText());
+        assertEquals(12, fss.path("BodyID").asInt());
+        assertEquals(684105803617L, fss.path("SystemAddress").asLong());
+
+        tool.simulateAndAppend("saasignalsfound", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode saa = readLastJsonLine(log);
+        assertEquals("SAASignalsFound", saa.path("event").asText());
+        assertEquals("Swoilz EY-G b41-0 A 1", saa.path("BodyName").asText());
+        assertEquals(12, saa.path("BodyID").asInt());
+        assertEquals(684105803617L, saa.path("SystemAddress").asLong());
+        assertTrue(saa.path("Genuses").isArray());
+        assertTrue(saa.path("Genuses").size() > 0);
+    }
+
+    @Test
+    void fssBodySignalsEtSaaSignalsFoundExigentPlaneteSelectionnee() throws Exception {
+        Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
+        Files.writeString(log, """
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
+                { "timestamp":"2026-04-30T10:00:01Z", "event":"Scan", "ScanType":"AutoScan", "BodyName":"Swoilz EY-G b41-0 A", "BodyID":1, "Parents":[ {"Null":0} ], "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617, "DistanceFromArrivalLS":0.0, "StarType":"M", "Subclass":3, "StellarMass":0.3, "Radius":300000000.0, "AbsoluteMagnitude":9.1, "Age_MY":1000, "SurfaceTemperature":3000.0, "Luminosity":"V", "SemiMajorAxis":1000000000.0, "Eccentricity":0.0, "OrbitalInclination":0.0, "Periapsis":0.0, "OrbitalPeriod":1000.0, "AscendingNode":0.0, "MeanAnomaly":0.0, "RotationPeriod":1000.0, "AxialTilt":0.0, "WasDiscovered":false, "WasMapped":false, "WasFootfalled":false }
+                """, StandardCharsets.UTF_8);
+
+        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(4));
+        assertThrows(IllegalArgumentException.class, () -> tool.simulateAndAppend("fssbodysignals", tempDir, Map.of()));
+        assertThrows(IllegalArgumentException.class, () -> tool.simulateAndAppend("saasignalsfound", tempDir, Map.of()));
+    }
+
+    @Test
     void ecritureSeFaitDansLeDernierJournalLexicographique() throws Exception {
         Path oldLog = tempDir.resolve("Journal.2026-04-30T090000.01.log");
         Path latestLog = tempDir.resolve("Journal.2026-04-30T100000.01.log");

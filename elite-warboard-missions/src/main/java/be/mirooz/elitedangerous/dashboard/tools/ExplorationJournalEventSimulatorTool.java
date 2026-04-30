@@ -39,6 +39,8 @@ public class ExplorationJournalEventSimulatorTool {
     private static final String EVENT_SCAN = "scan";
     private static final String EVENT_SCAN_ORGANIC = "scanorganic";
     private static final String EVENT_DOCKED = "docked";
+    private static final String EVENT_FSS_BODY_SIGNALS = "fssbodysignals";
+    private static final String EVENT_SAA_SIGNALS_FOUND = "saasignalsfound";
 
     private static final List<String> SYSTEM_PREFIXES = List.of(
             "Swoilz", "Dryooe", "Bleia", "Hypua", "Prua", "Trifid"
@@ -83,6 +85,8 @@ public class ExplorationJournalEventSimulatorTool {
             case EVENT_SCAN -> createScanEvent(context, options);
             case EVENT_SCAN_ORGANIC -> createScanOrganicEvent(context, options);
             case EVENT_DOCKED -> createDockedEvent(context, options);
+            case EVENT_FSS_BODY_SIGNALS -> createFssBodySignalsEvent(context, options);
+            case EVENT_SAA_SIGNALS_FOUND -> createSaaSignalsFoundEvent(context, options);
             default -> throw new IllegalArgumentException("Type d'evenement non supporte: " + eventType);
         };
 
