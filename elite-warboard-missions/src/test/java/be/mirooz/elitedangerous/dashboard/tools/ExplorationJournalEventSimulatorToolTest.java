@@ -156,6 +156,40 @@ class ExplorationJournalEventSimulatorToolTest {
     }
 
     @Test
+    void scanOrganicFaitCycleSampleSampleAnalysePuisChangeDEspece() throws Exception {
+        Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
+        Files.writeString(log, """
+                { "timestamp":"2026-04-30T10:00:00Z", "event":"FSDJump", "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617 }
+                { "timestamp":"2026-04-30T10:00:01Z", "event":"Scan", "ScanType":"Detailed", "BodyName":"Swoilz EY-G b41-0 A 1", "BodyID":12, "Parents":[ {"Star":1}, {"Null":0} ], "StarSystem":"Swoilz EY-G b41-0", "SystemAddress":684105803617, "DistanceFromArrivalLS":250.0, "TidalLock":true, "TerraformState":"", "PlanetClass":"Rocky body", "Atmosphere":"", "AtmosphereType":"None", "Volcanism":"", "MassEM":0.01, "Radius":1000000.0, "SurfaceGravity":1.0, "SurfaceTemperature":200.0, "SurfacePressure":0.0, "Landable":true, "Materials":[ {"Name":"iron", "Percent":20.0} ], "Composition":{"Ice":0.0, "Rock":0.7, "Metal":0.3}, "SemiMajorAxis":1000.0, "Eccentricity":0.0, "OrbitalInclination":0.0, "Periapsis":0.0, "OrbitalPeriod":1000.0, "AscendingNode":0.0, "MeanAnomaly":0.0, "RotationPeriod":1000.0, "AxialTilt":0.0, "WasDiscovered":false, "WasMapped":false, "WasFootfalled":false }
+                """, StandardCharsets.UTF_8);
+
+        ExplorationJournalEventSimulatorTool tool = new ExplorationJournalEventSimulatorTool(new Random(11));
+
+        tool.simulateAndAppend("scanorganic", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode e1 = readLastJsonLine(log);
+        String species1 = e1.path("Species").asText();
+        String variant1 = e1.path("Variant").asText();
+        assertEquals("Sample", e1.path("ScanType").asText());
+
+        tool.simulateAndAppend("scanorganic", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode e2 = readLastJsonLine(log);
+        assertEquals("Sample", e2.path("ScanType").asText());
+        assertEquals(species1, e2.path("Species").asText());
+        assertEquals(variant1, e2.path("Variant").asText());
+
+        tool.simulateAndAppend("scanorganic", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode e3 = readLastJsonLine(log);
+        assertEquals("Analyse", e3.path("ScanType").asText());
+        assertEquals(species1, e3.path("Species").asText());
+        assertEquals(variant1, e3.path("Variant").asText());
+
+        tool.simulateAndAppend("scanorganic", tempDir, Map.of("selected-body-id", "12"));
+        JsonNode e4 = readLastJsonLine(log);
+        assertEquals("Sample", e4.path("ScanType").asText());
+        assertNotEquals(species1, e4.path("Species").asText());
+    }
+
+    @Test
     void fssBodySignalsEtSaaSignalsFoundSontLiesALaPlaneteSelectionnee() throws Exception {
         Path log = tempDir.resolve("Journal.2026-04-30T100000.01.log");
         Files.writeString(log, """

@@ -46,6 +46,58 @@ public class ExplorationJournalEventSimulatorTool {
             "Swoilz", "Dryooe", "Bleia", "Hypua", "Prua", "Trifid"
     );
     private static final List<String> STAR_TYPES = List.of("M", "K", "G", "F", "A");
+    private static final List<OrganicSpeciesProfile> ORGANIC_SPECIES_SEQUENCE = List.of(
+            new OrganicSpeciesProfile(
+                    "$Codex_Ent_Stratum_Genus_Name;",
+                    "Stratum",
+                    "$Codex_Ent_Stratum_07_Name;",
+                    "Stratum Tectonicas",
+                    "$Codex_Ent_Stratum_07_L_Name;",
+                    "Stratum Tectonicas - Turquoise"
+            ),
+            new OrganicSpeciesProfile(
+                    "$Codex_Ent_Fonticulus_Genus_Name;",
+                    "Fonticulua",
+                    "$Codex_Ent_Fonticulus_03_Name;",
+                    "Fonticulua Upupam",
+                    "$Codex_Ent_Fonticulus_03_T_Name;",
+                    "Fonticulua Upupam - Orange"
+            ),
+            new OrganicSpeciesProfile(
+                    "$Codex_Ent_Bacterial_Genus_Name;",
+                    "Bacterium",
+                    "$Codex_Ent_Bacterial_12_Name;",
+                    "Bacterium Aurasus",
+                    "$Codex_Ent_Bacterial_12_A_Name;",
+                    "Bacterium Aurasus - Lime"
+            ),
+            new OrganicSpeciesProfile(
+                    "$Codex_Ent_Shrubs_Genus_Name;",
+                    "Frutexa",
+                    "$Codex_Ent_Shrubs_03_Name;",
+                    "Frutexa Metallicum",
+                    "$Codex_Ent_Shrubs_03_B_Name;",
+                    "Frutexa Metallicum - Teal"
+            )
+    );
+    private static final List<OrganicSignature> ORGANIC_SIGNATURE_POOL = List.of(
+            new OrganicSignature(
+                    "$Codex_Ent_Stratum_Genus_Name;",
+                    "Stratum"
+            ),
+            new OrganicSignature(
+                    "$Codex_Ent_Fonticulus_Genus_Name;",
+                    "Fonticulua"
+            ),
+            new OrganicSignature(
+                    "$Codex_Ent_Bacterial_Genus_Name;",
+                    "Bacterium"
+            ),
+            new OrganicSignature(
+                    "$Codex_Ent_Tussocks_Genus_Name;",
+                    "Touradon"
+            )
+    );
 
     private final Random random;
 
@@ -204,8 +256,32 @@ public class ExplorationJournalEventSimulatorTool {
                 long systemAddress = node.path("SystemAddress").asLong(0L);
                 int bodyId = node.path("Body").asInt(-1);
                 String scanType = textValue(node, "ScanType");
+                String species = textValue(node, "Species");
                 if (systemAddress > 0 && bodyId >= 0 && scanType != null) {
-                    context.lastOrganicScanTypeByBody.put(organicBodyKey(systemAddress, bodyId), scanType);
+                    String bodyKey = organicBodyKey(systemAddress, bodyId);
+                    context.lastOrganicScanTypeByBody.put(bodyKey, scanType);
+                    if (species != null && !species.isBlank()) {
+                        int idx = indexOfSpecies(species);
+                        if (idx >= 0) {
+                            OrganicCycleState state = context.lastOrganicCycleByBody.computeIfAbsent(
+                                    bodyKey, k -> new OrganicCycleState()
+                            );
+                            switch (scanType.toLowerCase(Locale.ROOT)) {
+                                case "sample" -> {
+                                    state.speciesIndex = idx;
+                                    state.nextStep = 2;
+                                }
+                                case "analyse", "analyze" -> {
+                                    state.speciesIndex = (idx + 1) % ORGANIC_SPECIES_SEQUENCE.size();
+                                    state.nextStep = 0;
+                                }
+                                default -> {
+                                    state.speciesIndex = idx;
+                                    state.nextStep = 1;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -386,14 +462,16 @@ public class ExplorationJournalEventSimulatorTool {
         long systemAddress = parseLongOption(options, "system-address").orElse(selectedPlanet.systemAddress);
         int bodyId = parseIntOption(options, "body-id").orElse(selectedPlanet.bodyId);
 
+        OrganicCycleEvent organicCycle = nextOrganicCycleEvent(context, selectedPlanet);
         ObjectNode node = createBaseEvent("ScanOrganic", context);
-        node.put("ScanType", options.getOrDefault("scan-type", nextOrganicScanType(context, selectedPlanet)));
-        node.put("Genus", "$Codex_Ent_Stratum_Genus_Name;");
-        node.put("Genus_Localised", "Stratum");
-        node.put("Species", "$Codex_Ent_Stratum_07_Name;");
-        node.put("Species_Localised", "Stratum Tectonicas");
-        node.put("Variant", "$Codex_Ent_Stratum_07_L_Name;");
-        node.put("Variant_Localised", "Stratum Tectonicas - Turquoise");
+        node.put("ScanType", options.getOrDefault("scan-type", organicCycle.scanType));
+        OrganicSpeciesProfile profile = organicCycle.speciesProfile;
+        node.put("Genus", profile.genusCodex);
+        node.put("Genus_Localised", profile.genusLocalised);
+        node.put("Species", profile.speciesCodex);
+        node.put("Species_Localised", profile.speciesLocalised);
+        node.put("Variant", profile.variantCodex);
+        node.put("Variant_Localised", profile.variantLocalised);
         node.put("WasLogged", false);
         node.put("SystemAddress", systemAddress);
         node.put("Body", bodyId);
@@ -438,6 +516,58 @@ public class ExplorationJournalEventSimulatorTool {
         node.put("DistFromStarLS", selectedPlanet.distanceFromArrivalLs != null
                 ? round(Math.max(1.0, selectedPlanet.distanceFromArrivalLs + randomInRange(-50.0, 120.0)), 3)
                 : round(randomInRange(15.0, 1200.0), 3));
+        return node;
+    }
+
+    private ObjectNode createFssBodySignalsEvent(JournalContext context, Map<String, String> options) {
+        BodyNode selectedPlanet = resolveSelectedPlanet(context, options)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Aucune planete selectionnee: utilisez --selected-body-id/--selected-body-name avant FSSBodySignals"
+                ));
+
+        long systemAddress = parseLongOption(options, "system-address").orElse(selectedPlanet.systemAddress);
+        int bodyId = parseIntOption(options, "body-id").orElse(selectedPlanet.bodyId);
+        int signalCount = parseIntegerOptionInRange(options, "signal-count", 1, 8)
+                .orElse(random.nextInt(1, 5));
+        boolean geological = options.getOrDefault("signal-type", "biological")
+                .equalsIgnoreCase("geological");
+
+        ObjectNode node = createBaseEvent("FSSBodySignals", context);
+        node.put("BodyName", selectedPlanet.bodyName);
+        node.put("BodyID", bodyId);
+        node.put("SystemAddress", systemAddress);
+        ArrayNode signals = node.putArray("Signals");
+        signals.add(buildSingleSignal(geological, signalCount));
+        return node;
+    }
+
+    private ObjectNode createSaaSignalsFoundEvent(JournalContext context, Map<String, String> options) {
+        BodyNode selectedPlanet = resolveSelectedPlanet(context, options)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Aucune planete selectionnee: utilisez --selected-body-id/--selected-body-name avant SAASignalsFound"
+                ));
+
+        long systemAddress = parseLongOption(options, "system-address").orElse(selectedPlanet.systemAddress);
+        int bodyId = parseIntOption(options, "body-id").orElse(selectedPlanet.bodyId);
+        int signalCount = parseIntegerOptionInRange(options, "signal-count", 1, 8)
+                .orElse(random.nextInt(1, 5));
+        boolean geological = options.getOrDefault("signal-type", "biological")
+                .equalsIgnoreCase("geological");
+
+        ObjectNode node = createBaseEvent("SAASignalsFound", context);
+        node.put("BodyName", selectedPlanet.bodyName);
+        node.put("SystemAddress", systemAddress);
+        node.put("BodyID", bodyId);
+        ArrayNode signals = node.putArray("Signals");
+        signals.add(buildSingleSignal(geological, signalCount));
+        if (!geological) {
+            ArrayNode genuses = node.putArray("Genuses");
+            for (OrganicSignature signature : pickOrganicSignatures(signalCount)) {
+                ObjectNode genus = genuses.addObject();
+                genus.put("Genus", signature.genusCodex);
+                genus.put("Genus_Localised", signature.genusLocalised);
+            }
+        }
         return node;
     }
 
@@ -796,17 +926,28 @@ public class ExplorationJournalEventSimulatorTool {
         node.put("WasFootfalled", false);
     }
 
-    private String nextOrganicScanType(JournalContext context, BodyNode selectedPlanet) {
+    private OrganicCycleEvent nextOrganicCycleEvent(JournalContext context, BodyNode selectedPlanet) {
         String key = organicBodyKey(selectedPlanet.systemAddress, selectedPlanet.bodyId);
-        String last = context.lastOrganicScanTypeByBody.get(key);
-        if (last == null) {
-            return "Log";
+        OrganicCycleState state = context.lastOrganicCycleByBody.computeIfAbsent(key, unused -> new OrganicCycleState());
+        int speciesCount = ORGANIC_SPECIES_SEQUENCE.size();
+        if (speciesCount == 0) {
+            throw new IllegalStateException("Aucune espece organique configuree");
         }
-        return switch (last.toLowerCase(Locale.ROOT)) {
-            case "log" -> "Sample";
-            case "sample" -> "Analyse";
-            default -> "Sample";
+        int speciesIndex = Math.floorMod(state.speciesIndex, speciesCount);
+        OrganicSpeciesProfile profile = ORGANIC_SPECIES_SEQUENCE.get(speciesIndex);
+        String scanType = switch (Math.floorMod(state.nextStep, 3)) {
+            case 0, 1 -> "Sample";
+            default -> "Analyse";
         };
+
+        state.nextStep++;
+        if (state.nextStep >= 3) {
+            state.nextStep = 0;
+            state.speciesIndex = (speciesIndex + 1) % speciesCount;
+        } else {
+            state.speciesIndex = speciesIndex;
+        }
+        return new OrganicCycleEvent(scanType, profile);
     }
 
     private Optional<BodyNode> resolveSelectedPlanet(JournalContext context, Map<String, String> options) {
@@ -929,6 +1070,52 @@ public class ExplorationJournalEventSimulatorTool {
         }
     }
 
+    private static Optional<Integer> parseIntegerOptionInRange(
+            Map<String, String> options,
+            String key,
+            int minInclusive,
+            int maxInclusive
+    ) {
+        Optional<Integer> value = parseIntOption(options, key);
+        if (value.isEmpty()) {
+            return Optional.empty();
+        }
+        int parsed = value.get();
+        if (parsed < minInclusive || parsed > maxInclusive) {
+            throw new IllegalArgumentException(
+                    "Option hors borne --" + key + "=" + parsed
+                            + " (attendu: " + minInclusive + ".." + maxInclusive + ")"
+            );
+        }
+        return Optional.of(parsed);
+    }
+
+    private ObjectNode buildSingleSignal(boolean geological, int count) {
+        ObjectNode signal = OBJECT_MAPPER.createObjectNode();
+        if (geological) {
+            signal.put("Type", "$SAA_SignalType_Geological;");
+            signal.put("Type_Localised", "Geologique");
+        } else {
+            signal.put("Type", "$SAA_SignalType_Biological;");
+            signal.put("Type_Localised", "Biologique");
+        }
+        signal.put("Count", Math.max(1, count));
+        return signal;
+    }
+
+    private List<OrganicSpeciesProfile> pickOrganicSignatures(int signalCount) {
+        if (signalCount <= 0) {
+            return List.of();
+        }
+        int count = Math.min(signalCount, ORGANIC_SPECIES_SEQUENCE.size());
+        int start = random.nextInt(ORGANIC_SPECIES_SEQUENCE.size());
+        List<OrganicSpeciesProfile> signatures = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            signatures.add(ORGANIC_SPECIES_SEQUENCE.get((start + i) % ORGANIC_SPECIES_SEQUENCE.size()));
+        }
+        return signatures;
+    }
+
     private void appendJsonLine(Path journalFile, String jsonLine) throws IOException {
         StringBuilder data = new StringBuilder();
         if (Files.size(journalFile) > 0 && !endsWithLineBreak(journalFile)) {
@@ -1037,12 +1224,16 @@ public class ExplorationJournalEventSimulatorTool {
                   scan
                   scanorganic
                   docked
+                  fssbodysignals
+                  saasignalsfound
 
                 Exemples:
                   ... -Dexec.args="fsdjump --journal-dir=elite-warboard-missions/src/main/resources/exemple"
                   ... -Dexec.args="scan --scan-type=Detailed"
-                  ... -Dexec.args="scanorganic --scan-type=Sample --selected-body-id=12"
+                  ... -Dexec.args="scanorganic --selected-body-id=12"
                   ... -Dexec.args="docked --selected-body-name=Swoilz RE-U c18-3 B 1"
+                  ... -Dexec.args="fssbodysignals --selected-body-id=12 --signal-type=biological"
+                  ... -Dexec.args="saasignalsfound --selected-body-id=12 --signal-count=2"
                 """);
     }
 
@@ -1177,6 +1368,21 @@ public class ExplorationJournalEventSimulatorTool {
         private boolean isPlanetary() {
             return kind == BodyKind.PLANET || kind == BodyKind.MOON;
         }
+    }
+
+    private static final class OrganicCycleState {
+        private int speciesIndex;
+        private int nextStep;
+    }
+
+    private record OrganicSpeciesProfile(
+            String genusCodex,
+            String genusLocalised,
+            String speciesCodex,
+            String speciesLocalised,
+            String variantCodex,
+            String variantLocalised
+    ) {
     }
 
     private static final class SystemModel {
