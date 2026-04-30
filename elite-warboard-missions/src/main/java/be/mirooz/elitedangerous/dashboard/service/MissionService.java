@@ -99,7 +99,7 @@ public class MissionService {
 
     public void updateWantedKillCount(JsonNode jsonNode) {
         String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
-        if (missionsRegistry.getGlobalMissionMap().values().isEmpty()) {
+        if (missionsRegistry.snapshotMissions().isEmpty()) {
             return;
         }
         List<Mission> eligibleMissions = new ArrayList<>();
@@ -122,7 +122,7 @@ public class MissionService {
 
     public void updatFactionKillCount(JsonNode jsonNode) {
         String victimFaction = jsonNode.has("VictimFaction") ? jsonNode.get("VictimFaction").asText() : "";
-        if (missionsRegistry.getGlobalMissionMap().values().isEmpty()) {
+        if (missionsRegistry.snapshotMissions().isEmpty()) {
             return;
         }
         List<Mission> eligibleMissions = getFactionShipMissions(victimFaction);
@@ -225,7 +225,7 @@ public class MissionService {
 
     @SafeVarargs
     private List<Mission> getEligiblesMissions(String victimFaction, Predicate<Mission>... extraFilters) {
-        Stream<Mission> stream = missionsRegistry.getGlobalMissionMap().values().stream()
+        Stream<Mission> stream = missionsRegistry.snapshotMissions().stream()
                 .filter(mission -> mission.getTargetFaction() != null)
                 .filter(mission -> victimFaction.equals(mission.getTargetFaction()))
                 .filter(mission -> mission.getDestinationSystem() == null ||

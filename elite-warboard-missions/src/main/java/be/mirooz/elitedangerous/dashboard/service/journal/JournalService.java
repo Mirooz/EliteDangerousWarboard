@@ -278,7 +278,7 @@ public class JournalService {
             // Rafraîchissement UI global : {@link DashboardService#initActiveMissions()} (finally)
             // après tous les {@code onBatchEnd}, pour respecter l’ordre liaisons → contenus.
         }
-        return new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
+        return missionsRegistry.snapshotMissions();
 
     }
 
