@@ -269,7 +269,7 @@ public class ExplorationJournalEventSimulatorTool {
                             switch (scanType.toLowerCase(Locale.ROOT)) {
                                 case "sample" -> {
                                     state.speciesIndex = idx;
-                                    state.nextStep = 2;
+                                    state.nextStep = (state.nextStep == 1) ? 2 : 1;
                                 }
                                 case "analyse", "analyze" -> {
                                     state.speciesIndex = (idx + 1) % ORGANIC_SPECIES_SEQUENCE.size();
@@ -926,6 +926,22 @@ public class ExplorationJournalEventSimulatorTool {
         node.put("WasFootfalled", false);
     }
 
+    private static int indexOfSpecies(String species) {
+        if (species == null || species.isBlank()) {
+            return -1;
+        }
+        for (int i = 0; i < ORGANIC_SPECIES_SEQUENCE.size(); i++) {
+            OrganicSpeciesProfile profile = ORGANIC_SPECIES_SEQUENCE.get(i);
+            if (profile.speciesCodex.equalsIgnoreCase(species)
+                    || profile.variantCodex.equalsIgnoreCase(species)
+                    || profile.speciesLocalised.equalsIgnoreCase(species)
+                    || profile.variantLocalised.equalsIgnoreCase(species)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private OrganicCycleEvent nextOrganicCycleEvent(JournalContext context, BodyNode selectedPlanet) {
         String key = organicBodyKey(selectedPlanet.systemAddress, selectedPlanet.bodyId);
         OrganicCycleState state = context.lastOrganicCycleByBody.computeIfAbsent(key, unused -> new OrganicCycleState());
@@ -1375,6 +1391,12 @@ public class ExplorationJournalEventSimulatorTool {
     private static final class OrganicCycleState {
         private int speciesIndex;
         private int nextStep;
+    }
+
+    private record OrganicCycleEvent(
+            String scanType,
+            OrganicSpeciesProfile speciesProfile
+    ) {
     }
 
     private record OrganicSpeciesProfile(
