@@ -4,7 +4,7 @@ package be.mirooz.elitedangerous.dashboard.overlay.panel;
  * Valeurs de <strong>repli</strong> pour le quadrilatère du dock cockpit (coordonnées normalisées {@code (0–1, 0–1)}).
  * <p>
  * En production, {@link be.mirooz.elitedangerous.dashboard.service.CockpitLeftPanelGeometryService} charge
- * une image de calibration (tracé bleu), calcule les sommets avec OpenCV et met à jour les ratios
+ * une image de calibration (tracé rose), calcule les sommets avec OpenCV et met à jour les ratios
  * dynamiquement ; ce fichier conserve les constantes utilisées si OpenCV échoue ou si aucune image n’est
  * trouvée.
  * <p>
@@ -22,8 +22,14 @@ public final class CockpitLeftPanelGeometry {
      */
     public static final String PREF_COCKPIT_DOCK_SCREEN_INDEX = "cockpit.dock.screen.index";
 
+    /**
+     * Décalage vertical <strong>normalisé</strong> (0–1) ajouté aux coordonnées Y du quadrilatère sur l’écran jeu,
+     * après détection / repli — positif = vers le bas. Ajuste si le trapèxe paraît légèrement trop haut.
+     */
+    public static final double CALIBRATION_VERTICAL_NUDGE_NORM = 0.016;
+
     /*
-     * Repli aligné sur leftpanelposition2.bmp — 2560×1440 (dernier export manuel avant service dynamique).
+     * Repli si aucune calibration valide dans ~/.elite-warboard/calibration/ (valeurs 2560×1440 historiques).
      */
     private static final double W = REFERENCE_CAPTURE_WIDTH;
     private static final double H = REFERENCE_CAPTURE_HEIGHT;

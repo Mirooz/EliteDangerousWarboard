@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.service;
 
-import be.mirooz.elitedangerous.dashboard.overlay.panel.BlueLeftPanelPositionDetector;
+import be.mirooz.elitedangerous.dashboard.overlay.panel.RoseLeftPanelPositionDetector;
 import be.mirooz.elitedangerous.dashboard.overlay.panel.CockpitLeftPanelGeometry;
 import be.mirooz.elitedangerous.dashboard.overlay.panel.PanelCorners;
 import javafx.geometry.Point2D;
@@ -10,7 +10,6 @@ import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
@@ -19,6 +18,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.WatchService;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,24 +30,27 @@ import java.util.stream.Stream;
 
 /**
  * Quadrilatère cockpit en coordonnées normalisées : calcul OpenCV sur une image de calibration
- * (tracé bleu), rechargée quand un fichier est ajouté ou modifié dans le dossier utilisateur.
+ * (tracé <strong>rose / magenta</strong>), rechargée quand un fichier est ajouté ou modifié dans le dossier utilisateur.
  * <p>
- * Dossier surveillé : {@code ~/.elite-warboard/calibration/} — fichiers dont le nom correspond à
- * {@code leftpanelposition*.(bmp|png|jpg|jpeg)} (insensible à la casse) ; le plus récemment modifié
- * est utilisé. Sinon repli sur la ressource embarquée {@value #BUNDLED_CALIBRATION_RESOURCE}.
+ * Dossier surveillé : {@code ~/.elite-warboard/calibration/} — en priorité un fichier nommé exactement
+ * {@code leftpanel.bmp} (ou .png / .jpg / .jpeg, insensible à la casse), le plus récemment modifié s’il y en a
+ * plusieurs ; sinon le plus récent parmi {@code leftpanelposition*.(bmp|png|jpg|jpeg)}.
  * <p>
- * En cas d’échec OpenCV ou de détection, repli sur les constantes {@link CockpitLeftPanelGeometry}.
+ * S’il n’y a aucune image utilisable dans ce dossier, ou si la détection échoue : repli sur les constantes
+ * {@link CockpitLeftPanelGeometry}.
  */
 public final class CockpitLeftPanelGeometryService {
 
     private static final CockpitLeftPanelGeometryService INSTANCE = new CockpitLeftPanelGeometryService();
 
-    public static final String BUNDLED_CALIBRATION_RESOURCE = "/images/overlay/leftpanelposition2.bmp";
-
     private static final Path CALIBRATION_DIR = Path.of(
             System.getProperty("user.home"), ".elite-warboard", "calibration");
 
-    private static final Pattern CALIBRATION_FILENAME = Pattern.compile(
+    /** Priorité : nom exact {@code leftpanel} + extension image. */
+    private static final Pattern PRIORITY_LEFTPANEL_FILE = Pattern.compile(
+            "(?i)^leftpanel\\.(bmp|png|jpe?g)$");
+    /** Second choix : {@code leftpanelposition…} comme avant. */
+    private static final Pattern FALLBACK_CALIBRATION_FILE = Pattern.compile(
             "(?i)leftpanelposition.*\\.(bmp|png|jpe?g)$");
 
     private final Object reloadLock = new Object();
@@ -137,12 +140,17 @@ public final class CockpitLeftPanelGeometryService {
         double by = visual.getMinY();
         double w = visual.getWidth();
         double h = visual.getHeight();
+        double ny = CockpitLeftPanelGeometry.CALIBRATION_VERTICAL_NUDGE_NORM;
         return new PanelCorners(
-                new Point2D(bx + w * q.tlX, by + h * q.tlY),
-                new Point2D(bx + w * q.trX, by + h * q.trY),
-                new Point2D(bx + w * q.brX, by + h * q.brY),
-                new Point2D(bx + w * q.blX, by + h * q.blY)
+                new Point2D(bx + w * q.tlX, by + h * nudgeYNorm(q.tlY, ny)),
+                new Point2D(bx + w * q.trX, by + h * nudgeYNorm(q.trY, ny)),
+                new Point2D(bx + w * q.brX, by + h * nudgeYNorm(q.brY, ny)),
+                new Point2D(bx + w * q.blX, by + h * nudgeYNorm(q.blY, ny))
         );
+    }
+
+    private static double nudgeYNorm(double yNorm, double delta) {
+        return Math.min(1.0, Math.max(0.0, yNorm + delta));
     }
 
     /** Pour tests / outils : force un recalcul immédiat (bloquant). */
@@ -161,7 +169,8 @@ public final class CockpitLeftPanelGeometryService {
                     Object ctx = ev.context();
                     if (ctx instanceof Path fn) {
                         String name = fn.toString();
-                        if (CALIBRATION_FILENAME.matcher(name).matches()) {
+                        if (PRIORITY_LEFTPANEL_FILE.matcher(name).matches()
+                                || FALLBACK_CALIBRATION_FILE.matcher(name).matches()) {
                             scheduleReload("file:" + ev.kind() + ":" + name);
                         }
                     }
@@ -205,9 +214,9 @@ public final class CockpitLeftPanelGeometryService {
             try {
                 int iw = bgr.cols();
                 int ih = bgr.rows();
-                Optional<PanelCorners> pix = BlueLeftPanelPositionDetector.detectPixelCorners(bgr);
+                Optional<PanelCorners> pix = RoseLeftPanelPositionDetector.detectPixelCorners(bgr);
                 if (pix.isEmpty()) {
-                    System.err.println("[CockpitGeom] Détection quad bleu échouée (" + reason + "), repli constants.");
+                    System.err.println("[CockpitGeom] Détection quad rose échouée (" + reason + "), repli constants.");
                     current = NormQuad.fromStaticFallback();
                     return;
                 }
@@ -231,27 +240,7 @@ public final class CockpitLeftPanelGeometryService {
                 m.release();
             }
         }
-        return loadBundledMat();
-    }
-
-    private static Mat loadBundledMat() {
-        try (InputStream in = CockpitLeftPanelGeometryService.class.getResourceAsStream(BUNDLED_CALIBRATION_RESOURCE)) {
-            if (in == null) {
-                return new Mat();
-            }
-            byte[] data = in.readAllBytes();
-            if (data.length == 0) {
-                return new Mat();
-            }
-            Mat buf = new Mat(1, data.length, org.opencv.core.CvType.CV_8UC1);
-            buf.put(0, 0, data);
-            Mat decoded = Imgcodecs.imdecode(buf, Imgcodecs.IMREAD_COLOR);
-            buf.release();
-            return decoded;
-        } catch (IOException e) {
-            System.err.println("[CockpitGeom] Lecture ressource: " + e.getMessage());
-            return new Mat();
-        }
+        return new Mat();
     }
 
     private static Optional<Path> findNewestUserCalibrationFile() {
@@ -259,9 +248,15 @@ public final class CockpitLeftPanelGeometryService {
             return Optional.empty();
         }
         try (Stream<Path> stream = Files.list(CALIBRATION_DIR)) {
-            return stream
-                    .filter(Files::isRegularFile)
-                    .filter(p -> CALIBRATION_FILENAME.matcher(p.getFileName().toString()).matches())
+            List<Path> files = stream.filter(Files::isRegularFile).toList();
+            Optional<Path> priority = files.stream()
+                    .filter(p -> PRIORITY_LEFTPANEL_FILE.matcher(p.getFileName().toString()).matches())
+                    .max(Comparator.comparingLong(CockpitLeftPanelGeometryService::lastModifiedMillis));
+            if (priority.isPresent()) {
+                return priority;
+            }
+            return files.stream()
+                    .filter(p -> FALLBACK_CALIBRATION_FILE.matcher(p.getFileName().toString()).matches())
                     .max(Comparator.comparingLong(CockpitLeftPanelGeometryService::lastModifiedMillis));
         } catch (IOException e) {
             return Optional.empty();
