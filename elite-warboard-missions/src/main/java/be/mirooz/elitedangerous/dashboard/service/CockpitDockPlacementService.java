@@ -18,11 +18,19 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.effect.PerspectiveTransform;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBoxBase;
+import javafx.scene.control.Control;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Screen;
@@ -275,35 +283,39 @@ public final class CockpitDockPlacementService {
             return;
         }
 
-        Node n = resolveInversePerspectiveTarget(event.getSceneX(), event.getSceneY());
+        StackPane rootPane = WindowToggleService.getInstance().getRootPane();
+        Node pickLeaf = resolveInversePerspectiveTarget(event.getScreenX(), event.getScreenY());
+        Node hoverTarget = pickStableHoverEventTarget(pickLeaf, rootPane);
+        Node redispatchTarget = pickMouseRedispatchTarget(pickLeaf, hoverTarget, rootPane);
 
         if (t == MouseEvent.MOUSE_MOVED || t == MouseEvent.MOUSE_DRAGGED) {
             runUnderInverseRedispatchDepth(() -> {
-                syncSyntheticHover(event, n);
-                if (n != null) {
-                    Event.fireEvent(n, (MouseEvent) event.copyFor(n, n));
+                syncSyntheticHover(event, hoverTarget);
+                if (redispatchTarget != null) {
+                    Event.fireEvent(redispatchTarget, (MouseEvent) event.copyFor(redispatchTarget, redispatchTarget));
                 }
             });
-            refreshCockpitDockSceneCursor();
+            refreshCockpitDockSceneCursor(pickLeaf);
             event.consume();
             return;
         }
 
         if (t == MouseEvent.MOUSE_PRESSED || t == MouseEvent.MOUSE_RELEASED || t == MouseEvent.MOUSE_CLICKED) {
             runUnderInverseRedispatchDepth(() -> {
-                syncSyntheticHover(event, n);
-                if (n != null) {
-                    Event.fireEvent(n, (MouseEvent) event.copyFor(n, n));
+                syncSyntheticHover(event, hoverTarget);
+                if (redispatchTarget != null) {
+                    Event.fireEvent(redispatchTarget, (MouseEvent) event.copyFor(redispatchTarget, redispatchTarget));
                 }
             });
-            refreshCockpitDockSceneCursor();
+            refreshCockpitDockSceneCursor(pickLeaf);
             event.consume();
             return;
         }
 
-        if (t == MouseEvent.DRAG_DETECTED && n != null) {
-            runUnderInverseRedispatchDepth(() -> Event.fireEvent(n, (MouseEvent) event.copyFor(n, n)));
-            refreshCockpitDockSceneCursor();
+        if (t == MouseEvent.DRAG_DETECTED && redispatchTarget != null) {
+            runUnderInverseRedispatchDepth(() ->
+                    Event.fireEvent(redispatchTarget, (MouseEvent) event.copyFor(redispatchTarget, redispatchTarget)));
+            refreshCockpitDockSceneCursor(pickLeaf);
             event.consume();
         }
     }
@@ -324,25 +336,29 @@ public final class CockpitDockPlacementService {
             Event.fireEvent(last, (MouseEvent) template.copyFor(last, last, MouseEvent.MOUSE_EXITED));
             cockpitSyntheticHoverTarget = null;
         }
-        refreshCockpitDockSceneCursor();
+        refreshCockpitDockSceneCursor(null);
     }
 
     /**
      * Sans pick scène « naturel », le curseur ne suit plus la cible ; on impose celui du nœud sous le pointeur inverse
      * (remontée parents comme le ferait le pick JavaFX pour un curseur non-{@link Cursor#DEFAULT}).
      * Un second passage {@link Platform#runLater} laisse le CSS {@code :hover} mettre à jour {@link Node#cursorProperty()}.
+     *
+     * @param pickLeaf feuille du pick inverse (texte, I-beam, etc.) ; si {@code null}, on retombe sur la cible hover synthétique.
      */
-    private void refreshCockpitDockSceneCursor() {
+    private void refreshCockpitDockSceneCursor(Node pickLeaf) {
         Scene sc = cockpitInputFilterScene;
         if (sc == null) {
             return;
         }
-        sc.setCursor(effectiveCursorUnder(cockpitSyntheticHoverTarget));
+        Node cursorNode = pickLeaf != null ? pickLeaf : cockpitSyntheticHoverTarget;
+        sc.setCursor(effectiveCursorUnder(cursorNode));
         Platform.runLater(() -> {
             if (!dockedMode.get() || cockpitInputFilterScene != sc) {
                 return;
             }
-            sc.setCursor(effectiveCursorUnder(cockpitSyntheticHoverTarget));
+            Node again = pickLeaf != null ? pickLeaf : cockpitSyntheticHoverTarget;
+            sc.setCursor(effectiveCursorUnder(again));
         });
     }
 
@@ -380,15 +396,17 @@ public final class CockpitDockPlacementService {
         if (cockpitInverseRedispatchDepth.get() > 0) {
             return;
         }
-        Node n = resolveInversePerspectiveTarget(event.getSceneX(), event.getSceneY());
-        if (n == null) {
+        StackPane rootPane = WindowToggleService.getInstance().getRootPane();
+        Node pickLeaf = resolveInversePerspectiveTarget(event.getScreenX(), event.getScreenY());
+        Node scrollTarget = pickScrollRedispatchTarget(pickLeaf, pickStableHoverEventTarget(pickLeaf, rootPane));
+        if (scrollTarget == null) {
             return;
         }
-        ScrollEvent redirected = (ScrollEvent) event.copyFor(n, n);
+        ScrollEvent redirected = (ScrollEvent) event.copyFor(scrollTarget, scrollTarget);
         int prevDepth = cockpitInverseRedispatchDepth.get();
         cockpitInverseRedispatchDepth.set(prevDepth + 1);
         try {
-            Event.fireEvent(n, redirected);
+            Event.fireEvent(scrollTarget, redirected);
             event.consume();
         } finally {
             cockpitInverseRedispatchDepth.set(prevDepth);
@@ -396,10 +414,102 @@ public final class CockpitDockPlacementService {
     }
 
     /**
-     * Scène → local root « déformé » visuellement → local rectangulaire contenu → nœud le plus profond sous ce point
-     * (JavaFX 17 n’expose pas {@code Node.pick} ni {@code Event.getProperties}).
+     * Remonte depuis la feuille du pick vers un {@link Control} « logique » pour le hover CSS :
+     * le texte d’un {@link ButtonBase} est un {@code Label} enfant du skin ; les événements sur ce label
+     * n’activent pas {@code .button:hover} sur le bouton public.
+     * <p>
+     * Idem pour {@link ComboBoxBase} / {@link ChoiceBox}, et pour la rangée d’onglets modules : la cellule
+     * d’en-tête (style {@code tab} sous {@code tab-header-area}) reçoit le hover, pas seulement l’{@link javafx.scene.image.ImageView}.
      */
-    private Node resolveInversePerspectiveTarget(double sceneX, double sceneY) {
+    private static Node pickStableHoverEventTarget(Node pickLeaf, StackPane root) {
+        if (pickLeaf == null) {
+            return null;
+        }
+        Node tabHeader = pickTabHeaderChromeTarget(pickLeaf, root);
+        if (tabHeader != null) {
+            return tabHeader;
+        }
+        Node fallback = pickLeaf;
+        for (Node p = pickLeaf; p != null && p != root; p = p.getParent()) {
+            if (p instanceof ButtonBase) {
+                return p;
+            }
+            if (p instanceof ComboBoxBase) {
+                return p;
+            }
+            if (p instanceof ChoiceBox) {
+                return p;
+            }
+            /* Ne pas prendre TabPane comme fallback : il recouvre tout l’onglet et écraserait ScrollPane / ListView. */
+            if (p instanceof Control && !(p instanceof TabPane)) {
+                fallback = p;
+            }
+        }
+        return fallback;
+    }
+
+    /**
+     * Cible des {@link MouseEvent} redispatchés : le bouton public pour les {@link ButtonBase},
+     * la feuille {@link Text} sous un {@link TextInputControl} pour caret / sélection.
+     */
+    private static Node pickMouseRedispatchTarget(Node pickLeaf, Node hoverTarget, StackPane root) {
+        if (pickLeaf == null) {
+            return null;
+        }
+        if (pickLeaf instanceof Text) {
+            for (Node p = pickLeaf; p != null; p = p.getParent()) {
+                if (p instanceof TextInputControl) {
+                    return pickLeaf;
+                }
+            }
+        }
+        if (isUnderTabHeaderArea(pickLeaf, root)) {
+            return pickLeaf;
+        }
+        if (hoverTarget instanceof ButtonBase
+                || hoverTarget instanceof ComboBoxBase
+                || hoverTarget instanceof ChoiceBox) {
+            return hoverTarget;
+        }
+        return pickLeaf;
+    }
+
+    private static Node pickScrollRedispatchTarget(Node pickLeaf, Node hoverTarget) {
+        if (hoverTarget instanceof ScrollPane) {
+            return hoverTarget;
+        }
+        return pickLeaf;
+    }
+
+    private static boolean isUnderTabHeaderArea(Node pickLeaf, StackPane root) {
+        for (Node x = pickLeaf; x != null && x != root; x = x.getParent()) {
+            if (x.getStyleClass().contains("tab-header-area")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Cellule d’en-tête d’onglet (classe CSS {@code tab}) : hover sur l’icône / image sans couvrir le contenu de l’onglet.
+     */
+    private static Node pickTabHeaderChromeTarget(Node pickLeaf, StackPane root) {
+        if (!isUnderTabHeaderArea(pickLeaf, root)) {
+            return null;
+        }
+        for (Node p = pickLeaf; p != null && p != root; p = p.getParent()) {
+            if (p.getStyleClass().contains("tab")) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Coordonnées <strong>écran</strong> → local root → inverse perspective → pick manuel.
+     * L’écran évite les ambiguïtés si un jour un sous-arbre n’est pas dans la même {@link Scene} que le root.
+     */
+    private Node resolveInversePerspectiveTarget(double screenX, double screenY) {
         PanelCorners q = dockPerspectiveQuad;
         StackPane root = WindowToggleService.getInstance().getRootPane();
         if (q == null || root == null) {
@@ -411,7 +521,7 @@ public final class CockpitDockPlacementService {
             return null;
         }
         try {
-            Point2D warped = root.sceneToLocal(sceneX, sceneY);
+            Point2D warped = root.screenToLocal(screenX, screenY);
             Point2D content = PerspectiveQuadToRect.mapPerspectiveWarpedLocalToContentLocal(
                     q.topLeft().getX(), q.topLeft().getY(),
                     q.topRight().getX(), q.topRight().getY(),
