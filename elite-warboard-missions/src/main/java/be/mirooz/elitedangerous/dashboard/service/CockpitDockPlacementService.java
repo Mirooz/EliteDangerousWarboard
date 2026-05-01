@@ -3,14 +3,23 @@ package be.mirooz.elitedangerous.dashboard.service;
 import be.mirooz.elitedangerous.dashboard.overlay.panel.CockpitLeftPanelGeometry;
 import be.mirooz.elitedangerous.dashboard.overlay.panel.PanelCorners;
 import be.mirooz.elitedangerous.dashboard.overlay.panel.PanelPerspective;
+import be.mirooz.elitedangerous.dashboard.util.PerspectiveQuadToRect;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.effect.PerspectiveTransform;
+import javafx.collections.ObservableList;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -35,6 +44,11 @@ public final class CockpitDockPlacementService {
 
     private static final CockpitDockPlacementService INSTANCE = new CockpitDockPlacementService();
 
+    /**
+     * Évite une boucle lorsque {@link Event#fireEvent} réinjecte la souris dans la même scène (filtre capture).
+     */
+    private static final ThreadLocal<Integer> cockpitInverseRedispatchDepth = ThreadLocal.withInitial(() -> 0);
+
     private final ReadOnlyBooleanWrapper dockedMode = new ReadOnlyBooleanWrapper(false);
     private int backupScreenIndex;
     private double backupX;
@@ -47,6 +61,14 @@ public final class CockpitDockPlacementService {
     private Background backupRootBackground;
     /** Fond du premier enfant du root (BorderPane dashboard), sauvegardé avant le dock. */
     private Background backupMainDashboardBackground;
+
+    /** Quad local (repère {@link StackPane} racine) identique à celui du {@link PerspectiveTransform}. */
+    private PanelCorners dockPerspectiveQuad;
+    private Scene cockpitInputFilterScene;
+    /** Dernier nœud ayant reçu un {@link MouseEvent#MOUSE_ENTERED} synthétique (pick inverse) ; le survol CSS n’est pas mis à jour par la plateforme si on ne fait que redispatcher le mouvement. */
+    private Node cockpitSyntheticHoverTarget;
+    private final EventHandler<MouseEvent> cockpitMouseFilter = this::onCockpitMouseFilter;
+    private final EventHandler<ScrollEvent> cockpitScrollFilter = this::onCockpitScrollFilter;
 
     private CockpitDockPlacementService() {
     }
@@ -105,6 +127,7 @@ public final class CockpitDockPlacementService {
                 return;
             }
             dockedMode.set(false);
+            INSTANCE.removeCockpitPerspectiveInputFilter();
             stage.setAlwaysOnTop(backupAlwaysOnTop);
             StackPane root = WindowToggleService.getInstance().getRootPane();
             Scene scene = stage.getScene();
@@ -197,7 +220,249 @@ public final class CockpitDockPlacementService {
             root.setEffect(pt);
             /* Ne pas mettre en cache : le buffer hors-écran est souvent opaque → rectangle noir autour du trapèze. */
             root.setCache(false);
+            INSTANCE.installCockpitPerspectiveInputFilter(quadLocal, root, scene);
         }
+    }
+
+    private void installCockpitPerspectiveInputFilter(PanelCorners quadLocal, StackPane root, Scene scene) {
+        removeCockpitPerspectiveInputFilter();
+        if (quadLocal == null || root == null || scene == null) {
+            return;
+        }
+        dockPerspectiveQuad = quadLocal;
+        cockpitInputFilterScene = scene;
+        scene.addEventFilter(MouseEvent.ANY, cockpitMouseFilter);
+        scene.addEventFilter(ScrollEvent.ANY, cockpitScrollFilter);
+    }
+
+    private void removeCockpitPerspectiveInputFilter() {
+        if (cockpitInputFilterScene != null) {
+            cockpitInputFilterScene.setCursor(Cursor.DEFAULT);
+            cockpitInputFilterScene.removeEventFilter(MouseEvent.ANY, cockpitMouseFilter);
+            cockpitInputFilterScene.removeEventFilter(ScrollEvent.ANY, cockpitScrollFilter);
+            cockpitInputFilterScene = null;
+        }
+        dockPerspectiveQuad = null;
+        cockpitSyntheticHoverTarget = null;
+    }
+
+    private void onCockpitMouseFilter(MouseEvent event) {
+        if (!dockedMode.get()) {
+            return;
+        }
+        if (cockpitInverseRedispatchDepth.get() > 0) {
+            return;
+        }
+        var t = event.getEventType();
+        if (t == MouseEvent.MOUSE_EXITED) {
+            Scene sc = cockpitInputFilterScene;
+            boolean leaveWindowOrScene = sc != null
+                    && (event.getTarget() == sc
+                    || event.getSceneX() < 0 || event.getSceneY() < 0
+                    || event.getSceneX() > sc.getWidth() || event.getSceneY() > sc.getHeight());
+            if (leaveWindowOrScene) {
+                runUnderInverseRedispatchDepth(() -> clearSyntheticHover(event));
+                event.consume();
+                return;
+            }
+        }
+        /* La plateforme calcule entrée/sortie avec les coords « trapèze » ; on les ignore et on pilote le hover via le pick inverse + MOUSE_MOVED. */
+        if (t == MouseEvent.MOUSE_ENTERED
+                || t == MouseEvent.MOUSE_ENTERED_TARGET
+                || t == MouseEvent.MOUSE_EXITED
+                || t == MouseEvent.MOUSE_EXITED_TARGET) {
+            event.consume();
+            return;
+        }
+
+        Node n = resolveInversePerspectiveTarget(event.getSceneX(), event.getSceneY());
+
+        if (t == MouseEvent.MOUSE_MOVED || t == MouseEvent.MOUSE_DRAGGED) {
+            runUnderInverseRedispatchDepth(() -> {
+                syncSyntheticHover(event, n);
+                if (n != null) {
+                    Event.fireEvent(n, (MouseEvent) event.copyFor(n, n));
+                }
+            });
+            refreshCockpitDockSceneCursor();
+            event.consume();
+            return;
+        }
+
+        if (t == MouseEvent.MOUSE_PRESSED || t == MouseEvent.MOUSE_RELEASED || t == MouseEvent.MOUSE_CLICKED) {
+            runUnderInverseRedispatchDepth(() -> {
+                syncSyntheticHover(event, n);
+                if (n != null) {
+                    Event.fireEvent(n, (MouseEvent) event.copyFor(n, n));
+                }
+            });
+            refreshCockpitDockSceneCursor();
+            event.consume();
+            return;
+        }
+
+        if (t == MouseEvent.DRAG_DETECTED && n != null) {
+            runUnderInverseRedispatchDepth(() -> Event.fireEvent(n, (MouseEvent) event.copyFor(n, n)));
+            refreshCockpitDockSceneCursor();
+            event.consume();
+        }
+    }
+
+    private void runUnderInverseRedispatchDepth(Runnable action) {
+        int prev = cockpitInverseRedispatchDepth.get();
+        cockpitInverseRedispatchDepth.set(prev + 1);
+        try {
+            action.run();
+        } finally {
+            cockpitInverseRedispatchDepth.set(prev);
+        }
+    }
+
+    private void clearSyntheticHover(MouseEvent template) {
+        Node last = cockpitSyntheticHoverTarget;
+        if (last != null) {
+            Event.fireEvent(last, (MouseEvent) template.copyFor(last, last, MouseEvent.MOUSE_EXITED));
+            cockpitSyntheticHoverTarget = null;
+        }
+        refreshCockpitDockSceneCursor();
+    }
+
+    /**
+     * Sans pick scène « naturel », le curseur ne suit plus la cible ; on impose celui du nœud sous le pointeur inverse
+     * (remontée parents comme le ferait le pick JavaFX pour un curseur non-{@link Cursor#DEFAULT}).
+     * Un second passage {@link Platform#runLater} laisse le CSS {@code :hover} mettre à jour {@link Node#cursorProperty()}.
+     */
+    private void refreshCockpitDockSceneCursor() {
+        Scene sc = cockpitInputFilterScene;
+        if (sc == null) {
+            return;
+        }
+        sc.setCursor(effectiveCursorUnder(cockpitSyntheticHoverTarget));
+        Platform.runLater(() -> {
+            if (!dockedMode.get() || cockpitInputFilterScene != sc) {
+                return;
+            }
+            sc.setCursor(effectiveCursorUnder(cockpitSyntheticHoverTarget));
+        });
+    }
+
+    private static Cursor effectiveCursorUnder(Node leaf) {
+        if (leaf == null) {
+            return Cursor.DEFAULT;
+        }
+        for (Node p = leaf; p != null; p = p.getParent()) {
+            Cursor c = p.getCursor();
+            if (c != null && c != Cursor.DEFAULT) {
+                return c;
+            }
+        }
+        return Cursor.DEFAULT;
+    }
+
+    private void syncSyntheticHover(MouseEvent template, Node n) {
+        Node last = cockpitSyntheticHoverTarget;
+        if (last == n) {
+            return;
+        }
+        if (last != null) {
+            Event.fireEvent(last, (MouseEvent) template.copyFor(last, last, MouseEvent.MOUSE_EXITED));
+        }
+        if (n != null) {
+            Event.fireEvent(n, (MouseEvent) template.copyFor(n, n, MouseEvent.MOUSE_ENTERED));
+        }
+        cockpitSyntheticHoverTarget = n;
+    }
+
+    private void onCockpitScrollFilter(ScrollEvent event) {
+        if (!dockedMode.get()) {
+            return;
+        }
+        if (cockpitInverseRedispatchDepth.get() > 0) {
+            return;
+        }
+        Node n = resolveInversePerspectiveTarget(event.getSceneX(), event.getSceneY());
+        if (n == null) {
+            return;
+        }
+        ScrollEvent redirected = (ScrollEvent) event.copyFor(n, n);
+        int prevDepth = cockpitInverseRedispatchDepth.get();
+        cockpitInverseRedispatchDepth.set(prevDepth + 1);
+        try {
+            Event.fireEvent(n, redirected);
+            event.consume();
+        } finally {
+            cockpitInverseRedispatchDepth.set(prevDepth);
+        }
+    }
+
+    /**
+     * Scène → local root « déformé » visuellement → local rectangulaire contenu → nœud le plus profond sous ce point
+     * (JavaFX 17 n’expose pas {@code Node.pick} ni {@code Event.getProperties}).
+     */
+    private Node resolveInversePerspectiveTarget(double sceneX, double sceneY) {
+        PanelCorners q = dockPerspectiveQuad;
+        StackPane root = WindowToggleService.getInstance().getRootPane();
+        if (q == null || root == null) {
+            return null;
+        }
+        double w = root.getWidth();
+        double h = root.getHeight();
+        if (w <= 0 || h <= 0) {
+            return null;
+        }
+        try {
+            Point2D warped = root.sceneToLocal(sceneX, sceneY);
+            Point2D content = PerspectiveQuadToRect.mapPerspectiveWarpedLocalToContentLocal(
+                    q.topLeft().getX(), q.topLeft().getY(),
+                    q.topRight().getX(), q.topRight().getY(),
+                    q.bottomRight().getX(), q.bottomRight().getY(),
+                    q.bottomLeft().getX(), q.bottomLeft().getY(),
+                    warped.getX(), warped.getY(), w, h);
+            Node n = pickDeepestAtParentLocal(root, content.getX(), content.getY());
+            if (n == null || n == root) {
+                return null;
+            }
+            return n;
+        } catch (IllegalStateException ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * Hit-test manuel : z-order inverse comme le pick JavaFX.
+     * <p>
+     * {@link Node#contains(javafx.geometry.Point2D)} sur {@code Labeled}/texte ne couvre souvent que les glyphes :
+     * au centre d’un bouton le fond répond encore aux bounds mais pas à {@code contains} → sans cette logique,
+     * le hover ne s’activait qu’aux bords où un {@code Region} passait encore {@code contains}.
+     */
+    private static Node pickDeepestAtParentLocal(Parent parent, double parentLocalX, double parentLocalY) {
+        ObservableList<Node> children = parent.getChildrenUnmodifiable();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Node child = children.get(i);
+            if (!child.isVisible() || child.isMouseTransparent()) {
+                continue;
+            }
+            Point2D lc = child.parentToLocal(parentLocalX, parentLocalY);
+            Bounds b = child.getBoundsInLocal();
+            if (!b.contains(lc.getX(), lc.getY())) {
+                continue;
+            }
+            boolean shapeHit = child.contains(lc);
+            if (child instanceof Parent p) {
+                Node deeper = pickDeepestAtParentLocal(p, lc.getX(), lc.getY());
+                if (deeper != null) {
+                    return deeper;
+                }
+                if (shapeHit) {
+                    return child;
+                }
+                continue;
+            }
+            if (shapeHit) {
+                return child;
+            }
+        }
+        return null;
     }
 
     /** Premier enfant du {@code StackPane} racine = {@code BorderPane} du dashboard (avant le combo caché). */
