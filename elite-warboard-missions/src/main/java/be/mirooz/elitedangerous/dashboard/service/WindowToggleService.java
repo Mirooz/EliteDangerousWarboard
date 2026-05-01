@@ -9,10 +9,12 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -116,6 +118,10 @@ public class WindowToggleService {
         return mainStage;
     }
 
+    public StackPane getRootPane() {
+        return rootPane;
+    }
+
     /**
      * Initialise le TabPane pour le changement d'onglet
      */
@@ -183,13 +189,12 @@ public class WindowToggleService {
         boolean windowToggleEnabled = preferencesService.isWindowToggleEnabled();
         boolean tabSwitchEnabled = preferencesService.isTabSwitchEnabled();
 
-        if (!windowToggleEnabled && !tabSwitchEnabled) {
-            return;
-        }
-
         startGlobalKeyboardListener();
-        startHotasListener();
-        System.out.println("✅ Service de bind démarré (clavier + HOTAS)");
+        if (windowToggleEnabled || tabSwitchEnabled) {
+            startHotasListener();
+        }
+        System.out.println("✅ Service de bind démarré (clavier global dont X/C cockpit" +
+                (windowToggleEnabled || tabSwitchEnabled ? " + HOTAS" : "") + ")");
     }
 
     /**
@@ -235,8 +240,13 @@ public class WindowToggleService {
         isPaused = false;
     }
 
+    public boolean isShortcutsPaused() {
+        return isPaused;
+    }
+
     /**
-     * Listener clavier global (GlobalScreen - fonctionne quand l'app n'a pas le focus)
+     * Listener clavier global (GlobalScreen - fonctionne quand l'app n'a pas le focus).
+     * Toujours actif pour X / dock cockpit et C / annulation ; en plus des binds configurés (fenêtre, onglets).
      */
     private void startGlobalKeyboardListener() {
         try {
@@ -244,21 +254,13 @@ public class WindowToggleService {
             int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
             int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
 
-            // Ne pas démarrer si aucun keyCode n'est configuré
-            if (windowToggleKeyCode <= 0 && tabLeftKeyCode <= 0 && tabRightKeyCode <= 0) {
-                System.out.println("⚠️ Pas de bind clavier configuré");
-                return;
-            }
-
             Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
             logger.setLevel(Level.OFF);
 
             String nativeDir = System.getenv("LOCALAPPDATA") + "\\EliteWarboard\\native";
             new File(nativeDir).mkdirs();
 
-            // Dire à JNativeHook d'utiliser ce dossier
             System.setProperty("jnativehook.lib.path", nativeDir);
-            // Enregistrer le hook seulement s'il n'est pas déjà enregistré
             if (!GlobalScreen.isNativeHookRegistered()) {
                 try {
                     GlobalScreen.registerNativeHook();
@@ -268,17 +270,31 @@ public class WindowToggleService {
                 }
             }
 
-            // Créer et ajouter le listener
             keyboardListener = new NativeKeyListener() {
                 @Override
                 public void nativeKeyPressed(NativeKeyEvent e) {
                     int keyCode = e.getKeyCode();
-                    if (keyCode == -1)
+                    if (keyCode == -1) {
                         return;
-                    boolean isFocused = mainStage.isFocused();
+                    }
+                    if (isPaused) {
+                        return;
+                    }
 
-                    //System.out.println("🔑 Touche pressée (GlobalScreen): " + keyCode + " (app focused: " + isFocused + ")");
-
+                    if (keyCode == NativeKeyEvent.VC_X) {
+                        if (mainStage != null && mainStage.isFocused()) {
+                            return;
+                        }
+                        CockpitDockPlacementService.getInstance().onDockKeyPressed();
+                        return;
+                    }
+                    if (keyCode == NativeKeyEvent.VC_C) {
+                        if (mainStage != null && mainStage.isFocused()) {
+                            return;
+                        }
+                        CockpitDockPlacementService.getInstance().onCancelDockPressed();
+                        return;
+                    }
 
                     if (keyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
                         System.out.println("✅ Touche window toggle détectée (GlobalScreen)! (code: " + windowToggleKeyCode + ")");
@@ -289,15 +305,13 @@ public class WindowToggleService {
                     } else if (keyCode == tabRightKeyCode && preferencesService.isTabSwitchEnabled()) {
                         System.out.println("✅ Touche tab right détectée (GlobalScreen)! (code: " + tabRightKeyCode + ")");
                         Platform.runLater(() -> switchToNextTab());
-                    } else {
-                       // System.out.println("ℹ️ Touche non bindée (code: " + keyCode + ")");
                     }
                 }
             };
 
             GlobalScreen.addNativeKeyListener(keyboardListener);
 
-            System.out.println("🎧 Hook clavier global actif (window: " + windowToggleKeyCode +
+            System.out.println("🎧 Hook clavier global actif (cockpit dock: X / annuler: C ; window: " + windowToggleKeyCode +
                     ", tab left: " + tabLeftKeyCode + ", tab right: " + tabRightKeyCode + ").");
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -310,6 +324,19 @@ public class WindowToggleService {
     private void handleKeyPressFromScene(KeyEvent event) {
         if (isPaused) {
             return;
+        }
+
+        if (!isInTextInputContext(event)) {
+            if (event.getCode() == KeyCode.X) {
+                CockpitDockPlacementService.getInstance().onDockKeyPressed();
+                event.consume();
+                return;
+            }
+            if (event.getCode() == KeyCode.C) {
+                CockpitDockPlacementService.getInstance().onCancelDockPressed();
+                event.consume();
+                return;
+            }
         }
 
         // Convertir KeyCode JavaFX en code NativeKeyEvent pour comparaison
@@ -390,6 +417,27 @@ public class WindowToggleService {
                 keyCode == KeyCode.SPACE) {
             event.consume(); // Consommer l'événement pour empêcher la navigation
         }
+    }
+
+    /** Évite d’accaparer X/C quand l’utilisateur saisit du texte dans un champ. */
+    private static boolean isInTextInputContext(KeyEvent event) {
+        Object t = event.getTarget();
+        Scene sc = null;
+        if (t instanceof Node n) {
+            while (n != null) {
+                if (n instanceof TextInputControl) {
+                    return true;
+                }
+                if (sc == null) {
+                    sc = n.getScene();
+                }
+                n = n.getParent();
+            }
+        }
+        if (sc != null && sc.getFocusOwner() instanceof TextInputControl) {
+            return true;
+        }
+        return false;
     }
 
     /**

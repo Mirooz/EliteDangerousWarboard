@@ -108,6 +108,12 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <!-- OpenCV Java + natives (détection perspective panneau gauche) -->
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.9.0-0</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -210,11 +216,15 @@
                 <configuration>
                     <mainClass>be.mirooz.elitedangerous.dashboard.EliteDashboardApp</mainClass>
                 </configuration>
-                <goals>
-                    <goal>
-                        java
-                    </goal>
-                </goals>
+                <executions>
+                    <!-- mvn exec:java@left-panel-opencv-demo (évite PowerShell qui casse -Dexec.mainClass=…) -->
+                    <execution>
+                        <id>left-panel-opencv-demo</id>
+                        <configuration>
+                            <mainClass>be.mirooz.elitedangerous.dashboard.overlay.demo.LeftPanelDetectionDemoApp</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

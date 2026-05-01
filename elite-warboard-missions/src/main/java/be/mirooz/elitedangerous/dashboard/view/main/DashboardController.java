@@ -18,12 +18,14 @@ import be.mirooz.elitedangerous.dashboard.view.mining.MiningController;
 import be.mirooz.elitedangerous.dashboard.view.colonisation.ColonisationPanelController;
 import be.mirooz.elitedangerous.dashboard.view.exploration.ExplorationController;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -31,6 +33,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.CacheHint;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Tooltip;
@@ -94,6 +98,15 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     @FXML
     private StackPane popupContainer;
 
+    @FXML
+    private VBox dashboardMainColumn;
+
+    @FXML
+    private HBox titleBarDragArea;
+
+    @FXML
+    private Separator headerBelowTitleSeparator;
+
     private ColonisationPanelController colonisationPanelController;
 
     private final ChangeListener<Tab> colonisationTabSelectionListener = (obs, oldTab, newTab) -> {
@@ -138,6 +151,87 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         // Initialiser le TabPane dans le service de bind unifié
         windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab, explorationTab, colonisationTab);
         mainTabPane.getSelectionModel().selectedItemProperty().addListener(colonisationTabSelectionListener);
+        installTitleBarWindowDrag();
+        CockpitDockPlacementService cockpitDock = CockpitDockPlacementService.getInstance();
+        cockpitDock.dockedModeProperty().addListener((obs, was, docked) ->
+                applyCockpitDashboardChrome(docked != null && docked));
+        applyCockpitDashboardChrome(cockpitDock.isDockedMode());
+    }
+
+    /**
+     * Mode cockpit (X) : masque le header (titre, commandant, PayPal…) et laisse la rangée d’icônes
+     * d’onglets sur fond transparent (seuls les carrés orange gardent leur fond).
+     */
+    private void applyCockpitDashboardChrome(boolean docked) {
+        if (titleBarDragArea != null) {
+            titleBarDragArea.setVisible(!docked);
+            titleBarDragArea.setManaged(!docked);
+        }
+        if (headerBelowTitleSeparator != null) {
+            headerBelowTitleSeparator.setVisible(!docked);
+            headerBelowTitleSeparator.setManaged(!docked);
+        }
+        if (mainTabPane != null) {
+            if (docked) {
+                if (!mainTabPane.getStyleClass().contains("cockpit-dock-tab-pane")) {
+                    mainTabPane.getStyleClass().add("cockpit-dock-tab-pane");
+                }
+            } else {
+                mainTabPane.getStyleClass().remove("cockpit-dock-tab-pane");
+            }
+        }
+        if (dashboardMainColumn != null) {
+            toggleCockpitStyleClass(dashboardMainColumn, "cockpit-dock-main-column", docked);
+        }
+        if (popupContainer != null) {
+            toggleCockpitStyleClass(popupContainer, "cockpit-dock-popup-stack", docked);
+        }
+        Node center = popupContainer != null ? popupContainer.getParent() : null;
+        if (center instanceof Region r) {
+            toggleCockpitStyleClass(r, "cockpit-dock-center-fill", docked);
+        }
+    }
+
+    private static void toggleCockpitStyleClass(Region region, String styleClass, boolean docked) {
+        if (docked) {
+            if (!region.getStyleClass().contains(styleClass)) {
+                region.getStyleClass().add(styleClass);
+            }
+        } else {
+            region.getStyleClass().remove(styleClass);
+        }
+    }
+
+    /**
+     * Fenêtre sans décorations : déplacer la fenêtre en glissant la barre de titre (désactivé en mode cockpit X).
+     */
+    private void installTitleBarWindowDrag() {
+        if (titleBarDragArea == null) {
+            return;
+        }
+        final double[] dragOffset = new double[2];
+        titleBarDragArea.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (CockpitDockPlacementService.getInstance().isDockedMode()) {
+                return;
+            }
+            Stage s = (Stage) titleBarDragArea.getScene().getWindow();
+            if (s.isMaximized()) {
+                return;
+            }
+            dragOffset[0] = e.getScreenX() - s.getX();
+            dragOffset[1] = e.getScreenY() - s.getY();
+        });
+        titleBarDragArea.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
+            if (CockpitDockPlacementService.getInstance().isDockedMode()) {
+                return;
+            }
+            Stage s = (Stage) titleBarDragArea.getScene().getWindow();
+            if (s.isMaximized()) {
+                return;
+            }
+            s.setX(e.getScreenX() - dragOffset[0]);
+            s.setY(e.getScreenY() - dragOffset[1]);
+        });
     }
     
     /**

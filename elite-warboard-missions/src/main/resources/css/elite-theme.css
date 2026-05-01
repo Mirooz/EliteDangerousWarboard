@@ -1,5 +1,10 @@
 /* Thème Elite Dangerous - Couleurs et styles */
 
+/* Mode cockpit (X) : la racine de scène a la classe "root" + fond noir du thème ; il faut forcer la transparence hors trapèze */
+.root.cockpit-dock-scene-root {
+    -fx-background-color: transparent;
+}
+
 /* Variables de couleurs Elite Dangerous */
 .root {
     -fx-elite-orange: #FF6B00;
@@ -137,6 +142,39 @@
 .main-tab-pane .tab-header-area {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
+}
+
+/* Mode cockpit (X) : bande noire derrière les icônes de module = transparent ; onglets inchangés */
+.dashboard-main-column.cockpit-dock-main-column,
+.dashboard-popup-stack.cockpit-dock-popup-stack {
+    -fx-background-color: transparent;
+}
+
+/* Centre du BorderPane dashboard : évite le noir sous la rangée d’onglets */
+.cockpit-dock-center-fill {
+    -fx-background-color: transparent;
+}
+
+.main-tab-pane.cockpit-dock-tab-pane {
+    -fx-padding: 0 6px 0 6px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.main-tab-pane.cockpit-dock-tab-pane .tab-header-area,
+.main-tab-pane.cockpit-dock-tab-pane .tab-header-background,
+.main-tab-pane.cockpit-dock-tab-pane .headers-region {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+/* Halos sombres des dropshadows qui remplissent la bande à droite des icônes */
+.main-tab-pane.cockpit-dock-tab-pane .tab,
+.main-tab-pane.cockpit-dock-tab-pane .tab:selected,
+.main-tab-pane.cockpit-dock-tab-pane .tab:hover {
+    -fx-effect: null;
+}
+.main-tab-pane.cockpit-dock-tab-pane .tab-image {
+    -fx-effect: null;
 }
 
 /* Empêcher la fermeture des onglets */
@@ -2558,6 +2596,7 @@
 
 .title-bar {
     -fx-background-color: -fx-elite-darker;
+    -fx-cursor: move;
 }
 
 .app-title {

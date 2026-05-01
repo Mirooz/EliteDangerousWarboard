@@ -42,6 +42,7 @@ public final class AppLifecycleService {
             return;
         }
         WindowToggleService.getInstance().initialize(stage, hiddenFocusComboBox, rootPane);
+        CockpitLeftPanelGeometryService.getInstance().start();
         WindowToggleService.getInstance().start();
         DashboardService.getInstance().initActiveMissions();
         checkForUpdatesAsync(rootPane);
@@ -130,6 +131,12 @@ public final class AppLifecycleService {
             JournalWatcherService.getInstance().stop();
         } catch (Exception e) {
             System.err.println("[Lifecycle] Journal watcher stop failed: " + e.getMessage());
+        }
+
+        try {
+            CockpitLeftPanelGeometryService.getInstance().stop();
+        } catch (Exception e) {
+            System.err.println("[Lifecycle] Cockpit geometry stop failed: " + e.getMessage());
         }
 
         try {

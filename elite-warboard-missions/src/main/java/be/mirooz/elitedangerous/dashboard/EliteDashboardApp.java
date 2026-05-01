@@ -15,8 +15,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.util.List;
 import java.util.Objects;
@@ -62,6 +64,7 @@ public class EliteDashboardApp extends Application {
             }
             
             Scene scene = new Scene(root, initialWidth, initialHeight);
+            scene.setFill(Color.web("#0d0d0d"));
 
             scene.getStylesheets().add(
                     Objects.requireNonNull(getClass().getResource("/css/elite-theme.css"))
@@ -76,6 +79,8 @@ public class EliteDashboardApp extends Application {
 
             String title = localizationService.getString("app.title");
             stage.setTitle(title);
+            /* Sans décorations OS ; TRANSPARENT permet les marges transparentes en mode cockpit (X). */
+            stage.initStyle(StageStyle.TRANSPARENT);
             stage.setScene(scene);
             stage.setResizable(true);
             stage.setMinWidth(1000);

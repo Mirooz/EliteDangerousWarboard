@@ -8,9 +8,9 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="be.mirooz.elitedangerous.dashboard.view.main.DashboardController">
     <center>
-        <StackPane fx:id="popupContainer">
-            <VBox>
-                <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="title-bar">
+        <StackPane fx:id="popupContainer" styleClass="dashboard-popup-stack">
+            <VBox fx:id="dashboardMainColumn" styleClass="dashboard-main-column">
+                <HBox fx:id="titleBarDragArea" alignment="CENTER_LEFT" spacing="20.0" styleClass="title-bar">
                     <children>
                         <Label fx:id="appTitleLabel" styleClass="app-title" text="ELITE DANGEROUS"/>
                         <Label fx:id="appSubtitleLabel" styleClass="app-subtitle" text="DASHBOARD DES MISSIONS"/>
@@ -47,7 +47,7 @@
                         <Insets bottom="10.0" left="20.0" right="20.0" top="10.0"/>
                     </padding>
                 </HBox>
-                <Separator styleClass="header-separator"/>
+                <Separator fx:id="headerBelowTitleSeparator" styleClass="header-separator"/>
 
                 <!-- Conteneur principal avec onglets -->
                 <TabPane fx:id="mainTabPane" styleClass="main-tab-pane" VBox.vgrow="ALWAYS">
