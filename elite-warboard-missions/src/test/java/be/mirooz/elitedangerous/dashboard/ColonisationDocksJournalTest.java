@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard;
 
 import be.mirooz.elitedangerous.dashboard.handlers.events.journalevents.ColonisationConstructionDepotHandler;
+import be.mirooz.elitedangerous.dashboard.service.journal.EliteJournalLogFilename;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationConstruction;
 import be.mirooz.elitedangerous.dashboard.model.colonisation.ColonisationDockEntry;
 import be.mirooz.elitedangerous.dashboard.service.ColonisationService;
@@ -37,8 +38,7 @@ class ColonisationDocksJournalTest {
                 "Aucun dossier journaux trouvé (Saved Games ou resources/exemple)");
 
         try (Stream<Path> paths = Files.walk(journalDir)) {
-            paths.filter(p -> p.getFileName().toString().startsWith("Journal."))
-                    .filter(p -> p.toString().endsWith(".log"))
+            paths.filter(p -> EliteJournalLogFilename.matches(p.getFileName().toString()))
                     .sorted()
                     .forEach(this::parseJournalFile);
         }
