@@ -44,8 +44,8 @@ public class CombatMissionHistoryService {
      */
     private void loadCompletedMissions() {
         MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
-        
-        missionsRegistry.getGlobalMissionMap().values().stream()
+
+        missionsRegistry.snapshotMissions().stream()
                 .filter(mission -> mission.isCompleted() && isCombatMission(mission))
                 .forEach(this::addCompletedMissionToStats);
     }

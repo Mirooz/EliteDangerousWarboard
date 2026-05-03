@@ -53,6 +53,7 @@ public final class CapiApiService {
 
     private static final CapiApiService INSTANCE = new CapiApiService();
     private static final long MARKET_MIN_INTERVAL_MS = 1000L;
+    private static final long CAPI_SYNC_DELAY_MS = 2_000L;
 
     /**
      * Budget total côté client : le serveur tient 60 s, on relance tant que la somme reste sous ce plafond.
@@ -119,6 +120,9 @@ public final class CapiApiService {
                     .fid(s.getFID())
                     .commanderName(s.getCommanderName())
                     .event(event);
+            if (!waitForCapiSync("/market")) {
+                return;
+            }
             CapiMarketDto response = capiFacade.postMarket(payload);
             handleSuccess(payload, response, journalDockedEvent);
         } catch (UnauthorizedException e) {
@@ -216,6 +220,9 @@ public final class CapiApiService {
         try {
             CommanderStatus status = CommanderStatus.getInstance();
             String language = getCurrentLanguage();
+            if (!waitForCapiSync("/fleetcarrier")) {
+                return;
+            }
             CapiFleetCarrierDto fleetCarrierResponse = capiFacade.fetchFleetCarrier(
                     status.getCommanderName(),
                     status.getFID(),
@@ -241,6 +248,17 @@ public final class CapiApiService {
         return LocalizationService.getInstance().getCurrentLocale() != null
                 ? LocalizationService.getInstance().getCurrentLocale().getLanguage()
                 : Locale.ENGLISH.getLanguage();
+    }
+
+    private boolean waitForCapiSync(String endpoint) {
+        try {
+            Thread.sleep(CAPI_SYNC_DELAY_MS);
+            return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("CAPI " + endpoint + " annulé pendant délai de synchronisation");
+            return false;
+        }
     }
 
     // =========================

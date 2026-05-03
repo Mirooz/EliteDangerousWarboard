@@ -5,8 +5,10 @@ import be.mirooz.elitedangerous.dashboard.persistence.DashboardRegistryJsonPersi
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursorStore;
 import be.mirooz.elitedangerous.dashboard.persistence.RegistryStore;
+import be.mirooz.elitedangerous.dashboard.service.webservice.eddn.EddnAppInfo;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,6 +50,8 @@ public class PersistenceService {
 
     private final Path persistenceRootDir;
     private Path commanderBaseDir;
+    /** Version de l'app ayant écrit la persistance (ligne unique UTF-8). */
+    private Path appPersistenceVersionFile;
     private String currentCommanderScope = DEFAULT_COMMANDER_SCOPE;
     private List<RegistryStore> stores = new ArrayList<>();
     private JournalCursorStore cursorStore;
@@ -132,6 +136,17 @@ public class PersistenceService {
     public boolean loadAll() {
         System.out.println("[Persistence] loadAll scope=" + currentCommanderScope
                 + " dir=" + commanderBaseDir);
+        String currentAppVersion = EddnAppInfo.version();
+        String persistedAppVersion = readPersistedAppVersion();
+        if (persistedAppVersion == null || !persistedAppVersion.equals(currentAppVersion)) {
+            System.out.println("[Persistence] Version app (" + currentAppVersion
+                    + ") ≠ persistance (" + (persistedAppVersion == null ? "absente" : persistedAppVersion)
+                    + ") — purge + replay journal complet");
+            deleteAll();
+            writePersistedAppVersion(currentAppVersion);
+            return false;
+        }
+
         boolean cursorLoaded;
         try {
             cursorLoaded = cursorStore.loadIfExists();
@@ -241,6 +256,7 @@ public class PersistenceService {
         } catch (Exception e) {
             System.err.println("[Persistence] Suppression cursor KO : " + e.getMessage());
         }
+        deletePersistedAppVersionFileQuietly();
     }
 
     // -------- Backward-compat (ancien PersistenceService) --------
@@ -290,6 +306,7 @@ public class PersistenceService {
                 }
             }
             cursorStore.save();
+            writePersistedAppVersion(EddnAppInfo.version());
         } catch (Exception e) {
             System.err.println("[Persistence] Save global KO");
             e.printStackTrace();
@@ -339,8 +356,48 @@ public class PersistenceService {
     private void configureCommanderScope(String commanderScope) {
         currentCommanderScope = normalizeCommanderScope(commanderScope);
         commanderBaseDir = persistenceRootDir.resolve("commanders").resolve(currentCommanderScope);
+        appPersistenceVersionFile = commanderBaseDir.resolve("app-persistence-version.txt");
         cursorStore = new JournalCursorStore(commanderBaseDir.resolve("journal-cursor.json"));
         stores = new ArrayList<>(DashboardRegistryJsonPersistence.buildRegistryStores(commanderBaseDir));
+    }
+
+    private String readPersistedAppVersion() {
+        if (appPersistenceVersionFile == null || !Files.exists(appPersistenceVersionFile)) {
+            return null;
+        }
+        try {
+            String raw = Files.readString(appPersistenceVersionFile, StandardCharsets.UTF_8).trim();
+            return raw.isEmpty() ? null : raw;
+        } catch (IOException e) {
+            System.err.println("[Persistence] Lecture app-persistence-version.txt KO : " + e.getMessage());
+            return null;
+        }
+    }
+
+    private void writePersistedAppVersion(String version) {
+        if (appPersistenceVersionFile == null || version == null || version.isBlank()) {
+            return;
+        }
+        try {
+            Path parent = appPersistenceVersionFile.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.writeString(appPersistenceVersionFile, version.strip(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            System.err.println("[Persistence] Écriture app-persistence-version.txt KO : " + e.getMessage());
+        }
+    }
+
+    private void deletePersistedAppVersionFileQuietly() {
+        if (appPersistenceVersionFile == null) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(appPersistenceVersionFile);
+        } catch (IOException e) {
+            System.err.println("[Persistence] Suppression app-persistence-version.txt KO : " + e.getMessage());
+        }
     }
 
     private static String normalizeCommanderScope(String commanderFid) {

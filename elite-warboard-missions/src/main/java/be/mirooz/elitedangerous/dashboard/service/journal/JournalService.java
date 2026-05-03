@@ -39,7 +39,6 @@ import java.util.stream.Stream;
  */
 public class JournalService {
 
-    private static final String JOURNAL_PREFIX = "Journal.";
     private static final String CARGO_FILE = "Cargo.json";
     private static final Duration SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN = Duration.ofMinutes(20);
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -199,10 +198,7 @@ public class JournalService {
         }
 
         try (Stream<Path> paths = Files.list(journalDir)) {
-            paths.filter(path -> {
-                        String filename = path.getFileName().toString();
-                        return filename.startsWith(JOURNAL_PREFIX) && filename.endsWith(".log");
-                    })
+            paths.filter(path -> EliteJournalLogFilename.matches(path.getFileName().toString()))
                     .sorted((p1, p2) -> p2.getFileName().toString().compareTo(p1.getFileName().toString()))
                     .forEach(path -> journalFiles.add(path.toFile()));
         }
@@ -243,7 +239,7 @@ public class JournalService {
                 JournalCursor cursor = PersistenceService.getInstance().getCursor();
                 String lastFile = cursor.getLastJournalFile();
                 if (lastFile != null && !lastFile.isBlank()) {
-                    // Les noms Journal.YYYY-MM-DDTHHMMSS.NN.log sont lexico-chrono.
+                    // Les noms Journal.YYYY-MM-DDTHHmmss.N.log (format Elite strict) sont lexico-chrono.
                     journalFiles = journalFiles.stream()
                             .filter(f -> f.getName().compareTo(lastFile) >= 0)
                             .collect(Collectors.toList());
@@ -278,7 +274,7 @@ public class JournalService {
             // Rafraîchissement UI global : {@link DashboardService#initActiveMissions()} (finally)
             // après tous les {@code onBatchEnd}, pour respecter l’ordre liaisons → contenus.
         }
-        return new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
+        return missionsRegistry.snapshotMissions();
 
     }
 

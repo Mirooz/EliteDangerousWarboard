@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.listeners;
 
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -36,6 +38,9 @@ public class MissionEventNotificationService {
     }
 
     public void notifyOnMissionStatusChanged() {
+        if (DashboardContext.getInstance().isBatchLoading()) {
+            return;
+        }
         for (MissionEventListener listener : listeners) {
             try {
                 listener.onStatusChanged();
@@ -45,6 +50,9 @@ public class MissionEventNotificationService {
         }
     }
     public void notifyOnMissionCurrentKillCountChanged() {
+        if (DashboardContext.getInstance().isBatchLoading()) {
+            return;
+        }
         for (MissionEventListener listener : listeners) {
             try {
                 listener.onKillChanged();

@@ -1,5 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.journal.watcher;
 
+import be.mirooz.elitedangerous.dashboard.service.journal.EliteJournalLogFilename;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Set;
@@ -64,7 +66,7 @@ public class JournalWatcherService implements Runnable {
                     Path createdPath = journalDir.resolve(relativePath);
                     String filename = createdPath.getFileName().toString();
 
-                    if (!filename.matches("^Journal\\..*\\.log$")) {
+                    if (!EliteJournalLogFilename.matches(filename)) {
                         continue;
                     }
 

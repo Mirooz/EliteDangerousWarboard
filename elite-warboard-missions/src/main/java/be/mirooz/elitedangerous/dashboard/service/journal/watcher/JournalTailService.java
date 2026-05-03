@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * Tailer du journal : lecture incrémentale + reprise.
  * <p>La reprise sur le fichier courant utilise le numéro de ligne physique (1-based) du curseur
  * lorsqu’il est disponible ; sinon repli sur le timestamp comme pour les anciens curseurs.
- * Sur un autre {@code Journal.*.log} que celui du curseur, tout le flux est accepté (les
+ * Sur un autre fichier {@code Journal.YYYY-MM-DDTHHmmss.N.log} que celui du curseur, tout le flux est accepté (les
  * journaux ne sont pas réécrits en arrière). {@code Fileheader} est toujours accepté.</p>
  */
 public class JournalTailService {

@@ -109,7 +109,7 @@ public class HeaderController implements Initializable, IRefreshable {
     }
     private void applyFilter(MissionStatus currentFilter, MissionType currentTypeFilter) {
         // Filtrer les missions selon le filtre actuel
-        List<Mission> filteredMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+        List<Mission> filteredMissions = missionsRegistry.snapshotMissions().stream()
                 .filter(Mission::isShipMassacre)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
                 .filter(mission -> currentTypeFilter == null || mission.getType() == currentTypeFilter)

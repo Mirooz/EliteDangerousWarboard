@@ -621,7 +621,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             if (suppressArchitectComboListener || newV == null) {
                 return;
             }
-            selectArchitectSystem(newV);
+            onArchitectSystemUserSelection(newV);
         });
     }
 
@@ -878,7 +878,17 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             if (globalMatch != null && Objects.equals(globalMatch.getStarSystem(), toSelect.getStarSystem())) {
                 selectConstructionRow(globalMatch);
             }
+            // Même sélection par défaut (combo) que manuelle : enrichir l’orrery via Spansh.
+            loadArchitectVisualForSelectedSystem(selectedArchitectStarSystem);
         }
+    }
+
+    /**
+     * Sélection explicite via l'UI : on met à jour la sélection puis on charge Spansh.
+     */
+    private void onArchitectSystemUserSelection(ColonisationArchitectSystem arch) {
+        selectArchitectSystem(arch);
+        loadArchitectVisualForSelectedSystem(selectedArchitectStarSystem);
     }
 
     private static long parseLongOrZero(String raw) {
@@ -968,7 +978,6 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             architectCenterTabPane.getSelectionModel().select(architectSystemViewTab);
         }
         applyArchitectColonisationOverlayToMapView();
-        loadArchitectVisualForSelectedSystem(selectedArchitectStarSystem);
         resetSuggestedStationsForSelection();
         updateArchitectSystemStatsLabel();
         refreshConstructionDetailPanel();

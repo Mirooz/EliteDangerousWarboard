@@ -1006,7 +1006,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             List<ACelesteBody> viewBodies = planeteRegistry.resolveCelesteBodiesForView(viewSys);
             // Créer une map pour lookup rapide
             Map<Integer, ACelesteBody> bodiesMap = viewBodies.stream()
-                    .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
+                    .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body, (a, b) -> a));
 
             // Trier selon la hiérarchie orrery
             List<ACelesteBody> sortedBodies = sortBodiesHierarchically(viewBodies);
@@ -2888,7 +2888,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Créer une map pour lookup rapide
         Map<Integer, ACelesteBody> bodiesMap = viewBodies.stream()
-                .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
+                .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body, (a, b) -> a));
 
         // Trier les corps hiérarchiquement
         List<ACelesteBody> sortedBodies = sortBodiesHierarchically(viewBodies);
@@ -3754,7 +3754,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
 
         // Créer une map pour lookup rapide
         Map<Integer, ACelesteBody> bodiesMap = viewBodies.stream()
-                .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body));
+                .collect(Collectors.toMap(ACelesteBody::getBodyID, body -> body, (a, b) -> a));
 
         // Trier les corps hiérarchiquement
         List<ACelesteBody> sortedBodies = sortBodiesHierarchically(viewBodies);

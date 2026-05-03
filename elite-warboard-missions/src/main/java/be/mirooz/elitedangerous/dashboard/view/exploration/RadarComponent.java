@@ -289,7 +289,8 @@ public class RadarComponent {
     }
 
     private void drawBiologicalSamples(Position currentPos, double centerX, double centerY, double radius) {
-        List<Position> samplePositions = directionService.getCurrentBiologicalSamplePositions();
+        List<Position> samplePositions =
+                new ArrayList<>(directionService.getCurrentBiologicalSamplePositions());
         Double colonyRangeMeter = directionService.getColonyRangeMeter();
 
         if (samplePositions == null || samplePositions.isEmpty()) {

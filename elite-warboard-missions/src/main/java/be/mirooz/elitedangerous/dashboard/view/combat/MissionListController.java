@@ -178,7 +178,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
 
     private void applyFilter(MissionStatus currentFilter, MissionType currentTypeFilter) {
         boolean isActive = MissionStatus.ACTIVE.equals(currentFilter);
-        List<Mission> filteredMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+        List<Mission> filteredMissions = missionsRegistry.snapshotMissions().stream()
                 .filter(Mission::isShipMassacre)
                 .filter(mission -> currentTypeFilter == null || mission.getType() == currentTypeFilter)
                 .filter(mission -> currentFilter == null || mission.getStatus() == currentFilter)
@@ -313,21 +313,22 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     private void updateFactionStats(MissionStatus currentStatus, MissionType currentType) {
         // Mettre à jour les statistiques par faction (toujours basées sur les missions actives)
         Map<TargetType, CibleStats> stats = getFactionStats();
+        Map<String, Mission> missionsSnapshot = missionsRegistry.snapshotMissionMap();
 
         // Mettre à jour le panneau de cibles avec les nouvelles statistiques
         if (targetPanel != null) {
-            targetPanel.displayStats(stats, missionsRegistry.getGlobalMissionMap());
+            targetPanel.displayStats(stats, missionsSnapshot);
         }
 
         // Mettre à jour l'overlay s'il est ouvert
         if (targetOverlayComponent.isShowing()) {
-            targetOverlayComponent.updateContent(stats, missionsRegistry.getGlobalMissionMap());
+            targetOverlayComponent.updateContent(stats, missionsSnapshot);
         }
     }
 
     private Map<TargetType, CibleStats> getFactionStats() {
         MissionType currentType = dashboardContext.getCurrentTypeFilter();
-        List<Mission> targetMissions = missionsRegistry.getGlobalMissionMap().values().stream()
+        List<Mission> targetMissions = missionsRegistry.snapshotMissions().stream()
                 .filter(mission -> mission.isShipMassacreActive() || mission.isShipActiveFactionConflictMission())
                 .filter(mission -> currentType == null || currentType.equals(mission.getType()))
                 .collect(Collectors.toList());
@@ -353,7 +354,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     @FXML
     private void showTargetOverlay() {
         Map<TargetType, CibleStats> stats = getFactionStats();
-        Map<String, Mission> missions = missionsRegistry.getGlobalMissionMap();
+        Map<String, Mission> missions = missionsRegistry.snapshotMissionMap();
 
         // Si l'overlay est déjà ouvert, on le ferme
         if (targetOverlayComponent.isShowing()) {

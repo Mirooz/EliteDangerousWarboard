@@ -345,7 +345,7 @@ public class TargetOverlayComponent {
             
             // Calculer les pending credits
             // 🔒 SNAPSHOT pour éviter ConcurrentModificationException
-            List<Mission> missionsSnapshot = new ArrayList<>(missionsRegistry.getGlobalMissionMap().values());
+            List<Mission> missionsSnapshot = missionsRegistry.snapshotMissions();
             long pendingCredits = missionsSnapshot.stream()
                     .filter(Mission::isPending)
                     .mapToLong(Mission::getReward)

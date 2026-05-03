@@ -166,7 +166,7 @@ public final class AppLifecycleService {
                     StackPane target = popupContainer != null ? popupContainer : rootPane;
                     new VersionUpdateNotificationComponent(
                             latestVersionTag,
-                            latestVersion.getBody(),
+                            latestVersion.getName(),
                             latestVersion.getHtmlUrl(),
                             target
                     );
