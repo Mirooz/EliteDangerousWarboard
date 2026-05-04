@@ -3372,16 +3372,8 @@
     -fx-effect: dropshadow(gaussian, -fx-elite-orange, 10, 0.5, 0, 0);
 }
 
-/* Animations */
-@keyframes pulse {
-    0% { -fx-opacity: 1.0; }
-    50% { -fx-opacity: 0.7; }
-    100% { -fx-opacity: 1.0; }
-}
-
-.pulse {
-    -fx-animation: pulse 2s infinite;
-}
+/* JavaFX CSS ne supporte pas @keyframes / -fx-animation (syntaxe web seulement).
+   Une pulsation d’opacité se fait en code (Timeline) ou transition sur un nœud. */
 
 /* Styles pour les tableaux */
 .table-view {
