@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.service;
 
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
+import be.mirooz.elitedangerous.dashboard.window.StageVisualBounds;
 import be.mirooz.elitedangerous.dashboard.window.WindowFramePreferences;
 import be.mirooz.elitedangerous.dashboard.window.win32.WindowsUndecoratedVrFrameCompat;
 import com.github.kwhat.jnativehook.GlobalScreen;
@@ -856,7 +857,11 @@ public class WindowToggleService {
                 if (epoch != vrLayoutEpoch || hidden || mainStage == null) {
                     return;
                 }
-                mainStage.setMaximized(true);
+                if (WindowFramePreferences.useNativeOsWindowFrame()) {
+                    mainStage.setMaximized(true);
+                } else {
+                    StageVisualBounds.fitStageToVisualBounds(mainStage);
+                }
                 scheduleWin32UndecoratedFrameRefresh();
             });
             maximizeDelay.play();
@@ -906,8 +911,10 @@ public class WindowToggleService {
             return;
         }
         vrLayoutEpoch++;
-        savedWasMaximized = mainStage.isMaximized();
-        if (savedWasMaximized) {
+        savedWasMaximized = mainStage.isMaximized()
+                || (!WindowFramePreferences.useNativeOsWindowFrame()
+                        && StageVisualBounds.isStageFillingWorkArea(mainStage, 4.0));
+        if (mainStage.isMaximized()) {
             mainStage.setMaximized(false);
         }
         savedMinWidth = mainStage.getMinWidth();

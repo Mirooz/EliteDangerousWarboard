@@ -1,5 +1,6 @@
 package be.mirooz.elitedangerous.dashboard;
 
+import be.mirooz.elitedangerous.dashboard.window.StageVisualBounds;
 import be.mirooz.elitedangerous.dashboard.window.WindowFramePreferences;
 import be.mirooz.elitedangerous.dashboard.window.win32.WindowsUndecoratedVrFrameCompat;
 import be.mirooz.elitedangerous.dashboard.view.main.DashboardController;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class EliteDashboardApp extends Application {
+
+    private static final double WORK_AREA_MAX_EPS = 4.0;
 
     private LocalizationService localizationService = LocalizationService.getInstance();
     private LoggingService loggingService = LoggingService.getInstance();
@@ -102,9 +105,11 @@ public class EliteDashboardApp extends Application {
             stage.setOnShown(event -> {
                 String savedMaximized = preferencesService.getPreference("window.maximized", "false");
                 boolean maximized = Boolean.parseBoolean(savedMaximized);
-                if (maximized) {
+                if (maximized && WindowFramePreferences.useNativeOsWindowFrame()) {
+                    // Fenêtre décorée : le WM gère la zone au-dessus de la barre des tâches.
                     stage.setMaximized(true);
                 }
+                // Sans décor : restoreWindowPosition a déjà appliqué getVisualBounds() (pas setMaximized).
             });
 
             stage.setOnCloseRequest(event -> {
@@ -287,7 +292,9 @@ public class EliteDashboardApp extends Application {
         preferencesService.setPreference("window.y", String.valueOf(stage.getY()));
         preferencesService.setPreference("window.width", String.valueOf(stage.getWidth()));
         preferencesService.setPreference("window.height", String.valueOf(stage.getHeight()));
-        preferencesService.setPreference("window.maximized", String.valueOf(stage.isMaximized()));
+        boolean pseudoMax = !WindowFramePreferences.useNativeOsWindowFrame()
+                && StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS);
+        preferencesService.setPreference("window.maximized", String.valueOf(stage.isMaximized() || pseudoMax));
         
         // Sauvegarder l'index de l'écran sur lequel se trouve la fenêtre
         Screen currentScreen = getScreenForWindow(stage);
@@ -303,18 +310,20 @@ public class EliteDashboardApp extends Application {
     /**
      * Trouve l'écran sur lequel se trouve la fenêtre
      */
-    private Screen getScreenForWindow(Stage stage) {
-        // Pour une fenêtre maximisée, utiliser la position X,Y de la fenêtre (coin supérieur gauche)
-        // Pour une fenêtre non maximisée, utiliser le centre de la fenêtre
-        double windowX, windowY;
-        
+    private static boolean ignoreResizeGeometrySaves(Stage stage) {
         if (stage.isMaximized()) {
-            windowX = stage.getX();
-            windowY = stage.getY();
-        } else {
-            windowX = stage.getX() + stage.getWidth() / 2;
-            windowY = stage.getY() + stage.getHeight() / 2;
+            return true;
         }
+        return !WindowFramePreferences.useNativeOsWindowFrame()
+                && StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS);
+    }
+
+    private Screen getScreenForWindow(Stage stage) {
+        // Pour une fenêtre maximisée (WM ou zone utilisable), utiliser le centre pour l’écran courant
+        double windowX;
+        double windowY;
+        windowX = stage.getX() + stage.getWidth() / 2;
+        windowY = stage.getY() + stage.getHeight() / 2;
         
         // Chercher l'écran qui contient ce point
         for (Screen screen : Screen.getScreens()) {
@@ -360,15 +369,15 @@ public class EliteDashboardApp extends Application {
             }
         });
         
-        // Sauvegarder quand la fenêtre est redimensionnée
+        // Sauvegarder quand la fenêtre est redimensionnée (hors plein « zone utilisable » undecorated)
         stage.widthProperty().addListener((obs, oldVal, newVal) -> {
-            if (!isRestoringWindow && stage.isShowing() && !stage.isMaximized()) {
+            if (!isRestoringWindow && stage.isShowing() && !ignoreResizeGeometrySaves(stage)) {
                 saveWindowPosition(stage);
             }
         });
         
         stage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            if (!isRestoringWindow && stage.isShowing() && !stage.isMaximized()) {
+            if (!isRestoringWindow && stage.isShowing() && !ignoreResizeGeometrySaves(stage)) {
                 saveWindowPosition(stage);
             }
         });

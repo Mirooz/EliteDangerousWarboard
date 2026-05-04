@@ -1,7 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.window;
 
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
-import javafx.beans.value.ChangeListener;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -19,10 +19,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Barre titre custom (sans décor OS) : drag, min / max / fermer, double-clic plein écran.
+ * <p>
+ * Maximiser = remplir la zone <em>utilisable</em> de l’écran ({@link StageVisualBounds}), pas
+ * {@link Stage#setMaximized(boolean)} (souvent plein moniteur y compris barre des tâches en undecorated).
  */
 public final class PrimaryWindowChromeSupport {
 
     private static final double DRAG_UNMAX_THRESHOLD = 5.0;
+    private static final double WORK_AREA_MATCH_EPS = 4.0;
 
     private final Stage stage;
     private final HBox windowChromeBar;
@@ -38,10 +42,11 @@ public final class PrimaryWindowChromeSupport {
     private final LocalizationService localizationService;
 
     private final AtomicBoolean installed = new AtomicBoolean();
-    private final ChangeListener<Boolean> maximizedListener = (o, was, now) -> syncWindowMaxRestoreGlyph();
 
     private double dragOffsetX;
     private double dragOffsetY;
+    private double restoreWinX = 100;
+    private double restoreWinY = 100;
     private double restoreWinW = 1200;
     private double restoreWinH = 800;
 
@@ -111,7 +116,7 @@ public final class PrimaryWindowChromeSupport {
         installWindowDragHandlers(dashboardTitleBar, true);
         dashboardTitleBar.addEventFilter(MouseEvent.MOUSE_CLICKED, this::onWindowHeaderDoubleClick);
 
-        stage.maximizedProperty().addListener(maximizedListener);
+        seedRestoreBoundsFromPreferencesIfMaximized();
         syncWindowMaxRestoreGlyph();
         refreshLocalizedStrings();
     }
@@ -133,10 +138,16 @@ public final class PrimaryWindowChromeSupport {
     }
 
     public void toggleMaximized() {
-        if (!stage.isMaximized()) {
+        if (isWorkAreaMaximized()) {
+            stage.setMaximized(false);
+            stage.setX(restoreWinX);
+            stage.setY(restoreWinY);
+            stage.setWidth(Math.max(stage.getMinWidth(), restoreWinW));
+            stage.setHeight(Math.max(stage.getMinHeight(), restoreWinH));
+        } else {
             rememberRestoreBounds();
+            StageVisualBounds.fitStageToVisualBounds(stage);
         }
-        stage.setMaximized(!stage.isMaximized());
         syncWindowMaxRestoreGlyph();
     }
 
@@ -145,11 +156,15 @@ public final class PrimaryWindowChromeSupport {
         Event.fireEvent(stage, new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
+    private boolean isWorkAreaMaximized() {
+        return StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MATCH_EPS);
+    }
+
     private void syncWindowMaxRestoreGlyph() {
         if (windowMaxRestoreButton == null) {
             return;
         }
-        if (stage.isMaximized()) {
+        if (isWorkAreaMaximized()) {
             windowMaxRestoreButton.setGraphic(WindowChromeIcons.restore());
             windowMaxRestoreButton.setTooltip(new Tooltip(localizationService.getString("window.restore")));
         } else {
@@ -167,7 +182,7 @@ public final class PrimaryWindowChromeSupport {
                 return;
             }
             rememberRestoreBounds();
-            if (stage.isMaximized()) {
+            if (isWorkAreaMaximized()) {
                 maximizedPressTracking = true;
                 maximizedPressSceneX = e.getSceneX();
                 maximizedPressSceneY = e.getSceneY();
@@ -184,7 +199,7 @@ public final class PrimaryWindowChromeSupport {
             if (titleBarStrip && isTitleBarDragExcluded(e.getTarget())) {
                 return;
             }
-            if (stage.isMaximized()) {
+            if (isWorkAreaMaximized()) {
                 if (maximizedPressTracking) {
                     double dx = e.getSceneX() - maximizedPressSceneX;
                     double dy = e.getSceneY() - maximizedPressSceneY;
@@ -202,16 +217,47 @@ public final class PrimaryWindowChromeSupport {
             if (e.getButton() != MouseButton.PRIMARY) {
                 return;
             }
-            if (stage.isMaximized()) {
+            if (isWorkAreaMaximized()) {
                 maximizedPressTracking = false;
             }
         });
     }
 
     private void rememberRestoreBounds() {
-        if (!stage.isMaximized()) {
+        if (!isWorkAreaMaximized()) {
             restoreWinW = stage.getWidth();
             restoreWinH = stage.getHeight();
+            restoreWinX = stage.getX();
+            restoreWinY = stage.getY();
+        }
+    }
+
+    private void seedRestoreBoundsFromPreferencesIfMaximized() {
+        if (!StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MATCH_EPS)) {
+            return;
+        }
+        PreferencesService ps = PreferencesService.getInstance();
+        if (!Boolean.parseBoolean(ps.getPreference("window.maximized", "false"))) {
+            return;
+        }
+        String sx = ps.getPreference("window.x", null);
+        String sy = ps.getPreference("window.y", null);
+        String sw = ps.getPreference("window.width", null);
+        String sh = ps.getPreference("window.height", null);
+        if (sx == null || sy == null || sw == null || sh == null) {
+            return;
+        }
+        try {
+            double w = Double.parseDouble(sw);
+            double h = Double.parseDouble(sh);
+            if (w > 0 && h > 0) {
+                restoreWinX = Double.parseDouble(sx);
+                restoreWinY = Double.parseDouble(sy);
+                restoreWinW = w;
+                restoreWinH = h;
+            }
+        } catch (NumberFormatException ignored) {
+            // garder les valeurs par défaut
         }
     }
 
