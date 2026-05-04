@@ -591,10 +591,10 @@ public class ConfigDialogController implements Initializable {
         String newJournalFolder = journalFolderTextField.getText();
         preferencesService.setJournalFolder(newJournalFolder);
         
-        // Sauvegarder les paramètres VR mode
+        // Sauvegarder les paramètres VR mode (même interrupteur pour toggle fenêtre et raccourcis d’onglets)
         boolean vrModeEnabled = vrModeEnabledCheckBox.isSelected();
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
-        preferencesService.setTabSwitchEnabled(false);
+        preferencesService.setTabSwitchEnabled(vrModeEnabled);
         preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
         preferencesService.setSpanshExplorationLoadEnabled(spanshLoadSystemsCheckBox.isSelected());
         boolean newCapiLogin = capiLoginEnabledCheckBox.isSelected();

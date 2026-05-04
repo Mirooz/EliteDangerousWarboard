@@ -434,7 +434,7 @@ public class PreferencesService {
      * Récupère le nom du contrôleur HOTAS pour le toggle
      */
     public String getWindowToggleHotasController() {
-        return preferences.getProperty("window.toggle.hotas.controller", "TWCS Throttle");
+        return preferences.getProperty("window.toggle.hotas.controller", "");
     }
 
     /**
