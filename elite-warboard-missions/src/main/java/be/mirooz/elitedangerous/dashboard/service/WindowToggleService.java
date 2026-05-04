@@ -19,8 +19,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Paint;
-import javafx.geometry.Rectangle2D;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import net.java.games.input.Component;
@@ -30,7 +28,6 @@ import net.java.games.input.ControllerEnvironment;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,22 +52,18 @@ public class WindowToggleService {
     private Tab explorationTab;
     private Tab colonisationTab;
     private boolean hidden = false;
-    private boolean isAnimating = false;
     private double savedWidth = 1200;
     private double savedHeight = 800;
     private double savedX = 0;
     private double savedY = 0;
-    /** Minima du stage avant réduction VR (réappliqués à la restauration). */
+    /** Minima applicatifs du stage avant hidden (réappliqués à la restauration). */
     private double savedMinWidth = 1;
     private double savedMinHeight = 1;
-    /** Taille cible une fois les minima contournés (quasi invisible en VR). */
-    private static final double VR_COLLAPSED_SIZE = 1;
-    /** État plein écran au moment de la réduction (restauré après le toggle). */
+    private static final Duration RESTORE_MAXIMIZE_DELAY = Duration.millis(10);
+    /** Incrémenté à chaque hide / restauration : annule un {@code setMaximized(true)} différé obsolète. */
+    private volatile int vrLayoutEpoch = 0;
+    /** {@code true} si la fenêtre était maximisée avant hidden (restauré avec {@code setMaximized(true)}). */
     private boolean savedWasMaximized = false;
-    /** Incrémenté pour ignorer un {@code runLater} de réduction si l’utilisateur a déjà restauré. */
-    private int vrCollapseGeneration = 0;
-    /** Réduction VR en cours (entre clic et {@link #captureBoundsAndApplyVrCollapse}). */
-    private volatile boolean vrCollapsePending = false;
     /** Anti-rebond : répétition OS sur {@code KEY_PRESSED} + double événement Global/JavaFX. */
     private volatile long lastWindowToggleNanoTime = 0L;
     private static final long WINDOW_TOGGLE_DEBOUNCE_NS = 120_000_000L;
@@ -87,14 +80,8 @@ public class WindowToggleService {
     private ScheduledExecutorService hotasScheduler;
     private volatile HotasPollSession hotasPollSession;
     private NativeKeyListener keyboardListener = null;
-    /** Filtre scène : installé seulement quand le mode VR (prefs) est actif, retiré dans {@link #stop()}. */
+    /** Filtre scène : installé une fois sur la scène du stage (pas d’échange de scène en mode VR). */
     private boolean sceneVrKeyFilterRegistered;
-    private boolean sceneVrKeyFilterSceneListenerInstalled;
-    private final ChangeListener<Scene> sceneForVrKeyFilterListener = (obs, oldScene, newScene) -> {
-        if (newScene != null && isVrModeEnabled()) {
-            Platform.runLater(this::registerSceneVrKeyFilterOnCurrentSceneIfNeeded);
-        }
-    };
     private boolean isPaused = false; // Pour désactiver temporairement le toggle
     private Paint savedSceneFill = null; // Pour sauvegarder la couleur originale de la scène
     private Map<javafx.scene.Node, Double> savedNodeOpacities = new HashMap<>(); // Pour sauvegarder les opacités des nœuds
@@ -147,22 +134,11 @@ public class WindowToggleService {
 
     /** À appeler depuis {@link #start()} lorsque le mode VR est actif (scène parfois encore nulle). */
     private void attachSceneVrKeyFilterForVrMode() {
-        Platform.runLater(() -> {
-            registerSceneVrKeyFilterOnCurrentSceneIfNeeded();
-            if (mainStage == null || mainStage.getScene() != null || sceneVrKeyFilterSceneListenerInstalled) {
-                return;
-            }
-            mainStage.sceneProperty().addListener(sceneForVrKeyFilterListener);
-            sceneVrKeyFilterSceneListenerInstalled = true;
-        });
+        Platform.runLater(this::registerSceneVrKeyFilterOnCurrentSceneIfNeeded);
     }
 
     private void detachSceneVrKeyFilter() {
         Runnable detach = () -> {
-            if (mainStage != null && sceneVrKeyFilterSceneListenerInstalled) {
-                mainStage.sceneProperty().removeListener(sceneForVrKeyFilterListener);
-                sceneVrKeyFilterSceneListenerInstalled = false;
-            }
             if (mainStage != null && mainStage.getScene() != null && sceneVrKeyFilterRegistered) {
                 mainStage.getScene().removeEventFilter(KeyEvent.KEY_RELEASED, this::handleVrKeyReleasedFromScene);
                 sceneVrKeyFilterRegistered = false;
@@ -376,15 +352,15 @@ public class WindowToggleService {
                     if (windowToggleKeyCode > 0
                             && keyCode == windowToggleKeyCode
                             && preferencesService.isWindowToggleEnabled()) {
-                        Platform.runLater(WindowToggleService.this::toggleWindowAndOpenCombo);
+                        WindowToggleService.this.runToggleWindowOnFxThread();
                     } else if (tabLeftKeyCode > 0
                             && keyCode == tabLeftKeyCode
                             && preferencesService.isTabSwitchEnabled()) {
-                        Platform.runLater(WindowToggleService.this::switchToPreviousTab);
+                        WindowToggleService.this.runSwitchToPreviousTabOnFxThread();
                     } else if (tabRightKeyCode > 0
                             && keyCode == tabRightKeyCode
                             && preferencesService.isTabSwitchEnabled()) {
-                        Platform.runLater(WindowToggleService.this::switchToNextTab);
+                        WindowToggleService.this.runSwitchToNextTabOnFxThread();
                     }
                 }
             };
@@ -780,7 +756,7 @@ public class WindowToggleService {
             return;
         }
         lastHotasWindowScheduleNs = now;
-        Platform.runLater(WindowToggleService.this::toggleWindowAndOpenCombo);
+        Platform.runLater(WindowToggleService.this::runToggleWindowOnFxThread);
     }
 
     private void scheduleHotasTabLeftOnFxThread() {
@@ -789,7 +765,7 @@ public class WindowToggleService {
             return;
         }
         lastHotasTabLeftScheduleNs = now;
-        Platform.runLater(WindowToggleService.this::switchToPreviousTab);
+        Platform.runLater(WindowToggleService.this::runSwitchToPreviousTabOnFxThread);
     }
 
     private void scheduleHotasTabRightOnFxThread() {
@@ -798,7 +774,34 @@ public class WindowToggleService {
             return;
         }
         lastHotasTabRightScheduleNs = now;
-        Platform.runLater(WindowToggleService.this::switchToNextTab);
+        Platform.runLater(WindowToggleService.this::runSwitchToNextTabOnFxThread);
+    }
+
+    /**
+     * Entrées depuis JNativeHook (thread natif) : public pour éviter {@code access$n} depuis les classes internes.
+     */
+    public void runToggleWindowOnFxThread() {
+        if (Platform.isFxApplicationThread()) {
+            toggleWindowAndOpenCombo();
+        } else {
+            Platform.runLater(this::toggleWindowAndOpenCombo);
+        }
+    }
+
+    public void runSwitchToPreviousTabOnFxThread() {
+        if (Platform.isFxApplicationThread()) {
+            switchToPreviousTab();
+        } else {
+            Platform.runLater(this::switchToPreviousTab);
+        }
+    }
+
+    public void runSwitchToNextTabOnFxThread() {
+        if (Platform.isFxApplicationThread()) {
+            switchToNextTab();
+        } else {
+            Platform.runLater(this::switchToNextTab);
+        }
     }
 
     /**
@@ -806,9 +809,6 @@ public class WindowToggleService {
      */
     private void toggleWindowAndOpenCombo() {
         if (isPaused) {
-            return;
-        }
-        if (isAnimating) {
             return;
         }
         long now = System.nanoTime();
@@ -819,12 +819,9 @@ public class WindowToggleService {
 
         try {
             if (hidden) {
-                restoreWindowWithAnimation();
+                restoreFromHidden();
             } else {
-                if (vrCollapsePending) {
-                    return;
-                }
-                minimizeWindowWithAnimation();
+                hideForVr();
             }
 
         } catch (Exception e) {
@@ -833,163 +830,45 @@ public class WindowToggleService {
     }
 
     /**
-     * Restaure la fenêtre avec animation
+     * Reprend la géométrie sauvegardée avant hidden ; si la fenêtre était maximisée, réapplique le maximize écran.
      */
-    private void restoreWindowWithAnimation() {
-        vrCollapseGeneration++;
-        vrCollapsePending = false;
-        mainStage.toFront();
+    private void restoreFromHidden() {
+        if (mainStage == null) {
+            return;
+        }
+        vrLayoutEpoch++;
+        final int epoch = vrLayoutEpoch;
         hidden = false;
+        mainStage.toFront();
         mainStage.setOpacity(1.0);
 
-        // Minima applicatifs (valeurs sauvegardées avant la réduction), puis géométrie / maximize sauvegardés.
         mainStage.setMinWidth(savedMinWidth);
         mainStage.setMinHeight(savedMinHeight);
 
         if (savedWasMaximized) {
-            // Plein écran sur l’écran qui portait la fenêtre (pas l’écran primaire par défaut).
             mainStage.setMaximized(false);
-            Screen target = screenBestForRestore();
-            Rectangle2D vb = target.getVisualBounds();
-            mainStage.setX(vb.getMinX());
-            mainStage.setY(vb.getMinY());
-            mainStage.setWidth(vb.getWidth());
-            mainStage.setHeight(vb.getHeight());
-            Platform.runLater(
-                    () -> {
-                        mainStage.setMaximized(true);
-                        Platform.runLater(WindowToggleService.this::correctMaximizedClientIfNeeded);
-                    });
-            scheduleWin32UndecoratedFrameRefresh();
+            mainStage.setX(savedX);
+            mainStage.setY(savedY);
+            mainStage.setWidth(savedWidth);
+            mainStage.setHeight(savedHeight);
+            PauseTransition maximizeDelay = new PauseTransition(RESTORE_MAXIMIZE_DELAY);
+            maximizeDelay.setOnFinished(e -> {
+                if (epoch != vrLayoutEpoch || hidden || mainStage == null) {
+                    return;
+                }
+                mainStage.setMaximized(true);
+                scheduleWin32UndecoratedFrameRefresh();
+            });
+            maximizeDelay.play();
         } else {
             mainStage.setMaximized(false);
-            double w = Math.max(savedMinWidth, Math.max(1.0, savedWidth));
-            double h = Math.max(savedMinHeight, Math.max(1.0, savedHeight));
-            Screen target = screenBestForRestore();
-            Rectangle2D safe = clampToVisualBounds(target, savedX, savedY, w, h);
-            mainStage.setX(safe.getMinX());
-            mainStage.setY(safe.getMinY());
-            mainStage.setWidth(safe.getWidth());
-            mainStage.setHeight(safe.getHeight());
+            mainStage.setX(savedX);
+            mainStage.setY(savedY);
+            mainStage.setWidth(savedWidth);
+            mainStage.setHeight(savedHeight);
         }
 
         scheduleRestoreComboAndZoom();
-    }
-
-    /**
-     * Choisit l’écran le plus cohérent avec la géométrie sauvegardée (intersection de surface, puis centre).
-     */
-    private Screen screenBestForRestore() {
-        double sw = Math.max(1.0, savedWidth);
-        double sh = Math.max(1.0, savedHeight);
-        Rectangle2D saved = new Rectangle2D(savedX, savedY, sw, sh);
-        var byRect = Screen.getScreensForRectangle(savedX, savedY, sw, sh);
-        if (byRect != null && !byRect.isEmpty()) {
-            if (byRect.size() == 1) {
-                return byRect.get(0);
-            }
-            return byRect.stream()
-                    .max(Comparator.comparingDouble(s -> intersectionArea(saved, s.getVisualBounds())))
-                    .orElse(byRect.get(0));
-        }
-        double cx = savedX + sw / 2.0;
-        double cy = savedY + sh / 2.0;
-        for (Screen s : Screen.getScreens()) {
-            if (s.getVisualBounds().contains(cx, cy)) {
-                return s;
-            }
-        }
-        // Fenêtre à cheval / centre hors visual : garder l’écran avec la plus grande intersection (≠ primary aveugle).
-        Screen bestOverlap = null;
-        double maxA = 0.0;
-        for (Screen s : Screen.getScreens()) {
-            double a = intersectionArea(saved, s.getVisualBounds());
-            if (a > maxA) {
-                maxA = a;
-                bestOverlap = s;
-            }
-        }
-        if (bestOverlap != null && maxA > 0.0) {
-            return bestOverlap;
-        }
-        Screen closest = Screen.getPrimary();
-        double bestD = Double.MAX_VALUE;
-        for (Screen s : Screen.getScreens()) {
-            Rectangle2D vb = s.getVisualBounds();
-            double scx = vb.getMinX() + vb.getWidth() / 2.0;
-            double scy = vb.getMinY() + vb.getHeight() / 2.0;
-            double d = (cx - scx) * (cx - scx) + (cy - scy) * (cy - scy);
-            if (d < bestD) {
-                bestD = d;
-                closest = s;
-            }
-        }
-        return closest;
-    }
-
-    /**
-     * {@code setMaximized(true)} sur stage undecorated : la fenêtre OS peut dépasser légèrement le
-     * {@code visualBounds} JavaFX — ne pas traiter ça comme une erreur à « corriger » en boucle.
-     */
-    private static boolean isUndecoratedMaximizedSlopMatch(Stage stage, Rectangle2D vb) {
-        double x = stage.getX();
-        double y = stage.getY();
-        double w = stage.getWidth();
-        double h = stage.getHeight();
-        boolean xOk = x >= vb.getMinX() - 20.0 && x <= vb.getMinX() + 15.0;
-        boolean yOk = y >= vb.getMinY() - 20.0 && y <= vb.getMinY() + 15.0;
-        boolean wOk = w >= vb.getWidth() - 15.0 && w <= vb.getWidth() + 50.0;
-        boolean hOk = h >= vb.getHeight() - 15.0 && h <= vb.getHeight() + 100.0;
-        return xOk && yOk && wOk && hOk;
-    }
-
-    private static Rectangle2D rectIntersection(Rectangle2D a, Rectangle2D b) {
-        double x1 = Math.max(a.getMinX(), b.getMinX());
-        double y1 = Math.max(a.getMinY(), b.getMinY());
-        double x2 = Math.min(a.getMaxX(), b.getMaxX());
-        double y2 = Math.min(a.getMaxY(), b.getMaxY());
-        double w = Math.max(0.0, x2 - x1);
-        double h = Math.max(0.0, y2 - y1);
-        return new Rectangle2D(x1, y1, w, h);
-    }
-
-    private static double intersectionArea(Rectangle2D a, Rectangle2D b) {
-        Rectangle2D inter = rectIntersection(a, b);
-        return inter.getWidth() * inter.getHeight();
-    }
-
-    /** Ramène la fenêtre dans {@code screen#getVisualBounds()} sans basculer sur l’écran primaire par erreur. */
-    private static Rectangle2D clampToVisualBounds(Screen screen, double x, double y, double w, double h) {
-        Rectangle2D vb = screen.getVisualBounds();
-        Rectangle2D candidate = new Rectangle2D(x, y, w, h);
-        if (candidate.intersects(vb)) {
-            double maxX = Math.max(vb.getMinX(), vb.getMaxX() - w);
-            double maxY = Math.max(vb.getMinY(), vb.getMaxY() - h);
-            double nx = Math.min(Math.max(x, vb.getMinX()), maxX);
-            double ny = Math.min(Math.max(y, vb.getMinY()), maxY);
-            return new Rectangle2D(nx, ny, w, h);
-        }
-        double nw = Math.min(w, vb.getWidth());
-        double nh = Math.min(h, vb.getHeight());
-        double nx = vb.getMinX() + (vb.getWidth() - nw) / 2.0;
-        double ny = vb.getMinY() + (vb.getHeight() - nh) / 2.0;
-        return new Rectangle2D(nx, ny, nw, nh);
-    }
-
-    /** Écran qui contient le centre du stage (après coup WM), plus fiable que la seule géométrie sauvegardée. */
-    private Screen screenForCurrentStageCenter() {
-        if (mainStage == null) {
-            return Screen.getPrimary();
-        }
-        double w = Math.max(1.0, mainStage.getWidth());
-        double h = Math.max(1.0, mainStage.getHeight());
-        double cx = mainStage.getX() + w / 2.0;
-        double cy = mainStage.getY() + h / 2.0;
-        var list = Screen.getScreensForRectangle(cx - 1, cy - 1, 2, 2);
-        if (list != null && !list.isEmpty()) {
-            return list.get(0);
-        }
-        return screenBestForRestore();
     }
 
     /**
@@ -1009,36 +888,6 @@ public class WindowToggleService {
     }
 
     /**
-     * Après {@code setMaximized(true)} (undecorated / Windows), corrige si la taille client ne suit pas le
-     * {@code visualBounds} de l’écran réellement occupé.
-     */
-    private void correctMaximizedClientIfNeeded() {
-        if (hidden || mainStage == null) {
-            return;
-        }
-        if (!savedWasMaximized || !mainStage.isMaximized()) {
-            return;
-        }
-        Screen target = screenForCurrentStageCenter();
-        Rectangle2D vb = target.getVisualBounds();
-        // Sous Windows / undecorated, setMaximized(true) donne souvent ~±7 px et +14/+62 : « corriger » repasse en boucle au même état.
-        if (isUndecoratedMaximizedSlopMatch(mainStage, vb)) {
-            return;
-        }
-        mainStage.setMaximized(false);
-        mainStage.setX(vb.getMinX());
-        mainStage.setY(vb.getMinY());
-        mainStage.setWidth(vb.getWidth());
-        mainStage.setHeight(vb.getHeight());
-        Platform.runLater(() -> {
-            if (!hidden) {
-                mainStage.setMaximized(true);
-                scheduleWin32UndecoratedFrameRefresh();
-            }
-        });
-    }
-
-    /**
      * Passe dans la bande {@code |v - target| < halfBand} en venant de l’extérieur (évite les déclenchements
      * répétés si la valeur analogique oscille autour de la cible).
      */
@@ -1049,34 +898,52 @@ public class WindowToggleService {
     }
 
     /**
-     * Réduit la fenêtre au strict minimum (VR) : minima, taille, position centrée sur la zone sauvegardée.
+     * Réduit la fenêtre pour la VR : sauve l’état, enlève les minima du stage, impose tout de suite 1×1 px
+     * (le contenu impose sinon ~1000×600 tant que les minima applicatifs sont actifs).
      */
-    private void applyVrHiddenBounds() {
-        if (mainStage == null) {
+    private void hideForVr() {
+        if (mainStage == null || hidden) {
             return;
         }
+        vrLayoutEpoch++;
+        savedWasMaximized = mainStage.isMaximized();
+        if (savedWasMaximized) {
+            mainStage.setMaximized(false);
+        }
+        savedMinWidth = mainStage.getMinWidth();
+        savedMinHeight = mainStage.getMinHeight();
+        savedX = mainStage.getX();
+        savedY = mainStage.getY();
+        savedWidth = mainStage.getWidth();
+        savedHeight = mainStage.getHeight();
+
+        hidden = true;
         mainStage.setMaximized(false);
-        double cx = savedX + savedWidth / 2.0;
-        double cy = savedY + savedHeight / 2.0;
-        mainStage.setMinWidth(VR_COLLAPSED_SIZE);
-        mainStage.setMinHeight(VR_COLLAPSED_SIZE);
-        mainStage.setWidth(VR_COLLAPSED_SIZE);
-        mainStage.setHeight(VR_COLLAPSED_SIZE);
-        mainStage.setX(cx - VR_COLLAPSED_SIZE / 2.0);
-        mainStage.setY(cy - VR_COLLAPSED_SIZE / 2.0);
-        mainStage.setOpacity(0);
+
+        mainStage.setMinWidth(0);
+        mainStage.setMinHeight(0);
+        mainStage.setX(savedX);
+        mainStage.setY(savedY);
+        mainStage.setWidth(1);
+        mainStage.setHeight(1);
     }
 
     private void scheduleRestoreComboAndZoom() {
         PauseTransition delay = new PauseTransition(Duration.millis(50));
         delay.setOnFinished(e -> {
-            comboBox.show();
-            PauseTransition delay2 = new PauseTransition(Duration.millis(50));
-            delay2.setOnFinished(ev -> {
-                comboBox.hide();
+            if (comboBox != null
+                    && comboBox.getScene() != null
+                    && comboBox.getScene().getWindow() != null) {
+                comboBox.show();
+                PauseTransition delay2 = new PauseTransition(Duration.millis(50));
+                delay2.setOnFinished(ev -> {
+                    comboBox.hide();
+                    recalculateSystemVisualZoom();
+                });
+                delay2.play();
+            } else {
                 recalculateSystemVisualZoom();
-            });
-            delay2.play();
+            }
         });
         delay.play();
     }
@@ -1095,64 +962,6 @@ public class WindowToggleService {
                 // Ignorer les erreurs silencieusement si le composant n'est pas encore initialisé
             }
         });
-    }
-
-    /**
-     * Réduit la fenêtre avec animation
-     */
-    private void minimizeWindowWithAnimation() {
-        vrCollapseGeneration++;
-        final int collapseGen = vrCollapseGeneration;
-        vrCollapsePending = true;
-        savedWasMaximized = mainStage.isMaximized();
-        if (savedWasMaximized) {
-            mainStage.setMaximized(false);
-        }
-        Platform.runLater(() -> {
-            if (collapseGen != vrCollapseGeneration) {
-                vrCollapsePending = false;
-                return;
-            }
-            captureBoundsAndApplyVrCollapse();
-        });
-    }
-
-    private void captureBoundsAndApplyVrCollapse() {
-        savedWidth = mainStage.getWidth();
-        savedHeight = mainStage.getHeight();
-        savedX = mainStage.getX();
-        savedY = mainStage.getY();
-        savedMinWidth = mainStage.getMinWidth();
-        savedMinHeight = mainStage.getMinHeight();
-        // wasMaximized + démax avant capture ⇒ JavaFX donne souvent 1200×800 (restauration), pas le plein écran :
-        // on aligne la sauvegarde sur le visualBounds de l’écran concerné pour restauration cohérente.
-        if (savedWasMaximized) {
-            Screen maxScreen = screenBestForRestore();
-            Rectangle2D vbMax = maxScreen.getVisualBounds();
-            savedX = vbMax.getMinX();
-            savedY = vbMax.getMinY();
-            savedWidth = vbMax.getWidth();
-            savedHeight = vbMax.getHeight();
-        }
-
-        applyVrHiddenBounds();
-        hidden = true;
-        // Un seul rappel au pulse suivant (sans écouteurs permanents : évite boucles / dérives avec le WM).
-        Platform.runLater(() -> {
-            if (hidden) {
-                applyVrHiddenBounds();
-            }
-        });
-
-        vrCollapsePending = false;
-        PauseTransition delay = new PauseTransition(Duration.millis(50));
-        delay.setOnFinished(e -> {
-            comboBox.show();
-            PauseTransition delay2 = new PauseTransition(Duration.millis(50));
-            delay2.setOnFinished(ev -> comboBox.hide());
-            delay2.play();
-        });
-        delay.play();
     }
 
     /**

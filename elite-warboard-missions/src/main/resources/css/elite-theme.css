@@ -3216,13 +3216,13 @@
 /* cellule sélectionnée */
 .missions-scroll .list-cell:selected {
     -fx-background-color: transparent;
-    -fx-text-fill: inherit; /* garder la couleur du texte normale */
+    -fx-text-fill: -fx-elite-text;
 }
 
 /* cellule focus (souvent la première au chargement) */
 .missions-scroll .list-cell:focused {
     -fx-background-color: transparent;
-    -fx-text-fill: inherit;
+    -fx-text-fill: -fx-elite-text;
 }
 .missions-scroll .scroll-bar:horizontal .thumb {
     -fx-background-color: -fx-elite-orange;
@@ -4175,7 +4175,6 @@
 
 }
 .elite-combobox .list-cell:hover .text {
-    -fx-background-color: derive(-fx-elite-gray, -20%); /* fond un peu plus foncé au survol */
     -fx-fill: -fx-elite-cyan !important;
     -fx-cursor: hand;
 }
