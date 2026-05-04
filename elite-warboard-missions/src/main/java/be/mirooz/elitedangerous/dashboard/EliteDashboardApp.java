@@ -1,10 +1,14 @@
 package be.mirooz.elitedangerous.dashboard;
 
+import be.mirooz.elitedangerous.dashboard.window.WindowFramePreferences;
+import be.mirooz.elitedangerous.dashboard.window.win32.WindowsUndecoratedVrFrameCompat;
+import be.mirooz.elitedangerous.dashboard.view.main.DashboardController;
 import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
 import be.mirooz.elitedangerous.dashboard.service.ErrorLogsConsentService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -17,6 +21,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 import java.util.List;
 import java.util.Objects;
@@ -37,10 +43,13 @@ public class EliteDashboardApp extends Application {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
             BorderPane dashboardRoot = loader.load();
+            DashboardController dashboardController = loader.getController();
 
             StackPane root = new StackPane(dashboardRoot);
             this.rootPane = root; // Sauvegarder la référence
 
+
+            stage.initStyle(WindowFramePreferences.useNativeOsWindowFrame() ? StageStyle.DECORATED : StageStyle.UNDECORATED);
             comboBox = new ComboBox<>(FXCollections.observableArrayList(" "));
             comboBox.setPromptText(".");
             comboBox.setPrefWidth(1);
@@ -77,6 +86,7 @@ public class EliteDashboardApp extends Application {
             String title = localizationService.getString("app.title");
             stage.setTitle(title);
             stage.setScene(scene);
+            dashboardController.attachPrimaryStage(stage);
             stage.setResizable(true);
             stage.setMinWidth(1000);
             stage.setMinHeight(600);
@@ -106,6 +116,12 @@ public class EliteDashboardApp extends Application {
             });
 
             stage.show();
+
+            if (!WindowFramePreferences.useNativeOsWindowFrame() && WindowsUndecoratedVrFrameCompat.isSupportedOs()) {
+                var vrFramePause = new PauseTransition(Duration.millis(100));
+                vrFramePause.setOnFinished(e -> WindowsUndecoratedVrFrameCompat.applyAfterShown(stage));
+                vrFramePause.play();
+            }
 
             AppLifecycleService.getInstance().onStart(stage, comboBox, rootPane);
 

@@ -67,12 +67,22 @@ public class PersistenceService {
     /** Si {@code true}, le hook JVM ne réécrit pas les snapshots (reset dossier commandant + sortie). */
     private volatile boolean skipJvmShutdownPersistenceFlush;
 
+    private final Thread jvmShutdownHookThread = new Thread(this::flushOnShutdown, "PersistenceService-shutdown");
+
     private PersistenceService() {
         this.persistenceRootDir = Paths.get(System.getProperty("user.home"), ".elite-warboard");
         configureCommanderScope(DEFAULT_COMMANDER_SCOPE);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(this::flushOnShutdown,
-                "PersistenceService-shutdown"));
+        Runtime.getRuntime().addShutdownHook(jvmShutdownHookThread);
+    }
+
+    /** Retire le hook après une sauvegarde synchrone en fermeture propre (évite un 2ᵉ flush sous exec:java). */
+    public void unregisterJvmShutdownHook() {
+        try {
+            Runtime.getRuntime().removeShutdownHook(jvmShutdownHookThread);
+        } catch (IllegalStateException | IllegalArgumentException ignored) {
+            // Déjà retiré, ou arrêt JVM déjà engagé.
+        }
     }
 
     /**

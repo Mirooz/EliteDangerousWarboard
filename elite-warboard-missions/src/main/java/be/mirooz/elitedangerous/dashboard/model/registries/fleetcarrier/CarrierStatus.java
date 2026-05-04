@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -706,55 +707,54 @@ public class CarrierStatus {
         }
     }
 
-    /** Mapping JSON-friendly d'une ligne d'ordre market. */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OrderLine {
-            private String timestamp;
-            private long carrierId;
-            private String carrierType;
-            private boolean blackMarket;
-            private String cargoJsonName;
-            private String inaraName;
-            private int purchaseOrder;
-            private int saleOrder;
-            private boolean cancelTrade;
-            private long price;
-            private int stock;
+        private String timestamp;
+        private long carrierId;
+        private String carrierType;
+        private boolean blackMarket;
+        private String cargoJsonName;
+        private String inaraName;
+        private int purchaseOrder;
+        private int saleOrder;
+        private boolean cancelTrade;
+        private long price;
+        private int stock;
 
-            static OrderLine from(String cargoJsonName, CarrierTradeOrderEntry e) {
-                return new OrderLine(
-                        e.getTimestamp(),
-                        e.getCarrierId(),
-                        e.getCarrierType(),
-                        e.isBlackMarket(),
-                        cargoJsonName,
-                        null,
-                        e.getPurchaseOrder(),
-                        e.getSaleOrder(),
-                        e.isCancelTrade(),
-                        e.getPrice(),
-                        e.getStock());
-            }
+        static OrderLine from(String cargoJsonName, CarrierTradeOrderEntry e) {
+            return new OrderLine(
+                    e.getTimestamp(),
+                    e.getCarrierId(),
+                    e.getCarrierType(),
+                    e.isBlackMarket(),
+                    cargoJsonName,
+                    null,
+                    e.getPurchaseOrder(),
+                    e.getSaleOrder(),
+                    e.isCancelTrade(),
+                    e.getPrice(),
+                    e.getStock());
+        }
 
-            java.util.Optional<CarrierTradeOrderEntry> toEntry() {
-                ICommodity c = CommodityRegistry.getInstance().resolve(cargoJsonName, inaraName);
-                if (c == null) {
-                    return java.util.Optional.empty();
-                }
-                return java.util.Optional.of(new CarrierTradeOrderEntry(
-                        timestamp,
-                        carrierId,
-                        carrierType,
-                        blackMarket,
-                        c,
-                        purchaseOrder,
-                        saleOrder,
-                        cancelTrade,
-                        price,
-                        stock));
+        Optional<CarrierTradeOrderEntry> toEntry() {
+            ICommodity c = CommodityRegistry.getInstance().resolve(cargoJsonName, inaraName);
+            if (c == null) {
+                return Optional.empty();
             }
+            return Optional.of(new CarrierTradeOrderEntry(
+                    timestamp,
+                    carrierId,
+                    carrierType,
+                    blackMarket,
+                    c,
+                    purchaseOrder,
+                    saleOrder,
+                    cancelTrade,
+                    price,
+                    stock));
+        }
     }
 
     private static String nvl(String value) {

@@ -1,6 +1,6 @@
 package be.mirooz.elitedangerous.dashboard.view.common.overlay;
 
-import be.mirooz.elitedangerous.dashboard.platform.windows.WindowsOverlayClickThrough;
+import be.mirooz.elitedangerous.dashboard.window.win32.WindowsOverlayClickThrough;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;

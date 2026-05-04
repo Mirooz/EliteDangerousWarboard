@@ -118,6 +118,7 @@ public final class AppLifecycleService {
             } catch (Exception e) {
                 System.err.println("[Lifecycle] Persistence save failed: " + e.getMessage());
             }
+            PersistenceService.getInstance().unregisterJvmShutdownHook();
         }
 
         try {

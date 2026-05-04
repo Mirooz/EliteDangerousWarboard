@@ -2556,6 +2556,120 @@
     -fx-border-width: 0 0 2 0;
 }
 
+/* Barre titre custom (thème Elite, fenêtre sans décor OS) */
+.window-chrome {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-elite-darker, 12%), -fx-elite-darker);
+    -fx-border-color: derive(-fx-elite-orange, -10%);
+    -fx-border-width: 0 0 2 0;
+}
+
+.window-chrome-left {
+    -fx-background-color: transparent;
+}
+
+.window-chrome-title {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.window-control-box {
+    -fx-padding: 0 6 0 0;
+    -fx-spacing: 6;
+}
+
+/*
+ * Boutons fenêtre : fond noir (hex + sélecteur .button.window-control-btn pour battre Modena .button).
+ * Même empilement 4 couches / insets que modena.css, sinon le dégradé gris du skin reste visible.
+ */
+.button.window-control-btn {
+    -fx-background-color: #000000, #000000, #000000, #000000;
+    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
+    -fx-background-radius: 3px, 3px, 2px, 1px;
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 2;
+    -fx-content-display: GRAPHIC_ONLY;
+    -fx-graphic-text-gap: 0;
+    -fx-text-fill: transparent;
+    -fx-min-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-max-width: 40px;
+    -fx-min-height: 28px;
+    -fx-pref-height: 28px;
+    -fx-max-height: 28px;
+    -fx-padding: 3 4 3 4;
+    -fx-cursor: hand;
+    -fx-border-radius: 3;
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 0, 0.35), 4, 0.15, 0, 0);
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.button.window-control-btn:hover {
+    -fx-background-color: #141414, #141414, #141414, #141414;
+    -fx-border-color: #00FFFF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.4), 6, 0.2, 0, 0);
+}
+
+.button.window-control-btn:pressed,
+.button.window-control-btn:armed {
+    -fx-background-color: #FF6B00, #FF6B00, #FF6B00, #FF6B00;
+    -fx-border-color: #c25500;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.55), 6, 0.35, 1, 1);
+}
+
+.button.window-control-btn:focused {
+    -fx-background-color: #000000, #000000, #000000, #000000;
+    -fx-border-color: #FF6B00;
+}
+
+/* Fermer : même pile noire ; survol bordure danger */
+.button.window-control-btn.window-control-close {
+    -fx-background-color: #000000, #000000, #000000, #000000;
+    -fx-border-color: #c25500;
+}
+
+.button.window-control-btn.window-control-close:hover {
+    -fx-background-color: #121212, #121212, #121212, #121212;
+    -fx-border-color: #ff3333;
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 0, 0.3), 6, 0.2, 0, 0);
+}
+
+.button.window-control-btn.window-control-close:focused {
+    -fx-background-color: #000000, #000000, #000000, #000000;
+    -fx-border-color: #c25500;
+}
+
+.button.window-control-btn.window-control-close:pressed {
+    -fx-background-color: #b30000, #b30000, #b30000, #b30000;
+    -fx-border-color: #FF6B00;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.6), 8, 0.4, 1, 1);
+}
+
+/* Icônes (traits / cadres) : orange par défaut, cyan au survol, sombre quand bouton enfoncé */
+.window-chrome-icon-line {
+    -fx-stroke: -fx-elite-orange;
+}
+
+.window-chrome-icon-rect {
+    -fx-stroke: -fx-elite-orange;
+    -fx-fill: transparent;
+}
+
+.button.window-control-btn:hover .window-chrome-icon-line,
+.button.window-control-btn:hover .window-chrome-icon-rect {
+    -fx-stroke: #00FFFF;
+}
+
+.button.window-control-btn:pressed .window-chrome-icon-line,
+.button.window-control-btn:pressed .window-chrome-icon-rect {
+    -fx-stroke: #0A0A0A;
+}
+
+.button.window-control-btn.window-control-close:pressed .window-chrome-icon-close-line {
+    -fx-stroke: #E0E0E0;
+}
+
 .title-bar {
     -fx-background-color: -fx-elite-darker;
 }

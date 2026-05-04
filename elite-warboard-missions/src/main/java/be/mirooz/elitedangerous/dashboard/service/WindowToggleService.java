@@ -17,6 +17,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Paint;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import net.java.games.input.Controller;
@@ -50,6 +52,20 @@ public class WindowToggleService {
     private double savedHeight = 800;
     private double savedX = 0;
     private double savedY = 0;
+    /** Minima du stage avant réduction VR (réappliqués à la restauration). */
+    private double savedMinWidth = 1;
+    private double savedMinHeight = 1;
+    /** Taille cible une fois les minima contournés (quasi invisible en VR). */
+    private static final double VR_COLLAPSED_SIZE = 1;
+    /** État plein écran au moment de la réduction (restauré après le toggle). */
+    private boolean savedWasMaximized = false;
+    /** Incrémenté pour ignorer un {@code runLater} de réduction si l’utilisateur a déjà restauré. */
+    private int vrCollapseGeneration = 0;
+    /** Réduction VR en cours (entre clic et {@link #captureBoundsAndApplyVrCollapse}). */
+    private volatile boolean vrCollapsePending = false;
+    /** Anti-rebond : répétition OS sur {@code KEY_PRESSED} + double événement Global/JavaFX. */
+    private volatile long lastWindowToggleNanoTime = 0L;
+    private static final long WINDOW_TOGGLE_DEBOUNCE_NS = 120_000_000L;
     private Point lastMousePos = null;
     private Thread hotasThread;
     private NativeKeyListener keyboardListener = null;
@@ -89,8 +105,8 @@ public class WindowToggleService {
         Platform.runLater(() -> {
             if (stage.getScene() != null) {
                 Scene scene = stage.getScene();
-                // Listener pour la touche de bind
                 scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressFromScene);
+                scene.addEventFilter(KeyEvent.KEY_RELEASED, this::handleWindowToggleKeyReleasedFromScene);
                 // Filtre pour désactiver la navigation au clavier (empêcher la sélection des éléments)
                 //scene.addEventFilter(KeyEvent.KEY_PRESSED, this::disableKeyboardNavigation);
             }
@@ -268,29 +284,28 @@ public class WindowToggleService {
                 }
             }
 
-            // Créer et ajouter le listener
             keyboardListener = new NativeKeyListener() {
                 @Override
                 public void nativeKeyPressed(NativeKeyEvent e) {
                     int keyCode = e.getKeyCode();
-                    if (keyCode == -1)
+                    if (keyCode == -1) {
                         return;
-                    boolean isFocused = mainStage.isFocused();
-
-                    //System.out.println("🔑 Touche pressée (GlobalScreen): " + keyCode + " (app focused: " + isFocused + ")");
-
-
-                    if (keyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
-                        System.out.println("✅ Touche window toggle détectée (GlobalScreen)! (code: " + windowToggleKeyCode + ")");
-                        Platform.runLater(() -> toggleWindowAndOpenCombo());
-                    } else if (keyCode == tabLeftKeyCode && preferencesService.isTabSwitchEnabled()) {
-                        System.out.println("✅ Touche tab left détectée (GlobalScreen)! (code: " + tabLeftKeyCode + ")");
+                    }
+                    if (keyCode == tabLeftKeyCode && preferencesService.isTabSwitchEnabled()) {
                         Platform.runLater(() -> switchToPreviousTab());
                     } else if (keyCode == tabRightKeyCode && preferencesService.isTabSwitchEnabled()) {
-                        System.out.println("✅ Touche tab right détectée (GlobalScreen)! (code: " + tabRightKeyCode + ")");
                         Platform.runLater(() -> switchToNextTab());
-                    } else {
-                       // System.out.println("ℹ️ Touche non bindée (code: " + keyCode + ")");
+                    }
+                }
+
+                @Override
+                public void nativeKeyReleased(NativeKeyEvent e) {
+                    int keyCode = e.getKeyCode();
+                    if (keyCode == -1) {
+                        return;
+                    }
+                    if (keyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
+                        Platform.runLater(WindowToggleService.this::toggleWindowAndOpenCombo);
                     }
                 }
             };
@@ -305,45 +320,50 @@ public class WindowToggleService {
     }
 
     /**
-     * Gère les pressions de touches depuis la scène JavaFX (quand l'app a le focus)
+     * Toggle fenêtre depuis la scène : {@code KEY_RELEASED} seulement (évite la répétition auto de
+     * {@code KEY_PRESSED}). Le hook global utilise aussi {@code nativeKeyReleased}.
+     */
+    private void handleWindowToggleKeyReleasedFromScene(KeyEvent event) {
+        if (isPaused) {
+            return;
+        }
+        int eventKeyCode = convertJavaFXKeyCodeToNative(event.getCode());
+        if (eventKeyCode == -1) {
+            return;
+        }
+        int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
+        if (eventKeyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
+            event.consume();
+            toggleWindowAndOpenCombo();
+        }
+    }
+
+    /**
+     * Onglets depuis la scène (toujours sur {@code KEY_PRESSED}).
      */
     private void handleKeyPressFromScene(KeyEvent event) {
         if (isPaused) {
             return;
         }
 
-        // Convertir KeyCode JavaFX en code NativeKeyEvent pour comparaison
         int eventKeyCode = convertJavaFXKeyCodeToNative(event.getCode());
-        if (eventKeyCode == -1)
+        if (eventKeyCode == -1) {
             return;
-       // System.out.println("🔑 Touche pressée (JavaFX): " + keyCode.getName() + " (code: " + eventKeyCode + ")");
-
-        // Vérifier le bind window toggle
-        int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
-        if (eventKeyCode == windowToggleKeyCode && preferencesService.isWindowToggleEnabled()) {
-            System.out.println("✅ Touche window toggle détectée (GlobalScreen)! (code: " + windowToggleKeyCode + ")");
-            Platform.runLater(() -> toggleWindowAndOpenCombo());
         }
-        // Vérifier les binds de changement d'onglet
+
         if (preferencesService.isTabSwitchEnabled()) {
             int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
             int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
 
-            System.out.println("📋 Binds configurés - Left: " + tabLeftKeyCode + ", Right: " + tabRightKeyCode);
-
             if (eventKeyCode == tabLeftKeyCode && tabLeftKeyCode > 0) {
-                System.out.println("✅ Touche tab left détectée! (code: " + tabLeftKeyCode + ")");
                 switchToPreviousTab();
                 event.consume();
                 return;
             } else if (eventKeyCode == tabRightKeyCode && tabRightKeyCode > 0) {
-                System.out.println("✅ Touche tab right détectée! (code: " + tabRightKeyCode + ")");
                 switchToNextTab();
                 event.consume();
                 return;
             }
-        } else {
-            //System.out.println("⚠️ Changement d'onglet désactivé dans les préférences");
         }
     }
 
@@ -611,19 +631,25 @@ public class WindowToggleService {
      * Toggle la fenêtre
      */
     private void toggleWindowAndOpenCombo() {
-        // Ne pas toggle si le service est en pause (fenêtre de config ouverte)
         if (isPaused) {
             return;
         }
-
         if (isAnimating) {
             return;
         }
+        long now = System.nanoTime();
+        if (now - lastWindowToggleNanoTime < WINDOW_TOGGLE_DEBOUNCE_NS) {
+            return;
+        }
+        lastWindowToggleNanoTime = now;
 
         try {
             if (hidden) {
                 restoreWindowWithAnimation();
             } else {
+                if (vrCollapsePending) {
+                    return;
+                }
                 minimizeWindowWithAnimation();
             }
 
@@ -636,44 +662,59 @@ public class WindowToggleService {
      * Restaure la fenêtre avec animation
      */
     private void restoreWindowWithAnimation() {
-        if (mainStage.isMaximized()) {
-            mainStage.setMaximized(false);
-        }
-
+        vrCollapseGeneration++;
+        vrCollapsePending = false;
         mainStage.toFront();
         hidden = false;
-
-
-        double startWidth = 1;
-        double startHeight = 1;
-        double centerX = savedX + savedWidth / 2;
-        double centerY = savedY + savedHeight / 2;
-        double startX = centerX - startWidth / 2;
-        double startY = centerY - startHeight / 2;
-
-        double endWidth = savedWidth;
-        double endHeight = savedHeight;
-        double endX = savedX;
-        double endY = savedY;
-
-        mainStage.setX(startX);
-        mainStage.setY(startY);
-        mainStage.setWidth(startWidth);
-        mainStage.setHeight(startHeight);
         mainStage.setOpacity(1.0);
 
+        mainStage.setMinWidth(savedMinWidth);
+        mainStage.setMinHeight(savedMinHeight);
 
-            mainStage.setWidth(endWidth);
-            mainStage.setHeight(endHeight);
-            mainStage.setX(endX);
-            mainStage.setY(endY);
+        if (savedWasMaximized) {
+            // Sur stage undecorated, appliquer la taille « restaurée » puis setMaximized(true) laisse
+            // souvent maximized=true avec une zone client trop petite. On remplit d'abord le
+            // visualBounds de l'écran concerné, puis on synchronise l'état maximize au pulse suivant.
+            var screens = Screen.getScreensForRectangle(
+                    savedX, savedY, Math.max(1.0, savedWidth), Math.max(1.0, savedHeight));
+            Screen targetScreen =
+                    (screens != null && !screens.isEmpty()) ? screens.get(0) : Screen.getPrimary();
+            Rectangle2D vb = targetScreen.getVisualBounds();
+            mainStage.setMaximized(false);
+            mainStage.setX(vb.getMinX());
+            mainStage.setY(vb.getMinY());
+            mainStage.setWidth(vb.getWidth());
+            mainStage.setHeight(vb.getHeight());
+            Platform.runLater(() -> mainStage.setMaximized(true));
+        } else {
+            double startWidth = VR_COLLAPSED_SIZE;
+            double startHeight = VR_COLLAPSED_SIZE;
+            double centerX = savedX + savedWidth / 2;
+            double centerY = savedY + savedHeight / 2;
+            double startX = centerX - startWidth / 2;
+            double startY = centerY - startHeight / 2;
+
+            mainStage.setX(startX);
+            mainStage.setY(startY);
+            mainStage.setWidth(startWidth);
+            mainStage.setHeight(startHeight);
+
+            mainStage.setWidth(savedWidth);
+            mainStage.setHeight(savedHeight);
+            mainStage.setX(savedX);
+            mainStage.setY(savedY);
+        }
+
+        scheduleRestoreComboAndZoom();
+    }
+
+    private void scheduleRestoreComboAndZoom() {
         PauseTransition delay = new PauseTransition(Duration.millis(50));
         delay.setOnFinished(e -> {
             comboBox.show();
             PauseTransition delay2 = new PauseTransition(Duration.millis(50));
             delay2.setOnFinished(ev -> {
                 comboBox.hide();
-                // Recalculer le zoom optimal pour la vue visuelle du système après restauration
                 recalculateSystemVisualZoom();
             });
             delay2.play();
@@ -701,28 +742,47 @@ public class WindowToggleService {
      * Réduit la fenêtre avec animation
      */
     private void minimizeWindowWithAnimation() {
+        vrCollapseGeneration++;
+        final int collapseGen = vrCollapseGeneration;
+        vrCollapsePending = true;
+        savedWasMaximized = mainStage.isMaximized();
+        if (savedWasMaximized) {
+            mainStage.setMaximized(false);
+        }
+        Platform.runLater(() -> {
+            if (collapseGen != vrCollapseGeneration) {
+                vrCollapsePending = false;
+                return;
+            }
+            captureBoundsAndApplyVrCollapse();
+        });
+    }
+
+    private void captureBoundsAndApplyVrCollapse() {
         savedWidth = mainStage.getWidth();
         savedHeight = mainStage.getHeight();
         savedX = mainStage.getX();
         savedY = mainStage.getY();
+        savedMinWidth = mainStage.getMinWidth();
+        savedMinHeight = mainStage.getMinHeight();
 
         hidden = true;
 
-        double startWidth = savedWidth;
-        double startHeight = savedHeight;
-        double startX = savedX;
-        double startY = savedY;
-
-        double centerX = startX + startWidth / 2;
-        double centerY = startY + startHeight / 2;
-        double endWidth = 1;
-        double endHeight = 1;
+        double centerX = savedX + savedWidth / 2;
+        double centerY = savedY + savedHeight / 2;
+        double endWidth = VR_COLLAPSED_SIZE;
+        double endHeight = VR_COLLAPSED_SIZE;
         double endX = centerX - endWidth / 2;
         double endY = centerY - endHeight / 2;
+
+        mainStage.setMinWidth(VR_COLLAPSED_SIZE);
+        mainStage.setMinHeight(VR_COLLAPSED_SIZE);
         mainStage.setWidth(endWidth);
         mainStage.setHeight(endHeight);
         mainStage.setX(endX);
         mainStage.setY(endY);
+        mainStage.setOpacity(0);
+        vrCollapsePending = false;
         PauseTransition delay = new PauseTransition(Duration.millis(50));
         delay.setOnFinished(e -> {
             comboBox.show();
@@ -731,7 +791,6 @@ public class WindowToggleService {
             delay2.play();
         });
         delay.play();
-
     }
 
     /**

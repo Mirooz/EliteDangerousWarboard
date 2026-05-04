@@ -10,7 +10,27 @@
     <center>
         <StackPane fx:id="popupContainer">
             <VBox>
-                <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="title-bar">
+                <HBox fx:id="windowChromeBar" alignment="CENTER_LEFT" minHeight="32.0" prefHeight="32.0" maxHeight="32.0"
+                      spacing="0.0" styleClass="window-chrome">
+                    <padding>
+                        <Insets bottom="0.0" left="12.0" right="0.0" top="0.0"/>
+                    </padding>
+                    <!-- Zone titre + espace : seuls ces nœuds reçoivent le drag (pas les boutons à droite). -->
+                    <HBox fx:id="windowChromeLeft" alignment="CENTER_LEFT" spacing="8.0" HBox.hgrow="ALWAYS"
+                          styleClass="window-chrome-left">
+                        <Label fx:id="windowChromeTitleLabel" styleClass="window-chrome-title" text="Elite Dangerous Warboard"/>
+                        <Region HBox.hgrow="ALWAYS" minWidth="0.0"/>
+                    </HBox>
+                    <HBox alignment="CENTER_RIGHT" spacing="0.0" styleClass="window-control-box">
+                        <Button fx:id="windowMinimizeButton" mnemonicParsing="false" onAction="#onWindowMinimize"
+                                styleClass="window-control-btn,window-control-min"/>
+                        <Button fx:id="windowMaxRestoreButton" mnemonicParsing="false" onAction="#onWindowMaxRestoreToggle"
+                                styleClass="window-control-btn,window-control-max"/>
+                        <Button fx:id="windowCloseButton" mnemonicParsing="false" onAction="#onWindowClose"
+                                styleClass="window-control-btn,window-control-close"/>
+                    </HBox>
+                </HBox>
+                <HBox fx:id="dashboardTitleBar" alignment="CENTER_LEFT" spacing="20.0" styleClass="title-bar">
                     <children>
                         <Label fx:id="appTitleLabel" styleClass="app-title" text="ELITE DANGEROUS"/>
                         <Label fx:id="appSubtitleLabel" styleClass="app-subtitle" text="DASHBOARD DES MISSIONS"/>
@@ -44,7 +64,7 @@
                                 styleClass="config-button" text="⚙"/>
                     </children>
                     <padding>
-                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0"/>
+                        <Insets bottom="10.0" left="20.0" right="12.0" top="10.0"/>
                     </padding>
                 </HBox>
                 <Separator styleClass="header-separator"/>

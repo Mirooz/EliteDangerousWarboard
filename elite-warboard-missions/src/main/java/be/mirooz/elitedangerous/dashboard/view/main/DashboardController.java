@@ -18,28 +18,32 @@ import be.mirooz.elitedangerous.dashboard.view.mining.MiningController;
 import be.mirooz.elitedangerous.dashboard.view.colonisation.ColonisationPanelController;
 import be.mirooz.elitedangerous.dashboard.view.exploration.ExplorationController;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.window.PrimaryWindowChromeSupport;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.scene.CacheHint;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.beans.value.ChangeListener;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.CacheHint;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Tooltip;
-import javafx.stage.Stage;
 
 import java.awt.Desktop;
 import java.net.URI;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
@@ -94,7 +98,24 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     @FXML
     private StackPane popupContainer;
 
+    @FXML
+    private HBox windowChromeBar;
+    @FXML
+    private HBox windowChromeLeft;
+    @FXML
+    private HBox dashboardTitleBar;
+    @FXML
+    private Label windowChromeTitleLabel;
+    @FXML
+    private Button windowMinimizeButton;
+    @FXML
+    private Button windowMaxRestoreButton;
+    @FXML
+    private Button windowCloseButton;
+
     private ColonisationPanelController colonisationPanelController;
+
+    private PrimaryWindowChromeSupport primaryWindowChromeSupport;
 
     private final ChangeListener<Tab> colonisationTabSelectionListener = (obs, oldTab, newTab) -> {
         if (newTab == colonisationTab && colonisationPanelController != null) {
@@ -138,6 +159,34 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         // Initialiser le TabPane dans le service de bind unifié
         windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab, explorationTab, colonisationTab);
         mainTabPane.getSelectionModel().selectedItemProperty().addListener(colonisationTabSelectionListener);
+    }
+
+    /**
+     * Référence le {@link Stage} principal : à l’init FXML, {@link javafx.scene.Scene#getWindow()} est encore
+     * souvent null ; {@link be.mirooz.elitedangerous.dashboard.EliteDashboardApp} appelle cette méthode
+     * juste après {@link Stage#setScene(javafx.scene.Scene)}.
+     */
+    public void attachPrimaryStage(Stage stage) {
+        Objects.requireNonNull(stage, "stage");
+        Platform.runLater(() -> {
+            if (primaryWindowChromeSupport != null) {
+                return;
+            }
+            primaryWindowChromeSupport = new PrimaryWindowChromeSupport(
+                    stage,
+                    windowChromeBar,
+                    windowChromeLeft,
+                    dashboardTitleBar,
+                    windowChromeTitleLabel,
+                    windowMinimizeButton,
+                    windowMaxRestoreButton,
+                    windowCloseButton,
+                    configButton,
+                    donateButtonImage,
+                    systemLabel,
+                    localizationService);
+            primaryWindowChromeSupport.installIfNeeded();
+        });
     }
     
     /**
@@ -349,6 +398,12 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void updateTranslations(){
         appTitleLabel.setText(localizationService.getString("header.app.title"));
         appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
+        if (windowChromeTitleLabel != null) {
+            windowChromeTitleLabel.setText(localizationService.getString("app.title"));
+        }
+        if (primaryWindowChromeSupport != null) {
+            primaryWindowChromeSupport.refreshLocalizedStrings();
+        }
         updateStatusLabel();
         if (donateButtonImage != null) {
             donateButtonImage.setPickOnBounds(true);
@@ -471,6 +526,27 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
         dialog.init(primaryStage);
         dialog.showAndWait();
+    }
+
+    @FXML
+    private void onWindowMinimize() {
+        if (primaryWindowChromeSupport != null) {
+            primaryWindowChromeSupport.minimize();
+        }
+    }
+
+    @FXML
+    private void onWindowMaxRestoreToggle() {
+        if (primaryWindowChromeSupport != null) {
+            primaryWindowChromeSupport.toggleMaximized();
+        }
+    }
+
+    @FXML
+    private void onWindowClose() {
+        if (primaryWindowChromeSupport != null) {
+            primaryWindowChromeSupport.close();
+        }
     }
 
     @Override
