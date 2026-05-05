@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.window;
 
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import javafx.beans.InvalidationListener;
 import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -18,7 +19,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Barre titre custom (sans décor OS) : drag, min / max / fermer, double-clic plein écran.
+ * Barre titre custom (sans décor OS) : drag, min / max / fermer, double-clic sur la barre du haut
+ * (chrome + barre de titre dashboard) pour basculer plein écran zone utile / taille normale.
  * <p>
  * Maximiser = remplir la zone <em>utilisable</em> de l’écran ({@link StageVisualBounds}), pas
  * {@link Stage#setMaximized(boolean)} (souvent plein moniteur y compris barre des tâches en undecorated).
@@ -111,14 +113,31 @@ public final class PrimaryWindowChromeSupport {
 
         if (windowChromeLeft != null) {
             installWindowDragHandlers(windowChromeLeft, false);
-            windowChromeLeft.addEventFilter(MouseEvent.MOUSE_CLICKED, this::onWindowHeaderDoubleClick);
+        }
+        if (windowChromeBar != null) {
+            windowChromeBar.addEventFilter(MouseEvent.MOUSE_CLICKED, this::onChromeBarDoubleClick);
         }
         installWindowDragHandlers(dashboardTitleBar, true);
-        dashboardTitleBar.addEventFilter(MouseEvent.MOUSE_CLICKED, this::onWindowHeaderDoubleClick);
+        dashboardTitleBar.addEventFilter(MouseEvent.MOUSE_CLICKED, this::onDashboardTitleBarDoubleClick);
 
         seedRestoreBoundsFromPreferencesIfMaximized();
+        attachStageGeometryGlyphSync();
         syncWindowMaxRestoreGlyph();
         refreshLocalizedStrings();
+    }
+
+    /**
+     * Recalcule l’icône max / restore quand la géométrie réelle du stage change (ex. déplacement hors
+     * zone utilisable alors que l’UI pensait encore « plein écran »).
+     */
+    private void attachStageGeometryGlyphSync() {
+        InvalidationListener l = obs -> syncWindowMaxRestoreGlyph();
+        stage.xProperty().addListener(l);
+        stage.yProperty().addListener(l);
+        stage.widthProperty().addListener(l);
+        stage.heightProperty().addListener(l);
+        stage.maximizedProperty().addListener(l);
+        stage.iconifiedProperty().addListener(l);
     }
 
     public void refreshLocalizedStrings() {
@@ -278,16 +297,40 @@ public final class PrimaryWindowChromeSupport {
         dragOffsetY = ratioY * h;
         stage.setX(e.getScreenX() - dragOffsetX);
         stage.setY(e.getScreenY() - dragOffsetY);
+        syncWindowMaxRestoreGlyph();
     }
 
-    private void onWindowHeaderDoubleClick(MouseEvent e) {
+    /** Double-clic sur la barre titre OS custom (ligne tout en haut), hors boutons min / max / fermer. */
+    private void onChromeBarDoubleClick(MouseEvent e) {
         if (e.getButton() != MouseButton.PRIMARY || e.getClickCount() != 2) {
             return;
         }
-        if (e.getSource() == dashboardTitleBar && isTitleBarDragExcluded(e.getTarget())) {
+        if (isUnderWindowControls(e.getTarget())) {
             return;
         }
         toggleMaximized();
+    }
+
+    private void onDashboardTitleBarDoubleClick(MouseEvent e) {
+        if (e.getButton() != MouseButton.PRIMARY || e.getClickCount() != 2) {
+            return;
+        }
+        if (isTitleBarDragExcluded(e.getTarget())) {
+            return;
+        }
+        toggleMaximized();
+    }
+
+    private boolean isUnderWindowControls(Object target) {
+        if (!(target instanceof Node n)) {
+            return false;
+        }
+        for (Node c = n; c != null; c = c.getParent()) {
+            if (c == windowMinimizeButton || c == windowMaxRestoreButton || c == windowCloseButton) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isTitleBarDragExcluded(Object target) {
