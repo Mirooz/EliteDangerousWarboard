@@ -7,6 +7,7 @@ import be.mirooz.elitedangerous.dashboard.view.common.CommanderStatusComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.UIManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailService;
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
@@ -200,7 +201,8 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             systemLabel.getStyleClass().clear();
             systemLabel.getStyleClass().addAll("clickable-system-source", "footer-value");
         }
-        // Le binding ne met à jour que la couleur ; LoadGame / Shutdown changent isOnline hors onBatchEnd.
+        // Le binding ne met à jour que la couleur ; LoadGame / Shutdown changent isOnline hors onBatchEnd
+        // (on resynchronise explicitement à la fin du batch journal, voir {@link #onBatchEnd()}).
         commanderStatusComponent.getIsOnline().addListener((obs, wasOnline, onlineNow) -> {
             if (statusLabel != null) {
                 updateStatusLabel();
@@ -442,6 +444,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
 
     @Override
     public void onBatchEnd() {
+        CommanderStatus.getInstance().syncOnlineToComponent();
         updateStatusLabel();
         // Binding conditionnel pour la couleur du statut
         statusLabel.styleProperty().bind(javafx.beans.binding.Bindings.when(commanderStatusComponent
@@ -459,6 +462,12 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         if (commanderLabel != null) {
             commanderLabel.textProperty().bind(commanderStatusComponent.getCommanderName());
         }
+
+        // Après {@code refreshAllUI()} dans le même pulse, ou tâches {@code runLater} restantes du replay.
+        Platform.runLater(() -> {
+            CommanderStatus.getInstance().syncOnlineToComponent();
+            updateStatusLabel();
+        });
     }
     
     /**

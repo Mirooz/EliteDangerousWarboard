@@ -78,6 +78,14 @@ public class CommanderStatus {
         component.setOnline(value);
     }
 
+    /**
+     * Réaligne la propriété {@code isOnline} de l’UI sur le dernier état en mémoire après un
+     * replay journal (handlers hors thread JavaFX peuvent avoir laissé une file {@code runLater}).
+     */
+    public void syncOnlineToComponent() {
+        component.setOnline(Boolean.TRUE.equals(this.isOnline));
+    }
+
     public void setOnFoot(boolean value) {
         this.isOnFoot = value;
     }
