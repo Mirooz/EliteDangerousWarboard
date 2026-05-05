@@ -11,6 +11,8 @@ import be.mirooz.elitedangerous.dashboard.view.common.DialogComponent;
 import be.mirooz.elitedangerous.dashboard.model.enums.MissionType;
 import be.mirooz.elitedangerous.dashboard.model.registries.combat.MissionsRegistry;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.listeners.MissionEventNotificationService;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -30,7 +32,8 @@ import static be.mirooz.elitedangerous.dashboard.util.NumberUtil.getFormattedNum
 /**
  * Contrôleur pour l'en-tête du dashboard
  */
-public class HeaderController implements Initializable, IRefreshable {
+public class HeaderController implements Initializable, IRefreshable,
+        MissionEventNotificationService.MissionEventListener {
     @FXML
     public Label missionCountTextLabel;
     @FXML
@@ -85,6 +88,7 @@ public class HeaderController implements Initializable, IRefreshable {
     public void initialize(URL location, ResourceBundle resources) {
         dashboardContext.addFilterListener(this::applyFilter);
         UIManager.getInstance().register(this);
+        MissionEventNotificationService.getInstance().addListener(this);
         initMassacreStackHelpTooltip();
         updateTranslations();
         
@@ -106,6 +110,16 @@ public class HeaderController implements Initializable, IRefreshable {
 
     public void refreshUI(){
         applyFilter(DashboardContext.getInstance().getCurrentFilter(),DashboardContext.getInstance().getCurrentTypeFilter());
+    }
+
+    @Override
+    public void onStatusChanged() {
+        Platform.runLater(this::refreshUI);
+    }
+
+    @Override
+    public void onKillChanged() {
+        Platform.runLater(this::refreshUI);
     }
     private void applyFilter(MissionStatus currentFilter, MissionType currentTypeFilter) {
         // Filtrer les missions selon le filtre actuel
