@@ -820,7 +820,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
         for (ColonisationArchitectSystem arch : colonisationService.getArchitectSystems()) {
             List<ConstructionSiteRow> items = buildConstructionItems(arch);
-            if (items.isEmpty()) {
+            // Balise déployée : le système doit apparaître dans la liste / combo dès ColonisationBeaconDeployed,
+            // avant le premier dépôt de chantier (ConstructionDepot).
+            if (items.isEmpty() && !colonisationService.isBeaconDeployed(arch.getStarSystem())) {
                 continue;
             }
             systemsWithSites.add(arch);
