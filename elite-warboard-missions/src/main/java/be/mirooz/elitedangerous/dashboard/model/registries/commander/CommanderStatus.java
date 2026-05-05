@@ -26,6 +26,8 @@ public class CommanderStatus {
     private Long  currentBodyId;
     private String commanderName;
     private String FID;
+    /** Toujours sérialisé (même {@code null}) pour que la reprise JSON fusionne l’état hors-ligne correctement. */
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private Boolean isOnline;
     private boolean isOnFoot = false;
 

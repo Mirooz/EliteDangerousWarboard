@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.service.persistence;
 
 import be.mirooz.elitedangerous.dashboard.model.registries.CommodityRegistry;
+import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
 import be.mirooz.elitedangerous.dashboard.persistence.DashboardRegistryJsonPersistence;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursor;
 import be.mirooz.elitedangerous.dashboard.persistence.JournalCursorStore;
@@ -201,6 +202,10 @@ public class PersistenceService {
         }
 
         CommodityRegistry.getInstance().ensureSeededFromClasspathIfEmpty();
+
+        // Jackson updateValue() met à jour le champ isOnline sans passer par setOnline() → l’UI ne
+        // suivait pas (reprise incrémentale sans re-dispatch des vieux LoadGame/ShutDown).
+        CommanderStatus.getInstance().syncOnlineToComponent();
 
         JournalCursor cursor = cursorStore.getCursor();
         if (cursor != null) {
