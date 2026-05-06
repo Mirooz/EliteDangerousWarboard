@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -170,11 +171,13 @@ public final class CapiMarketEddnMessageBuilder {
     private static String normalizeTimestamp(String raw) {
         try {
             if (raw == null || raw.isBlank()) {
-                return OffsetDateTime.now(ZoneOffset.UTC).toString();
+                return Instant.now().toString();
             }
-            return OffsetDateTime.parse(raw).withOffsetSameInstant(ZoneOffset.UTC).toString();
+            // EDDN / JSON Schema date-time (RFC 3339) exige HH:mm:ss ; OffsetDateTime#toString()
+            // peut omettre les secondes (ex. journal Docked → "…T12:34Z") et le gateway rejette alors le message.
+            return OffsetDateTime.parse(raw).withOffsetSameInstant(ZoneOffset.UTC).toInstant().toString();
         } catch (Exception ignored) {
-            return OffsetDateTime.now(ZoneOffset.UTC).toString();
+            return Instant.now().toString();
         }
     }
 
