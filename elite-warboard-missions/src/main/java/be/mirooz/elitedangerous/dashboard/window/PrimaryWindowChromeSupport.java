@@ -21,8 +21,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Barre titre custom (sans décor OS) : drag, min / max / fermer, double-clic sur la barre du haut
- * (chrome + barre de titre dashboard) pour basculer plein écran zone utile / taille normale.
+ * Fenêtre sans décor OS : drag et double-clic sur la barre titre dashboard, boutons min / max / fermer
+ * (dans la barre titre). La fine barre « chrome » séparée est optionnelle (FXML : null).
  * <p>
  * Maximiser = remplir la zone <em>utilisable</em> de l’écran ({@link StageVisualBounds}), pas
  * {@link Stage#setMaximized(boolean)} (souvent plein moniteur y compris barre des tâches en undecorated).
@@ -36,6 +36,7 @@ public final class PrimaryWindowChromeSupport {
     private final HBox windowChromeBar;
     private final HBox windowChromeLeft;
     private final HBox dashboardTitleBar;
+    /** Optionnel (barre chrome retirée : titre uniquement dans la barre dashboard). */
     private final Label windowChromeTitleLabel;
     private final Button windowMinimizeButton;
     private final Button windowMaxRestoreButton;
@@ -292,6 +293,9 @@ public final class PrimaryWindowChromeSupport {
         if (e.getButton() != MouseButton.PRIMARY || e.getClickCount() != 2) {
             return;
         }
+        if (isUnderWindowControls(e.getTarget())) {
+            return;
+        }
         if (isTitleBarDragExcluded(e.getTarget())) {
             return;
         }
@@ -316,6 +320,9 @@ public final class PrimaryWindowChromeSupport {
         }
         for (Node c = n; c != null; c = c.getParent()) {
             if (c == configButton || c == donateButtonImage || c == systemLabel) {
+                return true;
+            }
+            if (c == windowMinimizeButton || c == windowMaxRestoreButton || c == windowCloseButton) {
                 return true;
             }
         }

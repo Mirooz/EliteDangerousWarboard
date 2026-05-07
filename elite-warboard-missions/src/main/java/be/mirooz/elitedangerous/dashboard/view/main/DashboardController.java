@@ -107,13 +107,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private StackPane popupContainer;
 
     @FXML
-    private HBox windowChromeBar;
-    @FXML
-    private HBox windowChromeLeft;
-    @FXML
     private HBox dashboardTitleBar;
-    @FXML
-    private Label windowChromeTitleLabel;
     @FXML
     private Button windowMinimizeButton;
     @FXML
@@ -219,10 +213,10 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
             }
             primaryWindowChromeSupport = new PrimaryWindowChromeSupport(
                     stage,
-                    windowChromeBar,
-                    windowChromeLeft,
+                    null,
+                    null,
                     dashboardTitleBar,
-                    windowChromeTitleLabel,
+                    null,
                     windowMinimizeButton,
                     windowMaxRestoreButton,
                     windowCloseButton,
@@ -448,9 +442,6 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void updateTranslations(){
         appTitleLabel.setText(localizationService.getString("header.app.title"));
         appSubtitleLabel.setText(localizationService.getString("header.app.subtitle"));
-        if (windowChromeTitleLabel != null) {
-            windowChromeTitleLabel.setText(localizationService.getString("app.title"));
-        }
         if (primaryWindowChromeSupport != null) {
             primaryWindowChromeSupport.refreshLocalizedStrings();
         }

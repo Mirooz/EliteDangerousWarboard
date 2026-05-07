@@ -2683,6 +2683,14 @@
     -fx-background-color: -fx-elite-darker;
 }
 
+.title-bar .window-control-box {
+    -fx-padding: 0 0 0 10;
+}
+
+.dashboard-status-strip {
+    -fx-alignment: CENTER;
+}
+
 .app-title {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
