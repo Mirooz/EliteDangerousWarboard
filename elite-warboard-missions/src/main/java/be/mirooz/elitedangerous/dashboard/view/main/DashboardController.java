@@ -31,6 +31,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -68,6 +69,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     
     @FXML
     private Tab explorationTab;
+
+    @FXML
+    private StackPane missionsTabStackHost;
 
     @FXML
     private Tab colonisationTab;
@@ -115,6 +119,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private Button windowCloseButton;
 
     private ColonisationPanelController colonisationPanelController;
+
+    private HeaderController missionHeaderController;
+    private MissionListController missionListController;
 
     private PrimaryWindowChromeSupport primaryWindowChromeSupport;
 
@@ -235,17 +242,20 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     private void createHeaderPanel() throws IOException {
         FXMLLoader headerLoader = new FXMLLoader(getClass().getResource("/fxml/combat/header.fxml"));
         VBox header = headerLoader.load();
-        HeaderController headerController = headerLoader.getController();
+        missionHeaderController = headerLoader.getController();
         missionsPane.setTop(header);
     }
 
 
     private void createMissionPanel() throws IOException {
         FXMLLoader missionListLoader = new FXMLLoader(getClass().getResource("/fxml/combat/mission-list.fxml"));
-        VBox missionList = missionListLoader.load();
-        MissionListController missionListController = missionListLoader.getController();
+        Parent missionList = missionListLoader.load();
+        missionListController = missionListLoader.getController();
         dashboardService.addBatchListener(missionListController);
         missionsPane.setCenter(missionList);
+        if (missionsTabStackHost != null && missionListController != null) {
+            missionListController.configureMissionsTutorial(missionsTabStackHost, missionHeaderController);
+        }
     }
 
     private void createDestroyedShipsPanel() throws IOException {

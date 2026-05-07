@@ -7,13 +7,14 @@
 <?import be.mirooz.elitedangerous.dashboard.view.common.NotSelectableListView?>
 <?import be.mirooz.elitedangerous.dashboard.model.commander.Mission?>
 <?import be.mirooz.elitedangerous.dashboard.view.combat.TargetPanelComponent?>
-<VBox spacing="10.0" styleClass="missions-container" xmlns="http://javafx.com/javafx/11.0.1"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.MissionListController">
+<StackPane fx:id="missionListRoot" styleClass="mission-list-root" xmlns="http://javafx.com/javafx/11.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.MissionListController">
+   <VBox fx:id="missionContentVBox" spacing="10.0" styleClass="missions-container" maxWidth="Infinity" maxHeight="Infinity">
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
    </padding>
-   <HBox alignment="CENTER_LEFT" spacing="20.0">
+   <HBox fx:id="missionsHeaderRow" alignment="CENTER_LEFT" spacing="20.0">
       <Label fx:id="missionsTitleLabel" styleClass="section-title" text="MISSIONS"/>
       <Region HBox.hgrow="ALWAYS"/>
       <HBox alignment="CENTER_LEFT" spacing="10.0">
@@ -24,12 +25,14 @@
          <Label fx:id="statusFilterLabel" styleClass="filter-label" text="Statut:"/>
          <ComboBox fx:id="statusFilterComboBox" styleClass="elite-combobox" onAction="#onStatusFilterChanged"/>
       </HBox>
+      <Button fx:id="missionTutorialButton" mnemonicParsing="false" onAction="#onMissionTutorialClicked"
+              styleClass="tutorial-launch-button" text="?"/>
    </HBox>
 
    <!-- Layout principal avec missions à gauche et cibles à droite -->
    <HBox spacing="20.0" VBox.vgrow="ALWAYS">
       <!-- Section des missions (gauche) -->
-      <VBox HBox.hgrow="ALWAYS" spacing="10.0" minWidth="400">
+      <VBox fx:id="missionsListColumn" HBox.hgrow="ALWAYS" spacing="10.0" minWidth="400">
          <StackPane VBox.vgrow="ALWAYS" minHeight="200">
             <NotSelectableListView fx:id="missionListView"
                                    styleClass="missions-scroll"
@@ -57,4 +60,5 @@
       </VBox>
    </HBox>
 
-</VBox>
+   </VBox>
+</StackPane>

@@ -76,7 +76,9 @@
                         <graphic>
                             <ImageView fx:id="missionsTabImage" styleClass="tab-image" />
                         </graphic>
-                        <BorderPane fx:id="missionsPane" styleClass="main-content" />
+                        <StackPane fx:id="missionsTabStackHost" maxWidth="Infinity" maxHeight="Infinity">
+                            <BorderPane fx:id="missionsPane" maxWidth="Infinity" maxHeight="Infinity" styleClass="main-content" />
+                        </StackPane>
                     </Tab>
                     
                     <!-- Onglet Mining -->

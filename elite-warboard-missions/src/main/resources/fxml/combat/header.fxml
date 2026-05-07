@@ -8,7 +8,7 @@
       fx:controller="be.mirooz.elitedangerous.dashboard.view.combat.HeaderController">
     <children>
         <!-- Statistiques des missions -->
-        <HBox alignment="CENTER_LEFT" spacing="30.0" styleClass="stats-panel">
+        <HBox fx:id="headerStatsPanel" alignment="CENTER_LEFT" spacing="30.0" styleClass="stats-panel">
             <padding>
                 <Insets bottom="15.0" left="20.0" right="20.0" top="15.0"/>
             </padding>

@@ -18,6 +18,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -58,6 +59,9 @@ public class HeaderController implements Initializable, IRefreshable,
 
     @FXML
     private Label pendingCreditsLabel;
+
+    @FXML
+    private HBox headerStatsPanel;
 
     @FXML
     private Button massacreSearchButton;
@@ -234,6 +238,18 @@ public class HeaderController implements Initializable, IRefreshable,
         return localizationService.getString("header.massacre.stack.help.title")
                 + "\n\n"
                 + localizationService.getString("header.massacre.stack.help.body");
+    }
+
+    public Button getMassacreSearchButton() {
+        return massacreSearchButton;
+    }
+
+    public Button getMassacreStackHelpButton() {
+        return massacreStackHelpButton;
+    }
+
+    public HBox getHeaderStatsPanel() {
+        return headerStatsPanel;
     }
 
 }

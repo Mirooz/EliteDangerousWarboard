@@ -7634,3 +7634,94 @@
     -fx-font-size: 11.5px;
     -fx-padding: 1px 0;
 }
+
+/* Visite guidée par module (ex. onglet Missions) */
+.mission-list-root {
+    -fx-background-color: transparent;
+}
+
+.tutorial-launch-button {
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-max-width: 36px;
+    -fx-min-height: 30px;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00FFFF;
+    -fx-background-color: linear-gradient(to bottom, #252525, #121212);
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.tutorial-launch-button:hover {
+    -fx-border-color: #FFAA00;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.35), 10, 0.35, 0, 0);
+}
+
+.tutorial-glass {
+    -fx-background-color: transparent;
+}
+
+.tutorial-dimmer {
+    -fx-fill: rgba(5, 5, 5, 0.62);
+}
+
+.tutorial-highlight-ring {
+    -fx-background-color: transparent;
+    -fx-border-color: #00FFFF;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.45), 14, 0.45, 0, 0);
+}
+
+.tutorial-card {
+    -fx-background-color: linear-gradient(to bottom, #1c1c1c, #0e0e0e);
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.85), 22, 0.35, 0, 4);
+}
+
+.tutorial-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFAA00;
+}
+
+.tutorial-card-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: #E0E0E0;
+    -fx-line-spacing: 2px;
+}
+
+.tutorial-card-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.tutorial-card-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.tutorial-card-primary {
+    -fx-border-color: #00AEEF;
+    -fx-border-width: 1.5px;
+}
+
+.tutorial-card-close {
+    -fx-min-width: 32px;
+    -fx-pref-width: 32px;
+    -fx-max-width: 32px;
+    -fx-min-height: 28px;
+    -fx-pref-height: 28px;
+    -fx-max-height: 28px;
+    -fx-font-size: 12px;
+    -fx-padding: 0;
+}

@@ -11,9 +11,11 @@
     <artifactId>elite-warboard-missions</artifactId>
 
     <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- jlink : jmods du JDK qui exécute Maven (ex. JDK 17 Full avec JavaFX dans jmods). Surcharge : -Djlink.jmods.path=... -->
+        <jlink.jmods.path>${java.home}/jmods</jlink.jmods.path>
     </properties>
 
     <dependencyManagement>
@@ -22,7 +24,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>2.17.2</version>
+                <version>2.15.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -194,8 +196,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <source>25</source>
-                    <target>25</target>
+                    <release>17</release>
                     <encoding>UTF-8</encoding>
                     <!-- Requis pour que Jackson puisse deserialiser les @Value / @AllArgsConstructor
                          (ColonisationConstruction, ConstructionResource, ...) sans ajouter
@@ -299,8 +300,7 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.11.0</version>
                         <configuration>
-                            <source>25</source>
-                            <target>25</target>
+                            <release>17</release>
                             <encoding>UTF-8</encoding>
                         </configuration>
                     </plugin>
@@ -372,7 +372,7 @@
                                 <configuration>
                                     <executable>jlink</executable>
                                     <commandlineArgs>
-                                        --module-path "C:/Progra~1/BellSoft/LibericaJDK-25-Full/jmods"
+                                        --module-path "${jlink.jmods.path}"
                                         --add-modules
                                         java.base,javafx.controls,javafx.fxml,java.logging,java.xml,java.net.http,jdk.crypto.ec
                                         --strip-debug --compress=2 --no-header-files --no-man-pages --strip-native-commands
@@ -494,8 +494,7 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.11.0</version>
                         <configuration>
-                            <source>25</source>
-                            <target>25</target>
+                            <release>17</release>
                             <encoding>UTF-8</encoding>
                         </configuration>
                     </plugin>
@@ -544,7 +543,7 @@
                                 <configuration>
                                     <executable>jlink</executable>
                                     <commandlineArgs>
-                                        --module-path "/usr/lib/jvm/bellsoft-java25-full-amd64/bin/jmods"
+                                        --module-path "${jlink.jmods.path}"
                                         --add-modules
                                         java.base,javafx.controls,javafx.fxml,java.logging,java.xml,java.net.http,jdk.crypto.ec
                                         --strip-debug --compress=2 --no-header-files --no-man-pages --strip-native-commands
