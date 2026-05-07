@@ -7663,6 +7663,39 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.35), 10, 0.35, 0, 0);
 }
 
+/* Bouton tutoriel global (dashboard, au-dessus de la zone d’onglets). */
+.tutorial-global-bar-button {
+    -fx-min-width: 88px;
+    -fx-pref-width: 96px;
+    -fx-max-width: 120px;
+    -fx-min-height: 52px;
+    -fx-pref-height: 52px;
+    -fx-max-height: 52px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00FFFF;
+    -fx-background-color: linear-gradient(to bottom, #252525, #121212);
+    -fx-border-color: #FF6B00;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-content-display: center;
+    -fx-padding: 2px 4px;
+}
+
+.tutorial-global-bar-button:hover {
+    -fx-border-color: #FFAA00;
+    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.45), 12, 0.4, 0, 2);
+}
+
+.tutorial-global-bar-button:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+}
+
 .tutorial-glass {
     -fx-background-color: transparent;
 }
@@ -7701,6 +7734,10 @@
     -fx-line-spacing: 2px;
 }
 
+.tutorial-step-image {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 8, 0.3, 0, 1);
+}
+
 .tutorial-card-scroll {
     -fx-background-color: transparent;
     -fx-padding: 0;
@@ -7708,6 +7745,73 @@
 
 .tutorial-card-scroll .viewport {
     -fx-background-color: transparent;
+}
+
+/* Scrollbar style Elite (orange / cyan) — tutoriel */
+.tutorial-card-scroll .scroll-bar:vertical {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+    -fx-max-width: 12px;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-elite-orange;
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+    -fx-min-height: 24px;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: transparent;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .increment-button,
+.tutorial-card-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1 0;
+    -fx-pref-height: 12px;
+    -fx-min-height: 12px;
+    -fx-max-height: 12px;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .increment-button:hover,
+.tutorial-card-scroll .scroll-bar:vertical .decrement-button:hover {
+    -fx-background-color: -fx-elite-gray;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .increment-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 0 L 4 4 L 8 0 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: -fx-elite-orange;
+    -fx-shape: "M 0 4 L 4 0 L 8 4 Z";
+    -fx-pref-width: 8px;
+    -fx-pref-height: 4px;
+}
+
+.tutorial-card-scroll .scroll-bar:vertical .increment-arrow:hover,
+.tutorial-card-scroll .scroll-bar:vertical .decrement-arrow:hover {
+    -fx-background-color: -fx-elite-cyan;
+}
+
+.tutorial-card-scroll .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
 }
 
 .tutorial-card-primary {

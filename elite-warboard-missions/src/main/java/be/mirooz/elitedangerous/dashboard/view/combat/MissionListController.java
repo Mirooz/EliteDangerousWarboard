@@ -27,8 +27,6 @@ import be.mirooz.elitedangerous.dashboard.view.common.tutorial.ModuleTutorialOve
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -59,8 +57,6 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     private HBox missionsHeaderRow;
     @FXML
     private VBox missionsListColumn;
-    @FXML
-    private Button missionTutorialButton;
     @FXML
     private ProgressIndicator loadingIndicator;
     @FXML
@@ -297,8 +293,8 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         dashboardContext.setCurrentFilter(statusFilter);
     }
 
-    @FXML
-    private void onMissionTutorialClicked() {
+    /** Lance la visite guidée Missions (bouton global dans la barre d’onglets). */
+    public void launchMissionTutorial() {
         StackPane host = effectiveTutorialHost();
         if (host == null) {
             return;
@@ -312,29 +308,14 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         }
         missionsTutorial.start(List.of(
                 new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s1.title", "tutorial.missions.flow.s1.body",
-                        () -> tutorialNodeOrFallback(() -> headerForTutorial.getMassacreSearchButton())),
-                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s2.title", "tutorial.missions.flow.s2.body",
-                        () -> tutorialNodeOrFallback(() -> headerForTutorial.getMassacreStackHelpButton())),
-                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s3.title", "tutorial.missions.flow.s3.body",
                         () -> tutorialNodeOrFallback(() -> headerForTutorial.getHeaderStatsPanel())),
-                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s4.title", "tutorial.missions.flow.s4.body", () -> missionsHeaderRow),
-                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s5.title", "tutorial.missions.flow.s5.body", () -> missionsListColumn),
-                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s6.title", "tutorial.missions.flow.s6.body", () -> targetPanel),
-                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s7.title", "tutorial.missions.flow.s7.body", () -> historyContainer)
+                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s2.title", "tutorial.missions.flow.s2.body",
+                        () -> tutorialNodeOrFallback(() -> headerForTutorial.getMassacreSearchButton()),
+                        "/images/tutorial/massacre-search-results-explainer.png"),
+                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s3.title", "tutorial.missions.flow.s3.body", () -> missionsListColumn),
+                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s4.title", "tutorial.missions.flow.s4.body", () -> targetPanel),
+                new ModuleTutorialOverlay.TutorialStep("tutorial.missions.flow.s5.title", "tutorial.missions.flow.s5.body", () -> historyContainer)
         ));
-    }
-
-    private void updateMissionTutorialButtonLabels() {
-        if (missionTutorialButton == null) {
-            return;
-        }
-        missionTutorialButton.setText(localizationService.getString("tutorial.missions.launch"));
-        Tooltip tooltip = missionTutorialButton.getTooltip();
-        if (tooltip == null) {
-            tooltip = new Tooltip();
-            missionTutorialButton.setTooltip(tooltip);
-        }
-        tooltip.setText(localizationService.getString("tutorial.missions.launch.tooltip"));
     }
 
     private void updateLanguage() {
@@ -342,8 +323,6 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
         missionsTitleLabel.setText(localizationService.getString("missions.title"));
         typeFilterLabel.setText(localizationService.getString("filter.type"));
         statusFilterLabel.setText(localizationService.getString("filter.status"));
-        updateMissionTutorialButtonLabels();
-
         // Les traductions pour le panneau de cibles sont gérées dans le composant lui-même
 
         int currentTypeSelection = 0;

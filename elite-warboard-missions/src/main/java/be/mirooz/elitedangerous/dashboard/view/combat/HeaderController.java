@@ -17,11 +17,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.Comparator;
@@ -67,9 +65,6 @@ public class HeaderController implements Initializable, IRefreshable,
     private Button massacreSearchButton;
 
     @FXML
-    private Button massacreStackHelpButton;
-
-    @FXML
     private Label earnCreditsTextLabel;
 
     @FXML
@@ -86,14 +81,11 @@ public class HeaderController implements Initializable, IRefreshable,
     private final CommanderStatusComponent commanderStatusComponent = CommanderStatusComponent.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
 
-    private Tooltip massacreStackHelpTooltip;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         dashboardContext.addFilterListener(this::applyFilter);
         UIManager.getInstance().register(this);
         MissionEventNotificationService.getInstance().addListener(this);
-        initMassacreStackHelpTooltip();
         updateTranslations();
         
         // Écouter les changements de langue
@@ -102,9 +94,6 @@ public class HeaderController implements Initializable, IRefreshable,
 
     private void updateTranslations() {
         massacreSearchButton.setText(localizationService.getString("header.search.button"));
-        if (massacreStackHelpTooltip != null) {
-            massacreStackHelpTooltip.setText(massacreStackHelpTooltipText());
-        }
         earnCreditsTextLabel.setText(localizationService.getString("header.credits.earned"));
         potentialCreditsTextLabel.setText(localizationService.getString("header.credits.potential"));
         pendingCreditsTextLabel.setText(localizationService.getString("header.credits.pending"));
@@ -220,32 +209,8 @@ public class HeaderController implements Initializable, IRefreshable,
         dialog.showAndWait();
     }
 
-    private void initMassacreStackHelpTooltip() {
-        if (massacreStackHelpButton == null) {
-            return;
-        }
-        massacreStackHelpTooltip = new Tooltip();
-        massacreStackHelpTooltip.setWrapText(true);
-        massacreStackHelpTooltip.setMaxWidth(400);
-        massacreStackHelpTooltip.setShowDelay(Duration.millis(200));
-        massacreStackHelpTooltip.setShowDuration(Duration.minutes(3));
-        massacreStackHelpTooltip.setHideDelay(Duration.millis(800));
-        massacreStackHelpTooltip.setText(massacreStackHelpTooltipText());
-        massacreStackHelpButton.setTooltip(massacreStackHelpTooltip);
-    }
-
-    private String massacreStackHelpTooltipText() {
-        return localizationService.getString("header.massacre.stack.help.title")
-                + "\n\n"
-                + localizationService.getString("header.massacre.stack.help.body");
-    }
-
     public Button getMassacreSearchButton() {
         return massacreSearchButton;
-    }
-
-    public Button getMassacreStackHelpButton() {
-        return massacreStackHelpButton;
     }
 
     public HBox getHeaderStatsPanel() {

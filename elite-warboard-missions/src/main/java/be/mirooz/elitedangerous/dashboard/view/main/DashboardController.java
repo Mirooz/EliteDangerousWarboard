@@ -60,7 +60,10 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     public ImageView donateButtonImage;
     @FXML
     private TabPane mainTabPane;
-    
+
+    @FXML
+    private Button globalModuleTutorialButton;
+
     @FXML
     private Tab missionsTab;
     
@@ -167,6 +170,40 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         // Initialiser le TabPane dans le service de bind unifié
         windowToggleService.initializeTabPane(mainTabPane, missionsTab, miningTab, explorationTab, colonisationTab);
         mainTabPane.getSelectionModel().selectedItemProperty().addListener(colonisationTabSelectionListener);
+        installGlobalModuleTutorialControl();
+    }
+
+    private void installGlobalModuleTutorialControl() {
+        if (globalModuleTutorialButton == null) {
+            return;
+        }
+        globalModuleTutorialButton.setFocusTraversable(false);
+        refreshGlobalModuleTutorialBar();
+    }
+
+    private void refreshGlobalModuleTutorialBar() {
+        if (globalModuleTutorialButton == null || mainTabPane == null) {
+            return;
+        }
+        Tab sel = mainTabPane.getSelectionModel().getSelectedItem();
+        boolean missions = sel == missionsTab;
+        globalModuleTutorialButton.setText(localizationService.getString("tutorial.global.button"));
+        globalModuleTutorialButton.setDisable(!missions);
+        Tooltip tip = new Tooltip();
+        tip.setWrapText(true);
+        tip.setMaxWidth(400);
+        tip.setText(missions
+                ? localizationService.getString("tutorial.missions.launch.tooltip")
+                : localizationService.getString("tutorial.global.unavailable"));
+        globalModuleTutorialButton.setTooltip(tip);
+    }
+
+    @FXML
+    private void onGlobalModuleTutorialClicked() {
+        Tab sel = mainTabPane.getSelectionModel().getSelectedItem();
+        if (sel == missionsTab && missionListController != null) {
+            missionListController.launchMissionTutorial();
+        }
     }
 
     /**
@@ -392,6 +429,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
                 colonisationTabImage.getStyleClass().add("tab-image-selected");
                 System.out.println("✅ Colonisation sélectionné");
             }
+            refreshGlobalModuleTutorialBar();
         });
         
         // Désactiver la fermeture des onglets
@@ -436,6 +474,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         if (stationHeaderLabel != null) {
             stationHeaderLabel.setText(localizationService.getString("footer.station"));
         }
+        refreshGlobalModuleTutorialBar();
     }
     @Override
     public void onBatchStart(){

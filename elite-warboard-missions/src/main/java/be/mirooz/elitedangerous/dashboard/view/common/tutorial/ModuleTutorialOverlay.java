@@ -21,6 +21,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
+import javafx.beans.binding.Bindings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +35,23 @@ import java.util.function.Supplier;
  */
 public final class ModuleTutorialOverlay {
 
-    public record TutorialStep(String titleKey, String bodyKey, Supplier<Node> targetSupplier) {}
+    /**
+     * @param illustrationResourcePath chemin classpath sous {@code /} vers une image (ex. {@code /images/tutorial/foo.png}), ou {@code null}
+     */
+    public record TutorialStep(String titleKey, String bodyKey, Supplier<Node> targetSupplier, String illustrationResourcePath) {
+        public TutorialStep(String titleKey, String bodyKey, Supplier<Node> targetSupplier) {
+            this(titleKey, bodyKey, targetSupplier, null);
+        }
+    }
 
     private static final double HIGHLIGHT_PAD = 8;
     private static final double CARD_MIN_WIDTH = 320;
     private static final double CARD_MAX_WIDTH = 420;
+    /** Carte élargie quand une capture d’écran est affichée (tableau large recherche missions). */
+    private static final double CARD_MIN_WIDTH_WIDE = 540;
+    private static final double CARD_MAX_WIDTH_WIDE = 820;
+
+    private boolean tutorialCardWide;
 
     private final StackPane host;
     private final LocalizationService localizationService;
@@ -46,11 +62,12 @@ public final class ModuleTutorialOverlay {
     private final StackPane highlightRing = new StackPane();
     private final VBox card = new VBox(10);
     private final Label titleLabel = new Label();
+    private final ImageView stepIllustration = new ImageView();
     private final Label bodyLabel = new Label();
     private final Button btnCloseCorner = new Button("✕");
     private final Button btnPrev = new Button();
     private final Button btnNext = new Button();
-    private final ScrollPane bodyScroll = new ScrollPane(bodyLabel);
+    private final ScrollPane bodyScroll = new ScrollPane();
 
     private List<TutorialStep> steps = List.of();
     private int index;
@@ -83,6 +100,28 @@ public final class ModuleTutorialOverlay {
         titleLabel.setWrapText(true);
         bodyLabel.getStyleClass().add("tutorial-card-body");
         bodyLabel.setWrapText(true);
+        bodyLabel.maxWidthProperty().bind(
+                Bindings.createDoubleBinding(
+                        () -> {
+                            double w = bodyScroll.getWidth();
+                            return w > 40 ? w - 28 : 280;
+                        },
+                        bodyScroll.widthProperty()));
+        stepIllustration.getStyleClass().add("tutorial-step-image");
+        stepIllustration.setPreserveRatio(true);
+        stepIllustration.setSmooth(true);
+        stepIllustration.setVisible(false);
+        stepIllustration.setManaged(false);
+        VBox bodyColumn = new VBox(10, stepIllustration, bodyLabel);
+        bodyColumn.setFillWidth(true);
+        bodyColumn.maxWidthProperty().bind(
+                Bindings.createDoubleBinding(
+                        () -> {
+                            double w = bodyScroll.getWidth();
+                            return w > 40 ? w - 8 : 280;
+                        },
+                        bodyScroll.widthProperty()));
+        bodyScroll.setContent(bodyColumn);
         bodyScroll.setFitToWidth(true);
         bodyScroll.setPrefViewportHeight(160);
         bodyScroll.setMaxHeight(240);
@@ -91,10 +130,19 @@ public final class ModuleTutorialOverlay {
 
         btnCloseCorner.getStyleClass().addAll("tutorial-card-close", "elite-nav-button");
         btnCloseCorner.setOnAction(e -> stop());
-        HBox titleRow = new HBox(8);
-        titleRow.setAlignment(Pos.TOP_LEFT);
-        HBox.setHgrow(titleLabel, Priority.ALWAYS);
-        titleRow.getChildren().addAll(titleLabel, btnCloseCorner);
+        HBox closeRow = new HBox();
+        closeRow.setAlignment(Pos.CENTER_RIGHT);
+        Region closeRowSpacer = new Region();
+        HBox.setHgrow(closeRowSpacer, Priority.ALWAYS);
+        closeRow.getChildren().addAll(closeRowSpacer, btnCloseCorner);
+        titleLabel.maxWidthProperty().bind(
+                Bindings.createDoubleBinding(
+                        () -> {
+                            double w = card.getWidth();
+                            return w > 48 ? w - 52 : 260;
+                        },
+                        card.widthProperty()));
+        VBox titleBlock = new VBox(8, closeRow, titleLabel);
 
         btnPrev.getStyleClass().add("elite-nav-button");
         btnNext.getStyleClass().addAll("elite-nav-button", "tutorial-card-primary");
@@ -107,11 +155,10 @@ public final class ModuleTutorialOverlay {
         nav.setAlignment(Pos.CENTER_LEFT);
         nav.setPadding(new Insets(4, 0, 0, 0));
 
-        card.getChildren().addAll(titleRow, bodyScroll, nav);
+        card.getChildren().addAll(titleBlock, bodyScroll, nav);
         card.getStyleClass().add("tutorial-card");
         card.setPadding(new Insets(14, 16, 14, 16));
-        card.setMaxWidth(CARD_MAX_WIDTH);
-        card.setMinWidth(CARD_MIN_WIDTH);
+        applyCardWidthConstraints(false);
         card.setMouseTransparent(false);
         card.addEventFilter(MouseEvent.MOUSE_CLICKED, MouseEvent::consume);
 
@@ -180,6 +227,22 @@ public final class ModuleTutorialOverlay {
         host.getChildren().remove(glass);
         steps = List.of();
         index = 0;
+        applyCardWidthConstraints(false);
+    }
+
+    private void applyCardWidthConstraints(boolean wide) {
+        tutorialCardWide = wide;
+        if (wide) {
+            double hw = host.getWidth();
+            double adaptiveMin = hw > 0
+                    ? Math.min(CARD_MIN_WIDTH_WIDE, Math.max(360, hw - 28))
+                    : CARD_MIN_WIDTH_WIDE;
+            card.setMinWidth(adaptiveMin);
+            card.setMaxWidth(CARD_MAX_WIDTH_WIDE);
+        } else {
+            card.setMinWidth(CARD_MIN_WIDTH);
+            card.setMaxWidth(CARD_MAX_WIDTH);
+        }
     }
 
     public void refreshStepTextIfVisible() {
@@ -187,7 +250,7 @@ public final class ModuleTutorialOverlay {
             return;
         }
         refreshLocalizedChrome();
-        applyStepTexts(steps.get(index));
+        applyStepContent(steps.get(index));
     }
 
     private void refreshLocalizedChrome() {
@@ -212,7 +275,7 @@ public final class ModuleTutorialOverlay {
         index = i;
         TutorialStep step = steps.get(index);
         detachTargetListeners();
-        applyStepTexts(step);
+        applyStepContent(step);
         Node target = step.targetSupplier().get();
         watchedTarget = target;
         if (target != null) {
@@ -231,9 +294,38 @@ public final class ModuleTutorialOverlay {
         });
     }
 
-    private void applyStepTexts(TutorialStep step) {
+    private void applyStepContent(TutorialStep step) {
         titleLabel.setText(localizationService.getString(step.titleKey()));
         bodyLabel.setText(localizationService.getString(step.bodyKey()));
+        String path = step.illustrationResourcePath();
+        if (path != null && !path.isBlank()) {
+            var url = ModuleTutorialOverlay.class.getResource(path.startsWith("/") ? path : "/" + path);
+            if (url != null) {
+                applyCardWidthConstraints(true);
+                stepIllustration.setImage(new Image(url.toExternalForm(), true));
+                double hostCap = host.getWidth() > 0 ? host.getWidth() - 20 : CARD_MAX_WIDTH_WIDE;
+                double cardCap = Math.min(CARD_MAX_WIDTH_WIDE, hostCap);
+                double imgW = Math.max(480, cardCap - 20);
+                stepIllustration.setFitWidth(imgW);
+                stepIllustration.setFitHeight(0);
+                stepIllustration.setVisible(true);
+                stepIllustration.setManaged(true);
+                bodyScroll.setPrefViewportHeight(360);
+                bodyScroll.setMaxHeight(680);
+                return;
+            }
+        }
+        applyCardWidthConstraints(false);
+        stepIllustration.setImage(null);
+        stepIllustration.setVisible(false);
+        stepIllustration.setManaged(false);
+        if (index == 0) {
+            bodyScroll.setPrefViewportHeight(220);
+            bodyScroll.setMaxHeight(340);
+        } else {
+            bodyScroll.setPrefViewportHeight(160);
+            bodyScroll.setMaxHeight(240);
+        }
     }
 
     private void detachTargetListeners() {
@@ -283,8 +375,21 @@ public final class ModuleTutorialOverlay {
     private void positionCardCenteredBelow(double hostW, double hostH, double[] highlightBox) {
         card.applyCss();
         card.layout();
-        double cw = Math.min(CARD_MAX_WIDTH, Math.max(CARD_MIN_WIDTH, card.prefWidth(-1)));
+        if (tutorialCardWide) {
+            double adaptiveMin = Math.min(CARD_MIN_WIDTH_WIDE, Math.max(360, hostW - 28));
+            card.setMinWidth(adaptiveMin);
+        }
+        double maxCard = tutorialCardWide ? CARD_MAX_WIDTH_WIDE : CARD_MAX_WIDTH;
+        double minCard = tutorialCardWide ? CARD_MIN_WIDTH_WIDE : CARD_MIN_WIDTH;
+        double cap = Math.min(maxCard, Math.max(200, hostW - 16));
+        double minUse = Math.min(minCard, cap);
+        double cw = tutorialCardWide
+                ? cap
+                : Math.min(cap, Math.max(minUse, card.prefWidth(-1)));
         double ch = card.prefHeight(cw);
+        if (tutorialCardWide && stepIllustration.isVisible() && stepIllustration.getImage() != null) {
+            stepIllustration.setFitWidth(Math.max(420, cw - 16));
+        }
         double margin = 16;
         double cx = (hostW - cw) / 2;
         double cy;

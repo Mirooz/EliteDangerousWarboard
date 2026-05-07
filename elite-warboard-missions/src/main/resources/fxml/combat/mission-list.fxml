@@ -25,8 +25,6 @@
          <Label fx:id="statusFilterLabel" styleClass="filter-label" text="Statut:"/>
          <ComboBox fx:id="statusFilterComboBox" styleClass="elite-combobox" onAction="#onStatusFilterChanged"/>
       </HBox>
-      <Button fx:id="missionTutorialButton" mnemonicParsing="false" onAction="#onMissionTutorialClicked"
-              styleClass="tutorial-launch-button" text="?"/>
    </HBox>
 
    <!-- Layout principal avec missions à gauche et cibles à droite -->

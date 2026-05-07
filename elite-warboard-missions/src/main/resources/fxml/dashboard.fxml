@@ -69,8 +69,9 @@
                 </HBox>
                 <Separator styleClass="header-separator"/>
 
-                <!-- Conteneur principal avec onglets -->
-                <TabPane fx:id="mainTabPane" styleClass="main-tab-pane" VBox.vgrow="ALWAYS">
+                <!-- TabPane + bouton tutoriel (overlay TOP_CENTER, taille pref : pas d’étirement plein écran). -->
+                <StackPane VBox.vgrow="ALWAYS" maxWidth="Infinity" maxHeight="Infinity">
+                    <TabPane fx:id="mainTabPane" styleClass="main-tab-pane" maxWidth="Infinity" maxHeight="Infinity">
                     <!-- Onglet Missions -->
                     <Tab fx:id="missionsTab" style="-fx-cursor: hand">
                         <graphic>
@@ -104,7 +105,15 @@
                         </graphic>
                         <BorderPane fx:id="colonisationPane" styleClass="main-content" />
                     </Tab>
-                </TabPane>
+                    </TabPane>
+                    <Button fx:id="globalModuleTutorialButton" mnemonicParsing="false" onAction="#onGlobalModuleTutorialClicked"
+                            styleClass="tutorial-global-bar-button" text="Tutorial" maxHeight="-1.0" maxWidth="-1.0"
+                            StackPane.alignment="TOP_CENTER">
+                        <StackPane.margin>
+                            <Insets top="16.0"/>
+                        </StackPane.margin>
+                    </Button>
+                </StackPane>
             </VBox>
         </StackPane>
     </center>
