@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class PrimaryWindowChromeSupport {
 
-    private static final double DRAG_UNMAX_THRESHOLD = 5.0;
     private static final double WORK_AREA_MATCH_EPS = 4.0;
 
     private final Stage stage;
@@ -51,11 +50,6 @@ public final class PrimaryWindowChromeSupport {
     private double restoreWinY = 100;
     private double restoreWinW = 1200;
     private double restoreWinH = 800;
-
-    /** Clic sur barre en plein écran : attend un vrai glisser avant de restaurer la taille (évite le « 3e clic »). */
-    private boolean maximizedPressTracking;
-    private double maximizedPressSceneX;
-    private double maximizedPressSceneY;
 
     public PrimaryWindowChromeSupport(
             Stage stage,
@@ -200,16 +194,12 @@ public final class PrimaryWindowChromeSupport {
             if (titleBarStrip && isTitleBarDragExcluded(e.getTarget())) {
                 return;
             }
-            rememberRestoreBounds();
             if (isWorkAreaMaximized()) {
-                maximizedPressTracking = true;
-                maximizedPressSceneX = e.getSceneX();
-                maximizedPressSceneY = e.getSceneY();
-            } else {
-                maximizedPressTracking = false;
-                dragOffsetX = e.getSceneX();
-                dragOffsetY = e.getSceneY();
+                return;
             }
+            rememberRestoreBounds();
+            dragOffsetX = e.getSceneX();
+            dragOffsetY = e.getSceneY();
         });
         dragHost.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
             if (!e.isPrimaryButtonDown()) {
@@ -219,26 +209,10 @@ public final class PrimaryWindowChromeSupport {
                 return;
             }
             if (isWorkAreaMaximized()) {
-                if (maximizedPressTracking) {
-                    double dx = e.getSceneX() - maximizedPressSceneX;
-                    double dy = e.getSceneY() - maximizedPressSceneY;
-                    if (dx * dx + dy * dy > DRAG_UNMAX_THRESHOLD * DRAG_UNMAX_THRESHOLD) {
-                        unmaximizeForDrag(e);
-                        maximizedPressTracking = false;
-                    }
-                }
                 return;
             }
             stage.setX(e.getScreenX() - dragOffsetX);
             stage.setY(e.getScreenY() - dragOffsetY);
-        });
-        dragHost.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
-            if (e.getButton() != MouseButton.PRIMARY) {
-                return;
-            }
-            if (isWorkAreaMaximized()) {
-                maximizedPressTracking = false;
-            }
         });
     }
 
@@ -267,37 +241,27 @@ public final class PrimaryWindowChromeSupport {
             return;
         }
         try {
+            double rx = Double.parseDouble(sx);
+            double ry = Double.parseDouble(sy);
             double w = Double.parseDouble(sw);
             double h = Double.parseDouble(sh);
             if (w > 0 && h > 0) {
-                restoreWinX = Double.parseDouble(sx);
-                restoreWinY = Double.parseDouble(sy);
+                var vb = StageVisualBounds.screenForWindowCenter(stage).getVisualBounds();
+                // Préférences d’une version antérieure : x/y/largeur/hauteur = zone utile → pas de vraie fenêtre à restaurer
+                if (Math.abs(rx - vb.getMinX()) <= WORK_AREA_MATCH_EPS * 2
+                        && Math.abs(ry - vb.getMinY()) <= WORK_AREA_MATCH_EPS * 2
+                        && Math.abs(w - vb.getWidth()) <= WORK_AREA_MATCH_EPS * 2
+                        && Math.abs(h - vb.getHeight()) <= WORK_AREA_MATCH_EPS * 2) {
+                    return;
+                }
+                restoreWinX = rx;
+                restoreWinY = ry;
                 restoreWinW = w;
                 restoreWinH = h;
             }
         } catch (NumberFormatException ignored) {
             // garder les valeurs par défaut
         }
-    }
-
-    private void unmaximizeForDrag(MouseEvent e) {
-        double sceneW = stage.getScene().getWidth();
-        double sceneH = stage.getScene().getHeight();
-        if (sceneW <= 0 || sceneH <= 0) {
-            return;
-        }
-        double ratioX = e.getSceneX() / sceneW;
-        double ratioY = e.getSceneY() / sceneH;
-        double w = Math.max(stage.getMinWidth(), restoreWinW);
-        double h = Math.max(stage.getMinHeight(), restoreWinH);
-        stage.setMaximized(false);
-        stage.setWidth(w);
-        stage.setHeight(h);
-        dragOffsetX = ratioX * w;
-        dragOffsetY = ratioY * h;
-        stage.setX(e.getScreenX() - dragOffsetX);
-        stage.setY(e.getScreenY() - dragOffsetY);
-        syncWindowMaxRestoreGlyph();
     }
 
     /** Double-clic sur la barre titre OS custom (ligne tout en haut), hors boutons min / max / fermer. */

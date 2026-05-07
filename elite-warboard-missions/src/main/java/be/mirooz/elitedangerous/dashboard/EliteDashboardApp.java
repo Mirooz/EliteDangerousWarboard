@@ -39,6 +39,8 @@ public class EliteDashboardApp extends Application {
     private StackPane rootPane;
     
     private boolean isRestoringWindow = false; // Flag pour éviter de sauvegarder pendant la restauration
+    /** Évite d’écrire x/y/largeur/hauteur intermédiaires (ex. démaximisation : x/y puis w/h). */
+    private boolean saveWindowPositionCoalesceScheduled;
 
     @Override
     public void start(Stage stage) {
@@ -124,7 +126,18 @@ public class EliteDashboardApp extends Application {
 
             if (!WindowFramePreferences.useNativeOsWindowFrame() && WindowsUndecoratedVrFrameCompat.isSupportedOs()) {
                 var vrFramePause = new PauseTransition(Duration.millis(100));
-                vrFramePause.setOnFinished(e -> WindowsUndecoratedVrFrameCompat.applyAfterShown(stage));
+                vrFramePause.setOnFinished(e -> {
+                    WindowsUndecoratedVrFrameCompat.applyAfterShown(stage);
+                    // SetWindowPos(FRAMECHANGED) peut réduire la zone cliente : recaler sur visualBounds.
+                    Platform.runLater(() -> {
+                        boolean wantsMax = Boolean.parseBoolean(
+                                preferencesService.getPreference("window.maximized", "false"));
+                        if (wantsMax
+                                || StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS)) {
+                            StageVisualBounds.fitStageToVisualBounds(stage);
+                        }
+                    });
+                });
                 vrFramePause.play();
             }
 
@@ -280,20 +293,40 @@ public class EliteDashboardApp extends Application {
     }
     
     /**
+     * Sauvegarde la géométrie après la fin de la « rafale » de mises à jour du stage (une seule écriture par pulse).
+     */
+    private void scheduleSaveWindowPosition(Stage stage) {
+        if (saveWindowPositionCoalesceScheduled) {
+            return;
+        }
+        saveWindowPositionCoalesceScheduled = true;
+        Platform.runLater(() -> {
+            saveWindowPositionCoalesceScheduled = false;
+            if (!isRestoringWindow && stage.isShowing()) {
+                saveWindowPosition(stage);
+            }
+        });
+    }
+
+    /**
      * Sauvegarde la position et la taille de la fenêtre dans les préférences
      */
     private void saveWindowPosition(Stage stage) {
         if (isRestoringWindow) {
             return; // Ne pas sauvegarder pendant la restauration
         }
-        
-        // Sauvegarder la position et la taille
-        preferencesService.setPreference("window.x", String.valueOf(stage.getX()));
-        preferencesService.setPreference("window.y", String.valueOf(stage.getY()));
-        preferencesService.setPreference("window.width", String.valueOf(stage.getWidth()));
-        preferencesService.setPreference("window.height", String.valueOf(stage.getHeight()));
+
         boolean pseudoMax = !WindowFramePreferences.useNativeOsWindowFrame()
                 && StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS);
+        boolean skipGeometry = stage.isMaximized() || pseudoMax;
+        // En undecorated « plein zone utile », ne pas écraser x/y/largeur/hauteur : ce sont les bornes
+        // de restauration pour le bouton restaurer au prochain lancement (voir PrimaryWindowChromeSupport).
+        if (!skipGeometry) {
+            preferencesService.setPreference("window.x", String.valueOf(stage.getX()));
+            preferencesService.setPreference("window.y", String.valueOf(stage.getY()));
+            preferencesService.setPreference("window.width", String.valueOf(stage.getWidth()));
+            preferencesService.setPreference("window.height", String.valueOf(stage.getHeight()));
+        }
         preferencesService.setPreference("window.maximized", String.valueOf(stage.isMaximized() || pseudoMax));
         
         // Sauvegarder l'index de l'écran sur lequel se trouve la fenêtre
@@ -307,17 +340,6 @@ public class EliteDashboardApp extends Application {
         }
     }
     
-    /**
-     * Trouve l'écran sur lequel se trouve la fenêtre
-     */
-    private static boolean ignoreResizeGeometrySaves(Stage stage) {
-        if (stage.isMaximized()) {
-            return true;
-        }
-        return !WindowFramePreferences.useNativeOsWindowFrame()
-                && StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS);
-    }
-
     private Screen getScreenForWindow(Stage stage) {
         // Pour une fenêtre maximisée (WM ou zone utilisable), utiliser le centre pour l’écran courant
         double windowX;
@@ -356,41 +378,29 @@ public class EliteDashboardApp extends Application {
      * Configure les listeners pour sauvegarder automatiquement la position et la taille
      */
     private void setupWindowListeners(Stage stage) {
-        // Sauvegarder quand la fenêtre est déplacée
         stage.xProperty().addListener((obs, oldVal, newVal) -> {
             if (!isRestoringWindow && stage.isShowing()) {
-                saveWindowPosition(stage);
+                scheduleSaveWindowPosition(stage);
             }
         });
-        
         stage.yProperty().addListener((obs, oldVal, newVal) -> {
             if (!isRestoringWindow && stage.isShowing()) {
-                saveWindowPosition(stage);
+                scheduleSaveWindowPosition(stage);
             }
         });
-        
-        // Sauvegarder quand la fenêtre est redimensionnée (hors plein « zone utilisable » undecorated)
         stage.widthProperty().addListener((obs, oldVal, newVal) -> {
-            if (!isRestoringWindow && stage.isShowing() && !ignoreResizeGeometrySaves(stage)) {
-                saveWindowPosition(stage);
+            if (!isRestoringWindow && stage.isShowing()) {
+                scheduleSaveWindowPosition(stage);
             }
         });
-        
         stage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            if (!isRestoringWindow && stage.isShowing() && !ignoreResizeGeometrySaves(stage)) {
-                saveWindowPosition(stage);
+            if (!isRestoringWindow && stage.isShowing()) {
+                scheduleSaveWindowPosition(stage);
             }
         });
-        
-        // Sauvegarder quand l'état maximisé change
         stage.maximizedProperty().addListener((obs, oldVal, newVal) -> {
             if (!isRestoringWindow && stage.isShowing()) {
-                // Si on passe de maximisé à non maximisé, sauvegarder la position actuelle
-                if (!newVal) {
-                    Platform.runLater(() -> saveWindowPosition(stage));
-                } else {
-                    saveWindowPosition(stage);
-                }
+                scheduleSaveWindowPosition(stage);
             }
         });
     }
