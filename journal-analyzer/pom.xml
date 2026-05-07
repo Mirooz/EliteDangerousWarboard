@@ -3,8 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>be.mirooz.elitedangerous</groupId>
+        <artifactId>elite-warboard-parent</artifactId>
+        <version>1.5.0-SNAPSHOT</version>
+    </parent>
 
-    <groupId>be.mirooz.elitedangerous</groupId>
     <artifactId>journal-analyzer</artifactId>
     <version>1.5.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -12,27 +16,20 @@
     <name>Elite Dangerous Journal Analyzer</name>
     <description>Standalone utility to analyze Elite Dangerous journal files</description>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javafx.version>17.0.1</javafx.version>
-    </properties>
-
     <dependencies>
         <!-- JavaFX Controls -->
-<!--        <dependency>-->
-<!--            <groupId>org.openjfx</groupId>-->
-<!--            <artifactId>javafx-controls</artifactId>-->
-<!--            <version>${javafx.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
 
-<!--        &lt;!&ndash; JavaFX FXML &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.openjfx</groupId>-->
-<!--            <artifactId>javafx-fxml</artifactId>-->
-<!--            <version>${javafx.version}</version>-->
-<!--        </dependency>-->
+        <!-- JavaFX FXML -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
 
         <!-- Jackson for JSON parsing -->
         <dependency>
