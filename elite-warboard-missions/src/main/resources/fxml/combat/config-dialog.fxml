@@ -79,6 +79,26 @@
                           styleClass="config-checkbox"/>
             </VBox>
 
+            <!-- Combat (sélection auto générateur) -->
+            <VBox spacing="10.0" styleClass="config-section">
+                <Label fx:id="combatSectionLabel" text="COMBAT" styleClass="config-section-title"/>
+                <CheckBox fx:id="combatAutoPowerplantCheckBox" text="Select powerplant automatically"
+                          styleClass="config-checkbox"/>
+                <VBox spacing="5.0">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label fx:id="combatSubsystemBindLabel" text="Select subsystem (toggle):"
+                               styleClass="config-label" prefWidth="180"/>
+                        <Button fx:id="combatSubsystemBindButton" text="BIND"
+                                onAction="#captureCombatSubsystemBind" styleClass="elite-button" prefWidth="80"/>
+                        <Label fx:id="combatSubsystemBindValueLabel" styleClass="config-label"
+                               text="No bind" minWidth="200"/>
+                        <Button fx:id="combatSubsystemUnbindButton" text="✕"
+                                onAction="#unbindCombatSubsystem" styleClass="elite-button-secondary"
+                                visible="false" managed="false"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
             <!-- Section VR Mode -->
             <VBox spacing="10.0" styleClass="config-section">
                 <Label fx:id="vrModeSectionLabel" text="VR MODE" styleClass="config-section-title"/>

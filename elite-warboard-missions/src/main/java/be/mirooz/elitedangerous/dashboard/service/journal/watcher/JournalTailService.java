@@ -54,7 +54,7 @@ public class JournalTailService {
                 processLine(line);
             }
         };
-        tailer = new Tailer(journalFile, StandardCharsets.UTF_8, listener, 500, true, false, IOUtils.DEFAULT_BUFFER_SIZE);
+        tailer = new Tailer(journalFile, StandardCharsets.UTF_8, listener, 300, true, false, IOUtils.DEFAULT_BUFFER_SIZE);
         tailerThread = new Thread(tailer, "JournalTailThread");
         tailerThread.setDaemon(true);
         tailerThread.start();

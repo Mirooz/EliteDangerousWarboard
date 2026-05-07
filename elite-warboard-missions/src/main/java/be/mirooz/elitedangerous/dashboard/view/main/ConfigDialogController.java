@@ -167,6 +167,24 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private Button tabSwitchRightUnbindButton;
 
+    @FXML
+    private Label combatSectionLabel;
+
+    @FXML
+    private CheckBox combatAutoPowerplantCheckBox;
+
+    @FXML
+    private Label combatSubsystemBindLabel;
+
+    @FXML
+    private Button combatSubsystemBindButton;
+
+    @FXML
+    private Label combatSubsystemBindValueLabel;
+
+    @FXML
+    private Button combatSubsystemUnbindButton;
+
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final DashboardService dashboardService = DashboardService.getInstance();
@@ -177,7 +195,7 @@ public class ConfigDialogController implements Initializable {
     private CapiProfileSettingsStatus lastCapiProfileSettingsStatus;
     
     private boolean isCapturingBind = false;
-    private String currentBindType = null; // "windowToggle", "tabSwitchLeft", "tabSwitchRight"
+    private String currentBindType = null; // "windowToggle", "tabSwitchLeft", "tabSwitchRight", "subsystemToggle"
     private NativeKeyListener keyCaptureListener = null;
     private Thread hotasCaptureThread = null;
     
@@ -201,6 +219,8 @@ public class ConfigDialogController implements Initializable {
     private String capturedTabRightComponentName = null;
     private float capturedTabRightComponentValue = 0.0f;
     private boolean isTabRightKeyboardBind = false;
+
+    private int capturedSubsystemKeyCode = -1;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -226,10 +246,13 @@ public class ConfigDialogController implements Initializable {
         capiLoginEnabledCheckBox.setSelected(preferencesService.isCapiLoginEnabled());
         sendErrorLogsCheckBox.setSelected(preferencesService.isSendErrorLogsEnabled());
         updateCapiControlsState();
+
+        combatAutoPowerplantCheckBox.setSelected(preferencesService.isCombatAutoSelectPowerplantEnabled());
         
         // Initialiser les affichages des binds
         updateWindowToggleBindDisplay();
         updateTabSwitchBindDisplays();
+        updateCombatSubsystemBindDisplay();
         
         // Mettre à jour l'état des bindings selon le VR mode
         updateBindingsEnabledState();
@@ -298,11 +321,15 @@ public class ConfigDialogController implements Initializable {
         windowToggleBindLabel.setText(localizationService.getString("config.window.toggle.bind.label"));
         tabSwitchLeftLabel.setText(localizationService.getString("config.tab.switch.left"));
         tabSwitchRightLabel.setText(localizationService.getString("config.tab.switch.right"));
+        combatSectionLabel.setText(localizationService.getString("config.combat.section"));
+        combatAutoPowerplantCheckBox.setText(localizationService.getString("config.combat.autoPowerplant.enabled"));
+        combatSubsystemBindLabel.setText(localizationService.getString("config.combat.subsystemToggle.bind.label"));
         
         // Mettre à jour le texte des boutons BIND
         windowToggleBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
         tabSwitchLeftButton.setText(localizationService.getString("config.window.toggle.bind.button"));
         tabSwitchRightButton.setText(localizationService.getString("config.window.toggle.bind.button"));
+        combatSubsystemBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
         
         browseJournalFolderButton.setText(localizationService.getString("config.browse"));
         saveButton.setText(localizationService.getString("config.save"));
@@ -311,6 +338,28 @@ public class ConfigDialogController implements Initializable {
         // Mettre à jour les affichages des binds
         updateWindowToggleBindDisplay();
         updateTabSwitchBindDisplays();
+        updateCombatSubsystemBindDisplay();
+    }
+
+    private void updateCombatSubsystemBindDisplay() {
+        if (capturedSubsystemKeyCode > 0) {
+            combatSubsystemBindValueLabel.setText(getKeyName(capturedSubsystemKeyCode));
+            combatSubsystemUnbindButton.setVisible(true);
+            combatSubsystemUnbindButton.setManaged(true);
+            return;
+        }
+        int keyCode = preferencesService.getCombatAutoSelectPowerplantSubsystemKey();
+        if (keyCode > 0) {
+            combatSubsystemBindValueLabel.setText(getKeyName(keyCode));
+            combatSubsystemUnbindButton.setVisible(true);
+            combatSubsystemUnbindButton.setManaged(true);
+            capturedSubsystemKeyCode = keyCode;
+        } else {
+            combatSubsystemBindValueLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
+            combatSubsystemUnbindButton.setVisible(false);
+            combatSubsystemUnbindButton.setManaged(false);
+            capturedSubsystemKeyCode = -1;
+        }
     }
     
     private void updateWindowToggleBindDisplay() {
@@ -619,6 +668,13 @@ public class ConfigDialogController implements Initializable {
         preferencesService.setCapiLoginEnabled(newCapiLogin);
         preferencesService.setSendErrorLogsEnabled(sendErrorLogsCheckBox.isSelected());
         preferencesService.setErrorLogsConsentPromptCompleted(true);
+
+        preferencesService.setCombatAutoSelectPowerplantEnabled(combatAutoPowerplantCheckBox.isSelected());
+        if (capturedSubsystemKeyCode > 0) {
+            preferencesService.setCombatAutoSelectPowerplantSubsystemKey(capturedSubsystemKeyCode);
+        } else {
+            preferencesService.setCombatAutoSelectPowerplantSubsystemKey(-1);
+        }
 
         if (isKeyboardBind && capturedKeyCode != -1) {
             // Sauvegarder bind clavier
@@ -973,6 +1029,30 @@ public class ConfigDialogController implements Initializable {
         tabSwitchRightUnbindButton.setManaged(false);
     }
 
+    @FXML
+    private void captureCombatSubsystemBind() {
+        if (isCapturingBind) {
+            stopBindCapture();
+            return;
+        }
+
+        currentBindType = "subsystemToggle";
+        isCapturingBind = true;
+        combatSubsystemBindButton.setText("BIND...");
+        combatSubsystemBindValueLabel.setText(localizationService.getString("config.combat.subsystemToggle.bind.capturing"));
+        combatSubsystemBindButton.getStyleClass().add("elite-button-capturing");
+
+        startKeyboardCapture();
+    }
+
+    @FXML
+    private void unbindCombatSubsystem() {
+        capturedSubsystemKeyCode = -1;
+        combatSubsystemBindValueLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
+        combatSubsystemUnbindButton.setVisible(false);
+        combatSubsystemUnbindButton.setManaged(false);
+    }
+
     private void startKeyboardCapture() {
         // Utiliser un EventFilter sur la scène pour capturer les touches JavaFX
         Platform.runLater(() -> {
@@ -1025,6 +1105,11 @@ public class ConfigDialogController implements Initializable {
                 tabSwitchRightBindLabel.setText(getKeyName(nativeKeyCode));
                 tabSwitchRightUnbindButton.setVisible(true);
                 tabSwitchRightUnbindButton.setManaged(true);
+            } else if ("subsystemToggle".equals(currentBindType)) {
+                capturedSubsystemKeyCode = nativeKeyCode;
+                combatSubsystemBindValueLabel.setText(getKeyName(nativeKeyCode));
+                combatSubsystemUnbindButton.setVisible(true);
+                combatSubsystemUnbindButton.setManaged(true);
             }
             
             stopBindCapture();
@@ -1270,6 +1355,9 @@ public class ConfigDialogController implements Initializable {
         } else if ("tabSwitchRight".equals(currentBindType)) {
             tabSwitchRightButton.setText(bindButtonText);
             tabSwitchRightButton.getStyleClass().remove("elite-button-capturing");
+        } else if ("subsystemToggle".equals(currentBindType)) {
+            combatSubsystemBindButton.setText(bindButtonText);
+            combatSubsystemBindButton.getStyleClass().remove("elite-button-capturing");
         }
         
         if (keyCaptureListener != null) {

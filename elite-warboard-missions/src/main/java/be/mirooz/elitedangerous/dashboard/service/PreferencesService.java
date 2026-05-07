@@ -836,6 +836,34 @@ public class PreferencesService {
         String safe = commanderFid.strip().replaceAll("[^a-zA-Z0-9._-]", "_");
         return safe.isBlank() ? DEFAULT_COMMANDER_SCOPE : safe;
     }
+
+    /**
+     * Active la sélection automatique du générateur après scan complet (ShipTargeted).
+     */
+    public void setCombatAutoSelectPowerplantEnabled(boolean enabled) {
+        preferences.setProperty("combat.autoSelectPowerplant.enabled", String.valueOf(enabled));
+        savePreferences();
+    }
+
+    public boolean isCombatAutoSelectPowerplantEnabled() {
+        return Boolean.parseBoolean(preferences.getProperty("combat.autoSelectPowerplant.enabled", "false"));
+    }
+
+    /**
+     * Touche « sous-système suivant » (code VC JNativeHook), ou {@code -1}.
+     */
+    public void setCombatAutoSelectPowerplantSubsystemKey(int keyCode) {
+        preferences.setProperty("combat.autoSelectPowerplant.subsystemKey", String.valueOf(keyCode));
+        savePreferences();
+    }
+
+    public int getCombatAutoSelectPowerplantSubsystemKey() {
+        try {
+            return Integer.parseInt(preferences.getProperty("combat.autoSelectPowerplant.subsystemKey", "-1"));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
 }
 
 
