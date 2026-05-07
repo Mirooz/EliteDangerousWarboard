@@ -47,11 +47,15 @@ public final class ModuleTutorialOverlay {
     private static final double HIGHLIGHT_PAD = 8;
     private static final double CARD_MIN_WIDTH = 320;
     private static final double CARD_MAX_WIDTH = 420;
+    /** Étape 1 (texte long, sans capture) : carte plus large que le mode par défaut. */
+    private static final double CARD_MIN_WIDTH_STEP1 = 500;
+    private static final double CARD_MAX_WIDTH_STEP1 = 720;
     /** Carte élargie quand une capture d’écran est affichée (tableau large recherche missions). */
     private static final double CARD_MIN_WIDTH_WIDE = 540;
     private static final double CARD_MAX_WIDTH_WIDE = 820;
 
     private boolean tutorialCardWide;
+    private boolean tutorialCardStep1Wide;
 
     private final StackPane host;
     private final LocalizationService localizationService;
@@ -232,6 +236,7 @@ public final class ModuleTutorialOverlay {
 
     private void applyCardWidthConstraints(boolean wide) {
         tutorialCardWide = wide;
+        tutorialCardStep1Wide = false;
         if (wide) {
             double hw = host.getWidth();
             double adaptiveMin = hw > 0
@@ -243,6 +248,14 @@ public final class ModuleTutorialOverlay {
             card.setMinWidth(CARD_MIN_WIDTH);
             card.setMaxWidth(CARD_MAX_WIDTH);
         }
+    }
+
+    /** Étape 1 sans image : carte plus large pour le long texte du stacking. */
+    private void applyCardWidthConstraintsStep1() {
+        tutorialCardWide = false;
+        tutorialCardStep1Wide = true;
+        card.setMinWidth(CARD_MIN_WIDTH_STEP1);
+        card.setMaxWidth(CARD_MAX_WIDTH_STEP1);
     }
 
     public void refreshStepTextIfVisible() {
@@ -315,13 +328,17 @@ public final class ModuleTutorialOverlay {
                 return;
             }
         }
-        applyCardWidthConstraints(false);
+        if (index == 0) {
+            applyCardWidthConstraintsStep1();
+        } else {
+            applyCardWidthConstraints(false);
+        }
         stepIllustration.setImage(null);
         stepIllustration.setVisible(false);
         stepIllustration.setManaged(false);
         if (index == 0) {
-            bodyScroll.setPrefViewportHeight(220);
-            bodyScroll.setMaxHeight(340);
+            bodyScroll.setPrefViewportHeight(260);
+            bodyScroll.setMaxHeight(400);
         } else {
             bodyScroll.setPrefViewportHeight(160);
             bodyScroll.setMaxHeight(240);
@@ -378,14 +395,25 @@ public final class ModuleTutorialOverlay {
         if (tutorialCardWide) {
             double adaptiveMin = Math.min(CARD_MIN_WIDTH_WIDE, Math.max(360, hostW - 28));
             card.setMinWidth(adaptiveMin);
+        } else if (tutorialCardStep1Wide) {
+            double adaptiveMin = hostW > 0
+                    ? Math.min(CARD_MIN_WIDTH_STEP1, Math.max(420, hostW - 28))
+                    : CARD_MIN_WIDTH_STEP1;
+            card.setMinWidth(adaptiveMin);
         }
-        double maxCard = tutorialCardWide ? CARD_MAX_WIDTH_WIDE : CARD_MAX_WIDTH;
-        double minCard = tutorialCardWide ? CARD_MIN_WIDTH_WIDE : CARD_MIN_WIDTH;
+        double maxCard = tutorialCardWide
+                ? CARD_MAX_WIDTH_WIDE
+                : (tutorialCardStep1Wide ? CARD_MAX_WIDTH_STEP1 : CARD_MAX_WIDTH);
+        double minCard = tutorialCardWide
+                ? CARD_MIN_WIDTH_WIDE
+                : (tutorialCardStep1Wide ? CARD_MIN_WIDTH_STEP1 : CARD_MIN_WIDTH);
         double cap = Math.min(maxCard, Math.max(200, hostW - 16));
         double minUse = Math.min(minCard, cap);
         double cw = tutorialCardWide
                 ? cap
-                : Math.min(cap, Math.max(minUse, card.prefWidth(-1)));
+                : (tutorialCardStep1Wide
+                        ? Math.min(maxCard, cap)
+                        : Math.min(cap, Math.max(minUse, card.prefWidth(-1))));
         double ch = card.prefHeight(cw);
         if (tutorialCardWide && stepIllustration.isVisible() && stepIllustration.getImage() != null) {
             stepIllustration.setFitWidth(Math.max(420, cw - 16));
