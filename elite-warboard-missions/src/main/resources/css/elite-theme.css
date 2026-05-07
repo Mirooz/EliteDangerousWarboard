@@ -26,7 +26,8 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 0px;
-    -fx-padding: 10px;
+    /* Pas de marge latérale / basse : évite la bande « vide » en mode plein zone utile (contenu au bord sauf tâche). */
+    -fx-padding: 6px 0 0 0;
 }
 
 .main-tab-pane .tab {
@@ -2549,6 +2550,14 @@
     -fx-font-size: 12px;
 }
 
+.dashboard-root {
+    -fx-background-color: -fx-elite-dark;
+}
+
+.elite-app-root {
+    -fx-background-color: -fx-elite-dark;
+}
+
 /* En-tête */
 .header-panel {
     -fx-background-color: -fx-elite-darker;
@@ -3027,7 +3036,8 @@
 /* Contenu principal */
 .main-content {
     -fx-background-color: -fx-elite-dark;
-    -fx-padding: 10;
+    /* Petit écart seulement sous la rangée d’onglets ; bords fenêtre au flush pour le plein écran utile */
+    -fx-padding: 10 0 0 0;
 }
 
 /* Panneau de statistiques */

@@ -9,7 +9,7 @@
             fx:controller="be.mirooz.elitedangerous.dashboard.view.main.DashboardController">
     <center>
         <StackPane fx:id="popupContainer">
-            <VBox>
+            <VBox styleClass="dashboard-root">
                 <HBox fx:id="windowChromeBar" alignment="CENTER_LEFT" minHeight="32.0" prefHeight="32.0" maxHeight="32.0"
                       spacing="0.0" styleClass="window-chrome">
                     <padding>

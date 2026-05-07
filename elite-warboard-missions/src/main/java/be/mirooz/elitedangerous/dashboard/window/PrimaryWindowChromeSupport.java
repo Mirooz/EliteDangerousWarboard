@@ -2,6 +2,7 @@ package be.mirooz.elitedangerous.dashboard.window;
 
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
+import javafx.animation.PauseTransition;
 import javafx.beans.InvalidationListener;
 import javafx.event.Event;
 import javafx.scene.Node;
@@ -14,6 +15,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class PrimaryWindowChromeSupport {
 
     private static final double WORK_AREA_MATCH_EPS = 4.0;
+    private static final int GLYPH_LAYOUT_SYNC_DELAY_MS = 50;
 
     private final Stage stage;
     private final HBox windowChromeBar;
@@ -118,6 +121,9 @@ public final class PrimaryWindowChromeSupport {
         attachStageGeometryGlyphSync();
         syncWindowMaxRestoreGlyph();
         refreshLocalizedStrings();
+        if (Boolean.parseBoolean(PreferencesService.getInstance().getPreference("window.maximized", "false"))) {
+            scheduleSyncGlyphAfterLayout();
+        }
     }
 
     /**
@@ -162,6 +168,13 @@ public final class PrimaryWindowChromeSupport {
             StageVisualBounds.fitStageToVisualBounds(stage);
         }
         syncWindowMaxRestoreGlyph();
+        scheduleSyncGlyphAfterLayout();
+    }
+
+    private void scheduleSyncGlyphAfterLayout() {
+        var pause = new PauseTransition(Duration.millis(GLYPH_LAYOUT_SYNC_DELAY_MS));
+        pause.setOnFinished(e -> syncWindowMaxRestoreGlyph());
+        pause.play();
     }
 
     /** {@link Stage#close()} n’envoie pas {@code setOnCloseRequest} ; on propage l’événement attendu. */

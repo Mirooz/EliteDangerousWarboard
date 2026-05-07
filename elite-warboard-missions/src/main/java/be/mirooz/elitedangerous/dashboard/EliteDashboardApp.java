@@ -18,6 +18,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
@@ -51,6 +52,7 @@ public class EliteDashboardApp extends Application {
             DashboardController dashboardController = loader.getController();
 
             StackPane root = new StackPane(dashboardRoot);
+            root.getStyleClass().add("elite-app-root");
             this.rootPane = root; // Sauvegarder la référence
 
 
@@ -76,6 +78,7 @@ public class EliteDashboardApp extends Application {
             }
             
             Scene scene = new Scene(root, initialWidth, initialHeight);
+            scene.setFill(Color.web("#0A0A0A"));
 
             scene.getStylesheets().add(
                     Objects.requireNonNull(getClass().getResource("/css/elite-theme.css"))
@@ -181,11 +184,7 @@ public class EliteDashboardApp extends Application {
                 if (targetScreen == null) {
                     targetScreen = Screen.getPrimary();
                 }
-                Rectangle2D screenBounds = targetScreen.getVisualBounds();
-                stage.setX(screenBounds.getMinX());
-                stage.setY(screenBounds.getMinY());
-                stage.setWidth(screenBounds.getWidth());
-                stage.setHeight(screenBounds.getHeight());
+                StageVisualBounds.fitStageToVisualBounds(stage, targetScreen);
                 isRestoringWindow = false;
                 return;
             }
@@ -406,11 +405,7 @@ public class EliteDashboardApp extends Application {
     }
     
     private void maximizeWindow(Stage stage) {
-        var bounds = Screen.getPrimary().getVisualBounds();
-        stage.setX(bounds.getMinX());
-        stage.setY(bounds.getMinY());
-        stage.setWidth(bounds.getWidth());
-        stage.setHeight(bounds.getHeight());
+        StageVisualBounds.fitStageToVisualBounds(stage, Screen.getPrimary());
     }
     
     public static void main(String[] args) {

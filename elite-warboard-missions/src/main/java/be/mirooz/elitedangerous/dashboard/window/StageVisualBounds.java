@@ -1,8 +1,11 @@
 package be.mirooz.elitedangerous.dashboard.window;
 
+import be.mirooz.elitedangerous.dashboard.window.win32.WindowsUndecoratedTightFill;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+
+import java.util.Optional;
 
 /**
  * Ajuste un {@link Stage} sur la zone <em>utilisable</em> de l’écran (JavaFX {@link Screen#getVisualBounds()}),
@@ -38,22 +41,42 @@ public final class StageVisualBounds {
             return false;
         }
         Rectangle2D vb = screenForWindowCenter(stage).getVisualBounds();
-        return Math.abs(stage.getX() - vb.getMinX()) <= epsilon
-                && Math.abs(stage.getY() - vb.getMinY()) <= epsilon
-                && Math.abs(stage.getWidth() - vb.getWidth()) <= epsilon
-                && Math.abs(stage.getHeight() - vb.getHeight()) <= epsilon;
+        if (WindowsUndecoratedTightFill.isSupported()) {
+            Optional<Rectangle2D> client = WindowsUndecoratedTightFill.getClientAreaScreenBounds(stage);
+            if (client.isPresent()) {
+                return rectsMatchWithinEpsilon(client.get(), vb, epsilon);
+            }
+        }
+        return rectsMatchWithinEpsilon(
+                new Rectangle2D(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight()),
+                vb,
+                epsilon);
+    }
+
+    private static boolean rectsMatchWithinEpsilon(Rectangle2D a, Rectangle2D b, double epsilon) {
+        return Math.abs(a.getMinX() - b.getMinX()) <= epsilon
+                && Math.abs(a.getMinY() - b.getMinY()) <= epsilon
+                && Math.abs(a.getWidth() - b.getWidth()) <= epsilon
+                && Math.abs(a.getHeight() - b.getHeight()) <= epsilon;
     }
 
     /** Place le stage sur la zone utilisable de l’écran courant, sans {@link Stage#setMaximized(boolean)}. */
     public static void fitStageToVisualBounds(Stage stage) {
+        fitStageToVisualBounds(stage, screenForWindowCenter(stage));
+    }
+
+    /** Place le stage sur la zone utilisable de l’écran donné (redémarrage maximisé sur un moniteur précis). */
+    public static void fitStageToVisualBounds(Stage stage, Screen screen) {
         if (stage == null) {
             return;
         }
-        Rectangle2D b = screenForWindowCenter(stage).getVisualBounds();
+        Screen s = screen != null ? screen : Screen.getPrimary();
+        Rectangle2D b = s.getVisualBounds();
         stage.setMaximized(false);
         stage.setX(b.getMinX());
         stage.setY(b.getMinY());
         stage.setWidth(b.getWidth());
         stage.setHeight(b.getHeight());
+        WindowsUndecoratedTightFill.expandOuterWindowToMatchVisualClient(stage, b);
     }
 }
