@@ -30,6 +30,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
@@ -99,9 +100,6 @@ public class ConfigDialogController implements Initializable {
 
 
     @FXML
-    private Label vrModeSectionLabel;
-
-    @FXML
     private CheckBox sendDataToEddnCheckBox;
 
     @FXML
@@ -126,7 +124,10 @@ public class ConfigDialogController implements Initializable {
     private CheckBox vrModeEnabledCheckBox;
 
     @FXML
-    private VBox bindingsContainer;
+    private VBox vrBindSectionContainer;
+
+    @FXML
+    private VBox combatBindSectionContainer;
 
     @FXML
     private Label windowToggleBindLabel;
@@ -141,31 +142,13 @@ public class ConfigDialogController implements Initializable {
     private Button windowToggleUnbindButton;
 
     @FXML
-    private Label windowToggleBindDescriptionLabel;
+    private Tab preferencesTab;
 
     @FXML
-    private Label tabSwitchLeftLabel;
+    private Tab gameplayTab;
 
     @FXML
-    private Button tabSwitchLeftButton;
-
-    @FXML
-    private Label tabSwitchLeftBindLabel;
-
-    @FXML
-    private Button tabSwitchLeftUnbindButton;
-
-    @FXML
-    private Label tabSwitchRightLabel;
-
-    @FXML
-    private Button tabSwitchRightButton;
-
-    @FXML
-    private Label tabSwitchRightBindLabel;
-
-    @FXML
-    private Button tabSwitchRightUnbindButton;
+    private Tab vrOverlayTab;
 
     @FXML
     private Label combatSectionLabel;
@@ -177,6 +160,9 @@ public class ConfigDialogController implements Initializable {
     private Label combatSubsystemBindLabel;
 
     @FXML
+    private Label combatSubsystemKeyboardHintLabel;
+
+    @FXML
     private Button combatSubsystemBindButton;
 
     @FXML
@@ -184,6 +170,9 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private Button combatSubsystemUnbindButton;
+
+    @FXML
+    private Label vrBindingsFootnoteLabel;
 
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final PreferencesService preferencesService = PreferencesService.getInstance();
@@ -195,7 +184,7 @@ public class ConfigDialogController implements Initializable {
     private CapiProfileSettingsStatus lastCapiProfileSettingsStatus;
     
     private boolean isCapturingBind = false;
-    private String currentBindType = null; // "windowToggle", "tabSwitchLeft", "tabSwitchRight", "subsystemToggle"
+    private String currentBindType = null; // "windowToggle", "subsystemToggle"
     private NativeKeyListener keyCaptureListener = null;
     private Thread hotasCaptureThread = null;
     
@@ -206,20 +195,6 @@ public class ConfigDialogController implements Initializable {
     private float capturedComponentValue = 0.0f;
     private boolean isKeyboardBind = false;
     
-    // Valeurs capturées pour tab switch left
-    private int capturedTabLeftKeyCode = -1;
-    private String capturedTabLeftControllerName = null;
-    private String capturedTabLeftComponentName = null;
-    private float capturedTabLeftComponentValue = 0.0f;
-    private boolean isTabLeftKeyboardBind = false;
-    
-    // Valeurs capturées pour tab switch right
-    private int capturedTabRightKeyCode = -1;
-    private String capturedTabRightControllerName = null;
-    private String capturedTabRightComponentName = null;
-    private float capturedTabRightComponentValue = 0.0f;
-    private boolean isTabRightKeyboardBind = false;
-
     private int capturedSubsystemKeyCode = -1;
 
     @Override
@@ -234,8 +209,7 @@ public class ConfigDialogController implements Initializable {
         // Initialiser le champ du dossier journal
         journalFolderTextField.setText(preferencesService.getJournalFolder());
         
-        // Initialiser le VR mode (activé si au moins un des services est activé)
-        boolean vrModeEnabled = preferencesService.isWindowToggleEnabled() || preferencesService.isTabSwitchEnabled();
+        boolean vrModeEnabled = preferencesService.isWindowToggleEnabled();
         vrModeEnabledCheckBox.setSelected(vrModeEnabled);
         // S'assurer que la checkbox est activée
         vrModeEnabledCheckBox.setDisable(false);
@@ -251,11 +225,7 @@ public class ConfigDialogController implements Initializable {
         
         // Initialiser les affichages des binds
         updateWindowToggleBindDisplay();
-        updateTabSwitchBindDisplays();
         updateCombatSubsystemBindDisplay();
-        
-        // Mettre à jour l'état des bindings selon le VR mode
-        updateBindingsEnabledState();
         
         // Stocker les valeurs initiales pour détecter les changements
         originalJournalFolder = preferencesService.getJournalFolder();
@@ -304,8 +274,9 @@ public class ConfigDialogController implements Initializable {
         String description = localizationService.getString("config.journal.description");
         journalFolderDescriptionLabel.setText(description.replace("\\n", "\n"));
         
-        // Traductions pour la section VR mode
-        vrModeSectionLabel.setText("VR MODE");
+        preferencesTab.setText(localizationService.getString("config.settings.card.preferences"));
+        gameplayTab.setText(localizationService.getString("config.settings.card.gameplay"));
+        vrOverlayTab.setText(localizationService.getString("config.settings.card.overlay"));
         sendDataToEddnCheckBox.setText(localizationService.getString("config.eddn.send.enabled"));
         sendDataToEddnCheckBox.setTooltip(new Tooltip(localizationService.getString("config.eddn.send.hint")));
         capiLoginEnabledCheckBox.setText(localizationService.getString("config.capi.login.enabled"));
@@ -319,16 +290,14 @@ public class ConfigDialogController implements Initializable {
         }
         vrModeEnabledCheckBox.setText(localizationService.getString("config.vr.mode.enabled"));
         windowToggleBindLabel.setText(localizationService.getString("config.window.toggle.bind.label"));
-        tabSwitchLeftLabel.setText(localizationService.getString("config.tab.switch.left"));
-        tabSwitchRightLabel.setText(localizationService.getString("config.tab.switch.right"));
         combatSectionLabel.setText(localizationService.getString("config.combat.section"));
         combatAutoPowerplantCheckBox.setText(localizationService.getString("config.combat.autoPowerplant.enabled"));
+        combatSubsystemKeyboardHintLabel.setText(localizationService.getString("config.combat.subsystemToggle.keyboardOnly.hint"));
         combatSubsystemBindLabel.setText(localizationService.getString("config.combat.subsystemToggle.bind.label"));
+        vrBindingsFootnoteLabel.setText(localizationService.getString("config.vr.bindings.hint"));
         
         // Mettre à jour le texte des boutons BIND
         windowToggleBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
-        tabSwitchLeftButton.setText(localizationService.getString("config.window.toggle.bind.button"));
-        tabSwitchRightButton.setText(localizationService.getString("config.window.toggle.bind.button"));
         combatSubsystemBindButton.setText(localizationService.getString("config.window.toggle.bind.button"));
         
         browseJournalFolderButton.setText(localizationService.getString("config.browse"));
@@ -337,7 +306,6 @@ public class ConfigDialogController implements Initializable {
         
         // Mettre à jour les affichages des binds
         updateWindowToggleBindDisplay();
-        updateTabSwitchBindDisplays();
         updateCombatSubsystemBindDisplay();
     }
 
@@ -346,20 +314,21 @@ public class ConfigDialogController implements Initializable {
             combatSubsystemBindValueLabel.setText(getKeyName(capturedSubsystemKeyCode));
             combatSubsystemUnbindButton.setVisible(true);
             combatSubsystemUnbindButton.setManaged(true);
-            return;
-        }
-        int keyCode = preferencesService.getCombatAutoSelectPowerplantSubsystemKey();
-        if (keyCode > 0) {
-            combatSubsystemBindValueLabel.setText(getKeyName(keyCode));
-            combatSubsystemUnbindButton.setVisible(true);
-            combatSubsystemUnbindButton.setManaged(true);
-            capturedSubsystemKeyCode = keyCode;
         } else {
-            combatSubsystemBindValueLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
-            combatSubsystemUnbindButton.setVisible(false);
-            combatSubsystemUnbindButton.setManaged(false);
-            capturedSubsystemKeyCode = -1;
+            int keyCode = preferencesService.getCombatAutoSelectPowerplantSubsystemKey();
+            if (keyCode > 0) {
+                combatSubsystemBindValueLabel.setText(getKeyName(keyCode));
+                combatSubsystemUnbindButton.setVisible(true);
+                combatSubsystemUnbindButton.setManaged(true);
+                capturedSubsystemKeyCode = keyCode;
+            } else {
+                combatSubsystemBindValueLabel.setText(localizationService.getString("config.bind.none"));
+                combatSubsystemUnbindButton.setVisible(false);
+                combatSubsystemUnbindButton.setManaged(false);
+                capturedSubsystemKeyCode = -1;
+            }
         }
+        updateBindingsEnabledState();
     }
     
     private void updateWindowToggleBindDisplay() {
@@ -412,102 +381,7 @@ public class ConfigDialogController implements Initializable {
                 }
             }
         }
-    }
-    
-    private void updateTabSwitchBindDisplays() {
-        // Tab left - Utiliser les variables capturées en priorité
-        if (capturedTabLeftControllerName != null && !capturedTabLeftControllerName.isEmpty() && 
-            capturedTabLeftComponentName != null && !capturedTabLeftComponentName.isEmpty()) {
-            // Bind HOTAS (depuis variables capturées)
-            tabSwitchLeftBindLabel.setText(capturedTabLeftControllerName + " - " + capturedTabLeftComponentName + " (" + String.format("%.2f", capturedTabLeftComponentValue) + ")");
-            tabSwitchLeftUnbindButton.setVisible(true);
-            tabSwitchLeftUnbindButton.setManaged(true);
-            isTabLeftKeyboardBind = false;
-        } else if (capturedTabLeftKeyCode > 0) {
-            // Bind clavier (depuis variables capturées)
-            tabSwitchLeftBindLabel.setText(getKeyName(capturedTabLeftKeyCode));
-            tabSwitchLeftUnbindButton.setVisible(true);
-            tabSwitchLeftUnbindButton.setManaged(true);
-            isTabLeftKeyboardBind = true;
-        } else {
-            // Charger depuis les préférences
-            String leftControllerName = preferencesService.getTabSwitchLeftHotasController();
-            String leftComponentName = preferencesService.getTabSwitchLeftHotasComponent();
-            
-            if (leftControllerName != null && !leftControllerName.isEmpty() && 
-                leftComponentName != null && !leftComponentName.isEmpty()) {
-                float value = preferencesService.getTabSwitchLeftHotasValue();
-                tabSwitchLeftBindLabel.setText(leftControllerName + " - " + leftComponentName + " (" + String.format("%.2f", value) + ")");
-                tabSwitchLeftUnbindButton.setVisible(true);
-                tabSwitchLeftUnbindButton.setManaged(true);
-                isTabLeftKeyboardBind = false;
-                capturedTabLeftControllerName = leftControllerName;
-                capturedTabLeftComponentName = leftComponentName;
-                capturedTabLeftComponentValue = value;
-            } else {
-                int keyCode = preferencesService.getTabSwitchLeftKeyboardKey();
-                if (keyCode > 0) {
-                    tabSwitchLeftBindLabel.setText(getKeyName(keyCode));
-                    tabSwitchLeftUnbindButton.setVisible(true);
-                    tabSwitchLeftUnbindButton.setManaged(true);
-                    isTabLeftKeyboardBind = true;
-                    capturedTabLeftKeyCode = keyCode;
-                } else {
-                    tabSwitchLeftBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
-                    tabSwitchLeftUnbindButton.setVisible(false);
-                    tabSwitchLeftUnbindButton.setManaged(false);
-                    isTabLeftKeyboardBind = false;
-                    capturedTabLeftKeyCode = -1;
-                }
-            }
-        }
-        
-        // Tab right - Utiliser les variables capturées en priorité
-        if (capturedTabRightControllerName != null && !capturedTabRightControllerName.isEmpty() && 
-            capturedTabRightComponentName != null && !capturedTabRightComponentName.isEmpty()) {
-            // Bind HOTAS (depuis variables capturées)
-            tabSwitchRightBindLabel.setText(capturedTabRightControllerName + " - " + capturedTabRightComponentName + " (" + String.format("%.2f", capturedTabRightComponentValue) + ")");
-            tabSwitchRightUnbindButton.setVisible(true);
-            tabSwitchRightUnbindButton.setManaged(true);
-            isTabRightKeyboardBind = false;
-        } else if (capturedTabRightKeyCode > 0) {
-            // Bind clavier (depuis variables capturées)
-            tabSwitchRightBindLabel.setText(getKeyName(capturedTabRightKeyCode));
-            tabSwitchRightUnbindButton.setVisible(true);
-            tabSwitchRightUnbindButton.setManaged(true);
-            isTabRightKeyboardBind = true;
-        } else {
-            // Charger depuis les préférences
-            String rightControllerName = preferencesService.getTabSwitchRightHotasController();
-            String rightComponentName = preferencesService.getTabSwitchRightHotasComponent();
-            
-            if (rightControllerName != null && !rightControllerName.isEmpty() && 
-                rightComponentName != null && !rightComponentName.isEmpty()) {
-                float value = preferencesService.getTabSwitchRightHotasValue();
-                tabSwitchRightBindLabel.setText(rightControllerName + " - " + rightComponentName + " (" + String.format("%.2f", value) + ")");
-                tabSwitchRightUnbindButton.setVisible(true);
-                tabSwitchRightUnbindButton.setManaged(true);
-                isTabRightKeyboardBind = false;
-                capturedTabRightControllerName = rightControllerName;
-                capturedTabRightComponentName = rightComponentName;
-                capturedTabRightComponentValue = value;
-            } else {
-                int keyCode = preferencesService.getTabSwitchRightKeyboardKey();
-                if (keyCode > 0) {
-                    tabSwitchRightBindLabel.setText(getKeyName(keyCode));
-                    tabSwitchRightUnbindButton.setVisible(true);
-                    tabSwitchRightUnbindButton.setManaged(true);
-                    isTabRightKeyboardBind = true;
-                    capturedTabRightKeyCode = keyCode;
-                } else {
-                    tabSwitchRightBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
-                    tabSwitchRightUnbindButton.setVisible(false);
-                    tabSwitchRightUnbindButton.setManaged(false);
-                    isTabRightKeyboardBind = false;
-                    capturedTabRightKeyCode = -1;
-                }
-            }
-        }
+        updateBindingsEnabledState();
     }
 
     /**
@@ -594,34 +468,50 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private void onVrModeChanged() {
-        // S'assurer que la checkbox reste activée
         vrModeEnabledCheckBox.setDisable(false);
+        if (!vrModeEnabledCheckBox.isSelected() && isCapturingBind && "windowToggle".equals(currentBindType)) {
+            stopBindCapture();
+        }
+        updateBindingsEnabledState();
+    }
+
+    @FXML
+    private void onCombatAutoPowerplantChanged() {
+        if (!combatAutoPowerplantCheckBox.isSelected() && isCapturingBind && "subsystemToggle".equals(currentBindType)) {
+            stopBindCapture();
+        }
         updateBindingsEnabledState();
     }
 
     /**
-     * Met à jour l'état activé/désactivé des bindings selon le VR mode
+     * Active ou désactive les contrôles de raccourci (VR : masquage dashboard ; combat : sous-système).
      */
     private void updateBindingsEnabledState() {
-        boolean vrModeEnabled = vrModeEnabledCheckBox.isSelected();
-        
-        // Désactiver/griser tous les bindings si VR mode est désactivé
-        windowToggleBindButton.setDisable(!vrModeEnabled);
-        windowToggleUnbindButton.setDisable(!vrModeEnabled);
-        windowToggleBindValueLabel.setDisable(!vrModeEnabled);
-        tabSwitchLeftButton.setDisable(!vrModeEnabled);
-        tabSwitchLeftUnbindButton.setDisable(!vrModeEnabled);
-        tabSwitchLeftBindLabel.setDisable(!vrModeEnabled);
-        tabSwitchRightButton.setDisable(!vrModeEnabled);
-        tabSwitchRightUnbindButton.setDisable(!vrModeEnabled);
-        tabSwitchRightBindLabel.setDisable(!vrModeEnabled);
-        
-        // Appliquer un style grisé si désactivé
-        if (vrModeEnabled) {
-            bindingsContainer.getStyleClass().remove("disabled-container");
+        boolean vrOn = vrModeEnabledCheckBox.isSelected();
+        windowToggleBindButton.setDisable(!vrOn);
+        windowToggleUnbindButton.setDisable(!vrOn);
+        windowToggleBindValueLabel.setDisable(!vrOn);
+        windowToggleBindLabel.setDisable(!vrOn);
+        vrBindingsFootnoteLabel.setDisable(!vrOn);
+        if (vrOn) {
+            vrBindSectionContainer.getStyleClass().remove("disabled-container");
         } else {
-            if (!bindingsContainer.getStyleClass().contains("disabled-container")) {
-                bindingsContainer.getStyleClass().add("disabled-container");
+            if (!vrBindSectionContainer.getStyleClass().contains("disabled-container")) {
+                vrBindSectionContainer.getStyleClass().add("disabled-container");
+            }
+        }
+
+        boolean combatOn = combatAutoPowerplantCheckBox.isSelected();
+        combatSubsystemBindButton.setDisable(!combatOn);
+        combatSubsystemUnbindButton.setDisable(!combatOn);
+        combatSubsystemBindValueLabel.setDisable(!combatOn);
+        combatSubsystemBindLabel.setDisable(!combatOn);
+        combatSubsystemKeyboardHintLabel.setDisable(!combatOn);
+        if (combatOn) {
+            combatBindSectionContainer.getStyleClass().remove("disabled-container");
+        } else {
+            if (!combatBindSectionContainer.getStyleClass().contains("disabled-container")) {
+                combatBindSectionContainer.getStyleClass().add("disabled-container");
             }
         }
     }
@@ -640,10 +530,8 @@ public class ConfigDialogController implements Initializable {
         String newJournalFolder = journalFolderTextField.getText();
         preferencesService.setJournalFolder(newJournalFolder);
         
-        // Sauvegarder les paramètres VR mode (même interrupteur pour toggle fenêtre et raccourcis d’onglets)
         boolean vrModeEnabled = vrModeEnabledCheckBox.isSelected();
         preferencesService.setWindowToggleEnabled(vrModeEnabled);
-        preferencesService.setTabSwitchEnabled(vrModeEnabled);
         preferencesService.setSendDataToEddnEnabled(sendDataToEddnCheckBox.isSelected());
         preferencesService.setSpanshExplorationLoadEnabled(spanshLoadSystemsCheckBox.isSelected());
         boolean newCapiLogin = capiLoginEnabledCheckBox.isSelected();
@@ -694,40 +582,6 @@ public class ConfigDialogController implements Initializable {
             preferencesService.setWindowToggleKeyboardKey(-1);
             preferencesService.setWindowToggleHotasController("");
             preferencesService.setWindowToggleHotasComponent("");
-        }
-        
-        // Tab left
-        if (isTabLeftKeyboardBind && capturedTabLeftKeyCode != -1) {
-            preferencesService.setTabSwitchLeftKeyboardKey(capturedTabLeftKeyCode);
-            preferencesService.setTabSwitchLeftHotasController("");
-            preferencesService.setTabSwitchLeftHotasComponent("");
-        } else if (!isTabLeftKeyboardBind && capturedTabLeftControllerName != null && capturedTabLeftComponentName != null) {
-            preferencesService.setTabSwitchLeftHotasController(capturedTabLeftControllerName);
-            preferencesService.setTabSwitchLeftHotasComponent(capturedTabLeftComponentName);
-            preferencesService.setTabSwitchLeftHotasValue(capturedTabLeftComponentValue);
-            preferencesService.setTabSwitchLeftKeyboardKey(-1);
-        } else {
-            // Unbind : effacer tous les binds
-            preferencesService.setTabSwitchLeftKeyboardKey(-1);
-            preferencesService.setTabSwitchLeftHotasController("");
-            preferencesService.setTabSwitchLeftHotasComponent("");
-        }
-        
-        // Tab right
-        if (isTabRightKeyboardBind && capturedTabRightKeyCode != -1) {
-            preferencesService.setTabSwitchRightKeyboardKey(capturedTabRightKeyCode);
-            preferencesService.setTabSwitchRightHotasController("");
-            preferencesService.setTabSwitchRightHotasComponent("");
-        } else if (!isTabRightKeyboardBind && capturedTabRightControllerName != null && capturedTabRightComponentName != null) {
-            preferencesService.setTabSwitchRightHotasController(capturedTabRightControllerName);
-            preferencesService.setTabSwitchRightHotasComponent(capturedTabRightComponentName);
-            preferencesService.setTabSwitchRightHotasValue(capturedTabRightComponentValue);
-            preferencesService.setTabSwitchRightKeyboardKey(-1);
-        } else {
-            // Unbind : effacer tous les binds
-            preferencesService.setTabSwitchRightKeyboardKey(-1);
-            preferencesService.setTabSwitchRightHotasController("");
-            preferencesService.setTabSwitchRightHotasComponent("");
         }
         
         // Si le dossier journal a changé, relancer le chargement des missions
@@ -935,6 +789,9 @@ public class ConfigDialogController implements Initializable {
 
     @FXML
     private void captureWindowToggleBind() {
+        if (windowToggleBindButton.isDisabled()) {
+            return;
+        }
         if (isCapturingBind) {
             stopBindCapture();
             return;
@@ -955,42 +812,6 @@ public class ConfigDialogController implements Initializable {
     }
     
     @FXML
-    private void captureTabSwitchLeftBind() {
-        if (isCapturingBind) {
-            stopBindCapture();
-            return;
-        }
-
-        currentBindType = "tabSwitchLeft";
-        isCapturingBind = true;
-        tabSwitchLeftButton.setText("BIND...");
-        tabSwitchLeftBindLabel.setText(localizationService.getString("config.window.toggle.bind.capturing"));
-        // Changer le style du bouton en orange pendant la capture
-        tabSwitchLeftButton.getStyleClass().add("elite-button-capturing");
-
-        startKeyboardCapture();
-        startHotasCapture();
-    }
-    
-    @FXML
-    private void captureTabSwitchRightBind() {
-        if (isCapturingBind) {
-            stopBindCapture();
-            return;
-        }
-
-        currentBindType = "tabSwitchRight";
-        isCapturingBind = true;
-        tabSwitchRightButton.setText("BIND...");
-        tabSwitchRightBindLabel.setText(localizationService.getString("config.window.toggle.bind.capturing"));
-        // Changer le style du bouton en orange pendant la capture
-        tabSwitchRightButton.getStyleClass().add("elite-button-capturing");
-
-        startKeyboardCapture();
-        startHotasCapture();
-    }
-    
-    @FXML
     private void unbindWindowToggle() {
         capturedKeyCode = -1;
         capturedControllerName = null;
@@ -1002,35 +823,12 @@ public class ConfigDialogController implements Initializable {
         windowToggleUnbindButton.setVisible(false);
         windowToggleUnbindButton.setManaged(false);
     }
-    
-    @FXML
-    private void unbindTabSwitchLeft() {
-        capturedTabLeftKeyCode = -1;
-        capturedTabLeftControllerName = null;
-        capturedTabLeftComponentName = null;
-        capturedTabLeftComponentValue = 0.0f;
-        isTabLeftKeyboardBind = false;
-        // Mettre à jour directement l'affichage sans recharger depuis les préférences
-        tabSwitchLeftBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
-        tabSwitchLeftUnbindButton.setVisible(false);
-        tabSwitchLeftUnbindButton.setManaged(false);
-    }
-    
-    @FXML
-    private void unbindTabSwitchRight() {
-        capturedTabRightKeyCode = -1;
-        capturedTabRightControllerName = null;
-        capturedTabRightComponentName = null;
-        capturedTabRightComponentValue = 0.0f;
-        isTabRightKeyboardBind = false;
-        // Mettre à jour directement l'affichage sans recharger depuis les préférences
-        tabSwitchRightBindLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
-        tabSwitchRightUnbindButton.setVisible(false);
-        tabSwitchRightUnbindButton.setManaged(false);
-    }
 
     @FXML
     private void captureCombatSubsystemBind() {
+        if (combatSubsystemBindButton.isDisabled()) {
+            return;
+        }
         if (isCapturingBind) {
             stopBindCapture();
             return;
@@ -1048,7 +846,7 @@ public class ConfigDialogController implements Initializable {
     @FXML
     private void unbindCombatSubsystem() {
         capturedSubsystemKeyCode = -1;
-        combatSubsystemBindValueLabel.setText(localizationService.getString("config.tab.switch.bind.none"));
+        combatSubsystemBindValueLabel.setText(localizationService.getString("config.bind.none"));
         combatSubsystemUnbindButton.setVisible(false);
         combatSubsystemUnbindButton.setManaged(false);
     }
@@ -1056,7 +854,7 @@ public class ConfigDialogController implements Initializable {
     private void startKeyboardCapture() {
         // Utiliser un EventFilter sur la scène pour capturer les touches JavaFX
         Platform.runLater(() -> {
-            Stage stage = (Stage) windowToggleBindButton.getScene().getWindow();
+            Stage stage = (Stage) configTitleLabel.getScene().getWindow();
             if (stage != null && stage.getScene() != null) {
                 Scene scene = stage.getScene();
                 scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressForCapture);
@@ -1081,7 +879,7 @@ public class ConfigDialogController implements Initializable {
             System.out.println("🔑 Touche pressée pendant capture: " + nativeKeyCode + " (" + keyCode.getName() + ")");
             
             // Retirer le listener de la scène
-            Stage stage = (Stage) windowToggleBindButton.getScene().getWindow();
+            Stage stage = (Stage) configTitleLabel.getScene().getWindow();
             if (stage != null && stage.getScene() != null) {
                 stage.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressForCapture);
             }
@@ -1093,18 +891,6 @@ public class ConfigDialogController implements Initializable {
                 windowToggleBindValueLabel.setText(getKeyName(nativeKeyCode));
                 windowToggleUnbindButton.setVisible(true);
                 windowToggleUnbindButton.setManaged(true);
-            } else if ("tabSwitchLeft".equals(currentBindType)) {
-                capturedTabLeftKeyCode = nativeKeyCode;
-                isTabLeftKeyboardBind = true;
-                tabSwitchLeftBindLabel.setText(getKeyName(nativeKeyCode));
-                tabSwitchLeftUnbindButton.setVisible(true);
-                tabSwitchLeftUnbindButton.setManaged(true);
-            } else if ("tabSwitchRight".equals(currentBindType)) {
-                capturedTabRightKeyCode = nativeKeyCode;
-                isTabRightKeyboardBind = true;
-                tabSwitchRightBindLabel.setText(getKeyName(nativeKeyCode));
-                tabSwitchRightUnbindButton.setVisible(true);
-                tabSwitchRightUnbindButton.setManaged(true);
             } else if ("subsystemToggle".equals(currentBindType)) {
                 capturedSubsystemKeyCode = nativeKeyCode;
                 combatSubsystemBindValueLabel.setText(getKeyName(nativeKeyCode));
@@ -1280,34 +1066,10 @@ public class ConfigDialogController implements Initializable {
                                             );
                                             windowToggleUnbindButton.setVisible(true);
                                             windowToggleUnbindButton.setManaged(true);
-                                        } else if ("tabSwitchLeft".equals(finalBindType)) {
-                                            capturedTabLeftControllerName = finalControllerName;
-                                            capturedTabLeftComponentName = finalComponentName;
-                                            capturedTabLeftComponentValue = finalValue;
-                                            isTabLeftKeyboardBind = false;
-                                            tabSwitchLeftBindLabel.setText(
-                                                capturedTabLeftControllerName + " - " + 
-                                                capturedTabLeftComponentName + " (" + 
-                                                String.format("%.2f", capturedTabLeftComponentValue) + ")"
-                                            );
-                                            tabSwitchLeftUnbindButton.setVisible(true);
-                                            tabSwitchLeftUnbindButton.setManaged(true);
-                                        } else if ("tabSwitchRight".equals(finalBindType)) {
-                                            capturedTabRightControllerName = finalControllerName;
-                                            capturedTabRightComponentName = finalComponentName;
-                                            capturedTabRightComponentValue = finalValue;
-                                            isTabRightKeyboardBind = false;
-                                            tabSwitchRightBindLabel.setText(
-                                                capturedTabRightControllerName + " - " + 
-                                                capturedTabRightComponentName + " (" + 
-                                                String.format("%.2f", capturedTabRightComponentValue) + ")"
-                                            );
-                                            tabSwitchRightUnbindButton.setVisible(true);
-                                            tabSwitchRightUnbindButton.setManaged(true);
                                         }
                                         
                                         // Retirer le listener de la scène
-                                        Stage stage = (Stage) windowToggleBindButton.getScene().getWindow();
+                                        Stage stage = (Stage) configTitleLabel.getScene().getWindow();
                                         if (stage != null && stage.getScene() != null) {
                                             stage.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, ConfigDialogController.this::handleKeyPressForCapture);
                                         }
@@ -1338,7 +1100,7 @@ public class ConfigDialogController implements Initializable {
         
         // Retirer le listener de la scène
         try {
-            Stage stage = (Stage) windowToggleBindButton.getScene().getWindow();
+            Stage stage = (Stage) configTitleLabel.getScene().getWindow();
             if (stage != null && stage.getScene() != null) {
                 stage.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressForCapture);
             }
@@ -1349,12 +1111,6 @@ public class ConfigDialogController implements Initializable {
         if ("windowToggle".equals(currentBindType)) {
             windowToggleBindButton.setText(bindButtonText);
             windowToggleBindButton.getStyleClass().remove("elite-button-capturing");
-        } else if ("tabSwitchLeft".equals(currentBindType)) {
-            tabSwitchLeftButton.setText(bindButtonText);
-            tabSwitchLeftButton.getStyleClass().remove("elite-button-capturing");
-        } else if ("tabSwitchRight".equals(currentBindType)) {
-            tabSwitchRightButton.setText(bindButtonText);
-            tabSwitchRightButton.getStyleClass().remove("elite-button-capturing");
         } else if ("subsystemToggle".equals(currentBindType)) {
             combatSubsystemBindButton.setText(bindButtonText);
             combatSubsystemBindButton.getStyleClass().remove("elite-button-capturing");
@@ -1372,6 +1128,9 @@ public class ConfigDialogController implements Initializable {
         }
         
         currentBindType = null;
+
+        updateWindowToggleBindDisplay();
+        updateCombatSubsystemBindDisplay();
         
         // Ne pas redémarrer le service ici car on est toujours dans la fenêtre de config
         // Le service sera redémarré après la sauvegarde

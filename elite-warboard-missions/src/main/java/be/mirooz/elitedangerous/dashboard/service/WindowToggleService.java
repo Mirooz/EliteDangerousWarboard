@@ -39,7 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Service pour gérer le toggle de fenêtre avec bind clavier et HOTAS
+ * Service pour masquer/afficher le dashboard en VR (bind clavier ou HOTAS).
  */
 public class WindowToggleService {
     private static WindowToggleService instance;
@@ -71,8 +71,6 @@ public class WindowToggleService {
     /** HOTAS : ne pas enfiler de {@code Platform.runLater} plus souvent (sinon file FX + RAM si l’analogique « tremble »). */
     private static final long HOTAS_SCHEDULE_DEBOUNCE_NS = 350_000_000L;
     private volatile long lastHotasWindowScheduleNs = 0L;
-    private volatile long lastHotasTabLeftScheduleNs = 0L;
-    private volatile long lastHotasTabRightScheduleNs = 0L;
     private static final float HOTAS_MATCH_EPS = 0.01f;
     /** Ignore le bruit analogique entre deux polls (sinon front « entrée bande » en rafale). */
     private static final float HOTAS_POLL_UNCHANGED_EPS = 0.008f;
@@ -116,9 +114,9 @@ public class WindowToggleService {
         this.savedY = stage.getY();
     }
 
-    /** Mode VR activé dans les préférences (toggle fenêtre et/ou changement d’onglets). */
+    /** Mode VR activé dans les préférences (masquer/afficher le dashboard). */
     private boolean isVrModeEnabled() {
-        return preferencesService.isWindowToggleEnabled() || preferencesService.isTabSwitchEnabled();
+        return preferencesService.isWindowToggleEnabled();
     }
 
     private void registerSceneVrKeyFilterOnCurrentSceneIfNeeded() {
@@ -307,12 +305,9 @@ public class WindowToggleService {
     private void startGlobalKeyboardListener() {
         try {
             int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
-            int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
-            int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
 
-            // Ne pas démarrer si aucun keyCode n'est configuré
-            if (windowToggleKeyCode <= 0 && tabLeftKeyCode <= 0 && tabRightKeyCode <= 0) {
-                System.out.println("⚠️ Pas de bind clavier configuré");
+            if (windowToggleKeyCode <= 0) {
+                System.out.println("⚠️ Pas de bind clavier configuré pour le toggle fenêtre");
                 return;
             }
 
@@ -354,22 +349,13 @@ public class WindowToggleService {
                             && keyCode == windowToggleKeyCode
                             && preferencesService.isWindowToggleEnabled()) {
                         WindowToggleService.this.runToggleWindowOnFxThread();
-                    } else if (tabLeftKeyCode > 0
-                            && keyCode == tabLeftKeyCode
-                            && preferencesService.isTabSwitchEnabled()) {
-                        WindowToggleService.this.runSwitchToPreviousTabOnFxThread();
-                    } else if (tabRightKeyCode > 0
-                            && keyCode == tabRightKeyCode
-                            && preferencesService.isTabSwitchEnabled()) {
-                        WindowToggleService.this.runSwitchToNextTabOnFxThread();
                     }
                 }
             };
 
             GlobalScreen.addNativeKeyListener(keyboardListener);
 
-            System.out.println("🎧 Hook clavier global actif (window: " + windowToggleKeyCode +
-                    ", tab left: " + tabLeftKeyCode + ", tab right: " + tabRightKeyCode + ").");
+            System.out.println("🎧 Hook clavier global actif (toggle fenêtre: " + windowToggleKeyCode + ").");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -395,18 +381,6 @@ public class WindowToggleService {
             if (windowToggleKeyCode > 0 && eventKeyCode == windowToggleKeyCode) {
                 event.consume();
                 toggleWindowAndOpenCombo();
-                return;
-            }
-        }
-        if (preferencesService.isTabSwitchEnabled()) {
-            int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
-            int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
-            if (tabLeftKeyCode > 0 && eventKeyCode == tabLeftKeyCode) {
-                switchToPreviousTab();
-                event.consume();
-            } else if (tabRightKeyCode > 0 && eventKeyCode == tabRightKeyCode) {
-                switchToNextTab();
-                event.consume();
             }
         }
     }
@@ -428,15 +402,9 @@ public class WindowToggleService {
         KeyCode keyCode = event.getCode();
         int eventKeyCode = convertJavaFXKeyCodeToNative(keyCode);
 
-        // Vérifier si c'est une touche de bind configurée
         int windowToggleKeyCode = preferencesService.getWindowToggleKeyboardKey();
-        int tabLeftKeyCode = preferencesService.getTabSwitchLeftKeyboardKey();
-        int tabRightKeyCode = preferencesService.getTabSwitchRightKeyboardKey();
 
-        // Ne pas bloquer les touches de bind
-        if (eventKeyCode == windowToggleKeyCode ||
-                eventKeyCode == tabLeftKeyCode ||
-                eventKeyCode == tabRightKeyCode) {
+        if (eventKeyCode == windowToggleKeyCode) {
             return;
         }
 
@@ -557,23 +525,10 @@ public class WindowToggleService {
         String windowToggleComponent = preferencesService.getWindowToggleHotasComponent();
         float windowToggleValue = preferencesService.getWindowToggleHotasValue();
 
-        String tabLeftController = preferencesService.getTabSwitchLeftHotasController();
-        String tabLeftComponent = preferencesService.getTabSwitchLeftHotasComponent();
-        float tabLeftValue = preferencesService.getTabSwitchLeftHotasValue();
-
-        String tabRightController = preferencesService.getTabSwitchRightHotasController();
-        String tabRightComponent = preferencesService.getTabSwitchRightHotasComponent();
-        float tabRightValue = preferencesService.getTabSwitchRightHotasValue();
-
-        // Si aucune configuration HOTAS, ne pas démarrer
         boolean hasWindowToggle = windowToggleController != null && !windowToggleController.isEmpty() &&
                 windowToggleComponent != null && !windowToggleComponent.isEmpty();
-        boolean hasTabLeft = tabLeftController != null && !tabLeftController.isEmpty() &&
-                tabLeftComponent != null && !tabLeftComponent.isEmpty();
-        boolean hasTabRight = tabRightController != null && !tabRightController.isEmpty() &&
-                tabRightComponent != null && !tabRightComponent.isEmpty();
 
-        if (!hasWindowToggle && !hasTabLeft && !hasTabRight) {
+        if (!hasWindowToggle) {
             System.out.println("⚠️ Aucune configuration HOTAS");
             return;
         }
@@ -614,15 +569,7 @@ public class WindowToggleService {
                 hasWindowToggle,
                 windowToggleController,
                 windowToggleComponent,
-                windowToggleValue,
-                hasTabLeft,
-                tabLeftController,
-                tabLeftComponent,
-                tabLeftValue,
-                hasTabRight,
-                tabRightController,
-                tabRightComponent,
-                tabRightValue);
+                windowToggleValue);
 
         hotasScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "HotasPoll");
@@ -676,22 +623,6 @@ public class WindowToggleService {
                             && crossedIntoFloatBand(prev, value, session.windowToggleValue, HOTAS_MATCH_EPS)) {
                         scheduleHotasWindowToggleOnFxThread();
                     }
-
-                    if (session.hasTabLeft
-                            && preferencesService.isTabSwitchEnabled()
-                            && session.tabLeftController.equalsIgnoreCase(ctrl.getName())
-                            && session.tabLeftComponent.equalsIgnoreCase(name)
-                            && crossedIntoFloatBand(prev, value, session.tabLeftValue, HOTAS_MATCH_EPS)) {
-                        scheduleHotasTabLeftOnFxThread();
-                    }
-
-                    if (session.hasTabRight
-                            && preferencesService.isTabSwitchEnabled()
-                            && session.tabRightController.equalsIgnoreCase(ctrl.getName())
-                            && session.tabRightComponent.equalsIgnoreCase(name)
-                            && crossedIntoFloatBand(prev, value, session.tabRightValue, HOTAS_MATCH_EPS)) {
-                        scheduleHotasTabRightOnFxThread();
-                    }
                 }
             }
         } catch (Exception e) {
@@ -709,14 +640,6 @@ public class WindowToggleService {
         private final String windowToggleController;
         private final String windowToggleComponent;
         private final float windowToggleValue;
-        private final boolean hasTabLeft;
-        private final String tabLeftController;
-        private final String tabLeftComponent;
-        private final float tabLeftValue;
-        private final boolean hasTabRight;
-        private final String tabRightController;
-        private final String tabRightComponent;
-        private final float tabRightValue;
 
         private HotasPollSession(
                 List<Controller> controllers,
@@ -724,29 +647,13 @@ public class WindowToggleService {
                 boolean hasWindowToggle,
                 String windowToggleController,
                 String windowToggleComponent,
-                float windowToggleValue,
-                boolean hasTabLeft,
-                String tabLeftController,
-                String tabLeftComponent,
-                float tabLeftValue,
-                boolean hasTabRight,
-                String tabRightController,
-                String tabRightComponent,
-                float tabRightValue) {
+                float windowToggleValue) {
             this.controllers = List.copyOf(controllers);
             this.lastStates = lastStates;
             this.hasWindowToggle = hasWindowToggle;
             this.windowToggleController = windowToggleController;
             this.windowToggleComponent = windowToggleComponent;
             this.windowToggleValue = windowToggleValue;
-            this.hasTabLeft = hasTabLeft;
-            this.tabLeftController = tabLeftController;
-            this.tabLeftComponent = tabLeftComponent;
-            this.tabLeftValue = tabLeftValue;
-            this.hasTabRight = hasTabRight;
-            this.tabRightController = tabRightController;
-            this.tabRightComponent = tabRightComponent;
-            this.tabRightValue = tabRightValue;
         }
     }
 
@@ -760,24 +667,6 @@ public class WindowToggleService {
         Platform.runLater(WindowToggleService.this::runToggleWindowOnFxThread);
     }
 
-    private void scheduleHotasTabLeftOnFxThread() {
-        long now = System.nanoTime();
-        if (now - lastHotasTabLeftScheduleNs < HOTAS_SCHEDULE_DEBOUNCE_NS) {
-            return;
-        }
-        lastHotasTabLeftScheduleNs = now;
-        Platform.runLater(WindowToggleService.this::runSwitchToPreviousTabOnFxThread);
-    }
-
-    private void scheduleHotasTabRightOnFxThread() {
-        long now = System.nanoTime();
-        if (now - lastHotasTabRightScheduleNs < HOTAS_SCHEDULE_DEBOUNCE_NS) {
-            return;
-        }
-        lastHotasTabRightScheduleNs = now;
-        Platform.runLater(WindowToggleService.this::runSwitchToNextTabOnFxThread);
-    }
-
     /**
      * Entrées depuis JNativeHook (thread natif) : public pour éviter {@code access$n} depuis les classes internes.
      */
@@ -786,22 +675,6 @@ public class WindowToggleService {
             toggleWindowAndOpenCombo();
         } else {
             Platform.runLater(this::toggleWindowAndOpenCombo);
-        }
-    }
-
-    public void runSwitchToPreviousTabOnFxThread() {
-        if (Platform.isFxApplicationThread()) {
-            switchToPreviousTab();
-        } else {
-            Platform.runLater(this::switchToPreviousTab);
-        }
-    }
-
-    public void runSwitchToNextTabOnFxThread() {
-        if (Platform.isFxApplicationThread()) {
-            switchToNextTab();
-        } else {
-            Platform.runLater(this::switchToNextTab);
         }
     }
 
@@ -971,92 +844,5 @@ public class WindowToggleService {
         });
     }
 
-    /**
-     * Change vers l'onglet précédent (cycle: Mining -> Missions -> Mining)
-     */
-    private void switchToPreviousTab() {
-        if (isPaused) {
-            System.out.println("⚠️ Changement d'onglet ignoré (service en pause)");
-            return;
-        }
-
-        // Vérifier que la fenêtre est visible (pas cachée)
-        if (hidden) {
-            System.out.println("⚠️ Changement d'onglet ignoré (fenêtre cachée)");
-            return;
-        }
-
-        if (tabPane == null) {
-            System.out.println("⚠️ Changement d'onglet ignoré (TabPane non initialisé)");
-            return;
-        }
-
-        if (missionsTab == null || miningTab == null || explorationTab == null || colonisationTab == null) {
-            System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
-            return;
-        }
-
-        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
-        if (selectedTab == missionsTab) {
-            tabPane.getSelectionModel().select(colonisationTab);
-            System.out.println("📑 Changement vers onglet Colonisation");
-        } else if (selectedTab == miningTab) {
-            tabPane.getSelectionModel().select(missionsTab);
-            System.out.println("📑 Changement vers onglet Missions");
-        } else if (selectedTab == explorationTab) {
-            tabPane.getSelectionModel().select(miningTab);
-            System.out.println("📑 Changement vers onglet Mining");
-        } else if (selectedTab == colonisationTab) {
-            tabPane.getSelectionModel().select(explorationTab);
-            System.out.println("📑 Changement vers onglet Exploration");
-        } else {
-            tabPane.getSelectionModel().select(missionsTab);
-            System.out.println("📑 Sélection de l'onglet Missions (aucun onglet sélectionné)");
-        }
-    }
-
-    /**
-     * Change vers l'onglet suivant (cycle: Missions -> Mining -> Exploration -> Missions)
-     */
-    private void switchToNextTab() {
-        if (isPaused) {
-            System.out.println("⚠️ Changement d'onglet ignoré (service en pause)");
-            return;
-        }
-
-        // Vérifier que la fenêtre est visible (pas cachée)
-        if (hidden) {
-            System.out.println("⚠️ Changement d'onglet ignoré (fenêtre cachée)");
-            return;
-        }
-
-        if (tabPane == null) {
-            System.out.println("⚠️ Changement d'onglet ignoré (TabPane non initialisé)");
-            return;
-        }
-
-        if (missionsTab == null || miningTab == null || explorationTab == null || colonisationTab == null) {
-            System.out.println("⚠️ Changement d'onglet ignoré (onglets non initialisés)");
-            return;
-        }
-
-        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
-        if (selectedTab == missionsTab) {
-            tabPane.getSelectionModel().select(miningTab);
-            System.out.println("📑 Changement vers onglet Mining");
-        } else if (selectedTab == miningTab) {
-            tabPane.getSelectionModel().select(explorationTab);
-            System.out.println("📑 Changement vers onglet Exploration");
-        } else if (selectedTab == explorationTab) {
-            tabPane.getSelectionModel().select(colonisationTab);
-            System.out.println("📑 Changement vers onglet Colonisation");
-        } else if (selectedTab == colonisationTab) {
-            tabPane.getSelectionModel().select(missionsTab);
-            System.out.println("📑 Changement vers onglet Missions");
-        } else {
-            tabPane.getSelectionModel().select(missionsTab);
-            System.out.println("📑 Sélection de l'onglet Missions (aucun onglet sélectionné)");
-        }
-    }
 }
 

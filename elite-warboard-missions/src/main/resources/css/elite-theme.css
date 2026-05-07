@@ -2726,9 +2726,109 @@
     -fx-text-fill: -fx-elite-dark;
 }
 
-/* Fenêtre de configuration */
+/* Fenêtre de configuration (Scene modale : la racine n’a pas toujours .root → variables Elite redéfinies ici pour TabPane, etc.) */
 .config-dialog {
+    -fx-elite-orange: #FF6B00;
+    -fx-elite-cyan: #00FFFF;
+    -fx-elite-dark: #0A0A0A;
+    -fx-elite-darker: #050505;
+    -fx-elite-gray: #1A1A1A;
+    -fx-elite-light-gray: #2A2A2A;
+    -fx-elite-text: #E0E0E0;
+    -fx-elite-text-dim: #A0A0A0;
+    -fx-elite-success: #00AEEF;
+    -fx-elite-green: #00FF00;
+    -fx-elite-blue: #007ACC;
+    -fx-elite-warning: #FFAA00;
+    -fx-elite-danger: #FF0000;
     -fx-background-color: -fx-elite-dark;
+}
+
+/* Configuration : barre d’onglets comme le module Colonisation (.colonisation-panel .colonisation-tab-pane) */
+.config-dialog .colonisation-tab-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.config-dialog .colonisation-tab-pane .tab-header-background {
+    -fx-background-color: -fx-elite-darker;
+    -fx-border-color: -fx-elite-orange;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.config-dialog .colonisation-tab-pane .tab-header-area {
+    -fx-padding: 0 0 8px 0;
+}
+
+.config-dialog .colonisation-tab-pane .headers-region {
+    -fx-padding: 0;
+}
+
+.config-dialog .colonisation-tab-pane .tab {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, -fx-elite-gray, -fx-elite-darker);
+    -fx-background-insets: 0;
+    -fx-background-radius: 7px 7px 0 0;
+    -fx-border-color: derive(-fx-elite-orange, -30%);
+    -fx-border-width: 1px 1px 0 1px;
+    -fx-border-radius: 7px 7px 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 2, 0.25, 0, 1);
+    -fx-padding: 8px 18px 9px 18px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.config-dialog .colonisation-tab-pane .tab .tab-label {
+    -fx-text-fill: -fx-elite-text-dim;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.config-dialog .colonisation-tab-pane .tab:hover {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(255, 107, 0, 0.24), -fx-elite-gray);
+    -fx-border-color: -fx-elite-cyan;
+    -fx-cursor: hand;
+}
+
+.config-dialog .colonisation-tab-pane .tab:selected {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(255, 107, 0, 0.32), rgba(0, 198, 255, 0.16));
+    -fx-border-color: -fx-elite-cyan;
+    -fx-border-width: 2px 2px 0 2px;
+    -fx-effect: null;
+}
+
+.config-dialog .colonisation-tab-pane .tab:selected:focused,
+.config-dialog .colonisation-tab-pane .tab:focused {
+    -fx-effect: null;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.config-dialog .colonisation-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.config-dialog .colonisation-tab-pane .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 12 0 0 0;
+}
+
+.config-dialog-tab-scroll {
+    -fx-background-color: transparent;
+}
+
+/* Bloc combat / VR : pas de carte bordée */
+.config-combat-outer,
+.config-vr-outer {
+    -fx-padding: 0;
 }
 
 .config-content {
@@ -2759,6 +2859,136 @@
 
 .config-section {
     -fx-padding: 10 0 10 0;
+}
+
+.config-section-compact {
+    -fx-padding: 4 0 6 0;
+}
+
+.config-columns-row {
+    -fx-spacing: 18;
+    -fx-alignment: TOP_LEFT;
+}
+
+.config-column {
+    -fx-spacing: 8;
+}
+
+.config-column-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-orange;
+    -fx-padding: 0 0 4 0;
+}
+
+.config-column-separator {
+    -fx-padding: 0 4;
+}
+
+.config-bind-row {
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.config-bindings-block {
+    -fx-spacing: 8;
+    -fx-padding: 4 0 0 0;
+}
+
+.config-settings-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.config-settings-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.config-settings-scroll-inner {
+    -fx-spacing: 14;
+}
+
+.config-settings-card {
+    -fx-background-color: -fx-elite-darker;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 140, 0, 0.45);
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 12 14 14 14;
+}
+
+.config-settings-card-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-padding: 0 0 4 0;
+}
+
+.config-card-separator {
+    -fx-padding: 4 0;
+}
+
+.config-combat-inner {
+    -fx-spacing: 8;
+}
+
+.config-bind-strip {
+    -fx-background-color: -fx-elite-gray;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255, 107, 0, 0.35);
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 10 12 12 12;
+    -fx-spacing: 8;
+}
+
+.config-bind-strip-caption {
+    -fx-text-fill: -fx-elite-text;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.config-bind-actions {
+    -fx-spacing: 10;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.config-bind-capture-btn {
+    -fx-min-width: 72;
+}
+
+.config-bind-value-chip {
+    -fx-background-color: -fx-elite-darker;
+    -fx-background-radius: 4;
+    -fx-border-color: rgba(255, 140, 0, 0.45);
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-padding: 6 12 6 12;
+    -fx-text-fill: -fx-elite-cyan;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.config-bind-clear-btn {
+    -fx-min-width: 32;
+    -fx-max-width: 32;
+    -fx-min-height: 32;
+    -fx-max-height: 32;
+    -fx-padding: 0;
+    -fx-font-size: 12px;
+    -fx-content-display: GRAPHIC_ONLY;
+    -fx-graphic-text-gap: 0;
+}
+
+.config-bind-clear-x {
+    -fx-text-fill: -fx-elite-orange;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 0;
+    -fx-min-width: 14;
+    -fx-alignment: CENTER;
 }
 
 .config-section-title {
@@ -4272,7 +4502,8 @@
     -fx-font-size: 11px;
 }
 
-.config-field {
+.config-field,
+.config-textfield {
     -fx-background-color: -fx-elite-darker;
     -fx-border-color: -fx-elite-orange;
     -fx-border-width: 1;
@@ -4282,7 +4513,8 @@
     -fx-padding: 5;
 }
 
-.config-field:focused {
+.config-field:focused,
+.config-textfield:focused {
     -fx-border-color: -fx-elite-cyan;
 }
 
