@@ -366,9 +366,8 @@ public class EliteDashboardApp extends Application {
             skipGeometry = stage.isMaximized() || pseudoMax;
             persistMaximized = stage.isMaximized() || pseudoMax;
         } else {
-            // Sans décor : ne pas traiter « remplit la zone utile » comme maximisé tant que l’utilisateur
-            // n’a pas cliqué max (pref true) — sinon skipGeometry bloquait la sauvegarde de x/y en mode fenêtré.
-            skipGeometry = stage.isMaximized() || (pseudoMax && prefUndecoratedMax);
+            // Sans décor : tant que window.maximized=true (choix utilisateur via le bouton), ne jamais
+            // écraser x/y/largeur/hauteur — ce sont les bornes pour la démaximisation / prochain lancement.
             persistMaximized = stage.isMaximized() || (pseudoMax && prefUndecoratedMax);
             if (prefUndecoratedMax && !persistMaximized) {
                 Screen s = getScreenForWindow(stage);
@@ -376,6 +375,7 @@ public class EliteDashboardApp extends Application {
                     persistMaximized = true;
                 }
             }
+            skipGeometry = stage.isMaximized() || prefUndecoratedMax;
         }
         // En undecorated « plein zone utile » demandé explicitement, ne pas écraser x/y/largeur/hauteur :
         // ce sont les bornes de restauration pour le bouton restaurer au prochain lancement.
