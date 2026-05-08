@@ -18,6 +18,14 @@ public final class StageVisualBounds {
     private StageVisualBounds() {
     }
 
+    /**
+     * Ramène la coordonnée Y écran du stage à au moins 0 (bord haut). Les valeurs négatives arrivent
+     * souvent avec le cadre Win32 undecorated ; les préférences et la restauration les éviter ainsi.
+     */
+    public static double clampStageYNonNegative(double screenY) {
+        return Math.max(0.0, screenY);
+    }
+
     /** Écran dont la zone utilisable contient le centre géométrique du stage (ou écran principal). */
     public static Screen screenForWindowCenter(Stage stage) {
         if (stage == null) {

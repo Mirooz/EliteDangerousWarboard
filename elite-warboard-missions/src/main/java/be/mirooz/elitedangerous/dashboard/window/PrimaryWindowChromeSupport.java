@@ -180,7 +180,7 @@ public final class PrimaryWindowChromeSupport {
             chromeWorkAreaExpanded = false;
             stage.setMaximized(false);
             stage.setX(restoreWinX);
-            stage.setY(restoreWinY);
+            stage.setY(StageVisualBounds.clampStageYNonNegative(restoreWinY));
             stage.setWidth(Math.max(stage.getMinWidth(), restoreWinW));
             stage.setHeight(Math.max(stage.getMinHeight(), restoreWinH));
         } else {
@@ -190,6 +190,8 @@ public final class PrimaryWindowChromeSupport {
         }
         syncWindowMaxRestoreGlyph();
         scheduleSyncGlyphAfterLayout();
+        PreferencesService.getInstance()
+                .setPreference("window.maximized", String.valueOf(chromeWorkAreaExpanded));
     }
 
     private void scheduleSyncGlyphAfterLayout() {
@@ -262,7 +264,7 @@ public final class PrimaryWindowChromeSupport {
                 return;
             }
             stage.setX(e.getScreenX() - dragOffsetX);
-            stage.setY(e.getScreenY() - dragOffsetY);
+            stage.setY(StageVisualBounds.clampStageYNonNegative(e.getScreenY() - dragOffsetY));
         });
     }
 
@@ -271,7 +273,7 @@ public final class PrimaryWindowChromeSupport {
             restoreWinW = stage.getWidth();
             restoreWinH = stage.getHeight();
             restoreWinX = stage.getX();
-            restoreWinY = stage.getY();
+            restoreWinY = StageVisualBounds.clampStageYNonNegative(stage.getY());
         }
     }
 
@@ -312,7 +314,7 @@ public final class PrimaryWindowChromeSupport {
                 }
             }
             restoreWinX = rx;
-            restoreWinY = ry;
+            restoreWinY = StageVisualBounds.clampStageYNonNegative(ry);
             restoreWinW = w;
             restoreWinH = h;
         } catch (NumberFormatException ignored) {

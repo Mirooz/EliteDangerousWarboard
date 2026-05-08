@@ -722,7 +722,7 @@ public class WindowToggleService {
         if (savedWasMaximized) {
             mainStage.setMaximized(false);
             mainStage.setX(savedX);
-            mainStage.setY(savedY);
+            mainStage.setY(Math.max(0.0, savedY));
             mainStage.setWidth(savedWidth);
             mainStage.setHeight(savedHeight);
             PauseTransition maximizeDelay = new PauseTransition(RESTORE_MAXIMIZE_DELAY);
@@ -741,7 +741,7 @@ public class WindowToggleService {
         } else {
             mainStage.setMaximized(false);
             mainStage.setX(savedX);
-            mainStage.setY(savedY);
+            mainStage.setY(Math.max(0.0, savedY));
             mainStage.setWidth(savedWidth);
             mainStage.setHeight(savedHeight);
         }

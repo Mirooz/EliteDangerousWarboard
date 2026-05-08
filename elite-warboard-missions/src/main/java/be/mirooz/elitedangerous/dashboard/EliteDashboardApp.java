@@ -32,6 +32,8 @@ import java.util.Objects;
 public class EliteDashboardApp extends Application {
 
     private static final double WORK_AREA_MAX_EPS = 4.0;
+    /** Marge (px) : au démarrage, {@link StageVisualBounds#isStageFillingWorkArea} peut être en retard ; on garde maximized=true. */
+    private static final double NEARLY_FULL_WORK_AREA_SLACK = 120.0;
 
     private LocalizationService localizationService = LocalizationService.getInstance();
     private LoggingService loggingService = LoggingService.getInstance();
@@ -42,6 +44,11 @@ public class EliteDashboardApp extends Application {
     private boolean isRestoringWindow = false; // Flag pour éviter de sauvegarder pendant la restauration
     /** Évite d’écrire x/y/largeur/hauteur intermédiaires (ex. démaximisation : x/y puis w/h). */
     private boolean saveWindowPositionCoalesceScheduled;
+    /**
+     * Tant que c’est {@code false}, les listeners de géométrie n’enregistrent pas les prefs : au démarrage,
+     * VR Win32 / layout peuvent provoquer des valeurs transitoires et écraser la position « non maximisée ».
+     */
+    private boolean windowGeometryListenerSavesEnabled;
 
     @Override
     public void start(Stage stage) {
@@ -113,8 +120,12 @@ public class EliteDashboardApp extends Application {
                 if (maximized && WindowFramePreferences.useNativeOsWindowFrame()) {
                     // Fenêtre décorée : le WM gère la zone au-dessus de la barre des tâches.
                     stage.setMaximized(true);
+                } else if (maximized) {
+                    // Sans décor : recaler après le premier affichage (layout / peer) puis une frame de plus.
+                    Screen targetScreen = resolveWindowScreenFromPreferences();
+                    StageVisualBounds.fitStageToVisualBounds(stage, targetScreen);
+                    Platform.runLater(() -> StageVisualBounds.fitStageToVisualBounds(stage, targetScreen));
                 }
-                // Sans décor : restoreWindowPosition a déjà appliqué getVisualBounds() (pas setMaximized).
             });
 
             stage.setOnCloseRequest(event -> {
@@ -127,17 +138,25 @@ public class EliteDashboardApp extends Application {
 
             stage.show();
 
+            var windowGeometryStabilizePause = new PauseTransition(Duration.millis(300));
+            windowGeometryStabilizePause.setOnFinished(ev -> {
+                windowGeometryListenerSavesEnabled = true;
+                saveWindowPosition(stage);
+            });
+            windowGeometryStabilizePause.play();
+
             if (!WindowFramePreferences.useNativeOsWindowFrame() && WindowsUndecoratedVrFrameCompat.isSupportedOs()) {
                 var vrFramePause = new PauseTransition(Duration.millis(100));
                 vrFramePause.setOnFinished(e -> {
                     WindowsUndecoratedVrFrameCompat.applyAfterShown(stage);
-                    // SetWindowPos(FRAMECHANGED) peut réduire la zone cliente : recaler sur visualBounds.
+                    // Ne recaler sur visualBounds que si l’utilisateur a demandé un vrai « plein écran ».
+                    // Sinon (maximized=false mais fenêtre grande), fitStageToVisualBounds écrasait x/y/l/h
+                    // issus des préférences et cassait max / restore (2ᵉ écran, y négatif, etc.).
                     Platform.runLater(() -> {
                         boolean wantsMax = Boolean.parseBoolean(
                                 preferencesService.getPreference("window.maximized", "false"));
-                        if (wantsMax
-                                || StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS)) {
-                            StageVisualBounds.fitStageToVisualBounds(stage);
+                        if (wantsMax) {
+                            StageVisualBounds.fitStageToVisualBounds(stage, resolveWindowScreenFromPreferences());
                         }
                     });
                 });
@@ -179,12 +198,7 @@ public class EliteDashboardApp extends Application {
             // Si maximisé, positionner sur le bon écran mais ne pas maximiser tout de suite
             // (on le fera dans onShown pour éviter les problèmes)
             if (maximized) {
-                // Restaurer l'écran d'abord
-                Screen targetScreen = getScreenByIndex(savedScreenIndex);
-                if (targetScreen == null) {
-                    targetScreen = Screen.getPrimary();
-                }
-                StageVisualBounds.fitStageToVisualBounds(stage, targetScreen);
+                StageVisualBounds.fitStageToVisualBounds(stage, resolveWindowScreenFromPreferences());
                 isRestoringWindow = false;
                 return;
             }
@@ -193,7 +207,7 @@ public class EliteDashboardApp extends Application {
             if (savedX != null && savedY != null && savedWidth != null && savedHeight != null) {
                 try {
                     double x = Double.parseDouble(savedX);
-                    double y = Double.parseDouble(savedY);
+                    double y = StageVisualBounds.clampStageYNonNegative(Double.parseDouble(savedY));
                     double width = Double.parseDouble(savedWidth);
                     double height = Double.parseDouble(savedHeight);
                     
@@ -220,7 +234,8 @@ public class EliteDashboardApp extends Application {
                         
                         // S'assurer que la fenêtre est au moins partiellement visible
                         double finalX = Math.max(screenBounds.getMinX(), Math.min(x, screenBounds.getMaxX() - 100));
-                        double finalY = Math.max(screenBounds.getMinY(), Math.min(y, screenBounds.getMaxY() - 100));
+                        double finalY = StageVisualBounds.clampStageYNonNegative(
+                                Math.max(screenBounds.getMinY(), Math.min(y, screenBounds.getMaxY() - 100)));
                         
                         stage.setX(finalX);
                         stage.setY(finalY);
@@ -244,6 +259,31 @@ public class EliteDashboardApp extends Application {
         }
     }
     
+    /**
+     * Écran enregistré dans les préférences pour la fenêtre principale, ou écran principal.
+     */
+    private Screen resolveWindowScreenFromPreferences() {
+        Screen targetScreen = getScreenByIndex(preferencesService.getPreference("window.screen.index", null));
+        if (targetScreen == null) {
+            targetScreen = Screen.getPrimary();
+        }
+        return targetScreen;
+    }
+
+    /**
+     * La fenêtre occupe-t-elle presque toute la zone utile de l’écran (tolérance large) ?
+     */
+    private boolean isStageNearlyFullOnScreen(Stage stage, Screen screen) {
+        if (stage == null || screen == null) {
+            return false;
+        }
+        Rectangle2D vb = screen.getVisualBounds();
+        return stage.getWidth() >= vb.getWidth() - NEARLY_FULL_WORK_AREA_SLACK
+                && stage.getHeight() >= vb.getHeight() - NEARLY_FULL_WORK_AREA_SLACK
+                && stage.getX() <= vb.getMinX() + NEARLY_FULL_WORK_AREA_SLACK
+                && stage.getY() <= vb.getMinY() + NEARLY_FULL_WORK_AREA_SLACK;
+    }
+
     /**
      * Récupère l'écran par son index
      */
@@ -317,16 +357,36 @@ public class EliteDashboardApp extends Application {
 
         boolean pseudoMax = !WindowFramePreferences.useNativeOsWindowFrame()
                 && StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS);
-        boolean skipGeometry = stage.isMaximized() || pseudoMax;
-        // En undecorated « plein zone utile », ne pas écraser x/y/largeur/hauteur : ce sont les bornes
-        // de restauration pour le bouton restaurer au prochain lancement (voir PrimaryWindowChromeSupport).
+        boolean prefUndecoratedMax = Boolean.parseBoolean(
+                preferencesService.getPreference("window.maximized", "false"));
+
+        boolean skipGeometry;
+        boolean persistMaximized;
+        if (WindowFramePreferences.useNativeOsWindowFrame()) {
+            skipGeometry = stage.isMaximized() || pseudoMax;
+            persistMaximized = stage.isMaximized() || pseudoMax;
+        } else {
+            // Sans décor : ne pas traiter « remplit la zone utile » comme maximisé tant que l’utilisateur
+            // n’a pas cliqué max (pref true) — sinon skipGeometry bloquait la sauvegarde de x/y en mode fenêtré.
+            skipGeometry = stage.isMaximized() || (pseudoMax && prefUndecoratedMax);
+            persistMaximized = stage.isMaximized() || (pseudoMax && prefUndecoratedMax);
+            if (prefUndecoratedMax && !persistMaximized) {
+                Screen s = getScreenForWindow(stage);
+                if (isStageNearlyFullOnScreen(stage, s)) {
+                    persistMaximized = true;
+                }
+            }
+        }
+        // En undecorated « plein zone utile » demandé explicitement, ne pas écraser x/y/largeur/hauteur :
+        // ce sont les bornes de restauration pour le bouton restaurer au prochain lancement.
         if (!skipGeometry) {
             preferencesService.setPreference("window.x", String.valueOf(stage.getX()));
-            preferencesService.setPreference("window.y", String.valueOf(stage.getY()));
+            preferencesService.setPreference(
+                    "window.y", String.valueOf(StageVisualBounds.clampStageYNonNegative(stage.getY())));
             preferencesService.setPreference("window.width", String.valueOf(stage.getWidth()));
             preferencesService.setPreference("window.height", String.valueOf(stage.getHeight()));
         }
-        preferencesService.setPreference("window.maximized", String.valueOf(stage.isMaximized() || pseudoMax));
+        preferencesService.setPreference("window.maximized", String.valueOf(persistMaximized));
         
         // Sauvegarder l'index de l'écran sur lequel se trouve la fenêtre
         Screen currentScreen = getScreenForWindow(stage);
@@ -378,26 +438,41 @@ public class EliteDashboardApp extends Application {
      */
     private void setupWindowListeners(Stage stage) {
         stage.xProperty().addListener((obs, oldVal, newVal) -> {
+            if (!windowGeometryListenerSavesEnabled) {
+                return;
+            }
             if (!isRestoringWindow && stage.isShowing()) {
                 scheduleSaveWindowPosition(stage);
             }
         });
         stage.yProperty().addListener((obs, oldVal, newVal) -> {
+            if (!windowGeometryListenerSavesEnabled) {
+                return;
+            }
             if (!isRestoringWindow && stage.isShowing()) {
                 scheduleSaveWindowPosition(stage);
             }
         });
         stage.widthProperty().addListener((obs, oldVal, newVal) -> {
+            if (!windowGeometryListenerSavesEnabled) {
+                return;
+            }
             if (!isRestoringWindow && stage.isShowing()) {
                 scheduleSaveWindowPosition(stage);
             }
         });
         stage.heightProperty().addListener((obs, oldVal, newVal) -> {
+            if (!windowGeometryListenerSavesEnabled) {
+                return;
+            }
             if (!isRestoringWindow && stage.isShowing()) {
                 scheduleSaveWindowPosition(stage);
             }
         });
         stage.maximizedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!windowGeometryListenerSavesEnabled) {
+                return;
+            }
             if (!isRestoringWindow && stage.isShowing()) {
                 scheduleSaveWindowPosition(stage);
             }
