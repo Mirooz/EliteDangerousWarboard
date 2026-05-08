@@ -2556,6 +2556,8 @@
 
 .elite-app-root {
     -fx-background-color: -fx-elite-dark;
+    /* Marge intérieure sauf en haut (barre titre collée au bord fenêtre). top, right, bottom, left */
+    -fx-padding: 0 12 12 12;
 }
 
 /* En-tête */
