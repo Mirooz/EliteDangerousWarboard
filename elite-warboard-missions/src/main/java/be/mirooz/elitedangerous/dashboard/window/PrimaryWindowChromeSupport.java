@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.animation.PauseTransition;
 import javafx.beans.InvalidationListener;
 import javafx.event.Event;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -87,6 +88,8 @@ public final class PrimaryWindowChromeSupport {
         if (!installed.compareAndSet(false, true)) {
             return;
         }
+        /* Main ouverte (pan / drag), comme bodiesScrollPane dans SystemVisualViewComponent — pas équivalent en -fx-cursor CSS. */
+        dashboardTitleBar.setCursor(Cursor.OPEN_HAND);
         if (WindowFramePreferences.useNativeOsWindowFrame()) {
             if (windowChromeBar != null) {
                 windowChromeBar.setVisible(false);
