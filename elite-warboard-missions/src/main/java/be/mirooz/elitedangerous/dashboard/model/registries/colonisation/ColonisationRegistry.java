@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Registre colonisation : systèmes « architecte » (ordre d’apparition dans le journal), chacun avec ses sites
@@ -186,6 +187,47 @@ public class ColonisationRegistry {
             return false;
         }
         return bucket.addDockIfAbsent(dockEntry);
+    }
+
+    /**
+     * Premier amarrage colonisation : ajoute l’entrée. Amarrages suivants (même {@code MarketID}) : met à jour les champs
+     * issus du journal ; renvoie {@code true} si une nouvelle entrée a été créée ou si le nom affiché / brut a changé
+     * (pour rafraîchir l’UI).
+     */
+    @Synchronized
+    public boolean addDockOrRefreshFromJournal(ColonisationDockEntry journal) {
+        if (journal == null) {
+            return false;
+        }
+        ColonisationDockEntry existing = findDockEntryByMarketId(journal.getMarketId());
+        if (existing != null) {
+            boolean nameChanged = copyJournalDockFieldsOntoExisting(existing, journal);
+            ColonisationArchitectSystem host = findArchitectSystemContaining(journal.getMarketId());
+            if (host != null) {
+                host.mergeSystemAddress(journal.getSystemAddress());
+            }
+            return nameChanged;
+        }
+        return addDockIfAbsent(journal);
+    }
+
+    /**
+     * Recopie les champs {@code Docked} sur l’entrée existante (sans toucher au chantier / {@code bodyId} / drapeaux).
+     *
+     * @return {@code true} si {@link ColonisationDockEntry#getStationNameRaw()} ou {@link ColonisationDockEntry#getSiteNameLocalised()} a changé
+     */
+    private static boolean copyJournalDockFieldsOntoExisting(ColonisationDockEntry existing, ColonisationDockEntry journal) {
+        boolean nameChanged = !Objects.equals(existing.getStationNameRaw(), journal.getStationNameRaw())
+                || !Objects.equals(existing.getSiteNameLocalised(), journal.getSiteNameLocalised());
+        existing.setDockTimestamp(journal.getDockTimestamp());
+        existing.setStationNameRaw(journal.getStationNameRaw());
+        existing.setSiteNameLocalised(journal.getSiteNameLocalised());
+        existing.setStationType(journal.getStationType());
+        existing.setStarSystem(journal.getStarSystem());
+        existing.setSystemAddress(journal.getSystemAddress());
+        existing.setStationFactionName(journal.getStationFactionName());
+        existing.setDistFromStarLs(journal.getDistFromStarLs());
+        return nameChanged;
     }
 
     /** Tous les sites (tous systèmes), ordre : systèmes puis {@code MarketID} dans chaque système. */

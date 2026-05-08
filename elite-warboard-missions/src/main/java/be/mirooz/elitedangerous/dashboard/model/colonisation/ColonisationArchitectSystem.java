@@ -39,7 +39,7 @@ public class ColonisationArchitectSystem {
         this.starSystem = starSystem != null ? starSystem : "";
     }
 
-    void mergeSystemAddress(long address) {
+    public void mergeSystemAddress(long address) {
         if (address != 0L) {
             this.systemAddress = address;
         }

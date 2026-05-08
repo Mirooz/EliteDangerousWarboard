@@ -298,9 +298,9 @@ public class ColonisationService {
     }
 
     /**
-     * Si l'événement Docked concerne un site de colonisation, ajoute une entrée au registre seulement si le MarketID n’y est pas encore.
+     * Si l'événement Docked concerne un site de colonisation, enregistre ou met à jour l’entrée pour ce {@code MarketID}.
      *
-     * @return {@code true} si une nouvelle entrée dock colonisation a été enregistrée
+     * @return {@code true} si une nouvelle entrée a été ajoutée ou si le nom du site (brut ou affiché) a changé par rapport au registre
      */
     public boolean handleDocked(JsonNode jsonNode) {
         if (jsonNode == null || !hasColonisationStationService(jsonNode)) {
@@ -323,12 +323,23 @@ public class ColonisationService {
         snap.setStationFactionName(jsonNode.path("StationFaction").path("Name").asText(""));
         snap.setDistFromStarLs(jsonNode.path("DistFromStarLS").asDouble(0));
 
-        if (registry.addDockIfAbsent(snap)) {
-            System.out.println("Colonisation: amarrage sur « " + snap.getSiteNameLocalised() + " » ("
-                    + snap.getStarSystem() + ", MarketID=" + snap.getMarketId() + ")");
-            return true;
+        ColonisationDockEntry prior = null;
+        ColonisationArchitectSystem host = registry.findArchitectSystemContaining(snap.getMarketId());
+        if (host != null) {
+            prior = host.getSiteByMarketId(snap.getMarketId());
         }
-        return false;
+
+        boolean notify = registry.addDockOrRefreshFromJournal(snap);
+        if (notify) {
+            if (prior == null) {
+                System.out.println("Colonisation: amarrage sur « " + snap.getSiteNameLocalised() + " » ("
+                        + snap.getStarSystem() + ", MarketID=" + snap.getMarketId() + ")");
+            } else {
+                System.out.println("Colonisation: nom du site mis à jour « " + snap.getSiteNameLocalised() + " » ("
+                        + snap.getStarSystem() + ", MarketID=" + snap.getMarketId() + ")");
+            }
+        }
+        return notify;
     }
 
     public static boolean hasColonisationStationService(JsonNode dockedEvent) {
