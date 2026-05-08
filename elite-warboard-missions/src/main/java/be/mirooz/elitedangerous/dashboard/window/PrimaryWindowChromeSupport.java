@@ -130,16 +130,19 @@ public final class PrimaryWindowChromeSupport {
         dashboardTitleBar.addEventFilter(MouseEvent.MOUSE_CLICKED, this::onDashboardTitleBarDoubleClick);
 
         seedRestoreBoundsFromPreferences();
-        if (!isWorkAreaMaximized()) {
+        boolean prefMaximized = Boolean.parseBoolean(
+                PreferencesService.getInstance().getPreference("window.maximized", "false"));
+        // Si window.maximized=true au premier runLater, le stage peut encore être à la taille de scène :
+        // rememberRestoreBounds() écraserait les x/y/l/h issus des prefs — le bouton restaurer ignorerait alors
+        // la géométrie sauvegardée après redémarrage.
+        if (!prefMaximized && !isWorkAreaMaximized()) {
             rememberRestoreBounds();
         }
-        chromeWorkAreaExpanded =
-                Boolean.parseBoolean(PreferencesService.getInstance().getPreference("window.maximized", "false"));
+        chromeWorkAreaExpanded = prefMaximized;
         attachStageGeometryGlyphSync();
         syncWindowMaxRestoreGlyph();
         refreshLocalizedStrings();
-        if (Boolean.parseBoolean(PreferencesService.getInstance().getPreference("window.maximized", "false"))
-                || isWorkAreaMaximized()) {
+        if (prefMaximized || isWorkAreaMaximized()) {
             scheduleSyncGlyphAfterLayout();
         }
     }
@@ -283,8 +286,8 @@ public final class PrimaryWindowChromeSupport {
      * préférence est passée à {@code false} gardait les défauts 100×1200 et le bouton « restaurer » sautait
      * n’importe où.
      * <p>
-     * Si {@code window.maximized=true} et que x/y/largeur/hauteur coïncident avec la zone utile (bug
-     * d’anciennes sauvegardes), on n’applique pas ces valeurs.
+     * Avec {@code window.maximized=true}, ces bornes sont celles utilisées au démaximize après relance
+     * (la géométrie « fenêtrée » n’est plus écrasée par une capture du stage encore non calé).
      */
     private void seedRestoreBoundsFromPreferences() {
         PreferencesService ps = PreferencesService.getInstance();
@@ -302,16 +305,6 @@ public final class PrimaryWindowChromeSupport {
             double h = Double.parseDouble(sh);
             if (w <= 0 || h <= 0) {
                 return;
-            }
-            boolean prefMaximized = Boolean.parseBoolean(ps.getPreference("window.maximized", "false"));
-            if (prefMaximized) {
-                var vb = StageVisualBounds.screenForWindowCenter(stage).getVisualBounds();
-                if (Math.abs(rx - vb.getMinX()) <= WORK_AREA_MATCH_EPS * 2
-                        && Math.abs(ry - vb.getMinY()) <= WORK_AREA_MATCH_EPS * 2
-                        && Math.abs(w - vb.getWidth()) <= WORK_AREA_MATCH_EPS * 2
-                        && Math.abs(h - vb.getHeight()) <= WORK_AREA_MATCH_EPS * 2) {
-                    return;
-                }
             }
             restoreWinX = rx;
             restoreWinY = StageVisualBounds.clampStageYNonNegative(ry);

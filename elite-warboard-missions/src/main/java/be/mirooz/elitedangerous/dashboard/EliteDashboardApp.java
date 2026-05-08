@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.window.WindowFramePreferences;
 import be.mirooz.elitedangerous.dashboard.window.win32.WindowsUndecoratedVrFrameCompat;
 import be.mirooz.elitedangerous.dashboard.view.main.DashboardController;
 import be.mirooz.elitedangerous.dashboard.service.AppLifecycleService;
+import be.mirooz.elitedangerous.dashboard.service.WindowToggleService;
 import be.mirooz.elitedangerous.dashboard.service.ErrorLogsConsentService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.LoggingService;
@@ -354,6 +355,10 @@ public class EliteDashboardApp extends Application {
         if (isRestoringWindow) {
             return; // Ne pas sauvegarder pendant la restauration
         }
+        if (WindowToggleService.getInstance().isVrWindowGeometryHidden()) {
+            // Bind VR : stage 1×1 — ne pas écraser x/y/largeur/hauteur ni le reste à partir de cette géométrie.
+            return;
+        }
 
         boolean pseudoMax = !WindowFramePreferences.useNativeOsWindowFrame()
                 && StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MAX_EPS);
@@ -375,7 +380,8 @@ public class EliteDashboardApp extends Application {
                     persistMaximized = true;
                 }
             }
-            skipGeometry = stage.isMaximized() || prefUndecoratedMax;
+            // Inclure pseudoMax : au maximize sans décor, fitStage remplit la zone avant que window.maximized soit true en prefs.
+            skipGeometry = stage.isMaximized() || prefUndecoratedMax || pseudoMax;
         }
         // En undecorated « plein zone utile » demandé explicitement, ne pas écraser x/y/largeur/hauteur :
         // ce sont les bornes de restauration pour le bouton restaurer au prochain lancement.

@@ -101,6 +101,13 @@ public class WindowToggleService {
     }
 
     /**
+     * {@code true} tant que le bind VR a réduit le stage à 1×1 : ne pas persister cette géométrie dans les préférences.
+     */
+    public boolean isVrWindowGeometryHidden() {
+        return hidden;
+    }
+
+    /**
      * Initialise le service avec le stage et les composants nécessaires
      */
     public void initialize(Stage stage, ComboBox<String> comboBox, StackPane rootPane) {
