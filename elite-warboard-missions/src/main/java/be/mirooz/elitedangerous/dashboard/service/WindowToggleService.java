@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.view.exploration.SystemVisualViewComponent;
 import be.mirooz.elitedangerous.dashboard.window.StageVisualBounds;
 import be.mirooz.elitedangerous.dashboard.window.WindowFramePreferences;
+import be.mirooz.elitedangerous.dashboard.window.win32.WindowsBringStageToFrontNoActivate;
 import be.mirooz.elitedangerous.dashboard.window.win32.WindowsUndecoratedVrFrameCompat;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -713,7 +714,6 @@ public class WindowToggleService {
         vrLayoutEpoch++;
         final int epoch = vrLayoutEpoch;
         hidden = false;
-        mainStage.toFront();
         mainStage.setOpacity(1.0);
 
         mainStage.setMinWidth(savedMinWidth);
@@ -736,6 +736,7 @@ public class WindowToggleService {
                     StageVisualBounds.fitStageToVisualBounds(mainStage);
                 }
                 scheduleWin32UndecoratedFrameRefresh();
+                finishRestoreZOrder();
             });
             maximizeDelay.play();
         } else {
@@ -746,7 +747,26 @@ public class WindowToggleService {
             mainStage.setHeight(savedHeight);
         }
 
+        finishRestoreZOrder();
         scheduleRestoreComboAndZoom();
+    }
+
+    /**
+     * Sous Windows : premier plan sans activer le HWND (évite de capter la souris au jeu au bind VR).
+     * Sinon ou si HWND introuvable : repli {@link Stage#toFront()}.
+     */
+    private void finishRestoreZOrder() {
+        if (mainStage == null) {
+            return;
+        }
+        if (WindowsBringStageToFrontNoActivate.isSupported()) {
+            if (!WindowsBringStageToFrontNoActivate.apply(mainStage)) {
+                mainStage.toFront();
+            }
+            Platform.runLater(() -> WindowsBringStageToFrontNoActivate.apply(mainStage));
+        } else {
+            mainStage.toFront();
+        }
     }
 
     /**

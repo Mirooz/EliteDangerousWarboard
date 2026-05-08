@@ -76,29 +76,10 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
         </dependency>
-        <dependency>
-            <groupId>be.mirooz.elitedangerous.lib</groupId>
-            <artifactId>edtools-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>be.mirooz.elitedangerous.lib</groupId>
-            <artifactId>elite-commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>be.mirooz.elitedangerous</groupId>
-            <artifactId>bioforge-biodatas</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>be.mirooz.elitedangerous</groupId>
             <artifactId>ardent-api-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>be.mirooz.elitedangerous</groupId>
-            <artifactId>siriuscorp-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -109,6 +90,26 @@
         <dependency>
             <groupId>be.mirooz.elitedangerous</groupId>
             <artifactId>elite-eddn-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous.lib</groupId>
+            <artifactId>edtools-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous</groupId>
+            <artifactId>siriuscorp-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous.lib</groupId>
+            <artifactId>elite-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>be.mirooz.elitedangerous</groupId>
+            <artifactId>bioforge-biodatas</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- JavaFX Controls -->
