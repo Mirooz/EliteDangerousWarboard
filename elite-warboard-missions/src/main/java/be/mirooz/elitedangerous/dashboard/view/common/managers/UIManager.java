@@ -30,6 +30,9 @@ public class UIManager {
 
     public void refreshAllUI() {
         Platform.runLater(() -> {
+            if (DashboardContext.getInstance().isBatchLoading()) {
+                return;
+            }
             for (IRefreshable r : IRefreshables) {
                 try {
                     r.refreshUI();
