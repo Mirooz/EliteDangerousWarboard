@@ -370,7 +370,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>jlink</executable>
+                                    <executable>${java.home}/bin/jlink</executable>
                                     <commandlineArgs>
                                         --module-path "${jlink.jmods.path}"
                                         --add-modules
@@ -389,7 +389,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>jpackage</executable>
+                                    <executable>${java.home}/bin/jpackage</executable>
                                     <arguments>
                                         <argument>--type</argument>
                                         <argument>app-image</argument>
@@ -541,7 +541,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>jlink</executable>
+                                    <executable>${java.home}/bin/jlink</executable>
                                     <commandlineArgs>
                                         --module-path "${jlink.jmods.path}"
                                         --add-modules
@@ -560,7 +560,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>jpackage</executable>
+                                    <executable>${java.home}/bin/jpackage</executable>
                                     <arguments>
                                         <argument>--type</argument>
                                         <argument>app-image</argument>
@@ -599,7 +599,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>jpackage</executable>
+                                    <executable>${java.home}/bin/jpackage</executable>
                                     <arguments>
                                         <argument>--type</argument>
                                         <argument>deb</argument>
