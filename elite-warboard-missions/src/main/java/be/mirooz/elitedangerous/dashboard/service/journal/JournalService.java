@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 public class JournalService {
 
     private static final String CARGO_FILE = "Cargo.json";
-    private static final Duration SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN = Duration.ofMinutes(20);
+    private static final Duration SKIP_FLEET_CAPI_IF_JOURNAL_CARRIER_ACTIVITY_WITHIN = Duration.ofMinutes(60);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final CommanderStatus commanderStatus = CommanderStatus.getInstance();
