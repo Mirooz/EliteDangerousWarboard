@@ -1042,7 +1042,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
     /**
      * Même logique que l’auto-remplissage du sélecteur de structure dans le détail chantier : sans entrée persistée,
-     * l’en-tête T2/T3 (chantiers terminés seulement) manquerait de structure déduite. On applique donc le défaut
+     * l’en-tête T2/T3 (terminés + coûts des chantiers en cours) manquerait de structure déduite. On applique donc le défaut
      * dès qu’un système architecte est affiché.
      */
     private void ensureDefaultColonisationStructuresForArchitectSystem(ColonisationArchitectSystem arch) {
@@ -1087,8 +1087,9 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
     }
 
     /**
-     * Totaux T2/T3 pour le système sélectionné : uniquement les chantiers au statut
-     * {@link ConstructionStatus#COMPLETE} (structure choisie, bilan net gains + coûts de palier).
+     * Totaux T2/T3 pour le système sélectionné (structure choisie par chantier) :
+     * {@link ConstructionStatus#COMPLETE} — bilan net gains + coûts de palier ;
+     * {@link ConstructionStatus#IN_PROGRESS} — coûts de palier uniquement (les gains s’appliquent à la livraison).
      */
     private void refreshArchitectSystemImpactTotals() {
         if (architectSystemImpactTotalsBox == null) {
@@ -1108,7 +1109,11 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         int netT3 = 0;
         for (ColonisationDockEntry site : selectedArchitectArch.getSites()) {
             ColonisationConstruction c = site.getConstruction();
-            if (c == null || c.getStatus() != ConstructionStatus.COMPLETE) {
+            if (c == null) {
+                continue;
+            }
+            ConstructionStatus st = c.getStatus();
+            if (st != ConstructionStatus.COMPLETE && st != ConstructionStatus.IN_PROGRESS) {
                 continue;
             }
             Optional<Structure> chosen = preferencesService.getColonisationUserConstructionStructure(site.getMarketId());
@@ -1116,8 +1121,13 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
                 continue;
             }
             Structure s = chosen.get();
-            netT2 += structureTierNetContribution(s, 2, true);
-            netT3 += structureTierNetContribution(s, 3, true);
+            if (st == ConstructionStatus.COMPLETE) {
+                netT2 += structureTierNetContribution(s, 2, true);
+                netT3 += structureTierNetContribution(s, 3, true);
+            } else {
+                netT2 += structureTierCostContribution(s, 2);
+                netT3 += structureTierCostContribution(s, 3);
+            }
         }
         if (netT2 == 0 && netT3 == 0) {
             architectSystemImpactTotalsBox.setManaged(false);
@@ -1145,6 +1155,11 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         }
         int cost = s.cost != null ? s.cost.getOrDefault(key, 0) : 0;
         return earn + cost;
+    }
+
+    private static int structureTierCostContribution(Structure s, int tierPoint) {
+        String key = "t" + tierPoint;
+        return s.cost != null ? s.cost.getOrDefault(key, 0) : 0;
     }
 
     private Image tierImpactImage(int tierPoint) {
