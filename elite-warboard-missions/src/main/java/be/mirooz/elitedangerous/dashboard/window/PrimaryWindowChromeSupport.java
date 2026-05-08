@@ -5,6 +5,7 @@ import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.animation.PauseTransition;
 import javafx.beans.InvalidationListener;
 import javafx.event.Event;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -31,6 +32,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class PrimaryWindowChromeSupport {
 
     private static final double WORK_AREA_MATCH_EPS = 4.0;
+    /** Marge pour considérer que la fenêtre n’est plus « pleine zone utile » (resize manuel, multi-écran). */
+    private static final double WORK_AREA_PARTIAL_MARGIN = 24.0;
     private static final int GLYPH_LAYOUT_SYNC_DELAY_MS = 50;
 
     private final Stage stage;
@@ -55,6 +58,11 @@ public final class PrimaryWindowChromeSupport {
     private double restoreWinY = 100;
     private double restoreWinW = 1200;
     private double restoreWinH = 800;
+    /**
+     * Aligné sur {@code window.maximized} au démarrage et sur les actions max / restore : l’heuristique
+     * {@link StageVisualBounds#isStageFillingWorkArea} peut être fausse (2ᵉ écran, DPI, Win32 runLater).
+     */
+    private boolean chromeWorkAreaExpanded;
 
     public PrimaryWindowChromeSupport(
             Stage stage,
@@ -121,11 +129,17 @@ public final class PrimaryWindowChromeSupport {
         installWindowDragHandlers(dashboardTitleBar, true);
         dashboardTitleBar.addEventFilter(MouseEvent.MOUSE_CLICKED, this::onDashboardTitleBarDoubleClick);
 
-        seedRestoreBoundsFromPreferencesIfMaximized();
+        seedRestoreBoundsFromPreferences();
+        if (!isWorkAreaMaximized()) {
+            rememberRestoreBounds();
+        }
+        chromeWorkAreaExpanded =
+                Boolean.parseBoolean(PreferencesService.getInstance().getPreference("window.maximized", "false"));
         attachStageGeometryGlyphSync();
         syncWindowMaxRestoreGlyph();
         refreshLocalizedStrings();
-        if (Boolean.parseBoolean(PreferencesService.getInstance().getPreference("window.maximized", "false"))) {
+        if (Boolean.parseBoolean(PreferencesService.getInstance().getPreference("window.maximized", "false"))
+                || isWorkAreaMaximized()) {
             scheduleSyncGlyphAfterLayout();
         }
     }
@@ -135,7 +149,7 @@ public final class PrimaryWindowChromeSupport {
      * zone utilisable alors que l’UI pensait encore « plein écran »).
      */
     private void attachStageGeometryGlyphSync() {
-        InvalidationListener l = obs -> syncWindowMaxRestoreGlyph();
+        InvalidationListener l = obs -> onStageGeometryChanged();
         stage.xProperty().addListener(l);
         stage.yProperty().addListener(l);
         stage.widthProperty().addListener(l);
@@ -161,7 +175,9 @@ public final class PrimaryWindowChromeSupport {
     }
 
     public void toggleMaximized() {
-        if (isWorkAreaMaximized()) {
+        boolean expanded = isWorkAreaMaximized() || chromeWorkAreaExpanded;
+        if (expanded) {
+            chromeWorkAreaExpanded = false;
             stage.setMaximized(false);
             stage.setX(restoreWinX);
             stage.setY(restoreWinY);
@@ -170,6 +186,7 @@ public final class PrimaryWindowChromeSupport {
         } else {
             rememberRestoreBounds();
             StageVisualBounds.fitStageToVisualBounds(stage);
+            chromeWorkAreaExpanded = true;
         }
         syncWindowMaxRestoreGlyph();
         scheduleSyncGlyphAfterLayout();
@@ -190,11 +207,27 @@ public final class PrimaryWindowChromeSupport {
         return StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MATCH_EPS);
     }
 
+    private boolean isWorkAreaExpandedForChrome() {
+        return isWorkAreaMaximized() || chromeWorkAreaExpanded;
+    }
+
+    private void onStageGeometryChanged() {
+        if (!isWorkAreaMaximized() && chromeWorkAreaExpanded) {
+            Rectangle2D vb = StageVisualBounds.screenForWindowCenter(stage).getVisualBounds();
+            boolean clearlyPartial = stage.getWidth() < vb.getWidth() - WORK_AREA_PARTIAL_MARGIN
+                    || stage.getHeight() < vb.getHeight() - WORK_AREA_PARTIAL_MARGIN;
+            if (clearlyPartial) {
+                chromeWorkAreaExpanded = false;
+            }
+        }
+        syncWindowMaxRestoreGlyph();
+    }
+
     private void syncWindowMaxRestoreGlyph() {
         if (windowMaxRestoreButton == null) {
             return;
         }
-        if (isWorkAreaMaximized()) {
+        if (isWorkAreaExpandedForChrome()) {
             windowMaxRestoreButton.setGraphic(WindowChromeIcons.restore());
             windowMaxRestoreButton.setTooltip(new Tooltip(localizationService.getString("window.restore")));
         } else {
@@ -211,7 +244,7 @@ public final class PrimaryWindowChromeSupport {
             if (titleBarStrip && isTitleBarDragExcluded(e.getTarget())) {
                 return;
             }
-            if (isWorkAreaMaximized()) {
+            if (isWorkAreaExpandedForChrome()) {
                 return;
             }
             rememberRestoreBounds();
@@ -225,7 +258,7 @@ public final class PrimaryWindowChromeSupport {
             if (titleBarStrip && isTitleBarDragExcluded(e.getTarget())) {
                 return;
             }
-            if (isWorkAreaMaximized()) {
+            if (isWorkAreaExpandedForChrome()) {
                 return;
             }
             stage.setX(e.getScreenX() - dragOffsetX);
@@ -242,14 +275,17 @@ public final class PrimaryWindowChromeSupport {
         }
     }
 
-    private void seedRestoreBoundsFromPreferencesIfMaximized() {
-        if (!StageVisualBounds.isStageFillingWorkArea(stage, WORK_AREA_MATCH_EPS)) {
-            return;
-        }
+    /**
+     * Initialise {@link #restoreWinX}… depuis les préférences. Toujours appelé (même si
+     * {@code window.maximized=false}) : sinon, une fenêtre qui remplit encore la zone utile alors que la
+     * préférence est passée à {@code false} gardait les défauts 100×1200 et le bouton « restaurer » sautait
+     * n’importe où.
+     * <p>
+     * Si {@code window.maximized=true} et que x/y/largeur/hauteur coïncident avec la zone utile (bug
+     * d’anciennes sauvegardes), on n’applique pas ces valeurs.
+     */
+    private void seedRestoreBoundsFromPreferences() {
         PreferencesService ps = PreferencesService.getInstance();
-        if (!Boolean.parseBoolean(ps.getPreference("window.maximized", "false"))) {
-            return;
-        }
         String sx = ps.getPreference("window.x", null);
         String sy = ps.getPreference("window.y", null);
         String sw = ps.getPreference("window.width", null);
@@ -262,20 +298,23 @@ public final class PrimaryWindowChromeSupport {
             double ry = Double.parseDouble(sy);
             double w = Double.parseDouble(sw);
             double h = Double.parseDouble(sh);
-            if (w > 0 && h > 0) {
+            if (w <= 0 || h <= 0) {
+                return;
+            }
+            boolean prefMaximized = Boolean.parseBoolean(ps.getPreference("window.maximized", "false"));
+            if (prefMaximized) {
                 var vb = StageVisualBounds.screenForWindowCenter(stage).getVisualBounds();
-                // Préférences d’une version antérieure : x/y/largeur/hauteur = zone utile → pas de vraie fenêtre à restaurer
                 if (Math.abs(rx - vb.getMinX()) <= WORK_AREA_MATCH_EPS * 2
                         && Math.abs(ry - vb.getMinY()) <= WORK_AREA_MATCH_EPS * 2
                         && Math.abs(w - vb.getWidth()) <= WORK_AREA_MATCH_EPS * 2
                         && Math.abs(h - vb.getHeight()) <= WORK_AREA_MATCH_EPS * 2) {
                     return;
                 }
-                restoreWinX = rx;
-                restoreWinY = ry;
-                restoreWinW = w;
-                restoreWinH = h;
             }
+            restoreWinX = rx;
+            restoreWinY = ry;
+            restoreWinW = w;
+            restoreWinH = h;
         } catch (NumberFormatException ignored) {
             // garder les valeurs par défaut
         }
