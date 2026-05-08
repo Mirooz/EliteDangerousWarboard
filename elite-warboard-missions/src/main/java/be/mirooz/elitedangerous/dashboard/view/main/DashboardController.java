@@ -11,6 +11,7 @@ import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalTailSer
 import be.mirooz.elitedangerous.dashboard.service.journal.watcher.JournalWatcherService;
 import be.mirooz.elitedangerous.dashboard.view.common.IRefreshable;
 import be.mirooz.elitedangerous.dashboard.view.common.IBatchListener;
+import be.mirooz.elitedangerous.dashboard.view.common.context.DashboardContext;
 import be.mirooz.elitedangerous.dashboard.view.combat.HeaderController;
 import be.mirooz.elitedangerous.dashboard.view.combat.MissionListController;
 import be.mirooz.elitedangerous.dashboard.view.combat.DestroyedShipsController;
@@ -153,7 +154,7 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
         }
         // Le binding ne met à jour que la couleur ; LoadGame / Shutdown changent isOnline hors onBatchEnd.
         commanderStatusComponent.getIsOnline().addListener((obs, wasOnline, onlineNow) -> {
-            if (statusLabel != null) {
+            if (statusLabel != null && !DashboardContext.getInstance().isBatchLoading()) {
                 updateStatusLabel();
             }
         });
@@ -421,6 +422,9 @@ public class DashboardController implements Initializable , IRefreshable, IBatch
     }
 
     private void updateStatusLabel() {
+        if (DashboardContext.getInstance().isBatchLoading() || statusLabel == null) {
+            return;
+        }
         if (commanderStatusComponent.getIsOnline().get()) {
             statusLabel.setText(localizationService.getString("commander.online"));
         } else {
