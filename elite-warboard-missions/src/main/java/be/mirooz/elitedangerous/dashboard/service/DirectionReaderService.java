@@ -166,7 +166,10 @@ public class DirectionReaderService {
 
                             previousPosition = currentPosition.get();
                             for (Position position : currentBiologicalSamplePositions) {
-                                position.setDistanceFromCurrent(getDistanceTo(newPosition,position));
+                                if (position == null) {
+                                    continue;
+                                }
+                                position.setDistanceFromCurrent(getDistanceTo(newPosition, position));
                             }
                             currentPosition.set(newPosition);
 

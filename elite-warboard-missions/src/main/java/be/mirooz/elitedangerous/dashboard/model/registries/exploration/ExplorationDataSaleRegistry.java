@@ -53,7 +53,8 @@ public class ExplorationDataSaleRegistry {
                     .startTimeStamp(systemVisited.getLastVisitedTime())
                     .build();
         }
-        explorationDataOnHold.getSystemsVisitedMap().put(systemVisited.getSystemName(),systemVisited);
+        ExplorationDataOnHold.ensureSystemsVisitedMapIsConcurrent(explorationDataOnHold);
+        explorationDataOnHold.getSystemsVisitedMap().put(systemVisited.getSystemName(), systemVisited);
     }
     /**
      * Ajoute ou met à jour la vente en cours avec de nouvelles données.
@@ -162,6 +163,7 @@ public class ExplorationDataSaleRegistry {
             return;
         }
         if (explorationDataOnHold != null && explorationDataOnHold.getSystemsVisitedMap() != null) {
+            ExplorationDataOnHold.ensureSystemsVisitedMapIsConcurrent(explorationDataOnHold);
             var map = explorationDataOnHold.getSystemsVisitedMap();
             String keyFound = null;
             for (String k : map.keySet()) {
@@ -211,6 +213,7 @@ public class ExplorationDataSaleRegistry {
     public void resyncAllExplorationSalesFromSystemRegistry() {
         Set<String> names = new LinkedHashSet<>();
         if (explorationDataOnHold != null && explorationDataOnHold.getSystemsVisitedMap() != null) {
+            ExplorationDataOnHold.ensureSystemsVisitedMapIsConcurrent(explorationDataOnHold);
             for (var e : explorationDataOnHold.getSystemsVisitedMap().entrySet()) {
                 if (e.getKey() != null && !e.getKey().isBlank()) {
                     names.add(e.getKey().trim());

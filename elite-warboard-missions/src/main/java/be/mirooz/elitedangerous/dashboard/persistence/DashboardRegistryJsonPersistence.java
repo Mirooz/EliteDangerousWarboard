@@ -1,6 +1,7 @@
 package be.mirooz.elitedangerous.dashboard.persistence;
 
 import be.mirooz.elitedangerous.dashboard.model.commander.Mission;
+import be.mirooz.elitedangerous.dashboard.model.exploration.ExplorationDataOnHold;
 import be.mirooz.elitedangerous.dashboard.model.exploration.SystemVisited;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderShip;
 import be.mirooz.elitedangerous.dashboard.model.registries.commander.CommanderStatus;
@@ -95,7 +96,11 @@ public final class DashboardRegistryJsonPersistence {
                 SystemVisitedRegistry.getInstance()::applyFullPersistedSnapshot));
         out.add(storeClass("exploration-data-sale-registry", baseDir, ExplorationDataSaleRegistry.class,
                 ExplorationDataSaleRegistry::getInstance,
-                loaded -> mergeIntoSingleton("exploration-data-sale-registry", ExplorationDataSaleRegistry.getInstance(), loaded)));
+                loaded -> {
+                    mergeIntoSingleton("exploration-data-sale-registry", ExplorationDataSaleRegistry.getInstance(), loaded);
+                    ExplorationDataOnHold.ensureSystemsVisitedMapIsConcurrent(
+                            ExplorationDataSaleRegistry.getInstance().getExplorationDataOnHold());
+                }));
         out.add(storeClass("organic-data-sale-registry", baseDir, OrganicDataSaleRegistry.class,
                 OrganicDataSaleRegistry::getInstance,
                 loaded -> mergeIntoSingleton("organic-data-sale-registry", OrganicDataSaleRegistry.getInstance(), loaded)));

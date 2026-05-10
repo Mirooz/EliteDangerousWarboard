@@ -16,6 +16,7 @@ import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Boussole / mini-radar pour l’analyse exobio : heading depuis Status.json et positions des échantillons.
@@ -291,9 +292,10 @@ public class RadarComponent {
     private void drawBiologicalSamples(Position currentPos, double centerX, double centerY, double radius) {
         List<Position> samplePositions =
                 new ArrayList<>(directionService.getCurrentBiologicalSamplePositions());
+        samplePositions.removeIf(Objects::isNull);
         Double colonyRangeMeter = directionService.getColonyRangeMeter();
 
-        if (samplePositions == null || samplePositions.isEmpty()) {
+        if (samplePositions.isEmpty()) {
             return;
         }
 

@@ -281,45 +281,47 @@ public class PlaneteRegistry {
      * @return Liste triée avec les soleils en premier, suivis de leurs orbites hiérarchiques
      */
     public List<ACelesteBody> getSortedBodiesForOrrery() {
+        // Copie défensive : la vue peut itérer pendant qu'un Scan modifie planetesMap (ObservableMap → CME).
+        List<ACelesteBody> snapshot = new ArrayList<>(planetesMap.values());
         List<ACelesteBody> result = new ArrayList<>();
         Set<Integer> processed = new HashSet<>();
-        
+
         // Étape 1 : Identifier tous les soleils (StarDetail sans parent ou avec parent "Null")
-        List<ACelesteBody> soleils = planetesMap.values().stream()
+        List<ACelesteBody> soleils = snapshot.stream()
                 .filter(body -> body instanceof StarDetail)
                 .filter(body -> {
                     // Un soleil est un corps sans parent ou avec un parent de type "Null"
                     List<ParentBody> parents = body.getParents();
-                    return parents == null || parents.isEmpty() || 
+                    return parents == null || parents.isEmpty() ||
                            parents.stream().anyMatch(p -> "Null".equalsIgnoreCase(p.getType()));
                 })
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                 .collect(Collectors.toList());
-        
+
         // Étape 2 : Pour chaque soleil, ajouter le soleil puis ses orbites récursivement
         for (ACelesteBody soleil : soleils) {
             if (!processed.contains(soleil.getBodyID())) {
                 result.add(soleil);
                 processed.add(soleil.getBodyID());
-                
+
                 // Ajouter récursivement tous les enfants de ce soleil
                 // Cela inclut : planètes → lunes → lunes de lunes, etc.
-                addChildrenRecursively(soleil, result, processed);
+                addChildrenRecursively(soleil, snapshot, result, processed);
             }
         }
-        
+
         // Étape 3 : Ajouter les corps célestes qui n'ont pas été traités (orphelins)
         // Ces corps n'ont pas de parent soleil identifié, mais peuvent avoir leurs propres enfants
-        planetesMap.values().stream()
+        snapshot.stream()
                 .filter(body -> !processed.contains(body.getBodyID()))
                 .sorted(Comparator.comparing(ACelesteBody::getBodyID))
                 .forEach(body -> {
                     result.add(body);
                     processed.add(body.getBodyID());
                     // Même pour les orphelins, on ajoute récursivement leurs enfants
-                    addChildrenRecursively(body, result, processed);
+                    addChildrenRecursively(body, snapshot, result, processed);
                 });
-        
+
         return result;
     }
     
@@ -337,12 +339,13 @@ public class PlaneteRegistry {
      * @param result La liste résultat où ajouter les enfants
      * @param processed L'ensemble des bodyID déjà traités pour éviter les doublons
      */
-    private void addChildrenRecursively(ACelesteBody parent, List<ACelesteBody> result, Set<Integer> processed) {
+    private void addChildrenRecursively(ACelesteBody parent, List<ACelesteBody> allBodies,
+                                        List<ACelesteBody> result, Set<Integer> processed) {
         // Trouver tous les corps qui ont ce parent dans leur liste de parents
         // Dans Elite Dangerous, un corps peut avoir plusieurs parents dans sa chaîne
         // (ex: une lune a [Planet, Star] dans sa liste de parents)
         // On cherche si le parent donné est présent dans cette chaîne
-        List<ACelesteBody> children = planetesMap.values().stream()
+        List<ACelesteBody> children = allBodies.stream()
                 .filter(body -> !processed.contains(body.getBodyID()))
                 .filter(body -> {
                     List<ParentBody> parents = body.getParents();
@@ -365,7 +368,7 @@ public class PlaneteRegistry {
                 processed.add(child.getBodyID());
                 // Récursion : si cet enfant a lui-même des enfants (ex: lune avec sub-lunes),
                 // ils seront aussi ajoutés à la suite
-                addChildrenRecursively(child, result, processed);
+                addChildrenRecursively(child, allBodies, result, processed);
             }
         }
     }

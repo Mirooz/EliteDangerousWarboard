@@ -116,7 +116,9 @@ public class ExplorationService {
             }
             if (!DashboardContext.getInstance().isBatchLoading()) {
                 Position samplePosition = DirectionReaderService.getInstance().readCurrentPosition(planeteDetail.getRadius());
-                DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().add(samplePosition);
+                if (samplePosition != null) {
+                    DirectionReaderService.getInstance().getCurrentBiologicalSamplePositions().add(samplePosition);
+                }
                 DirectionReaderService.getInstance().startWatchingStatusFile(planeteDetail.getRadius(), species.getColonyRangeMeters());
             }
 
