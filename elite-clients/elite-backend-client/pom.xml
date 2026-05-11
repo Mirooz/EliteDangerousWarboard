@@ -120,6 +120,8 @@
                                 <hideGenerationTimestamp>true</hideGenerationTimestamp>
                                 <openApiNullable>false</openApiNullable>
                                 <disallowAdditionalPropertiesIfNotPresent>false</disallowAdditionalPropertiesIfNotPresent>
+                                <!-- CAPI / backend peuvent ajouter des champs sans casser le client -->
+                                <additionalModelTypeAnnotations>@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)</additionalModelTypeAnnotations>
                             </configOptions>
                         </configuration>
                     </execution>

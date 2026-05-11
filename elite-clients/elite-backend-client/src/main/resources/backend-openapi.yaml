@@ -1085,6 +1085,9 @@ components:
           type: string
         StationType:
           type: string
+        StationState:
+          description: État de la station (CAPI / journal Docked), ex. opérationnel.
+          type: string
         CarrierDockingAccess:
           type: string
         StarSystem:
