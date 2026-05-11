@@ -11,6 +11,7 @@ import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayAlwaysOnTopSupport;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayScreenGeometryHelper;
@@ -70,6 +71,7 @@ public class TargetOverlayComponent {
     private StackPane stackPane;
     private VBox targetPanelComponent;
     private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+    private final OverlayAlwaysOnTopSupport alwaysOnTop = new OverlayAlwaysOnTopSupport();
     private Runnable onOverlayClosed;
 
     public void setOnOverlayClosed(Runnable onOverlayClosed) {
@@ -160,6 +162,7 @@ public class TargetOverlayComponent {
         overlayStage = null;
         stackPane = null;
         passthrough.disposeForClose(stage, pane);
+        alwaysOnTop.dispose();
         if (onOverlayClosed != null) {
             onOverlayClosed.run();
         }
@@ -245,6 +248,7 @@ public class TargetOverlayComponent {
 
         // Afficher l'overlay
         overlayStage.show();
+        alwaysOnTop.install(overlayStage);
     }
 
     /**

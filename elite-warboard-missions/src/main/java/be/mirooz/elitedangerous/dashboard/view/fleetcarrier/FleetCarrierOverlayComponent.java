@@ -4,6 +4,7 @@ import be.mirooz.elitedangerous.commons.lib.models.commodities.ColonisationCommo
 import be.mirooz.elitedangerous.commons.lib.models.commodities.CommodityCategory;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayAlwaysOnTopSupport;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayScreenGeometryHelper;
@@ -83,6 +84,7 @@ public class FleetCarrierOverlayComponent {
     private Supplier<FleetCarrierOverlaySnapshot> dataSupplier;
     private Runnable onOverlayClosed;
     private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+    private final OverlayAlwaysOnTopSupport alwaysOnTop = new OverlayAlwaysOnTopSupport();
 
     public void setOnOverlayClosed(Runnable onOverlayClosed) {
         this.onOverlayClosed = onOverlayClosed;
@@ -200,6 +202,7 @@ public class FleetCarrierOverlayComponent {
 
         overlayStage.widthProperty().addListener((obs, o, n) -> applyFleetOverlayGridHgapFromStage());
         overlayStage.show();
+        alwaysOnTop.install(overlayStage);
         Platform.runLater(this::applyFleetOverlayGridHgapFromStage);
         overlayStage.setOnCloseRequest(event -> disposeOverlayStage());
     }
@@ -215,6 +218,7 @@ public class FleetCarrierOverlayComponent {
         overlayStage = null;
         stackPane = null;
         passthrough.disposeForClose(stage, pane);
+        alwaysOnTop.dispose();
         if (onOverlayClosed != null) {
             onOverlayClosed.run();
         }

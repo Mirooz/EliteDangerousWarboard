@@ -328,6 +328,8 @@ public final class SpanshSystemVisitedMapper {
                 continue;
             try {
                 BioSpecies matchingSpecie;
+                planete.setWasMapped(true);
+                planete.setWasFootfalled(true);
                 if (g.getName().contains("Brain") || g.getName().contains("Crystalline")) {
                     matchingSpecie = BioSpecies.brainTree();
                 } else {
@@ -354,8 +356,6 @@ public final class SpanshSystemVisitedMapper {
                 if (!isSaaGenusCodex(genusCodex)) {
                     continue;
                 }
-                planete.setWasMapped(true);
-                planete.setWasFootfalled(true);
                  planete.getConfirmedSpecies().stream()
                         .filter(s -> s.getId().equalsIgnoreCase(matchingSpecie.getId()))
                         .findFirst()

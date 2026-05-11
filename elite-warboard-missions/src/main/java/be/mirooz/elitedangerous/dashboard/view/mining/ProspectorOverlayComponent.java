@@ -3,6 +3,7 @@ package be.mirooz.elitedangerous.dashboard.view.mining;
 import be.mirooz.elitedangerous.dashboard.view.common.TooltipComponent;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.CopyClipboardManager;
 import be.mirooz.elitedangerous.dashboard.view.common.managers.PopupManager;
+import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayAlwaysOnTopSupport;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayLockChrome;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayPassthroughSupport;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayScreenGeometryHelper;
@@ -66,6 +67,7 @@ public class ProspectorOverlayComponent {
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final OverlayPassthroughSupport passthrough = new OverlayPassthroughSupport();
+    private final OverlayAlwaysOnTopSupport alwaysOnTop = new OverlayAlwaysOnTopSupport();
     private Runnable onOverlayClosed;
 
     public void setOnOverlayClosed(Runnable onOverlayClosed) {
@@ -147,6 +149,7 @@ public class ProspectorOverlayComponent {
         overlayStage = null;
         stackPane = null;
         passthrough.disposeForClose(stage, pane);
+        alwaysOnTop.dispose();
         if (onOverlayClosed != null) {
             onOverlayClosed.run();
         }
@@ -246,6 +249,7 @@ public class ProspectorOverlayComponent {
 
         // Afficher l'overlay
         overlayStage.show();
+        alwaysOnTop.install(overlayStage);
         overlayStage.setOnCloseRequest(event -> closeOverlay());
     }
 
