@@ -1709,29 +1709,48 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
             try {
                 SystemVisited spanshSv = SpanshSystemVisitedService.getInstance().fetchSystemVisited(sysKey, sysId64);
                 Platform.runLater(() -> {
-                    if (currentSystem == null || currentSystem.getSystemName() == null) {
-                        return;
+                    try {
+                        if (currentSystem == null || currentSystem.getSystemName() == null) {
+                            return;
+                        }
+                        if (!sysKey.equalsIgnoreCase(currentSystem.getSystemName().trim())) {
+                            return;
+                        }
+                        // Toujours fusionner sur l’instance affichée (registre visité), pas sur une copie
+                        // parallèle — sinon displaySystem reconstruit l’orrery depuis l’ancienne liste.
+                        SystemVisited mergeTarget = resolveDisplayedSystemVisited(currentSystem);
+                        if (mergeTarget == null || mergeTarget.getSystemName() == null) {
+                            return;
+                        }
+                        if (!sysKey.equalsIgnoreCase(mergeTarget.getSystemName().trim())) {
+                            return;
+                        }
+                        mergeOnlineDataFromSpansh(mergeTarget, spanshSv);
+                        currentSystem = mergeTarget;
+                        ExplorationDataSaleRegistry.getInstance().resyncSystemVisitedWithRegistry(sysKey);
+                        notifyAfterSpanshBodiesMerged();
+                        displaySystem(currentSystem, true);
+                    } finally {
+                        hideSpanshLoadingLayer();
                     }
-                    if (!sysKey.equalsIgnoreCase(currentSystem.getSystemName().trim())) {
-                        return;
-                    }
-                    mergeOnlineDataFromSpansh(currentSystem, spanshSv);
-                    ExplorationDataSaleRegistry.getInstance().resyncSystemVisitedWithRegistry(sysKey);
-                    notifyAfterSpanshBodiesMerged();
-                    displaySystem(currentSystem, true);
                 });
             } catch (Exception ignored) {
                 if (!PreferencesService.getInstance().isSpanshExplorationLoadEnabled()) {
                     return;
                 }
                 Platform.runLater(() -> {
-                    if (currentSystem == null || currentSystem.getSystemName() == null) {
-                        return;
+                    try {
+                        if (currentSystem == null || currentSystem.getSystemName() == null) {
+                            return;
+                        }
+                        if (!sysKey.equalsIgnoreCase(currentSystem.getSystemName().trim())) {
+                            return;
+                        }
+                        currentSystem = resolveDisplayedSystemVisited(currentSystem);
+                        displaySystem(currentSystem, true);
+                    } finally {
+                        hideSpanshLoadingLayer();
                     }
-                    if (!sysKey.equalsIgnoreCase(currentSystem.getSystemName().trim())) {
-                        return;
-                    }
-                    displaySystem(currentSystem, true);
                 });
             }
         }, "spansh-bodies-online");
