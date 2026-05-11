@@ -15,6 +15,7 @@ import be.mirooz.elitedangerous.dashboard.model.navigation.NavRoute;
 import be.mirooz.elitedangerous.dashboard.model.navigation.RouteSystem;
 import be.mirooz.elitedangerous.dashboard.model.registries.exploration.ExplorationModeRegistry;
 import be.mirooz.elitedangerous.dashboard.service.NavRouteService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.service.webservice.AnalyticsService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.NavRouteNotificationService;
@@ -138,8 +139,7 @@ public class NavRouteComponent implements Initializable {
     private final CopyClipboardManager copyClipboardManager = CopyClipboardManager.getInstance();
     private final PopupManager popupManager = PopupManager.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
-    private final be.mirooz.elitedangerous.dashboard.service.PreferencesService preferencesService =
-        be.mirooz.elitedangerous.dashboard.service.PreferencesService.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
     private ChangeListener<String> currentSystemListener;
     private ChangeListener<Number> widthListener;
     private final Set<String> visitedSystems = new HashSet<>(); // Systèmes visités dans la route actuelle
@@ -166,14 +166,11 @@ public class NavRouteComponent implements Initializable {
         navRouteOverlayComponent = new NavRouteOverlayComponent();
         navRouteOverlayComponent.setNavRouteComponent(this); // Passer la référence pour dessiner les boules
         navRouteOverlayComponent.setOnOverlayStateChanged(this::updateOverlayButtonText);
-        navRouteOverlayComponent.setOnOverlayClosed(() -> {
-            if (overlayPassThroughLockButton != null) {
-                overlayPassThroughLockButton.setSelected(false);
-            }
-        });
+        navRouteOverlayComponent.setOnOverlayClosed(this::updateOverlayButtonText);
         if (overlayPassThroughLockButton != null) {
             OverlayUi.applyOverlayLockToggleStyle(overlayPassThroughLockButton);
-            overlayPassThroughLockButton.setSelected(false);
+            overlayPassThroughLockButton.setSelected(
+                    preferencesService.isOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_NAV_ROUTE));
             Tooltip lt = new Tooltip();
             lt.setWrapText(true);
             lt.setMaxWidth(340);
@@ -184,6 +181,7 @@ public class NavRouteComponent implements Initializable {
             overlayPassThroughLockButton.selectedProperty().addListener((obs, o, n) -> {
                 OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
                 OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+                preferencesService.setOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_NAV_ROUTE, Boolean.TRUE.equals(n));
                 if (navRouteOverlayComponent != null && navRouteOverlayComponent.isShowing()) {
                     navRouteOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
                 }

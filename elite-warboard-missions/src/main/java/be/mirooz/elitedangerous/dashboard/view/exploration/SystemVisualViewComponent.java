@@ -245,15 +245,13 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
         bodiesOverlayComponent = new ExplorationBodiesOverlayComponent();
         bodiesOverlayComponent.setBodyCardFactory(this::createBodiesListForOverlay);
         bodiesOverlayComponent.setOnOverlayClosed(() -> {
-            if (bodiesOverlayPassThroughLockButton != null) {
-                bodiesOverlayPassThroughLockButton.setSelected(false);
-            }
             // Fermeture via X sur l’overlay : sinon le libellé « Overlay » reste bloqué
             scheduleBodiesOverlayToolbarChromeRefresh();
         });
         if (bodiesOverlayPassThroughLockButton != null) {
             OverlayUi.applyOverlayLockToggleStyle(bodiesOverlayPassThroughLockButton);
-            bodiesOverlayPassThroughLockButton.setSelected(false);
+            bodiesOverlayPassThroughLockButton.setSelected(
+                    preferencesService.isOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_EXPLORATION_BODIES));
             Tooltip lt = new Tooltip();
             lt.setWrapText(true);
             lt.setMaxWidth(340);
@@ -265,6 +263,7 @@ public class SystemVisualViewComponent implements Initializable, IRefreshable,
                 if (bodiesOverlayComponent != null && bodiesOverlayComponent.isOverlayShowing()) {
                     bodiesOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
                 }
+                preferencesService.setOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_EXPLORATION_BODIES, Boolean.TRUE.equals(n));
                 OverlayUi.updateLockToggleGlyph(bodiesOverlayPassThroughLockButton);
                 OverlayUi.refreshLockTooltip(bodiesOverlayPassThroughLockButton, localizationService);
                 // Panneau gauche très chargé + passthrough Win32 : repeindre le toolbar au pulse suivant

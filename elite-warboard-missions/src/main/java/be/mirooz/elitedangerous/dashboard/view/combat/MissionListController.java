@@ -22,6 +22,7 @@ import be.mirooz.elitedangerous.dashboard.view.combat.TargetPanelComponent;
 import be.mirooz.elitedangerous.dashboard.view.combat.TargetOverlayComponent;
 import be.mirooz.elitedangerous.dashboard.view.combat.CombatMissionHistoryComponent;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import be.mirooz.elitedangerous.dashboard.view.common.overlay.OverlayUi;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -75,6 +76,7 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
     private final MissionsRegistry missionsRegistry = MissionsRegistry.getInstance();
     private final DashboardContext dashboardContext = DashboardContext.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
     private final TargetOverlayComponent targetOverlayComponent = new TargetOverlayComponent();
     private final CombatMissionHistoryService historyService = CombatMissionHistoryService.getInstance();
 
@@ -87,9 +89,13 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
             targetPanel.setOnOverlayButtonClick(this::showTargetOverlay);
             ToggleButton lock = targetPanel.getOverlayPassThroughLockButton();
             if (lock != null) {
+                lock.setSelected(preferencesService.isOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_COMBAT_TARGET));
+                OverlayUi.updateLockToggleGlyph(lock);
+                OverlayUi.refreshLockTooltip(lock, localizationService);
                 lock.selectedProperty().addListener((obs, o, n) -> {
                     OverlayUi.updateLockToggleGlyph(lock);
                     OverlayUi.refreshLockTooltip(lock, localizationService);
+                    preferencesService.setOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_COMBAT_TARGET, Boolean.TRUE.equals(n));
                     if (targetOverlayComponent != null && targetOverlayComponent.isShowing()) {
                         targetOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
                     }
@@ -97,10 +103,6 @@ public class MissionListController implements Initializable, IRefreshable, IBatc
             }
         }
         targetOverlayComponent.setOnOverlayClosed(() -> {
-            ToggleButton lock = targetPanel != null ? targetPanel.getOverlayPassThroughLockButton() : null;
-            if (lock != null) {
-                lock.setSelected(false);
-            }
             updateOverlayButtonText();
         });
 

@@ -334,12 +334,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
 
     private void initFleetCarrierOverlayButton() {
         fleetCarrierOverlayComponent = new FleetCarrierOverlayComponent();
-        fleetCarrierOverlayComponent.setOnOverlayClosed(() -> {
-            if (fleetCarrierOverlayLockButton != null) {
-                fleetCarrierOverlayLockButton.setSelected(false);
-            }
-            updateFleetCarrierOverlayButtonText();
-        });
+        fleetCarrierOverlayComponent.setOnOverlayClosed(this::updateFleetCarrierOverlayButtonText);
         if (fleetCarrierOverlayButton != null) {
             fleetCarrierOverlayButton.setOnAction(e -> {
                 fleetCarrierOverlayComponent.toggleOverlay(this::buildFleetCarrierOverlaySnapshot);
@@ -357,7 +352,8 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
         }
         if (fleetCarrierOverlayLockButton != null) {
             OverlayUi.applyOverlayLockToggleStyle(fleetCarrierOverlayLockButton);
-            fleetCarrierOverlayLockButton.setSelected(false);
+            fleetCarrierOverlayLockButton.setSelected(
+                    preferencesService.isOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_FLEET_CARRIER));
             Tooltip lt = new Tooltip();
             lt.setWrapText(true);
             lt.setMaxWidth(340);
@@ -368,6 +364,7 @@ public class ColonisationPanelController implements Initializable, IRefreshable 
             fleetCarrierOverlayLockButton.selectedProperty().addListener((obs, o, n) -> {
                 OverlayUi.updateLockToggleGlyph(fleetCarrierOverlayLockButton);
                 OverlayUi.refreshLockTooltip(fleetCarrierOverlayLockButton, localizationService);
+                preferencesService.setOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_FLEET_CARRIER, Boolean.TRUE.equals(n));
                 if (fleetCarrierOverlayComponent != null && fleetCarrierOverlayComponent.isShowing()) {
                     fleetCarrierOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
                 }

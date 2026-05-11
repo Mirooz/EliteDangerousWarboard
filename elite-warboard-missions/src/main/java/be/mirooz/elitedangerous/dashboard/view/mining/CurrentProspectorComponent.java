@@ -8,6 +8,7 @@ import be.mirooz.elitedangerous.dashboard.service.DashboardService;
 import be.mirooz.elitedangerous.dashboard.service.LocalizationService;
 import be.mirooz.elitedangerous.dashboard.service.listeners.MiningEventNotificationService;
 import be.mirooz.elitedangerous.dashboard.service.MiningService;
+import be.mirooz.elitedangerous.dashboard.service.PreferencesService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -37,6 +38,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     private final MiningService miningService = MiningService.getInstance();
     private final LocalizationService localizationService = LocalizationService.getInstance();
     private final MiningEventNotificationService miningEventNotificationService = MiningEventNotificationService.getInstance();
+    private final PreferencesService preferencesService = PreferencesService.getInstance();
 
     // Composants FXML
     @FXML
@@ -66,14 +68,10 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
     public void initialize(URL location, ResourceBundle resources) {
         // Initialiser le composant overlay
         prospectorOverlayComponent = new ProspectorOverlayComponent();
-        prospectorOverlayComponent.setOnOverlayClosed(() -> {
-            if (overlayPassThroughLockButton != null) {
-                overlayPassThroughLockButton.setSelected(false);
-            }
-        });
         if (overlayPassThroughLockButton != null) {
             OverlayUi.applyOverlayLockToggleStyle(overlayPassThroughLockButton);
-            overlayPassThroughLockButton.setSelected(false);
+            overlayPassThroughLockButton.setSelected(
+                    preferencesService.isOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_PROSPECTOR));
             Tooltip lt = new Tooltip();
             lt.setWrapText(true);
             lt.setMaxWidth(340);
@@ -84,6 +82,7 @@ public class CurrentProspectorComponent implements Initializable, ProspectedAste
             overlayPassThroughLockButton.selectedProperty().addListener((obs, o, n) -> {
                 OverlayUi.updateLockToggleGlyph(overlayPassThroughLockButton);
                 OverlayUi.refreshLockTooltip(overlayPassThroughLockButton, localizationService);
+                preferencesService.setOverlayPassThroughLocked(PreferencesService.OVERLAY_LOCK_PROSPECTOR, Boolean.TRUE.equals(n));
                 if (prospectorOverlayComponent != null && prospectorOverlayComponent.isShowing()) {
                     prospectorOverlayComponent.setClickThroughLocked(Boolean.TRUE.equals(n));
                 }

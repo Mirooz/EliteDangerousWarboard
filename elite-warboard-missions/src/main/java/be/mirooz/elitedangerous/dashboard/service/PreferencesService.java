@@ -56,6 +56,16 @@ public class PreferencesService {
      */
     public static final String PREF_COLONISATION_LAST_SELECTED_ARCHITECT_SYSTEM = "colonisation.lastSelectedArchitectSystem";
 
+    /**
+     * Identifiants pour {@link #isOverlayPassThroughLocked(String)} / {@link #setOverlayPassThroughLocked(String, boolean)}
+     * (clé {@code overlay.passThroughLocked.<kind>} dans {@code preferences.properties}, non scoping commandant).
+     */
+    public static final String OVERLAY_LOCK_NAV_ROUTE = "nav_route";
+    public static final String OVERLAY_LOCK_EXPLORATION_BODIES = "exploration_bodies";
+    public static final String OVERLAY_LOCK_PROSPECTOR = "prospector";
+    public static final String OVERLAY_LOCK_COMBAT_TARGET = "combat_target";
+    public static final String OVERLAY_LOCK_FLEET_CARRIER = "fleet_carrier";
+
     private static final ObjectMapper COLONISATION_SUGGESTED_STATIONS_JSON = createColonisationSuggestedStationsMapper();
 
     private volatile Properties colonisationConstructionStructureTypes;
@@ -290,6 +300,23 @@ public class PreferencesService {
     public String getPreference(String key, String defaultValue) {
         key = scopedPreferenceKey(key);
         return preferences.getProperty(key, defaultValue);
+    }
+
+    /**
+     * Verrou « clic à travers » mémorisé pour un overlay (bouton cadenas).
+     */
+    public boolean isOverlayPassThroughLocked(String kind) {
+        if (kind == null || kind.isBlank()) {
+            return false;
+        }
+        return Boolean.parseBoolean(getPreference("overlay.passThroughLocked." + kind.strip(), "false"));
+    }
+
+    public void setOverlayPassThroughLocked(String kind, boolean locked) {
+        if (kind == null || kind.isBlank()) {
+            return;
+        }
+        setPreference("overlay.passThroughLocked." + kind.strip(), String.valueOf(locked));
     }
 
     /**
