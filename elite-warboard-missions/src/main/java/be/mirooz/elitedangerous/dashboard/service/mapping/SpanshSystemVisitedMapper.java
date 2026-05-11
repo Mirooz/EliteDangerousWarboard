@@ -87,12 +87,25 @@ public final class SpanshSystemVisitedMapper {
         }
         Map<Long, Integer> id64ToBodyId = buildId64ToBodyId(results);
         Map<String, BodyResult> nameIndex = buildNameIndex(results);
+        // Étoiles du même lot Spansh : calculBioScan (RADIANT_STAR) s’exécute avant toute mise à jour du registre.
+        Map<Integer, StarDetail> starByBodyId = new HashMap<>();
+        for (BodyResult br : results) {
+            if (br != null && isStar(br)) {
+                StarDetail sd = toStar(systemName, br, id64ToBodyId, nameIndex);
+                starByBodyId.put(sd.getBodyID(), sd);
+            }
+        }
+        List<StarDetail> spanshSystemStars = new ArrayList<>(starByBodyId.values());
         for (BodyResult br : results) {
             if (br == null) {
                 continue;
             }
-            out.add(isStar(br) ? toStar(systemName, br, id64ToBodyId, nameIndex)
-                    : toPlanet(systemName, br, id64ToBodyId, nameIndex));
+            if (isStar(br)) {
+                StarDetail cached = starByBodyId.get(valueOrZero(br.getBodyId()));
+                out.add(cached != null ? cached : toStar(systemName, br, id64ToBodyId, nameIndex));
+            } else {
+                out.add(toPlanet(systemName, br, id64ToBodyId, nameIndex, spanshSystemStars));
+            }
         }
         return out;
     }
@@ -204,9 +217,45 @@ public final class SpanshSystemVisitedMapper {
         return t != null && "Star".equalsIgnoreCase(t.trim());
     }
 
+    /**
+     * Libellé court type étoile (journal / bio RADIANT) depuis Spansh :
+     * {@code T Tauri} → {@code TTS}, texte contenant {@code Herbig} → {@code Ae},
+     * sinon première lettre du sous-type ou de la classe spectrale.
+     */
+    private static String spanshStarTypeShortLabel(BodyResult br) {
+        if (br == null) {
+            return "Unknown";
+        }
+        String subtype = br.getSubtype();
+        String spectral = br.getSpectralClass();
+        String combined = ((subtype != null ? subtype : "") + " " + (spectral != null ? spectral : "")).trim();
+        if (!combined.isEmpty()) {
+            String lower = combined.toLowerCase(Locale.ROOT);
+            if (lower.contains("t tauri")) {
+                return "TTS";
+            }
+            if (lower.contains("herbig")) {
+                return "Ae";
+            }
+        }
+        String raw = fallbackIfBlank(subtype, spectral, "Unknown");
+        if (raw == null || raw.isBlank() || raw.equalsIgnoreCase("unknown")) {
+            return "Unknown";
+        }
+        String trimmed = raw.trim();
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (Character.isLetter(c)) {
+                return String.valueOf(Character.toUpperCase(c));
+            }
+        }
+        return "Unknown";
+    }
+
     private static StarDetail toStar(
             String systemName, BodyResult br, Map<Long, Integer> id64ToBodyId, Map<String, BodyResult> nameIndex) {
-        String starType = fallbackIfBlank(br.getSubtype(), br.getSpectralClass(), "Unknown");
+        String starTypeString = spanshStarTypeShortLabel(br);
+        String starTypeForEnum = fallbackIfBlank(br.getSubtype(), br.getSpectralClass(), "Unknown");
         List<ParentBody> parents = mapSpanshParents(br, systemName, id64ToBodyId, nameIndex);
         long systemAddress = br.getSystemId64() != null ? br.getSystemId64() : valueOrZero(br.getId64());
         String resolvedSystem = fallbackIfBlank(br.getSystemName(), systemName, "Unknown");
@@ -222,14 +271,18 @@ public final class SpanshSystemVisitedMapper {
                 .wasDiscovered(true)
                 .mapped(false)
                 .rings(br.getRings() != null && !br.getRings().isEmpty())
-                .starTypeString(starType)
-                .starType(StarType.getStarType(starType))
+                .starTypeString(starTypeString)
+                .starType(StarType.getStarType(starTypeForEnum))
                 .stellarMass(valueOrZero(br.getSolarMasses()))
                 .build();
     }
 
     private static PlaneteDetail toPlanet(
-            String systemName, BodyResult br, Map<Long, Integer> id64ToBodyId, Map<String, BodyResult> nameIndex) {
+            String systemName,
+            BodyResult br,
+            Map<Long, Integer> id64ToBodyId,
+            Map<String, BodyResult> nameIndex,
+            List<StarDetail> spanshSystemStars) {
         String planetClassStr = fallbackIfBlank(br.getSubtype(), "Unknown", "Unknown");
         List<ParentBody> parents = mapSpanshParents(br, systemName, id64ToBodyId, nameIndex);
         String resolvedSystem = fallbackIfBlank(br.getSystemName(), systemName, "Unknown");
@@ -264,7 +317,7 @@ public final class SpanshSystemVisitedMapper {
                 .materials(mapSpanshMaterials(br.getMaterials()))
                 .jsonNode(MAPPER.createObjectNode())
                 .build();
-        injectSpanshExobio(planete, br);
+        injectSpanshExobio(planete, br, spanshSystemStars);
         planete.setJsonNode(planetJournalJsonFromSpansh(
                 br,
                 resolvedSystem,
@@ -296,7 +349,7 @@ public final class SpanshSystemVisitedMapper {
      * Applique signaux biologiques Spansh (FSS + SAA) sur la planète et notifie le {@link BiologicalSignalProcessor}
      * pour les corps déjà présents dans le registre.
      */
-    private static void injectSpanshExobio(PlaneteDetail planete, BodyResult br) {
+    private static void injectSpanshExobio(PlaneteDetail planete, BodyResult br, List<StarDetail> spanshSystemStars) {
         List<Genus> genuses = br.getGenuses();
         if (genuses == null || genuses.isEmpty()) {
             return;
@@ -317,8 +370,8 @@ public final class SpanshSystemVisitedMapper {
             genesCodexList.add(genusCodex);
         }
         //Ajout de tout en scan level 2, et level 1 aussi
-        planete.calculBioScan(genesCodexList.size(), 1, null);
-        planete.calculBioScan(genesCodexList.size(), 2, genesCodexList);
+        planete.calculBioScan(genesCodexList.size(), 1, null, spanshSystemStars);
+        planete.calculBioScan(genesCodexList.size(), 2, genesCodexList, spanshSystemStars);
         //si variant non null (ou brain tree
         for (Genus g : genuses) {
             if (g == null) {
@@ -469,7 +522,7 @@ public final class SpanshSystemVisitedMapper {
 
         String spectral = br.getSpectralClass() != null ? br.getSpectralClass().trim() : "";
         String subtype = br.getSubtype() != null ? br.getSubtype().trim() : "";
-        root.put("StarType", journalStarTypeFromSpansh(spectral, subtype));
+        root.put("StarType", spanshStarTypeShortLabel(br));
         root.put("Subclass", inferStarSubclass(spectral, subtype));
         putOptionalDouble(root, "StellarMass", br.getSolarMasses());
         putOptionalDouble(root, "Radius", starRadiusMetersFromSpansh(br));
@@ -649,21 +702,6 @@ public final class SpanshSystemVisitedMapper {
             return share * 100d;
         }
         return share;
-    }
-
-    private static String journalStarTypeFromSpansh(String spectral, String subtype) {
-        if (spectral != null && !spectral.isBlank()) {
-            String s = spectral.trim();
-            if (s.length() <= 4) {
-                return s;
-            }
-            return s.substring(0, Math.min(4, s.length()));
-        }
-        if (subtype != null && !subtype.isBlank()) {
-            String first = subtype.trim().split("\\s+")[0];
-            return first.replaceAll("\\d", "").trim();
-        }
-        return "Unknown";
     }
 
     private static int inferStarSubclass(String spectral, String subtype) {

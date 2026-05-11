@@ -29,6 +29,8 @@ public enum StarType {
         if (label == null || label.isBlank()) return STAR;
         if ( label.equals("Black Hole")) return  BLACK_HOLE;
         if (label.equals("Neutron Star")) return NEUTRON_STAR;
+        if (label.startsWith("Herbig")) return HERBIG;
+        if (label.startsWith("T Tauri")) return STAR;
         if (label.startsWith("D")) return WHITE_DWARF;
         if (label.startsWith("L") || label.startsWith("T") || label.startsWith("Y"))
             return BROWN_DWARF;
@@ -52,7 +54,7 @@ public enum StarType {
         if (v.startsWith("D")) return WHITE_DWARF;
 
         // Herbig Ae/Be
-        if (v.equals("AEBE")) return HERBIG;
+        if (v.equals("AEBE") || v.equals("AE")) return HERBIG;
 
         // Brown dwarfs
         if (v.equals("L") || v.equals("T") || v.equals("Y"))

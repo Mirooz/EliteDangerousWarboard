@@ -71,8 +71,16 @@ public class PlaneteDetail extends ACelesteBody {
 
     /**
      * Calcul complet des espèces biologiques possibles pour cette planète.
+     * <p>
+     * {@code systemStarsForRadiant} : si non null, utilisé pour le matching {@code RADIANT_STAR}
+     * au lieu du {@link PlaneteRegistry} (indispensable pendant le mapping Spansh, où le registre
+     * n’est pas encore alimenté des étoiles du batch).
      */
     public void calculBioScan(Integer count, int level, List<String> genuses) {
+        calculBioScan(count, level, genuses, null);
+    }
+
+    public void calculBioScan(Integer count, int level, List<String> genuses, List<StarDetail> systemStarsForRadiant) {
         this.numSpeciesDetected = count;
         if (this.bioSpecies != null && !this.bioSpecies.isEmpty()) {
             for (Scan scan : this.bioSpecies) {
@@ -117,12 +125,13 @@ public class PlaneteDetail extends ACelesteBody {
 
                         if (method == VariantMethods.RADIANT_STAR && parents != null) {
 
-                            // Récupère toutes les étoiles du système
-                            List<StarDetail> allStars = PlaneteRegistry.getInstance()
-                                    .getAllPlanetes().stream()
-                                    .filter(body -> body instanceof StarDetail)
-                                    .map(body -> (StarDetail) body)
-                                    .toList();
+                            List<StarDetail> allStars = systemStarsForRadiant != null
+                                    ? systemStarsForRadiant
+                                    : PlaneteRegistry.getInstance()
+                                            .getAllPlanetes().stream()
+                                            .filter(body -> body instanceof StarDetail)
+                                            .map(body -> (StarDetail) body)
+                                            .toList();
 
                             // Récupère toutes les étoiles parents (pas juste la première)
                             List<ParentBody> parentStars = parents.stream()
